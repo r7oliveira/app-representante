@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Romance — Representante</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+:root{--pink:#D91A7A;--pink-deep:#a8115e;--pink-soft:#f7d6eb;--pink-pale:#fdf0f8;--black:#0d0d0d;--gray:#666;--white:#fff;--green:#16a34a;--green-bg:#dcfce7;--amber:#d97706;--amber-bg:#fef3cd;--radius:18px;--radius-sm:12px;--shadow:0 2px 18px rgba(0,0,0,0.06);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-height:100vh;max-width:430px;margin:0 auto;}
+.screen{display:none;}
+.screen.ativo{display:block;}
+.login-top{background:linear-gradient(150deg,#0d0d0d 0%,#1f0612 50%,var(--pink-deep) 100%);padding:64px 28px 52px;position:relative;overflow:hidden;}
+.login-top::before{content:'';position:absolute;top:-80px;right:-80px;width:260px;height:260px;border-radius:50%;background:rgba(217,26,122,0.15);}
+.badge-rep{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:99px;padding:6px 14px;margin-bottom:28px;}
+.badge-rep-dot{width:7px;height:7px;background:#4ade80;border-radius:50%;}
+.badge-rep span{font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);text-transform:uppercase;letter-spacing:.8px;}
+.login-h{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:700;color:white;line-height:1.05;margin-bottom:12px;}
+.login-sub{font-size:14px;color:rgba(255,255,255,0.65);line-height:1.6;}
+.login-body{padding:32px 24px 48px;background:white;}
+.fl{display:block;font-size:13px;font-weight:600;color:var(--black);margin-bottom:7px;}
+.fi{width:100%;padding:15px 16px;border:1.5px solid #e5e5e5;border-radius:var(--radius-sm);font-size:15px;font-family:'Outfit',sans-serif;color:var(--black);outline:none;transition:border .2s;margin-bottom:15px;background:white;-webkit-appearance:none;}
+.fi:focus{border-color:var(--pink);}
+.btn-main{width:100%;background:var(--pink);color:white;border:none;border-radius:var(--radius-sm);padding:17px;font-size:16px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;}
+.btn-main:disabled{background:#ddd;color:#aaa;}
+.hint{text-align:center;margin-top:14px;font-size:13px;color:var(--gray);}
+/* TOPBAR */
+.topbar{background:white;padding:16px 20px 14px;border-bottom:1px solid #ececec;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,0.05);}
+.tb-brand{display:flex;align-items:center;gap:9px;}
+.tb-icon{width:32px;height:32px;background:var(--black);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.tb-icon svg{width:18px;height:18px;}
+.tb-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--black);}
+.tb-title small{display:block;font-family:'Outfit',sans-serif;font-size:10px;font-weight:600;color:var(--pink);text-transform:uppercase;letter-spacing:.6px;line-height:1;}
+/* PAGES */
+.page{display:none;padding:18px 16px 100px;}
+.page.ativo{display:block;}
+/* HERO */
+.hero-dark{background:linear-gradient(135deg,#0d0d0d 0%,#2a0918 100%);border-radius:var(--radius);padding:24px 22px;margin-bottom:16px;color:white;position:relative;overflow:hidden;}
+.hero-dark::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(217,26,122,0.2);}
+.hero-label{font-size:12px;font-weight:600;opacity:.65;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;}
+.hero-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:16px;}
+.hero-row{display:flex;gap:20px;}
+.hero-stat{flex:1;}
+.hero-n{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--pink);line-height:1;}
+.hero-l{font-size:12px;opacity:.7;margin-top:2px;}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.stat-card{background:white;border-radius:var(--radius);padding:18px 16px;box-shadow:var(--shadow);}
+.stat-label{font-size:12px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.stat-valor{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;color:var(--black);line-height:1;}
+.stat-valor.pink{color:var(--pink);}
+.stat-sub{font-size:12px;color:var(--gray);margin-top:4px;}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;}
+.ver-tudo{font-size:13px;font-weight:600;color:var(--pink);cursor:pointer;}
+/* IND CARD */
+.ind-card{background:white;border-radius:var(--radius);padding:16px;margin-bottom:10px;box-shadow:var(--shadow);border-left:4px solid #e0e0e0;}
+.ind-card.aprovado-card{border-left-color:var(--green);}
+.ind-card.reprovado-card{border-left-color:#dc2626;opacity:.7;}
+.ind-top{display:flex;align-items:flex-start;gap:12px;}
+.ind-ico{width:40px;height:40px;min-width:40px;border-radius:11px;background:var(--pink-soft);display:flex;align-items:center;justify-content:center;}
+.ind-info{flex:1;}
+.ind-nome{font-size:15px;font-weight:700;margin-bottom:2px;}
+.ind-sub{font-size:12px;color:var(--gray);margin-bottom:1px;}
+.badge-status{display:inline-block;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap;}
+.badge-status.aprovado{background:var(--green-bg);color:var(--green);}
+.badge-status.reprovado{background:#fee2e2;color:#dc2626;}
+.badge-status.pendente{background:var(--amber-bg);color:var(--amber);}
+.aprov-btns{display:flex;gap:8px;margin-top:12px;}
+.btn-aprovar{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--green);color:white;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;}
+.btn-reprovar{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#fee2e2;color:#dc2626;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;}
+/* CONSUL CARD */
+.consul-card{background:white;border-radius:var(--radius);margin-bottom:12px;box-shadow:var(--shadow);overflow:hidden;}
+.consul-card-top{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 12px;}
+.consul-av{width:46px;height:46px;min-width:46px;border-radius:13px;background:var(--pink-soft);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--pink);}
+.consul-nome{font-size:15px;font-weight:700;margin-bottom:3px;}
+.consul-det{font-size:12px;color:var(--gray);margin-bottom:1px;}
+.consul-card-body{padding:0 16px 12px;border-top:1px solid #f5f5f5;}
+.dado-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f9f9f9;}
+.dado-row:last-child{border-bottom:none;}
+.dado-label{font-size:12px;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+.dado-val{font-size:13px;font-weight:600;color:var(--black);}
+.consul-footer{padding:10px 16px 14px;}
+.btn-whats{display:flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;}
+/* RESGATE */
+.resgate-item{background:white;border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;box-shadow:var(--shadow);}
+.resgate-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.resgate-nome{font-size:15px;font-weight:700;}
+.resgate-prod{font-size:13px;color:var(--gray);margin-top:1px;}
+.resgate-status{display:inline-block;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:700;}
+.status-pend{background:var(--amber-bg);color:var(--amber);}
+.status-ok{background:var(--green-bg);color:var(--green);}
+.resgate-btns{display:flex;gap:8px;}
+.btn-confirmar{flex:1;background:var(--pink);color:white;border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;}
+.btn-contato{flex:1;background:#f5f5f5;color:var(--black);border:none;border-radius:9px;padding:10px;font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;}
+/* RANK */
+.rank-row{display:flex;align-items:center;gap:11px;padding:13px 0;border-bottom:1px solid #f5f5f5;}
+.rank-row:last-child{border-bottom:none;}
+.rank-pos{width:26px;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#ccc;text-align:center;}
+.rank-pos.p1{color:#f59e0b;}.rank-pos.p2{color:#9ca3af;}.rank-pos.p3{color:#b45309;}
+.rank-av{width:40px;height:40px;min-width:40px;background:var(--pink-soft);border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--pink);}
+.rank-nome{flex:1;font-size:14px;font-weight:600;}
+.rank-pts{font-size:15px;font-weight:700;color:var(--pink);}
+/* FILTROS */
+.filter-tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;}
+.filter-tabs::-webkit-scrollbar{display:none;}
+.ftab{padding:7px 16px;border-radius:99px;font-size:13px;font-weight:600;background:white;color:var(--gray);cursor:pointer;white-space:nowrap;border:1.5px solid #e8e8e8;}
+.ftab.ativo{background:var(--pink);color:white;border-color:var(--pink);}
+/* BUSCA */
+.search-box{display:flex;align-items:center;gap:10px;background:white;border:1.5px solid #e8e8e8;border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;}
+.search-box input{flex:1;border:none;outline:none;font-size:14px;font-family:'Outfit',sans-serif;color:var(--black);background:transparent;}
+/* BNAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;max-width:430px;margin:0 auto;background:white;border-top:1px solid #ececec;display:flex;padding:10px 0 max(env(safe-area-inset-bottom),10px);z-index:200;box-shadow:0 -4px 24px rgba(0,0,0,0.07);}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 8px;}
+.bnav-lbl{font-size:10px;font-weight:600;color:#bbb;white-space:nowrap;}
+.bnav-item.ativo .bnav-lbl{color:var(--pink);}
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:999;align-items:flex-end;justify-content:center;}
+.overlay.show{display:flex;}
+.modal{background:white;border-radius:24px 24px 0 0;padding:30px 24px 44px;width:100%;max-width:430px;text-align:center;animation:up .28s ease;}
+@keyframes up{from{transform:translateY(70px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-circle{width:64px;height:64px;border-radius:50%;background:var(--pink-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
+.modal-h{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:10px;}
+.modal-p{font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:20px;}
+/* LOADING */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,0.85);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.loading-overlay.show{display:flex;}
+.spinner{width:40px;height:40px;border:3px solid var(--pink-soft);border-top-color:var(--pink);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:14px;font-weight:600;color:var(--gray);}
+.empty-state{text-align:center;padding:32px 16px;color:#bbb;font-size:14px;line-height:1.6;}
+.card{background:white;border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow);}
+.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700;}
+.badge-pts{background:var(--pink-soft);color:var(--pink);}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--pink);border-radius:50%;border:2px solid white;display:none;}
+.notif-dot.show{display:block;}
+.notif-btn{position:relative;width:36px;height:36px;background:#f5f5f5;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-txt" id="loading-txt">Carregando...</div>
+</div>
+
+<!-- LOGIN -->
+<div id="tela-login" class="screen ativo" style="min-height:100vh;background:white;">
+  <div class="login-top">
+    <div class="badge-rep"><div class="badge-rep-dot"></div><span>Painel da Representante</span></div>
+    <div class="login-h">Seu<br>painel de<br>controle.</div>
+    <p class="login-sub">Acompanhe indicações, resgates e o desempenho de todas as suas consultoras em tempo real.</p>
+  </div>
+  <div class="login-body">
+    <label class="fl">Senha de acesso</label>
+    <input class="fi" type="password" id="campo-senha" placeholder="Digite a senha" />
+    <button class="btn-main" id="btn-entrar">Acessar painel</button>
+    <p class="hint">Acesso exclusivo para a representante Romance</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="tela-app" class="screen" style="min-height:100vh;">
+  <div class="topbar">
+    <div class="tb-brand">
+      <div class="tb-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 3 15 3 9C3 6.23858 5.23858 4 8 4C9.65685 4 11.1765 4.83165 12 6.10156C12.8235 4.83165 14.3431 4 16 4C18.7614 4 21 6.23858 21 9C21 15 12 21 12 21Z" fill="white"/></svg></div>
+      <div class="tb-title">Romance<small>Representante</small></div>
+    </div>
+    <div class="notif-btn" id="btn-notif">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" fill="#555"/></svg>
+      <div class="notif-dot" id="notif-dot"></div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="page ativo" id="pg-home">
+    <div class="hero-dark">
+      <div class="hero-label">Bem-vinda de volta</div>
+      <div class="hero-name">Representante</div>
+      <div class="hero-row">
+        <div class="hero-stat"><div class="hero-n" id="s-consultoras">0</div><div class="hero-l">Consultoras</div></div>
+        <div class="hero-stat"><div class="hero-n" id="s-indicacoes">0</div><div class="hero-l">Indicações</div></div>
+        <div class="hero-stat"><div class="hero-n" id="s-pendentes">0</div><div class="hero-l">Aguardando</div></div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Novos hoje</div><div class="stat-valor pink" id="s-hoje">0</div><div class="stat-sub">Cadastros</div></div>
+      <div class="stat-card"><div class="stat-label">Resgates pend.</div><div class="stat-valor" id="s-resgates">0</div><div class="stat-sub">Aguardando</div></div>
+    </div>
+    <div class="sec-hd"><div class="sec-title">Últimas indicações</div><div class="ver-tudo" id="link-ver-todas">Ver todas</div></div>
+    <div id="lista-recentes"><div class="empty-state">Carregando...</div></div>
+  </div>
+
+  <!-- INDICAÇÕES -->
+  <div class="page" id="pg-indicacoes">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Indicações</div>
+    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Aprove ou reprove cada nova indicação.</p>
+    <div class="filter-tabs">
+      <div class="ftab ativo" id="ftab-todas" data-filtro="todas">Todas</div>
+      <div class="ftab" id="ftab-pendente" data-filtro="pendente">Aguardando</div>
+      <div class="ftab" id="ftab-aprovada" data-filtro="aprovada">Aprovadas</div>
+      <div class="ftab" id="ftab-reprovada" data-filtro="reprovada">Reprovadas</div>
+    </div>
+    <div id="lista-indicacoes"><div class="empty-state">Carregando...</div></div>
+  </div>
+
+  <!-- CONSULTORAS -->
+  <div class="page" id="pg-consultoras">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Consultoras</div>
+    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Todas as consultoras cadastradas.</p>
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#bbb" stroke-width="2"/><path d="M21 21L16.65 16.65" stroke="#bbb" stroke-width="2" stroke-linecap="round"/></svg>
+      <input type="text" id="busca" placeholder="Buscar pelo nome..." />
+    </div>
+    <div id="lista-consultoras"><div class="empty-state">Carregando...</div></div>
+  </div>
+
+  <!-- RESGATES -->
+  <div class="page" id="pg-resgates">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Resgates</div>
+    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Pedidos de troca de pontos por prêmios.</p>
+    <div id="lista-resgates"><div class="empty-state">Carregando...</div></div>
+  </div>
+
+  <!-- RANKING -->
+  <div class="page" id="pg-ranking">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Ranking</div>
+    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Consultoras com mais pontos este mês.</p>
+    <div class="card" id="lista-ranking"><div class="empty-state">Carregando...</div></div>
+  </div>
+
+  <nav class="bnav">
+    <div class="bnav-item ativo" data-pg="pg-home">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12L12 3L21 12V20C21 20.5523 20.5523 21 20 21H15V16H9V21H4C3.44772 21 3 20.5523 3 20V12Z" fill="#D91A7A" id="ico-home"/></svg>
+      <span class="bnav-lbl">Início</span>
+    </div>
+    <div class="bnav-item" data-pg="pg-indicacoes">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" fill="#bbb" id="ico-ind"/></svg>
+      <span class="bnav-lbl">Indicações</span>
+    </div>
+    <div class="bnav-item" data-pg="pg-consultoras">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M17 21V19C17 16.7909 15.2091 15 13 15H5C2.79086 15 1 16.7909 1 19V21M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7Z" stroke="#bbb" stroke-width="2" stroke-linecap="round" id="ico-consul" fill="none"/></svg>
+      <span class="bnav-lbl">Consultoras</span>
+    </div>
+    <div class="bnav-item" data-pg="pg-resgates">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 12V22H4V12M22 7H2V12H22V7ZM12 22V7M12 7H7.5C6.119 7 5 5.881 5 4.5C5 3.119 6.119 2 7.5 2C10 2 12 7 12 7ZM12 7H16.5C17.881 7 19 5.881 19 4.5C19 3.119 17.881 2 16.5 2C14 2 12 7 12 7Z" stroke="#bbb" stroke-width="2" stroke-linecap="round" id="ico-resg" fill="none"/></svg>
+      <span class="bnav-lbl">Resgates</span>
+    </div>
+    <div class="bnav-item" data-pg="pg-ranking">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="14" width="5" height="7" rx="1" fill="#bbb" id="ico-rk1"/><rect x="9.5" y="9" width="5" height="12" rx="1" fill="#bbb" id="ico-rk2"/><rect x="17" y="4" width="5" height="17" rx="1" fill="#bbb" id="ico-rk3"/></svg>
+      <span class="bnav-lbl">Ranking</span>
+    </div>
+  </nav>
+</div>
+
+<!-- MODAL APROVAÇÃO -->
+<div class="overlay" id="m-aprov">
+  <div class="modal">
+    <div class="modal-circle"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M5 13L9 17L19 7" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+    <div class="modal-h">Indicação aprovada!</div>
+    <p class="modal-p">10 pontos foram adicionados para a consultora que fez a indicação.</p>
+    <button class="btn-main" id="btn-fechar-aprov">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL RESGATE -->
+<div class="overlay" id="m-resgate">
+  <div class="modal">
+    <div class="modal-circle"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M5 13L9 17L19 7" stroke="#D91A7A" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+    <div class="modal-h">Entrega confirmada</div>
+    <p class="modal-p">O resgate foi marcado como entregue com sucesso.</p>
+    <button class="btn-main" id="btn-fechar-resgate">Fechar</button>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyD7FjlCtIZNL7YT6DU7P5FBM2AI7Qx2z1o",
+  authDomain: "romance-indicacoes.firebaseapp.com",
+  projectId: "romance-indicacoes",
+  storageBucket: "romance-indicacoes.firebasestorage.app",
+  messagingSenderId: "1000995187899",
+  appId: "1:1000995187899:web:af4c97957e8f10bb42cd9e"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const SENHA = 'romance2025';
+let todasIndicacoes = [];
+let todasConsultoras = [];
+let todosResgates = [];
+let filtroInd = 'todas';
+
+// ===== LOADING =====
+function load(show, txt) {
+  document.getElementById('loading-txt').textContent = txt || 'Carregando...';
+  document.getElementById('loading').classList.toggle('show', show);
+}
+
+// ===== LOGIN =====
+document.getElementById('btn-entrar').addEventListener('click', function() {
+  const senha = document.getElementById('campo-senha').value.trim();
+  if (!senha) { alert('Digite a senha.'); return; }
+  if (senha !== SENHA) { alert('Senha incorreta.\nA senha correta é: romance2025'); return; }
+  document.getElementById('tela-login').classList.remove('ativo');
+  document.getElementById('tela-app').classList.add('ativo');
+  iniciar();
+});
+
+// Permite entrar com Enter
+document.getElementById('campo-senha').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('btn-entrar').click();
+});
+
+// ===== INICIAR LISTENERS =====
+function iniciar() {
+  // Indicações
+  db.collection('indicacoes').onSnapshot(snap => {
+    todasIndicacoes = snap.docs.map(d => ({id: d.id, ...d.data()}))
+      .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
+    document.getElementById('s-indicacoes').textContent = todasIndicacoes.length;
+    const pend = todasIndicacoes.filter(i => !i.status || i.status === 'cadastrada').length;
+    document.getElementById('s-pendentes').textContent = pend;
+    document.getElementById('notif-dot').classList.toggle('show', pend > 0);
+    renderRecentes();
+    renderIndicacoes();
+  });
+
+  // Consultoras
+  db.collection('consultoras').onSnapshot(snap => {
+    todasConsultoras = snap.docs.map(d => ({id: d.id, ...d.data()}))
+      .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
+    document.getElementById('s-consultoras').textContent = todasConsultoras.length;
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    document.getElementById('s-hoje').textContent = todasConsultoras.filter(c => c.criadoEm?.toDate() >= hoje).length;
+    renderConsultoras(todasConsultoras);
+    renderRanking();
+  });
+
+  // Resgates
+  db.collection('resgates').onSnapshot(snap => {
+    todosResgates = snap.docs.map(d => ({id: d.id, ...d.data()}))
+      .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
+    document.getElementById('s-resgates').textContent = todosResgates.filter(r => r.status === 'pendente').length;
+    renderResgates();
+  });
+}
+
+// ===== RENDER RECENTES =====
+function renderRecentes() {
+  const el = document.getElementById('lista-recentes');
+  const lista = todasIndicacoes.slice(0, 3);
+  if (!lista.length) { el.innerHTML = '<div class="empty-state">Nenhuma indicação ainda.</div>'; return; }
+  el.innerHTML = lista.map(i => cardInd(i)).join('');
+}
+
+// ===== RENDER INDICAÇÕES =====
+function renderIndicacoes() {
+  const el = document.getElementById('lista-indicacoes');
+  let lista = todasIndicacoes;
+  if (filtroInd === 'pendente') lista = todasIndicacoes.filter(i => !i.status || i.status === 'cadastrada');
+  else if (filtroInd === 'aprovada') lista = todasIndicacoes.filter(i => i.status === 'aprovada');
+  else if (filtroInd === 'reprovada') lista = todasIndicacoes.filter(i => i.status === 'reprovada');
+  if (!lista.length) { el.innerHTML = '<div class="empty-state">Nenhuma indicação aqui.</div>'; return; }
+  el.innerHTML = lista.map(i => cardInd(i)).join('');
+}
+
+function cardInd(i) {
+  const status = i.status;
+  const aprovado  = status === 'aprovada';
+  const reprovado = status === 'reprovada';
+  const pendente  = !aprovado && !reprovado;
+  const badgeTxt = aprovado ? 'Aprovada' : reprovado ? 'Reprovada' : 'Aguardando';
+  const badgeClass = aprovado ? 'aprovado' : reprovado ? 'reprovado' : 'pendente';
+  const data = i.criadoEm?.toDate().toLocaleDateString('pt-BR', {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'}) || '';
+  return `<div class="ind-card ${aprovado?'aprovado-card':reprovado?'reprovado-card':''}">
+    <div class="ind-top">
+      <div class="ind-ico">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" fill="#D91A7A"/><path d="M3 21V19C3 16.7909 4.79086 15 7 15H11C13.2091 15 15 16.7909 15 19V21" fill="#D91A7A"/><path d="M19 8V14M16 11H22" stroke="#D91A7A" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="ind-info">
+        <div class="ind-nome">${i.indicadaNome||'—'}</div>
+        <div class="ind-sub">Indicada por <strong>${i.indicadorNome||'—'}</strong></div>
+        ${i.indicadaCidade ? `<div class="ind-sub">${i.indicadaCidade}</div>` : ''}
+        <div class="ind-sub">${data}</div>
+      </div>
+      <span class="badge-status ${badgeClass}">${badgeTxt}</span>
+    </div>
+    ${pendente ? `<div class="aprov-btns">
+      <button class="btn-aprovar" data-id="${i.id}" data-indid="${i.indicadorId}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13L9 17L19 7" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg> Aprovar
+      </button>
+      <button class="btn-reprovar" data-id="${i.id}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/></svg> Reprovar
+      </button>
+    </div>` : ''}
+  </div>`;
+}
+
+// ===== DELEGAR CLIQUES APROVAR/REPROVAR =====
+document.body.addEventListener('click', async function(e) {
+  const btnAp = e.target.closest('.btn-aprovar');
+  const btnRep = e.target.closest('.btn-reprovar');
+  const btnConf = e.target.closest('.btn-confirmar');
+  const btnWh = e.target.closest('.btn-whats');
+
+  if (btnAp) {
+    const id = btnAp.dataset.id;
+    const indId = btnAp.dataset.indid;
+    load(true, 'Aprovando...');
+    try {
+      await db.collection('indicacoes').doc(id).update({ status: 'aprovada' });
+      if (indId) await db.collection('consultoras').doc(indId).update({
+        pontos: firebase.firestore.FieldValue.increment(10),
+        indicacoes: firebase.firestore.FieldValue.increment(1)
+      });
+      document.getElementById('m-aprov').classList.add('show');
+    } catch(err) { alert('Erro: ' + err.message); }
+    finally { load(false); }
+  }
+
+  if (btnRep) {
+    const id = btnRep.dataset.id;
+    load(true, 'Reprovando...');
+    try { await db.collection('indicacoes').doc(id).update({ status: 'reprovada' }); }
+    catch(err) { alert('Erro: ' + err.message); }
+    finally { load(false); }
+  }
+
+  if (btnConf) {
+    const id = btnConf.dataset.id;
+    load(true, 'Confirmando...');
+    try {
+      await db.collection('resgates').doc(id).update({ status: 'entregue' });
+      document.getElementById('m-resgate').classList.add('show');
+    } catch(err) { alert('Erro: ' + err.message); }
+    finally { load(false); }
+  }
+
+  if (btnWh) {
+    const tel = btnWh.dataset.tel;
+    const nome = btnWh.dataset.nome;
+    const num = (tel||'').replace(/\D/g,'');
+    const msg = encodeURIComponent('Oi ' + nome + '! Sou a representante Romance. Posso te ajudar?');
+    window.open('https://wa.me/55' + num + '?text=' + msg, '_blank');
+  }
+});
+
+// ===== RENDER CONSULTORAS =====
+function renderConsultoras(lista) {
+  const el = document.getElementById('lista-consultoras');
+  if (!lista.length) { el.innerHTML = '<div class="empty-state">Nenhuma consultora ainda.</div>'; return; }
+  el.innerHTML = lista.map(c => {
+    const ini = (c.nome||'').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const data = c.criadoEm?.toDate().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}) || '—';
+    return `<div class="consul-card">
+      <div class="consul-card-top">
+        <div class="consul-av">${ini}</div>
+        <div style="flex:1">
+          <div class="consul-nome">${c.nome||'—'}</div>
+          <div class="consul-det">${c.tel||'—'}</div>
+          <div class="consul-det">${c.cidade||'—'}</div>
+        </div>
+        <span class="badge badge-pts">${c.pontos||0} pts</span>
+      </div>
+      <div class="consul-card-body">
+        <div class="dado-row"><span class="dado-label">CPF</span><span class="dado-val">${c.cpf||'—'}</span></div>
+        <div class="dado-row"><span class="dado-label">Nascimento</span><span class="dado-val">${c.nascimento||'—'}</span></div>
+        <div class="dado-row"><span class="dado-label">Cadastrado em</span><span class="dado-val">${data}</span></div>
+        <div class="dado-row"><span class="dado-label">Indicações</span><span class="dado-val">${c.indicacoes||0}</span></div>
+      </div>
+      <div class="consul-footer">
+        <button class="btn-whats" data-tel="${c.tel||''}" data-nome="${c.nome||''}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.16 1.6 5.97L0 24l6.18-1.62A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.21-1.25-6.22-3.48-8.52z" fill="#25D366"/></svg>
+          Chamar no WhatsApp
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Busca
+document.getElementById('busca').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  renderConsultoras(todasConsultoras.filter(c =>
+    (c.nome||'').toLowerCase().includes(q) || (c.cidade||'').toLowerCase().includes(q)
+  ));
+});
+
+// ===== RENDER RESGATES =====
+function renderResgates() {
+  const el = document.getElementById('lista-resgates');
+  if (!todosResgates.length) { el.innerHTML = '<div class="empty-state">Nenhum resgate ainda.</div>'; return; }
+  el.innerHTML = todosResgates.map(r => `
+    <div class="resgate-item">
+      <div class="resgate-top">
+        <div><div class="resgate-nome">${r.consultorNome||'—'}</div><div class="resgate-prod">${r.produto||'—'} · ${r.pontos||0} pts</div></div>
+        <span class="resgate-status ${r.status==='pendente'?'status-pend':'status-ok'}">${r.status==='pendente'?'Pendente':'Entregue'}</span>
+      </div>
+      ${r.status==='pendente' ? `<div class="resgate-btns">
+        <button class="btn-confirmar" data-id="${r.id}">Confirmar entrega</button>
+        <button class="btn-contato" data-tel="${r.consultorTel||''}" data-nome="${r.consultorNome||''}" onclick="whatsResgate(this)">WhatsApp</button>
+      </div>` : ''}
+    </div>`).join('');
+}
+
+window.whatsResgate = function(btn) {
+  const num = (btn.dataset.tel||'').replace(/\D/g,'');
+  const msg = encodeURIComponent('Oi ' + btn.dataset.nome + '! Vou separar seu prêmio. Vamos combinar a entrega?');
+  window.open('https://wa.me/55' + num + '?text=' + msg, '_blank');
+}
+
+// ===== RENDER RANKING =====
+function renderRanking() {
+  const el = document.getElementById('lista-ranking');
+  const sorted = [...todasConsultoras].sort((a,b) => (b.pontos||0)-(a.pontos||0));
+  if (!sorted.length) { el.innerHTML = '<div class="empty-state">Nenhuma consultora ainda.</div>'; return; }
+  const cls = ['p1','p2','p3'];
+  el.innerHTML = sorted.slice(0,10).map((c,i) => {
+    const ini = (c.nome||'').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    return `<div class="rank-row">
+      <div class="rank-pos ${cls[i]||''}">${i+1}</div>
+      <div class="rank-av">${ini}</div>
+      <div style="flex:1"><div class="rank-nome">${c.nome||'—'}</div><div style="font-size:12px;color:var(--gray)">${c.indicacoes||0} indicações</div></div>
+      <div class="rank-pts">${c.pontos||0} pts</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== NAVEGAÇÃO =====
+document.querySelectorAll('.bnav-item').forEach(item => {
+  item.addEventListener('click', function() {
+    const pg = this.dataset.pg;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('ativo'));
+    document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('ativo'));
+    document.getElementById(pg).classList.add('ativo');
+    this.classList.add('ativo');
+  });
+});
+
+document.getElementById('link-ver-todas').addEventListener('click', () => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('ativo'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('ativo'));
+  document.getElementById('pg-indicacoes').classList.add('ativo');
+  document.querySelector('[data-pg="pg-indicacoes"]').classList.add('ativo');
+});
+
+document.getElementById('btn-notif').addEventListener('click', () => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('ativo'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('ativo'));
+  document.getElementById('pg-indicacoes').classList.add('ativo');
+  document.querySelector('[data-pg="pg-indicacoes"]').classList.add('ativo');
+});
+
+// ===== FILTRO INDICAÇÕES =====
+document.querySelectorAll('.ftab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.ftab').forEach(t => t.classList.remove('ativo'));
+    this.classList.add('ativo');
+    filtroInd = this.dataset.filtro;
+    renderIndicacoes();
+  });
+});
+
+// ===== MODAIS =====
+document.getElementById('btn-fechar-aprov').addEventListener('click', () => document.getElementById('m-aprov').classList.remove('show'));
+document.getElementById('btn-fechar-resgate').addEventListener('click', () => document.getElementById('m-resgate').classList.remove('show'));
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+});
+</script>
+</body>
+</html>
