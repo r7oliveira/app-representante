@@ -368,6 +368,9 @@ function iniciar() {
     document.getElementById('notif-dot').classList.toggle('show', pend > 0);
     renderRecentes();
     renderIndicacoes();
+    // Re-renderiza consultoras com filtro atualizado
+    const idsIndicadas = new Set(todasIndicacoes.map(i => i.indicadaId).filter(Boolean));
+    renderConsultoras(todasConsultoras.filter(c => idsIndicadas.has(c.id)));
   });
 
   // Consultoras
@@ -378,7 +381,9 @@ function iniciar() {
     if (elConsultoras) elConsultoras.textContent = todasConsultoras.length;
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     document.getElementById('s-hoje').textContent = todasConsultoras.filter(c => c.criadoEm?.toDate() >= hoje).length;
-    renderConsultoras(todasConsultoras);
+    // Só mostra consultoras que vieram via indicação
+    const idsIndicadas = new Set(todasIndicacoes.map(i => i.indicadaId).filter(Boolean));
+    renderConsultoras(todasConsultoras.filter(c => idsIndicadas.has(c.id)));
     renderRanking();
   });
 
@@ -533,8 +538,10 @@ function renderConsultoras(lista) {
 // Busca
 document.getElementById('busca').addEventListener('input', function() {
   const q = this.value.toLowerCase();
+  const idsIndicadas = new Set(todasIndicacoes.map(i => i.indicadaId).filter(Boolean));
   renderConsultoras(todasConsultoras.filter(c =>
-    (c.nome||'').toLowerCase().includes(q) || (c.cidade||'').toLowerCase().includes(q)
+    idsIndicadas.has(c.id) &&
+    ((c.nome||'').toLowerCase().includes(q) || (c.cidade||'').toLowerCase().includes(q))
   ));
 });
 
