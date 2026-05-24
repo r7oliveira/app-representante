@@ -368,7 +368,8 @@ function iniciar() {
   db.collection('consultoras').onSnapshot(snap => {
     todasConsultoras = snap.docs.map(d => ({id: d.id, ...d.data()}))
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
-    document.getElementById('s-consultoras').textContent = todasConsultoras.length;
+    const elConsultoras = document.getElementById('s-consultoras');
+    if (elConsultoras) elConsultoras.textContent = todasConsultoras.length;
     const hoje = new Date(); hoje.setHours(0,0,0,0);
     document.getElementById('s-hoje').textContent = todasConsultoras.filter(c => c.criadoEm?.toDate() >= hoje).length;
     renderConsultoras(todasConsultoras);
