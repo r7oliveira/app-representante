@@ -176,20 +176,50 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 
   <!-- HOME -->
   <div class="page ativo" id="pg-home">
-    <div class="hero-dark">
-      <div class="hero-label">Bem-vinda de volta</div>
-      <div class="hero-name">Representante</div>
-      <div class="hero-row">
-        <div class="hero-stat"><div class="hero-n" id="s-consultoras">0</div><div class="hero-l">Consultoras</div></div>
-        <div class="hero-stat"><div class="hero-n" id="s-indicacoes">0</div><div class="hero-l">Indicações</div></div>
-        <div class="hero-stat"><div class="hero-n" id="s-pendentes">0</div><div class="hero-l">Aguardando</div></div>
+
+    <!-- SAUDAÇÃO FORA DO CARD -->
+    <div class="saudacao-wrap">
+      <div class="saudacao-ola">Bem-vindo de volta,</div>
+      <div class="saudacao-nome">Representante</div>
+    </div>
+
+    <!-- CARD PRINCIPAL -->
+    <div class="hero-card">
+      <div class="hero-card-row">
+        <div class="hero-stat-box">
+          <div class="hero-stat-n" id="s-consultoras">0</div>
+          <div class="hero-stat-l">Consultoras</div>
+        </div>
+        <div class="hero-stat-box">
+          <div class="hero-stat-n" id="s-indicacoes">0</div>
+          <div class="hero-stat-l">Indicações</div>
+        </div>
+        <div class="hero-stat-box">
+          <div class="hero-stat-n" id="s-pendentes">0</div>
+          <div class="hero-stat-l">Aguardando</div>
+        </div>
       </div>
     </div>
+
+    <!-- MINI STATS -->
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-label">Novos hoje</div><div class="stat-valor pink" id="s-hoje">0</div><div class="stat-sub">Cadastros</div></div>
-      <div class="stat-card"><div class="stat-label">Resgates pend.</div><div class="stat-valor" id="s-resgates">0</div><div class="stat-sub">Aguardando</div></div>
+      <div class="stat-card">
+        <div class="stat-label">Novos hoje</div>
+        <div class="stat-valor pink" id="s-hoje">0</div>
+        <div class="stat-sub">Cadastros</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Resgates pend.</div>
+        <div class="stat-valor" id="s-resgates">0</div>
+        <div class="stat-sub">Aguardando</div>
+      </div>
     </div>
-    <div class="sec-hd"><div class="sec-title">Últimas indicações</div><div class="ver-tudo" id="link-ver-todas">Ver todas</div></div>
+
+    <!-- ÚLTIMAS INDICAÇÕES -->
+    <div class="sec-hd">
+      <div class="sec-title">Últimas indicações</div>
+      <div class="ver-tudo" id="link-ver-todas">Ver todas</div>
+    </div>
     <div id="lista-recentes"><div class="empty-state">Carregando...</div></div>
   </div>
 
