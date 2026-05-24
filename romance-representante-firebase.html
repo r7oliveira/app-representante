@@ -561,8 +561,10 @@ window.whatsResgate = function(btn) {
 // ===== RENDER RANKING =====
 function renderRanking() {
   const el = document.getElementById('lista-ranking');
-  const sorted = [...todasConsultoras].sort((a,b) => (b.pontos||0)-(a.pontos||0));
-  if (!sorted.length) { el.innerHTML = '<div class="empty-state">Nenhuma consultora ainda.</div>'; return; }
+  const sorted = [...todasConsultoras]
+    .filter(c => (c.pontos||0) > 0)
+    .sort((a,b) => (b.pontos||0)-(a.pontos||0));
+  if (!sorted.length) { el.innerHTML = '<div class="empty-state">Nenhuma consultora com pontos ainda.</div>'; return; }
   const cls = ['p1','p2','p3'];
   el.innerHTML = sorted.slice(0,10).map((c,i) => {
     const ini = (c.nome||'').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
