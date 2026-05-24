@@ -37,15 +37,19 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 /* PAGES */
 .page{display:none;padding:18px 16px 100px;}
 .page.ativo{display:block;}
-/* HERO */
-.hero-dark{background:linear-gradient(135deg,#0d0d0d 0%,#2a0918 100%);border-radius:var(--radius);padding:24px 22px;margin-bottom:16px;color:white;position:relative;overflow:hidden;}
-.hero-dark::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(217,26,122,0.2);}
-.hero-label{font-size:12px;font-weight:600;opacity:.65;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;}
-.hero-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:16px;}
-.hero-row{display:flex;gap:20px;}
-.hero-stat{flex:1;}
-.hero-n{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--pink);line-height:1;}
-.hero-l{font-size:12px;opacity:.7;margin-top:2px;}
+/* SAUDAÇÃO */
+.saudacao-wrap{padding:4px 4px 14px;}
+.saudacao-ola{font-size:14px;color:var(--gray);font-weight:500;margin-bottom:4px;}
+.saudacao-nome{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:800;color:var(--black);line-height:1.05;letter-spacing:-.5px;}
+
+/* HERO CARD */
+.hero-card{background:linear-gradient(135deg,#1a0612 0%,#6b0d3a 50%,var(--pink) 100%);border-radius:var(--radius);padding:22px 20px;margin-bottom:14px;position:relative;overflow:hidden;}
+.hero-card::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.07);}
+.hero-card-row{display:flex;gap:0;justify-content:space-between;}
+.hero-stat-box{flex:1;text-align:center;}
+.hero-stat-box+.hero-stat-box{border-left:1px solid rgba(255,255,255,0.15);}
+.hero-stat-n{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:800;color:white;line-height:1;}
+.hero-stat-l{font-size:11px;color:rgba(255,255,255,0.65);margin-top:3px;font-weight:600;}
 /* STATS */
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
 .stat-card{background:white;border-radius:var(--radius);padding:18px 16px;box-shadow:var(--shadow);}
