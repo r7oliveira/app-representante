@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <style>
 :root{--pink:#D91A7A;--pink-deep:#a8115e;--pink-soft:#f7d6eb;--pink-pale:#fdf0f8;--black:#0d0d0d;--gray:#666;--white:#fff;--green:#16a34a;--green-bg:#dcfce7;--amber:#d97706;--amber-bg:#fef3cd;--radius:18px;--radius-sm:12px;--shadow:0 2px 18px rgba(0,0,0,0.06);}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -150,8 +151,21 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 .badge-pts{background:rgba(255,255,255,0.2);color:white;}
 .notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--pink);border-radius:50%;border:2px solid white;display:none;}
 .notif-dot.show{display:block;}
-.notif-btn{position:relative;width:36px;height:36px;background:#f5f5f5;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-</style>
+/* ADMIN */
+.admin-item{background:white;border-radius:var(--radius);padding:16px 18px;margin-bottom:10px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;}
+.admin-av{width:44px;height:44px;min-width:44px;background:var(--pink-soft);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--pink);}
+.admin-info{flex:1;}
+.admin-nome{font-size:15px;font-weight:700;margin-bottom:2px;}
+.admin-email{font-size:12px;color:var(--gray);}
+.admin-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;margin-left:6px;}
+.admin-badge-master{background:#fff3cd;color:#b45309;}
+.admin-badge-ativo{background:var(--green-bg);color:var(--green);}
+.admin-badge-bloq{background:#fee2e2;color:#dc2626;}
+.btn-sm{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;border:none;}
+.btn-sm-danger{background:#fee2e2;color:#dc2626;}
+.btn-sm-ok{background:var(--green-bg);color:var(--green);}
+.btn-logout{display:flex;align-items:center;gap:7px;background:#f5f5f5;color:var(--black);border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;}
+/* FIM ADMIN */
 </head>
 <body>
 
@@ -168,10 +182,13 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
     <p class="login-sub">Acompanhe indicações, resgates e o desempenho de todas as suas consultoras em tempo real.</p>
   </div>
   <div class="login-body">
-    <label class="fl">Senha de acesso</label>
-    <input class="fi" type="password" id="campo-senha" placeholder="Digite a senha" />
+    <label class="fl">E-mail</label>
+    <input class="fi" type="email" id="campo-email" placeholder="seu@email.com" autocomplete="email" />
+    <label class="fl">Senha</label>
+    <input class="fi" type="password" id="campo-senha" placeholder="••••••••" autocomplete="current-password" />
+    <div id="login-erro" style="color:#dc2626;font-size:13px;margin-bottom:10px;display:none;"></div>
     <button class="btn-main" id="btn-entrar">Acessar painel</button>
-    <p class="hint">Acesso exclusivo para o representante Romance</p>
+    <p class="hint">Acesso exclusivo para representantes autorizados</p>
   </div>
 </div>
 
@@ -179,11 +196,17 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 <div id="tela-app" class="screen" style="min-height:100vh;">
   <div class="topbar">
     <div class="tb-brand">
-      <div class="tb-title">APP<small>Representante</small></div>
+      <div class="tb-title">APP<small id="topbar-nome-rep">Representante</small></div>
     </div>
-    <div class="notif-btn" id="btn-notif">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" fill="#555"/></svg>
-      <div class="notif-dot" id="notif-dot"></div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="notif-btn" id="btn-notif">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" fill="#555"/></svg>
+        <div class="notif-dot" id="notif-dot"></div>
+      </div>
+      <button class="btn-logout" id="btn-logout" title="Sair">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9M16 17L21 12M21 12L16 7M21 12H9" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Sair
+      </button>
     </div>
   </div>
 
@@ -192,8 +215,8 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 
     <!-- SAUDAÇÃO FORA DO CARD -->
     <div class="saudacao-wrap">
-      <div class="saudacao-ola">Bem-vindo de volta,</div>
-      <div class="saudacao-nome">Representante</div>
+      <div class="saudacao-ola">Bem-vinda de volta,</div>
+      <div class="saudacao-nome" id="saudacao-nome">Representante</div>
     </div>
 
     <!-- CARD PRINCIPAL -->
@@ -277,6 +300,14 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
     <div class="card" id="lista-ranking"><div class="empty-state">Carregando...</div></div>
   </div>
 
+  <!-- ADMIN (só para master) -->
+  <div class="page" id="pg-admin" style="display:none;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Representantes</div>
+    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Gerencie os acessos ao painel.</p>
+    <button class="btn-main" id="btn-novo-rep" style="margin-bottom:16px;">+ Adicionar representante</button>
+    <div id="lista-representantes"><div class="empty-state">Carregando...</div></div>
+  </div>
+
   <nav class="bnav">
     <div class="bnav-item ativo" data-pg="pg-home">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12L12 3L21 12V20C21 20.5523 20.5523 21 20 21H15V16H9V21H4C3.44772 21 3 20.5523 3 20V12Z" fill="#D91A7A" id="ico-home"/></svg>
@@ -298,7 +329,26 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="14" width="5" height="7" rx="1" fill="#bbb" id="ico-rk1"/><rect x="9.5" y="9" width="5" height="12" rx="1" fill="#bbb" id="ico-rk2"/><rect x="17" y="4" width="5" height="17" rx="1" fill="#bbb" id="ico-rk3"/></svg>
       <span class="bnav-lbl">Ranking</span>
     </div>
+    <div class="bnav-item" data-pg="pg-admin" id="nav-admin" style="display:none;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="#bbb" id="ico-adm"/><path d="M4 20C4 17.7909 7.58172 16 12 16C16.4183 16 20 17.7909 20 20" stroke="#bbb" stroke-width="2" stroke-linecap="round" id="ico-adm2"/></svg>
+      <span class="bnav-lbl">Admin</span>
+    </div>
   </nav>
+</div>
+
+<!-- MODAL NOVO REPRESENTANTE -->
+<div class="overlay" id="m-novo-rep">
+  <div class="modal">
+    <div class="modal-circle" style="font-size:26px;">👤</div>
+    <div class="modal-h">Novo Representante</div>
+    <p class="modal-p" style="margin-bottom:12px;">Preencha os dados de acesso. A senha pode ser trocada depois.</p>
+    <input class="fi" type="text" id="nr-nome" placeholder="Nome completo" style="text-align:left;" />
+    <input class="fi" type="email" id="nr-email" placeholder="E-mail de acesso" style="text-align:left;" />
+    <input class="fi" type="password" id="nr-senha" placeholder="Senha (mín. 6 caracteres)" style="text-align:left;" />
+    <div id="nr-erro" style="color:#dc2626;font-size:13px;margin-bottom:10px;display:none;"></div>
+    <button class="btn-main" id="btn-criar-rep">Criar acesso</button>
+    <button class="btn-outline" onclick="document.getElementById('m-novo-rep').classList.remove('show')" style="margin-top:8px;">Cancelar</button>
+  </div>
 </div>
 
 <!-- MODAL APROVAÇÃO -->
@@ -343,8 +393,12 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const auth = firebase.auth();
 
-const SENHA = 'romance2025';
+// E-mail da conta master (pode ser alterado aqui)
+const MASTER_EMAIL = 'master@romance.com';
+
+let repAtual = null; // dados do representante logado
 let todasIndicacoes = [];
 let todasConsultoras = [];
 let todosResgates = [];
@@ -356,21 +410,113 @@ function load(show, txt) {
   document.getElementById('loading').classList.toggle('show', show);
 }
 
+// ===== AUTH STATE =====
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    load(true, 'Carregando painel...');
+    try {
+      // Busca dados do representante no Firestore
+      const docSnap = await db.collection('representantes').doc(user.uid).get();
+      if (docSnap.exists) {
+        repAtual = { uid: user.uid, email: user.email, ...docSnap.data() };
+        // Verifica se está bloqueado
+        if (repAtual.bloqueado) {
+          await auth.signOut();
+          mostrarErroLogin('Seu acesso foi bloqueado. Entre em contato com o administrador.');
+          load(false);
+          return;
+        }
+      } else {
+        // Cria o documento se não existir (primeira vez)
+        const nome = user.email.split('@')[0];
+        repAtual = { uid: user.uid, email: user.email, nome: nome, master: user.email === MASTER_EMAIL, bloqueado: false };
+        await db.collection('representantes').doc(user.uid).set({
+          nome: repAtual.nome,
+          email: user.email,
+          master: repAtual.master,
+          bloqueado: false,
+          criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      entrarNoApp();
+    } catch(e) {
+      console.error(e);
+      load(false);
+    }
+  } else {
+    repAtual = null;
+    document.getElementById('tela-login').classList.add('ativo');
+    document.getElementById('tela-app').classList.remove('ativo');
+    load(false);
+  }
+});
+
+function mostrarErroLogin(msg) {
+  const el = document.getElementById('login-erro');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
 // ===== LOGIN =====
-document.getElementById('btn-entrar').addEventListener('click', function() {
+document.getElementById('btn-entrar').addEventListener('click', async function() {
+  const email = document.getElementById('campo-email').value.trim();
   const senha = document.getElementById('campo-senha').value.trim();
-  if (!senha) { alert('Digite a senha.'); return; }
-  if (senha !== SENHA) { alert('Senha incorreta.\nA senha correta é: romance2025'); return; }
+  const erroEl = document.getElementById('login-erro');
+  erroEl.style.display = 'none';
+  if (!email || !senha) { mostrarErroLogin('Preencha e-mail e senha.'); return; }
+  load(true, 'Entrando...');
+  this.disabled = true;
+  try {
+    await auth.signInWithEmailAndPassword(email, senha);
+    // onAuthStateChanged vai cuidar do resto
+  } catch(e) {
+    load(false);
+    const msgs = {
+      'auth/user-not-found': 'E-mail não encontrado.',
+      'auth/wrong-password': 'Senha incorreta.',
+      'auth/invalid-email': 'E-mail inválido.',
+      'auth/too-many-requests': 'Muitas tentativas. Tente novamente em alguns minutos.',
+      'auth/invalid-credential': 'E-mail ou senha incorretos.',
+    };
+    mostrarErroLogin(msgs[e.code] || 'Erro ao entrar. Verifique suas credenciais.');
+  } finally {
+    this.disabled = false;
+  }
+});
+
+document.getElementById('campo-senha').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btn-entrar').click();
+});
+
+// ===== LOGOUT =====
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  if (!confirm('Deseja sair do painel?')) return;
+  await auth.signOut();
+});
+
+// ===== ENTRAR NO APP =====
+function entrarNoApp() {
+  // Atualiza nome
+  const primeiroNome = (repAtual.nome || 'Representante').split(' ')[0];
+  document.getElementById('topbar-nome-rep').textContent = primeiroNome;
+  document.getElementById('saudacao-nome').textContent = primeiroNome;
+
+  // Mostra tab admin se for master
+  if (repAtual.master) {
+    document.getElementById('nav-admin').style.display = '';
+    document.getElementById('pg-admin').style.display = '';
+    carregarRepresentantes();
+  }
+
   document.getElementById('tela-login').classList.remove('ativo');
   document.getElementById('tela-app').classList.add('ativo');
   iniciar();
-  // Notificação de indicações pendentes após 3 segundos
+  load(false);
+
   setTimeout(() => {
     const pend = todasIndicacoes.filter(i => !i.status || i.status === 'cadastrada').length;
     if (pend > 0) {
-      const txt = pend === 1
-        ? 'Você tem 1 indicação aguardando aprovação.'
-        : `Você tem ${pend} indicações aguardando aprovação.`;
+      const txt = pend === 1 ? 'Você tem 1 indicação aguardando aprovação.' : `Você tem ${pend} indicações aguardando aprovação.`;
       document.getElementById('m-notif-pendentes-txt').textContent = txt;
       document.getElementById('m-notif-pendentes-btn').textContent = 'Ver agora';
       document.getElementById('m-notif-pendentes-btn').onclick = () => {
@@ -382,13 +528,10 @@ document.getElementById('btn-entrar').addEventListener('click', function() {
     }
   }, 3000);
 
-  // Notificação de resgates pendentes após 10 segundos
   setTimeout(() => {
     const resgatesPend = todosResgates.filter(r => r.status === 'pendente').length;
     if (resgatesPend > 0) {
-      const txt = resgatesPend === 1
-        ? 'Você tem 1 entrega de presente pendente.'
-        : `Você tem ${resgatesPend} entregas de presentes pendentes.`;
+      const txt = resgatesPend === 1 ? 'Você tem 1 entrega de presente pendente.' : `Você tem ${resgatesPend} entregas de presentes pendentes.`;
       document.getElementById('m-notif-pendentes-txt').textContent = txt;
       document.getElementById('m-notif-pendentes').querySelector('.modal-h').textContent = 'Resgates pendentes!';
       document.getElementById('m-notif-pendentes-btn').textContent = 'Ver resgates';
@@ -400,11 +543,96 @@ document.getElementById('btn-entrar').addEventListener('click', function() {
       tocarSom('resgate');
     }
   }, 10000);
+}
+
+// ===== ADMIN: LISTAR REPRESENTANTES =====
+function carregarRepresentantes() {
+  db.collection('representantes').onSnapshot(snap => {
+    const lista = document.getElementById('lista-representantes');
+    if (snap.empty) { lista.innerHTML = '<div class="empty-state">Nenhum representante ainda.</div>'; return; }
+    const reps = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    lista.innerHTML = reps.map(r => {
+      const ini = (r.nome||'').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+      const isMaster = r.master;
+      const bloq = r.bloqueado;
+      const isMe = r.id === repAtual.uid;
+      return `<div class="admin-item">
+        <div class="admin-av">${ini}</div>
+        <div class="admin-info">
+          <div class="admin-nome">${r.nome||'—'}${isMaster?'<span class="admin-badge admin-badge-master">Master</span>':''}${bloq?'<span class="admin-badge admin-badge-bloq">Bloqueado</span>':'<span class="admin-badge admin-badge-ativo">Ativo</span>'}</div>
+          <div class="admin-email">${r.email||'—'}</div>
+        </div>
+        ${!isMaster && !isMe ? `
+          <div style="display:flex;gap:6px;flex-direction:column;">
+            ${bloq
+              ? `<button class="btn-sm btn-sm-ok" onclick="toggleBloqueio('${r.id}',false)">Ativar</button>`
+              : `<button class="btn-sm btn-sm-danger" onclick="toggleBloqueio('${r.id}',true)">Bloquear</button>`
+            }
+          </div>` : ''}
+      </div>`;
+    }).join('');
+  });
+}
+
+window.toggleBloqueio = async function(uid, bloquear) {
+  const acao = bloquear ? 'bloquear' : 'ativar';
+  if (!confirm(`Deseja ${acao} este representante?`)) return;
+  load(true, bloquear ? 'Bloqueando...' : 'Ativando...');
+  try {
+    await db.collection('representantes').doc(uid).update({ bloqueado: bloquear });
+  } catch(e) { alert('Erro: ' + e.message); }
+  finally { load(false); }
+};
+
+// ===== ADMIN: CRIAR NOVO REPRESENTANTE =====
+document.getElementById('btn-novo-rep').addEventListener('click', () => {
+  document.getElementById('nr-nome').value = '';
+  document.getElementById('nr-email').value = '';
+  document.getElementById('nr-senha').value = '';
+  document.getElementById('nr-erro').style.display = 'none';
+  document.getElementById('m-novo-rep').classList.add('show');
 });
 
-// Permite entrar com Enter
-document.getElementById('campo-senha').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') document.getElementById('btn-entrar').click();
+document.getElementById('btn-criar-rep').addEventListener('click', async function() {
+  const nome = document.getElementById('nr-nome').value.trim();
+  const email = document.getElementById('nr-email').value.trim();
+  const senha = document.getElementById('nr-senha').value.trim();
+  const erroEl = document.getElementById('nr-erro');
+  erroEl.style.display = 'none';
+  if (!nome || !email || !senha) { erroEl.textContent = 'Preencha todos os campos.'; erroEl.style.display = 'block'; return; }
+  if (senha.length < 6) { erroEl.textContent = 'A senha deve ter pelo menos 6 caracteres.'; erroEl.style.display = 'block'; return; }
+
+  load(true, 'Criando acesso...');
+  this.disabled = true;
+  try {
+    // Cria usuário no Firebase Auth usando uma instância secundária para não deslogar o master
+    const secondApp = firebase.initializeApp(firebaseConfig, 'Secondary_' + Date.now());
+    const secondAuth = secondApp.auth();
+    const cred = await secondAuth.createUserWithEmailAndPassword(email, senha);
+    const newUid = cred.user.uid;
+    await secondAuth.signOut();
+    await secondApp.delete();
+
+    // Salva no Firestore
+    await db.collection('representantes').doc(newUid).set({
+      nome, email, master: false, bloqueado: false,
+      criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    document.getElementById('m-novo-rep').classList.remove('show');
+    alert(`✅ Representante "${nome}" criado com sucesso!\nE-mail: ${email}`);
+  } catch(e) {
+    const msgs = {
+      'auth/email-already-in-use': 'Este e-mail já está em uso.',
+      'auth/invalid-email': 'E-mail inválido.',
+      'auth/weak-password': 'Senha muito fraca. Use pelo menos 6 caracteres.',
+    };
+    erroEl.textContent = msgs[e.code] || ('Erro: ' + e.message);
+    erroEl.style.display = 'block';
+  } finally {
+    load(false);
+    this.disabled = false;
+  }
 });
 
 // ===== SONS E VIBRAÇÃO =====
