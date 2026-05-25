@@ -413,36 +413,51 @@ function load(show, txt) {
 }
 
 // ===== AUTH STATE =====
+// Timeout de segurança — se demorar mais de 10s, mostra erro
+let _authTimeout = setTimeout(() => {
+  load(false);
+  mostrarErroLogin('Tempo esgotado. Verifique sua conexão e tente novamente.');
+}, 10000);
+
 auth.onAuthStateChanged(async (user) => {
+  clearTimeout(_authTimeout);
   if (user) {
     load(true, 'Carregando painel...');
     try {
-      // Busca dados do representante no Firestore
-      const docSnap = await db.collection('representantes').doc(user.uid).get();
-      if (docSnap.exists) {
-        repAtual = { uid: user.uid, email: user.email, ...docSnap.data() };
-        // Verifica se está bloqueado
-        if (repAtual.bloqueado) {
-          await auth.signOut();
-          mostrarErroLogin('Seu acesso foi bloqueado. Entre em contato com o administrador.');
-          load(false);
-          return;
+      const nome = user.email.split('@')[0];
+      const isMaster = user.email === MASTER_EMAIL;
+
+      // Tenta buscar no Firestore, mas não trava se falhar
+      let dadosFirestore = {};
+      try {
+        const docSnap = await db.collection('representantes').doc(user.uid).get();
+        if (docSnap.exists) {
+          dadosFirestore = docSnap.data();
+          // Verifica se está bloqueado
+          if (dadosFirestore.bloqueado) {
+            await auth.signOut();
+            mostrarErroLogin('Seu acesso foi bloqueado. Entre em contato com o administrador.');
+            load(false);
+            return;
+          }
+        } else {
+          // Cria o documento (primeira vez)
+          await db.collection('representantes').doc(user.uid).set({
+            nome, email: user.email, master: isMaster, bloqueado: false,
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          dadosFirestore = { nome, master: isMaster, bloqueado: false };
         }
-      } else {
-        // Cria o documento se não existir (primeira vez)
-        const nome = user.email.split('@')[0];
-        repAtual = { uid: user.uid, email: user.email, nome: nome, master: user.email === MASTER_EMAIL, bloqueado: false };
-        await db.collection('representantes').doc(user.uid).set({
-          nome: repAtual.nome,
-          email: user.email,
-          master: repAtual.master,
-          bloqueado: false,
-          criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-        });
+      } catch(firestoreErr) {
+        console.warn('Firestore erro (não crítico):', firestoreErr);
+        dadosFirestore = { nome, master: isMaster, bloqueado: false };
       }
+
+      repAtual = { uid: user.uid, email: user.email, nome: dadosFirestore.nome || nome, master: dadosFirestore.master ?? isMaster, bloqueado: false };
       entrarNoApp();
     } catch(e) {
-      console.error(e);
+      console.error('Erro ao entrar:', e);
+      mostrarErroLogin('Erro ao carregar painel: ' + (e.message || e.code || 'tente novamente'));
       load(false);
     }
   } else {
