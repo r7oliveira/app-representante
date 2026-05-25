@@ -669,7 +669,7 @@ function renderResgates() {
   el.innerHTML = todosResgates.map(r => `
     <div class="resgate-item">
       <div class="resgate-top">
-        <div><div class="resgate-nome">${r.consultorNome||'—'}</div><div class="resgate-prod">🎁 ${r.produto||'Prêmio não informado'} · ${r.pontos||0} pts</div></div>
+        <div><div class="resgate-nome">${r.consultorNome||'—'}</div><div class="resgate-prod">🎁 ${r.produto||'Prêmio não informado'} · ${r.pontos > 0 ? r.pontos + ' pts' : 'Prêmio da 1ª indicação'}</div></div>
         <span class="resgate-status ${r.status==='pendente'?'status-pend':'status-ok'}">${r.status==='pendente'?'Pendente':'Entregue'}</span>
       </div>
       ${r.status==='pendente' ? `<div class="resgate-btns">
