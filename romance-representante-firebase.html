@@ -364,7 +364,7 @@ document.getElementById('btn-entrar').addEventListener('click', function() {
   document.getElementById('tela-login').classList.remove('ativo');
   document.getElementById('tela-app').classList.add('ativo');
   iniciar();
-  // Notificação de pendentes após 3 segundos
+  // Notificação de pendentes após 10 segundos
   setTimeout(() => {
     const pend = todasIndicacoes.filter(i => !i.status || i.status === 'cadastrada').length;
     const resgatesPend = todosResgates.filter(r => r.status === 'pendente').length;
@@ -394,7 +394,7 @@ document.getElementById('btn-entrar').addEventListener('click', function() {
       document.getElementById('m-notif-pendentes').classList.add('show');
       tocarSom('resgate');
     }
-  }, 3000);
+  }, 10000);
 });
 
 // Permite entrar com Enter
