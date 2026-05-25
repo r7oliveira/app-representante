@@ -302,6 +302,16 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 </div>
 
 <!-- MODAL APROVAÇÃO -->
+<div class="overlay" id="m-notif-pendentes">
+  <div class="modal">
+    <div class="modal-circle" style="background:#fff3cd;font-size:28px;">🔔</div>
+    <div class="modal-h">Indicações pendentes!</div>
+    <p class="modal-p" id="m-notif-pendentes-txt">Você tem indicações aguardando aprovação.</p>
+    <button class="btn-main" id="m-notif-pendentes-btn" onclick="document.getElementById('m-notif-pendentes').classList.remove('show');navTo('indicacoes')">Ver agora</button>
+    <button class="btn-outline" onclick="document.getElementById('m-notif-pendentes').classList.remove('show')" style="margin-top:8px;">Depois</button>
+  </div>
+</div>
+
 <div class="overlay" id="m-aprov">
   <div class="modal">
     <div class="modal-circle"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M5 13L9 17L19 7" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round"/></svg></div>
@@ -338,6 +348,7 @@ const SENHA = 'romance2025';
 let todasIndicacoes = [];
 let todasConsultoras = [];
 let todosResgates = [];
+let todosResgates = [];
 let filtroInd = 'todas';
 
 // ===== LOADING =====
@@ -354,6 +365,37 @@ document.getElementById('btn-entrar').addEventListener('click', function() {
   document.getElementById('tela-login').classList.remove('ativo');
   document.getElementById('tela-app').classList.add('ativo');
   iniciar();
+  // Notificação de pendentes após 3 segundos
+  setTimeout(() => {
+    const pend = todasIndicacoes.filter(i => !i.status || i.status === 'cadastrada').length;
+    const resgatesPend = todosResgates.filter(r => r.status === 'pendente').length;
+
+    if (pend > 0 && resgatesPend > 0) {
+      const txt = `Você tem ${pend} indicação(ões) aguardando aprovação e ${resgatesPend} entrega(s) de presente pendente(s).`;
+      document.getElementById('m-notif-pendentes-txt').textContent = txt;
+      document.getElementById('m-notif-pendentes').classList.add('show');
+      tocarSom('nova');
+    } else if (pend > 0) {
+      const txt = pend === 1
+        ? 'Você tem 1 indicação aguardando aprovação.'
+        : `Você tem ${pend} indicações aguardando aprovação.`;
+      document.getElementById('m-notif-pendentes-txt').textContent = txt;
+      document.getElementById('m-notif-pendentes').classList.add('show');
+      tocarSom('nova');
+    } else if (resgatesPend > 0) {
+      const txt = resgatesPend === 1
+        ? 'Você tem 1 entrega de presente pendente.'
+        : `Você tem ${resgatesPend} entregas de presentes pendentes.`;
+      document.getElementById('m-notif-pendentes-txt').textContent = txt;
+      document.getElementById('m-notif-pendentes-btn').textContent = 'Ver resgates';
+      document.getElementById('m-notif-pendentes-btn').onclick = () => {
+        document.getElementById('m-notif-pendentes').classList.remove('show');
+        navTo('resgates');
+      };
+      document.getElementById('m-notif-pendentes').classList.add('show');
+      tocarSom('resgate');
+    }
+  }, 3000);
 });
 
 // Permite entrar com Enter
@@ -663,6 +705,16 @@ function renderRanking() {
 }
 
 // ===== NAVEGAÇÃO =====
+function navTo(tab) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('ativo'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const tabMap = {inicio:'page-inicio', indicacoes:'page-indicacoes', consultoras:'page-consultoras', resgates:'page-resgates', ranking:'page-ranking'};
+  const pageId = tabMap[tab];
+  if (pageId) document.getElementById(pageId).classList.add('active');
+  const btn = document.querySelector(`.nav-btn[data-tab="${tab}"]`);
+  if (btn) btn.classList.add('ativo');
+}
+
 document.querySelectorAll('.bnav-item').forEach(item => {
   item.addEventListener('click', function() {
     const pg = this.dataset.pg;
