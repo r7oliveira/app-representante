@@ -177,7 +177,7 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 </div>
 
 <!-- LOGIN -->
-<div id="tela-login" class="screen ativo" style="min-height:100vh;background:white;">
+<div id="tela-login" class="screen ativo" style="min-height:100vh;background:white;position:relative;z-index:10;">
   <div class="login-top">
     <div class="badge-rep"><div class="badge-rep-dot"></div><span>Painel do Representante</span></div>
     <div class="login-h">Seu<br>painel de<br>controle.</div>
@@ -195,7 +195,7 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 </div>
 
 <!-- APP -->
-<div id="tela-app" class="screen" style="min-height:100vh;">
+<div id="tela-app" class="screen" style="min-height:100vh;display:none;">
   <div class="topbar">
     <div class="tb-brand">
       <div class="tb-title">APP<small id="topbar-nome-rep">Representante</small></div>
@@ -526,7 +526,10 @@ function entrarNoApp() {
   }
 
   document.getElementById('tela-login').classList.remove('ativo');
+  document.getElementById('tela-login').style.display = 'none';
   document.getElementById('tela-app').classList.add('ativo');
+  document.getElementById('tela-app').style.display = 'block';
+  window.scrollTo(0, 0);
   iniciar();
   load(false);
 
