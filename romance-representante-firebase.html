@@ -364,24 +364,28 @@ document.getElementById('btn-entrar').addEventListener('click', function() {
   document.getElementById('tela-login').classList.remove('ativo');
   document.getElementById('tela-app').classList.add('ativo');
   iniciar();
-  // Notificação de pendentes após 10 segundos
+  // Notificação de indicações pendentes após 3 segundos
   setTimeout(() => {
     const pend = todasIndicacoes.filter(i => !i.status || i.status === 'cadastrada').length;
-    const resgatesPend = todosResgates.filter(r => r.status === 'pendente').length;
-
-    if (pend > 0 && resgatesPend > 0) {
-      const txt = `Você tem ${pend} indicação(ões) aguardando aprovação e ${resgatesPend} entrega(s) de presente pendente(s).`;
-      document.getElementById('m-notif-pendentes-txt').textContent = txt;
-      document.getElementById('m-notif-pendentes').classList.add('show');
-      tocarSom('nova');
-    } else if (pend > 0) {
+    if (pend > 0) {
       const txt = pend === 1
         ? 'Você tem 1 indicação aguardando aprovação.'
         : `Você tem ${pend} indicações aguardando aprovação.`;
       document.getElementById('m-notif-pendentes-txt').textContent = txt;
+      document.getElementById('m-notif-pendentes-btn').textContent = 'Ver agora';
+      document.getElementById('m-notif-pendentes-btn').onclick = () => {
+        document.getElementById('m-notif-pendentes').classList.remove('show');
+        navTo('indicacoes');
+      };
       document.getElementById('m-notif-pendentes').classList.add('show');
       tocarSom('nova');
-    } else if (resgatesPend > 0) {
+    }
+  }, 3000);
+
+  // Notificação de resgates pendentes após 10 segundos
+  setTimeout(() => {
+    const resgatesPend = todosResgates.filter(r => r.status === 'pendente').length;
+    if (resgatesPend > 0) {
       const txt = resgatesPend === 1
         ? 'Você tem 1 entrega de presente pendente.'
         : `Você tem ${resgatesPend} entregas de presentes pendentes.`;
