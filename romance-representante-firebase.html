@@ -240,7 +240,7 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 <div id="tela-app" class="screen" style="min-height:100vh;display:none;">
   <div class="topbar">
     <div class="tb-brand">
-      <div class="tb-title">APP<small id="topbar-nome-rep">Representante</small></div>
+      <div class="tb-title">APP<small>Representante</small></div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <div class="notif-btn" id="btn-notif">
@@ -669,6 +669,7 @@ function entrarNoApp() {
   document.getElementById('tela-app').style.display = 'block';
   window.scrollTo(0, 0);
   iniciar();
+  ouvirFeedRep();
   load(false);
 
   setTimeout(() => {
