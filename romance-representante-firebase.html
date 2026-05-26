@@ -347,6 +347,28 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
   </nav>
 </div>
 
+<!-- MODAL EDITAR REPRESENTANTE -->
+<div class="overlay" id="m-editar-rep">
+  <div class="modal">
+    <div class="modal-circle" style="font-size:26px;">✏️</div>
+    <div class="modal-h">Editar Representante</div>
+    <input type="hidden" id="ed-uid" />
+    <input class="fi" type="text" id="ed-nome" placeholder="Nome completo" style="text-align:left;" />
+    <label class="fl" style="margin-bottom:8px;">Gênero</label>
+    <div style="display:flex;gap:10px;margin-bottom:15px;">
+      <label style="flex:1;display:flex;align-items:center;gap:8px;background:#f5f5f5;border-radius:12px;padding:12px 14px;cursor:pointer;border:1.5px solid #e5e5e5;" id="ed-label-masc">
+        <input type="radio" name="ed-genero" value="M" id="ed-masc" style="accent-color:var(--pink);" onchange="destacarGeneroEd()"> Masculino
+      </label>
+      <label style="flex:1;display:flex;align-items:center;gap:8px;background:#f5f5f5;border-radius:12px;padding:12px 14px;cursor:pointer;border:1.5px solid #e5e5e5;" id="ed-label-fem">
+        <input type="radio" name="ed-genero" value="F" id="ed-fem" style="accent-color:var(--pink);" onchange="destacarGeneroEd()"> Feminino
+      </label>
+    </div>
+    <div id="ed-erro" style="color:#dc2626;font-size:13px;margin-bottom:10px;display:none;"></div>
+    <button class="btn-main" id="btn-salvar-edicao">Salvar</button>
+    <button class="btn-outline" onclick="document.getElementById('m-editar-rep').classList.remove('show')" style="margin-top:8px;">Cancelar</button>
+  </div>
+</div>
+
 <!-- MODAL NOVO REPRESENTANTE -->
 <div class="overlay" id="m-novo-rep">
   <div class="modal">
@@ -596,23 +618,67 @@ function carregarRepresentantes() {
       const isMaster = r.master;
       const bloq = r.bloqueado;
       const isMe = r.id === repAtual.uid;
+      const generoIcon = r.genero === 'M' ? '👨' : r.genero === 'F' ? '👩' : '❓';
       return `<div class="admin-item">
         <div class="admin-av">${ini}</div>
         <div class="admin-info">
           <div class="admin-nome">${r.nome||'—'}${isMaster?'<span class="admin-badge admin-badge-master">Master</span>':''}${bloq?'<span class="admin-badge admin-badge-bloq">Bloqueado</span>':'<span class="admin-badge admin-badge-ativo">Ativo</span>'}</div>
-          <div class="admin-email">${r.email||'—'}</div>
+          <div class="admin-email">${r.email||'—'} · ${generoIcon}</div>
         </div>
-        ${!isMaster && !isMe ? `
-          <div style="display:flex;gap:6px;flex-direction:column;">
-            ${bloq
-              ? `<button class="btn-sm btn-sm-ok" onclick="toggleBloqueio('${r.id}',false)">Ativar</button>`
-              : `<button class="btn-sm btn-sm-danger" onclick="toggleBloqueio('${r.id}',true)">Bloquear</button>`
-            }
-          </div>` : ''}
+        <div style="display:flex;gap:6px;flex-direction:column;">
+          <button class="btn-sm" style="background:#f0f0f0;color:#333;" onclick="abrirEdicao('${r.id}','${(r.nome||'').replace(/'/g,"\\'")}','${r.genero||''}')">Editar</button>
+          ${!isMaster && !isMe ? (bloq
+            ? `<button class="btn-sm btn-sm-ok" onclick="toggleBloqueio('${r.id}',false)">Ativar</button>`
+            : `<button class="btn-sm btn-sm-danger" onclick="toggleBloqueio('${r.id}',true)">Bloquear</button>`)
+          : ''}
+        </div>
       </div>`;
     }).join('');
   });
 }
+
+window.abrirEdicao = function(uid, nome, genero) {
+  document.getElementById('ed-uid').value = uid;
+  document.getElementById('ed-nome').value = nome;
+  document.getElementById('ed-masc').checked = genero === 'M';
+  document.getElementById('ed-fem').checked = genero === 'F';
+  document.getElementById('ed-label-masc').style.borderColor = genero === 'M' ? 'var(--pink)' : '#e5e5e5';
+  document.getElementById('ed-label-fem').style.borderColor = genero === 'F' ? 'var(--pink)' : '#e5e5e5';
+  document.getElementById('ed-erro').style.display = 'none';
+  document.getElementById('m-editar-rep').classList.add('show');
+};
+
+window.destacarGeneroEd = function() {
+  const masc = document.getElementById('ed-masc').checked;
+  document.getElementById('ed-label-masc').style.borderColor = masc ? 'var(--pink)' : '#e5e5e5';
+  document.getElementById('ed-label-fem').style.borderColor = !masc ? 'var(--pink)' : '#e5e5e5';
+};
+
+document.getElementById('btn-salvar-edicao').addEventListener('click', async function() {
+  const uid = document.getElementById('ed-uid').value;
+  const nome = document.getElementById('ed-nome').value.trim();
+  const genero = document.querySelector('input[name="ed-genero"]:checked')?.value || '';
+  const erroEl = document.getElementById('ed-erro');
+  erroEl.style.display = 'none';
+  if (!nome) { erroEl.textContent = 'Digite o nome.'; erroEl.style.display = 'block'; return; }
+  if (!genero) { erroEl.textContent = 'Selecione o gênero.'; erroEl.style.display = 'block'; return; }
+  load(true, 'Salvando...');
+  this.disabled = true;
+  try {
+    await db.collection('representantes').doc(uid).update({ nome, genero });
+    // Se estiver editando o próprio perfil, atualiza a saudação
+    if (uid === repAtual.uid) {
+      repAtual.nome = nome;
+      repAtual.genero = genero;
+      const bemVindo = genero === 'M' ? 'Bem-vindo de volta,' : 'Bem-vinda de volta,';
+      document.getElementById('saudacao-ola').textContent = bemVindo;
+      document.getElementById('saudacao-nome').textContent = nome.split(' ')[0];
+      document.getElementById('topbar-nome-rep').textContent = nome.split(' ')[0];
+    }
+    document.getElementById('m-editar-rep').classList.remove('show');
+  } catch(e) { erroEl.textContent = 'Erro ao salvar.'; erroEl.style.display = 'block'; }
+  finally { load(false); this.disabled = false; }
+});
 
 window.toggleBloqueio = async function(uid, bloquear) {
   const acao = bloquear ? 'bloquear' : 'ativar';
