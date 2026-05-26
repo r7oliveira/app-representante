@@ -1328,7 +1328,7 @@ function ouvirFeedRep() {
             <div class="feed-autor">${p.autorNome||'—'}${isRep ? '<span class="feed-badge-rep">REP</span>' : ''}</div>
             <div class="feed-tempo">${tempoRelativoRep(p.criadoEm)}</div>
           </div>
-          ${isRep ? `<button class="feed-del-btn" onclick="deletarPostRep('${d.id}')">✕ Excluir</button>` : ''}
+          <button class="feed-del-btn" onclick="deletarPostRep('${d.id}')">✕ Excluir</button>
         </div>
         ${p.texto ? `<div class="feed-texto">${p.texto}</div>` : ''}
         ${midia}
