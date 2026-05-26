@@ -652,7 +652,7 @@ function entrarNoApp() {
   // Atualiza nome e saudação conforme gênero
   const primeiroNome = (repAtual.nome || 'Representante').split(' ')[0];
   const bemVindo = repAtual.genero === 'M' ? 'Bem-vindo de volta,' : 'Bem-vinda de volta,';
-  document.getElementById('topbar-nome-rep').textContent = primeiroNome;
+  // topbar fixo
   document.getElementById('saudacao-nome').textContent = primeiroNome;
   document.getElementById('saudacao-ola').textContent = bemVindo;
 
@@ -770,7 +770,7 @@ document.getElementById('btn-salvar-edicao').addEventListener('click', async fun
       const bemVindo = genero === 'M' ? 'Bem-vindo de volta,' : 'Bem-vinda de volta,';
       document.getElementById('saudacao-ola').textContent = bemVindo;
       document.getElementById('saudacao-nome').textContent = nome.split(' ')[0];
-      document.getElementById('topbar-nome-rep').textContent = nome.split(' ')[0];
+      // topbar fixo
     }
     document.getElementById('m-editar-rep').classList.remove('show');
   } catch(e) { erroEl.textContent = 'Erro ao salvar.'; erroEl.style.display = 'block'; }
