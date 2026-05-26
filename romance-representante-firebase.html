@@ -124,6 +124,10 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 .filter-tabs::-webkit-scrollbar{display:none;}
 .ftab{padding:7px 16px;border-radius:99px;font-size:13px;font-weight:600;background:white;color:var(--gray);cursor:pointer;white-space:nowrap;border:1.5px solid #e8e8e8;}
 .ftab.ativo{background:var(--pink);color:white;border-color:var(--pink);}
+.ftab-app{padding:7px 16px;border-radius:99px;font-size:13px;font-weight:600;background:white;color:var(--gray);cursor:pointer;white-space:nowrap;border:1.5px solid #e8e8e8;}
+.ftab-app.ativo{background:var(--pink);color:white;border-color:var(--pink);}
+.badge-no-app{background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:6px;}
+.badge-sem-app{background:#f3f4f6;color:#9ca3af;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;margin-left:6px;}
 /* BUSCA */
 .search-box{display:flex;align-items:center;gap:10px;background:white;border:1.5px solid #e8e8e8;border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;}
 .search-box input{flex:1;border:none;outline:none;font-size:14px;font-family:'Outfit',sans-serif;color:var(--black);background:transparent;}
@@ -276,6 +280,11 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
   <div class="page" id="pg-consultoras">
     <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Consultoras</div>
     <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Todas as consultoras cadastradas.</p>
+    <div class="filter-tabs" id="filtro-app-tabs">
+      <div class="ftab-app ativo" data-app="todas" onclick="filtrarApp(this,'todas')">Todas</div>
+      <div class="ftab-app" data-app="sim" onclick="filtrarApp(this,'sim')">✅ No app</div>
+      <div class="ftab-app" data-app="nao" onclick="filtrarApp(this,'nao')">⏳ Sem acesso</div>
+    </div>
     <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;">
       <div class="search-box" style="flex:1;margin-bottom:0;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#bbb" stroke-width="2"/><path d="M21 21L16.65 16.65" stroke="#bbb" stroke-width="2" stroke-linecap="round"/></svg>
@@ -717,8 +726,7 @@ function iniciar() {
     renderRecentes();
     renderIndicacoes();
     // Re-renderiza consultoras com filtro atualizado
-    const idsIndicadas = new Set(todasIndicacoes.map(i => i.indicadaId).filter(Boolean));
-    renderConsultoras(todasConsultoras.filter(c => idsIndicadas.has(c.id)));
+    aplicarFiltroConsultoras(document.getElementById('busca')?.value?.toLowerCase() || '');
   });
 
   // Consultoras
@@ -728,9 +736,8 @@ function iniciar() {
     const elConsultoras = document.getElementById('s-consultoras');
     if (elConsultoras) elConsultoras.textContent = todasConsultoras.length;
 
-    // Só mostra consultoras que vieram via indicação
-    const idsIndicadas = new Set(todasIndicacoes.map(i => i.indicadaId).filter(Boolean));
-    renderConsultoras(todasConsultoras.filter(c => idsIndicadas.has(c.id)));
+    // Re-renderiza consultoras respeitando filtro ativo
+    aplicarFiltroConsultoras(document.getElementById('busca')?.value?.toLowerCase() || '');
     renderRanking();
   });
 
@@ -870,18 +877,39 @@ function exportarConsultoras() {
   a.click(); URL.revokeObjectURL(url);
 }
 
+// ===== FILTRO APP =====
+let filtroApp = 'todas';
+window.filtrarApp = function(el, filtro) {
+  filtroApp = filtro;
+  document.querySelectorAll('.ftab-app').forEach(t => t.classList.remove('ativo'));
+  el.classList.add('ativo');
+  aplicarFiltroConsultoras(document.getElementById('busca').value.toLowerCase());
+};
+
+function aplicarFiltroConsultoras(q) {
+  const idsIndicadas = new Set(todasIndicacoes.map(i => i.indicadaId).filter(Boolean));
+  let lista = todasConsultoras.filter(c => idsIndicadas.has(c.id));
+  if (filtroApp === 'sim') lista = lista.filter(c => c.acessouApp);
+  if (filtroApp === 'nao') lista = lista.filter(c => !c.acessouApp);
+  if (q) lista = lista.filter(c => (c.nome||'').toLowerCase().includes(q) || (c.cidade||'').toLowerCase().includes(q));
+  renderConsultoras(lista);
+}
+
 // ===== RENDER CONSULTORAS =====
 function renderConsultoras(lista) {
   const el = document.getElementById('lista-consultoras');
-  if (!lista.length) { el.innerHTML = '<div class="empty-state">Nenhuma consultora ainda.</div>'; return; }
+  if (!lista.length) { el.innerHTML = '<div class="empty-state">Nenhuma consultora encontrada.</div>'; return; }
   el.innerHTML = lista.map(c => {
     const ini = (c.nome||'').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
     const data = c.criadoEm?.toDate().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}) || '—';
+    const badgeApp = c.acessouApp
+      ? '<span class="badge-no-app">✅ No app</span>'
+      : '<span class="badge-sem-app">⏳ Sem acesso</span>';
     return `<div class="consul-card">
       <div class="consul-card-top">
         <div class="consul-av">${ini}</div>
         <div style="flex:1;min-width:0;">
-          <div class="consul-nome">${c.nome||'—'}</div>
+          <div class="consul-nome">${c.nome||'—'}${badgeApp}</div>
           <div class="consul-det">${c.tel||'—'} · ${c.cidade||'—'}</div>
         </div>
         <span class="badge badge-pts">${c.pontos||0} pts</span>
@@ -906,12 +934,7 @@ function renderConsultoras(lista) {
 
 // Busca
 document.getElementById('busca').addEventListener('input', function() {
-  const q = this.value.toLowerCase();
-  const idsIndicadas = new Set(todasIndicacoes.map(i => i.indicadaId).filter(Boolean));
-  renderConsultoras(todasConsultoras.filter(c =>
-    idsIndicadas.has(c.id) &&
-    ((c.nome||'').toLowerCase().includes(q) || (c.cidade||'').toLowerCase().includes(q))
-  ));
+  aplicarFiltroConsultoras(this.value.toLowerCase());
 });
 
 // ===== RENDER RESGATES =====
