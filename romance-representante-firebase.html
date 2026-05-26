@@ -1221,7 +1221,7 @@ document.querySelectorAll('.overlay').forEach(o => {
 });
 
 // ===== FEED REPRESENTANTE =====
-let _repMidiaBase64 = null;
+let _repMidiaFile = null;  // guarda o File original
 let _repMidiaTipo = null;
 let _repInfo = null; // guardado no login
 
@@ -1229,48 +1229,69 @@ window.abrirNovoPostRep = function() {
   document.getElementById('post-texto-rep').value = '';
   document.getElementById('post-img-preview-rep').style.display = 'none';
   document.getElementById('post-vid-preview-rep').style.display = 'none';
-  _repMidiaBase64 = null; _repMidiaTipo = null;
+  _repMidiaFile = null; _repMidiaTipo = null;
+  document.getElementById('post-file-rep').value = '';
   document.getElementById('m-novo-post-rep').classList.add('show');
 }
 
 window.previewMidiaRep = function(input) {
   const file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    _repMidiaBase64 = e.target.result;
-    _repMidiaTipo = file.type.startsWith('video') ? 'video' : 'imagem';
-    if (_repMidiaTipo === 'imagem') {
-      const img = document.getElementById('post-img-preview-rep');
-      img.src = _repMidiaBase64; img.style.display = 'block';
-      document.getElementById('post-vid-preview-rep').style.display = 'none';
-    } else {
-      const vid = document.getElementById('post-vid-preview-rep');
-      vid.src = _repMidiaBase64; vid.style.display = 'block';
-      document.getElementById('post-img-preview-rep').style.display = 'none';
-    }
-  };
-  reader.readAsDataURL(file);
+  _repMidiaFile = file;
+  _repMidiaTipo = file.type.startsWith('video') ? 'video' : 'imagem';
+  const url = URL.createObjectURL(file);
+  if (_repMidiaTipo === 'imagem') {
+    const img = document.getElementById('post-img-preview-rep');
+    img.src = url; img.style.display = 'block';
+    document.getElementById('post-vid-preview-rep').style.display = 'none';
+  } else {
+    const vid = document.getElementById('post-vid-preview-rep');
+    vid.src = url; vid.style.display = 'block';
+    document.getElementById('post-img-preview-rep').style.display = 'none';
+  }
 }
 
 window.publicarRep = async function() {
   const texto = document.getElementById('post-texto-rep').value.trim();
-  if (!texto && !_repMidiaBase64) { alert('Escreva algo ou adicione uma mídia.'); return; }
+  if (!texto && !_repMidiaFile) { alert('Escreva algo ou adicione uma mídia.'); return; }
   const nomeRep = _repInfo?.nome || document.getElementById('saudacao-nome').textContent || 'Representante';
+  document.getElementById('m-novo-post-rep').classList.remove('show');
+  load(true, 'Publicando...');
   try {
-    document.getElementById('m-novo-post-rep').classList.remove('show');
+    let midiaUrl = null;
+    let midiaTipo = null;
+    // Faz upload para Cloudinary se tiver mídia
+    if (_repMidiaFile) {
+      const formData = new FormData();
+      formData.append('file', _repMidiaFile);
+      formData.append('upload_preset', 'romance_feed');
+      formData.append('cloud_name', 'dk7kyendv');
+      const tipo = _repMidiaFile.type.startsWith('video') ? 'video' : 'image';
+      const res = await fetch(`https://api.cloudinary.com/v1_1/dk7kyendv/${tipo}/upload`, {
+        method: 'POST', body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'Erro no upload');
+      midiaUrl = data.secure_url;
+      midiaTipo = _repMidiaTipo;
+    }
     await db.collection('feed').add({
       autorId: _repInfo?.uid || 'rep',
       autorNome: nomeRep,
       autorTipo: 'representante',
       texto,
-      midia: _repMidiaBase64 || null,
-      midiaTipo: _repMidiaTipo || null,
+      midia: midiaUrl,
+      midiaTipo,
       curtidas: 0,
       curtidasPor: [],
       criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     });
-  } catch(e) { alert('Erro ao publicar.'); }
+  } catch(e) {
+    console.error('Erro ao publicar:', e);
+    alert('Erro ao publicar: ' + (e.message || e.code || e));
+  } finally {
+    load(false);
+  }
 }
 
 window.deletarPostRep = async function(postId) {
