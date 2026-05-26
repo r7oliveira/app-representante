@@ -356,6 +356,15 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
     <input class="fi" type="text" id="nr-nome" placeholder="Nome completo" style="text-align:left;" />
     <input class="fi" type="email" id="nr-email" placeholder="E-mail de acesso" style="text-align:left;" />
     <input class="fi" type="password" id="nr-senha" placeholder="Senha (mín. 6 caracteres)" style="text-align:left;" />
+    <label class="fl" style="margin-bottom:8px;">Gênero</label>
+    <div style="display:flex;gap:10px;margin-bottom:15px;">
+      <label style="flex:1;display:flex;align-items:center;gap:8px;background:#f5f5f5;border-radius:12px;padding:12px 14px;cursor:pointer;border:1.5px solid #e5e5e5;" id="label-masc">
+        <input type="radio" name="nr-genero" value="M" id="nr-masc" style="accent-color:var(--pink);" onchange="destacarGenero()"> Masculino
+      </label>
+      <label style="flex:1;display:flex;align-items:center;gap:8px;background:#f5f5f5;border-radius:12px;padding:12px 14px;cursor:pointer;border:1.5px solid #e5e5e5;" id="label-fem">
+        <input type="radio" name="nr-genero" value="F" id="nr-fem" style="accent-color:var(--pink);" onchange="destacarGenero()"> Feminino
+      </label>
+    </div>
     <div id="nr-erro" style="color:#dc2626;font-size:13px;margin-bottom:10px;display:none;"></div>
     <button class="btn-main" id="btn-criar-rep">Criar acesso</button>
     <button class="btn-outline" onclick="document.getElementById('m-novo-rep').classList.remove('show')" style="margin-top:8px;">Cancelar</button>
@@ -452,10 +461,10 @@ auth.onAuthStateChanged(async (user) => {
         } else {
           // Cria o documento (primeira vez)
           await db.collection('representantes').doc(user.uid).set({
-            nome, email: user.email, master: isMaster, bloqueado: false,
+            nome, email: user.email, master: isMaster, bloqueado: false, genero: 'M',
             criadoEm: firebase.firestore.FieldValue.serverTimestamp()
           });
-          dadosFirestore = { nome, master: isMaster, bloqueado: false };
+          dadosFirestore = { nome, master: isMaster, bloqueado: false, genero: 'M' };
         }
       } catch(firestoreErr) {
         console.warn('Firestore erro (não crítico):', firestoreErr);
@@ -522,10 +531,12 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
 
 // ===== ENTRAR NO APP =====
 function entrarNoApp() {
-  // Atualiza nome
+  // Atualiza nome e saudação conforme gênero
   const primeiroNome = (repAtual.nome || 'Representante').split(' ')[0];
+  const bemVindo = repAtual.genero === 'M' ? 'Bem-vindo de volta,' : 'Bem-vinda de volta,';
   document.getElementById('topbar-nome-rep').textContent = primeiroNome;
   document.getElementById('saudacao-nome').textContent = primeiroNome;
+  document.getElementById('saudacao-ola').textContent = bemVindo;
 
   // Mostra tab admin se for master
   if (repAtual.master) {
@@ -618,17 +629,29 @@ document.getElementById('btn-novo-rep').addEventListener('click', () => {
   document.getElementById('nr-nome').value = '';
   document.getElementById('nr-email').value = '';
   document.getElementById('nr-senha').value = '';
+  document.getElementById('nr-masc').checked = false;
+  document.getElementById('nr-fem').checked = false;
+  document.getElementById('label-masc').style.borderColor = '#e5e5e5';
+  document.getElementById('label-fem').style.borderColor = '#e5e5e5';
   document.getElementById('nr-erro').style.display = 'none';
   document.getElementById('m-novo-rep').classList.add('show');
 });
+
+window.destacarGenero = function() {
+  const masc = document.getElementById('nr-masc').checked;
+  document.getElementById('label-masc').style.borderColor = masc ? 'var(--pink)' : '#e5e5e5';
+  document.getElementById('label-fem').style.borderColor = !masc ? 'var(--pink)' : '#e5e5e5';
+};
 
 document.getElementById('btn-criar-rep').addEventListener('click', async function() {
   const nome = document.getElementById('nr-nome').value.trim();
   const email = document.getElementById('nr-email').value.trim();
   const senha = document.getElementById('nr-senha').value.trim();
+  const genero = document.querySelector('input[name="nr-genero"]:checked')?.value || '';
   const erroEl = document.getElementById('nr-erro');
   erroEl.style.display = 'none';
   if (!nome || !email || !senha) { erroEl.textContent = 'Preencha todos os campos.'; erroEl.style.display = 'block'; return; }
+  if (!genero) { erroEl.textContent = 'Selecione o gênero.'; erroEl.style.display = 'block'; return; }
   if (senha.length < 6) { erroEl.textContent = 'A senha deve ter pelo menos 6 caracteres.'; erroEl.style.display = 'block'; return; }
 
   load(true, 'Criando acesso...');
@@ -644,7 +667,7 @@ document.getElementById('btn-criar-rep').addEventListener('click', async functio
 
     // Salva no Firestore
     await db.collection('representantes').doc(newUid).set({
-      nome, email, master: false, bloqueado: false,
+      nome, email, genero, master: false, bloqueado: false,
       criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     });
 
