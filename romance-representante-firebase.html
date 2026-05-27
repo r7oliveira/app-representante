@@ -185,19 +185,23 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 /* FEED REP */
 .feed-fab-rep{position:fixed;bottom:80px;right:18px;width:52px;height:52px;background:var(--pink);border-radius:50%;display:none;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(217,26,122,0.4);cursor:pointer;z-index:190;border:none;}
 .feed-fab-rep.show{display:flex;}
-.feed-post{background:white;border-radius:var(--radius);margin-bottom:14px;box-shadow:var(--shadow);overflow:hidden;}
-.feed-post-header{display:flex;align-items:center;gap:10px;padding:14px 14px 10px;}
-.feed-av-r{width:38px;height:38px;min-width:38px;border-radius:50%;background:var(--black);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:white;}
-.feed-av-c{width:38px;height:38px;min-width:38px;border-radius:50%;background:var(--pink-soft);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:var(--pink);}
+.feed-post{background:white;margin-bottom:1px;overflow:hidden;border-bottom:1px solid #f0f0f0;}
+.feed-post-header{display:flex;align-items:center;gap:10px;padding:12px 14px 10px;}
+.feed-av-r{width:36px;height:36px;min-width:36px;border-radius:50%;background:var(--black);padding:2px;display:flex;align-items:center;justify-content:center;}
+.feed-av-r-inner{width:100%;height:100%;border-radius:50%;background:var(--black);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;color:white;border:2px solid white;}
+.feed-av-c{width:36px;height:36px;min-width:36px;border-radius:50%;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);padding:2px;display:flex;align-items:center;justify-content:center;}
+.feed-av-c-inner{width:100%;height:100%;border-radius:50%;background:var(--pink-soft);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;color:var(--pink);border:2px solid white;}
 .feed-badge-rep{display:inline-block;font-size:9px;font-weight:700;background:var(--black);color:white;border-radius:4px;padding:1px 5px;margin-left:5px;vertical-align:middle;letter-spacing:.4px;}
-.feed-autor{font-size:14px;font-weight:700;color:var(--black);}
-.feed-tempo{font-size:11px;color:#bbb;margin-top:1px;}
-.feed-texto{font-size:14px;color:#333;line-height:1.6;padding:0 14px 12px;}
-.feed-midia{width:100%;max-height:320px;object-fit:cover;display:block;}
-.feed-midia-video{width:100%;max-height:320px;display:block;background:#000;}
-.feed-acoes{display:flex;align-items:center;gap:0;padding:4px 8px 10px;border-top:1px solid #f5f5f5;}
-.feed-btn-r{display:flex;align-items:center;gap:5px;background:none;border:none;padding:8px 10px;font-size:13px;font-weight:600;color:#888;cursor:pointer;font-family:'Outfit',sans-serif;border-radius:8px;}
-.feed-curtidas-r{font-size:12px;color:#bbb;padding:0 6px;}
+.feed-autor{font-size:13px;font-weight:700;color:var(--black);}
+.feed-midia{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;}
+.feed-midia-video{width:100%;aspect-ratio:1/1;display:block;background:#000;object-fit:cover;}
+.feed-acoes-r{display:flex;align-items:center;gap:2px;padding:8px 10px 4px;}
+.feed-btn-r{display:flex;align-items:center;gap:4px;background:none;border:none;padding:6px 8px;font-size:13px;font-weight:600;color:#222;cursor:pointer;font-family:'Outfit',sans-serif;}
+.feed-curtidas-r{font-size:13px;font-weight:700;color:var(--black);padding:0 14px 4px;}
+.feed-texto-r{font-size:13px;color:#222;line-height:1.5;padding:2px 14px 8px;}
+.feed-comentarios-r{padding:0 14px 8px;}
+.feed-comentario-r{font-size:13px;color:#222;margin-bottom:4px;line-height:1.4;}
+.feed-del-btn{margin-left:auto;background:none;border:none;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer;padding:4px 8px;font-family:'Outfit',sans-serif;}
 .post-overlay-r{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:999;align-items:flex-end;justify-content:center;}
 .post-overlay-r.show{display:flex;}
 .post-modal-r{background:white;border-radius:24px 24px 0 0;padding:24px 20px 44px;width:100%;max-width:430px;animation:up .28s ease;}
@@ -206,7 +210,6 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 .post-textarea-r:focus{border-color:var(--pink);}
 .post-midia-btns-r{display:flex;gap:10px;margin-top:10px;}
 .post-midia-btn-r{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#f5f5f5;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;color:var(--black);}
-.feed-del-btn{margin-left:auto;background:none;border:none;color:#dc2626;font-size:12px;font-weight:700;cursor:pointer;padding:4px 8px;font-family:'Outfit',sans-serif;}
 
 /* FIM ADMIN */
 </style>
@@ -1321,20 +1324,32 @@ function ouvirFeedRep() {
       const midia = p.midia ? (p.midiaTipo === 'video'
         ? `<video class="feed-midia-video" src="${p.midia}" controls playsinline></video>`
         : `<img class="feed-midia" src="${p.midia}" loading="lazy"/>`) : '';
+      const comentarios = (p.comentarios||[]).slice(-2).map(c =>
+        `<div class="feed-comentario-r"><strong>${c.autorNome.split(' ')[0]}</strong> ${c.texto}</div>`
+      ).join('');
+      const avClass = isRep ? 'feed-av-r' : 'feed-av-c';
+      const avInner = isRep ? 'feed-av-r-inner' : 'feed-av-c-inner';
       return `<div class="feed-post">
         <div class="feed-post-header">
-          <div class="${isRep ? 'feed-av-r' : 'feed-av-c'}">${ini}</div>
-          <div style="flex:1">
-            <div class="feed-autor">${p.autorNome||'—'}${isRep ? '<span class="feed-badge-rep">REP</span>' : ''}</div>
-            <div class="feed-tempo">${tempoRelativoRep(p.criadoEm)}</div>
+          <div class="${avClass}"><div class="${avInner}">${ini}</div></div>
+          <div style="flex:1;margin-left:2px;">
+            <div class="feed-autor">${p.autorNome||'—'}${isRep?'<span class="feed-badge-rep">REP</span>':''}</div>
           </div>
-          <button class="feed-del-btn" onclick="deletarPostRep('${d.id}')">✕ Excluir</button>
+          <div style="font-size:11px;color:#aaa;">${tempoRelativoRep(p.criadoEm)}</div>
+          <button class="feed-del-btn" onclick="deletarPostRep('${d.id}')">✕</button>
         </div>
-        ${p.texto ? `<div class="feed-texto">${p.texto}</div>` : ''}
         ${midia}
-        <div class="feed-acoes">
-          <span class="feed-curtidas-r">❤️ ${p.curtidas||0} curtidas</span>
+        <div class="feed-acoes-r">
+          <span class="feed-btn-r">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </span>
+          <span class="feed-btn-r">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
         </div>
+        ${(p.curtidas||0) > 0 ? `<div class="feed-curtidas-r">${p.curtidas} curtida${p.curtidas>1?'s':''}</div>` : ''}
+        ${p.texto ? `<div class="feed-texto-r"><strong>${(p.autorNome||'').split(' ')[0]}</strong> ${p.texto}</div>` : ''}
+        ${comentarios ? `<div class="feed-comentarios-r">${comentarios}</div>` : ''}
       </div>`;
     }).join('');
   });
