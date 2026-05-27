@@ -352,8 +352,8 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
     <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Todas as consultoras cadastradas.</p>
     <div class="filter-tabs" id="filtro-app-tabs">
       <div class="ftab-app ativo" data-app="todas" onclick="filtrarApp(this,'todas')">Todas</div>
-      <div class="ftab-app" data-app="sim" onclick="filtrarApp(this,'sim')">✅ No app</div>
-      <div class="ftab-app" data-app="nao" onclick="filtrarApp(this,'nao')">⏳ Sem acesso</div>
+      <div class="ftab-app" data-app="sim" onclick="filtrarApp(this,'sim')">✅ Consultoras ativas</div>
+      <div class="ftab-app" data-app="nao" onclick="filtrarApp(this,'nao')">👥 Indicações</div>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;">
       <div class="search-box" style="flex:1;margin-bottom:0;">
@@ -1105,8 +1105,8 @@ function renderConsultoras(lista) {
     const ini = (c.nome||'').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
     const data = c.criadoEm?.toDate().toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}) || '—';
     const badgeApp = c.acessouApp
-      ? '<span class="badge-no-app">✅ No app</span>'
-      : '<span class="badge-sem-app">⏳ Sem acesso</span>';
+      ? '<span class="badge-no-app">✅ Consultora ativa</span>'
+      : '<span class="badge-sem-app">👥 Indicação</span>';
     return `<div class="consul-card">
       <div class="consul-card-top">
         <div class="consul-av">${ini}</div>
