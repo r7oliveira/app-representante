@@ -262,7 +262,7 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 
     <!-- SAUDAÇÃO -->
     <div class="saudacao-wrap">
-      <div class="saudacao-ola" id="saudacao-ola">Bem-vinda de volta,</div>
+      <div class="saudacao-ola" id="saudacao-ola">Olá,</div>
       <div class="saudacao-nome" id="saudacao-nome">Representante</div>
     </div>
 
@@ -770,8 +770,7 @@ document.getElementById('btn-salvar-edicao').addEventListener('click', async fun
     if (uid === repAtual.uid) {
       repAtual.nome = nome;
       repAtual.genero = genero;
-      const bemVindo = genero === 'M' ? 'Bem-vindo de volta,' : 'Bem-vinda de volta,';
-      document.getElementById('saudacao-ola').textContent = bemVindo;
+      // saudacao fixa
       document.getElementById('saudacao-nome').textContent = nome.split(' ')[0];
       // topbar fixo
     }
