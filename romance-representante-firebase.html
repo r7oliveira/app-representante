@@ -917,9 +917,8 @@ function iniciar() {
     let todas = snap.docs.map(d => ({id: d.id, ...d.data()}))
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
 
-    // Filtra: mostra só as do próprio representante (ou sem repId se for master)
     if (!repAtual?.master) {
-      todas = todas.filter(i => !i.representanteId || i.representanteId === repId);
+      todas = todas.filter(i => i.representanteId === repId);
     }
 
     todasIndicacoes = todas;
@@ -953,7 +952,7 @@ function iniciar() {
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
 
     if (!repAtual?.master) {
-      todas = todas.filter(c => !c.representanteId || c.representanteId === repId);
+      todas = todas.filter(c => c.representanteId === repId);
     }
 
     todasConsultoras = todas;
@@ -975,7 +974,7 @@ function iniciar() {
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
 
     if (!repAtual?.master) {
-      todos = todos.filter(r => !r.representanteId || r.representanteId === repId);
+      todos = todos.filter(r => r.representanteId === repId);
     }
 
     todosResgates = todos;
