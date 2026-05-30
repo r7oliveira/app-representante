@@ -912,14 +912,17 @@ function iniciar() {
   let _qtdIndicacoesAnterior = null;
   const repId = repAtual?.uid || '';
 
-  // Indicações — filtra por representanteId se não for master
-  const indQuery = repAtual?.master
-    ? db.collection('indicacoes')
-    : db.collection('indicacoes').where('representanteId', '==', repId);
-
-  indQuery.onSnapshot(snap => {
-    todasIndicacoes = snap.docs.map(d => ({id: d.id, ...d.data()}))
+  // Indicações — busca tudo e filtra no JS (master vê tudo, outros só as suas)
+  db.collection('indicacoes').onSnapshot(snap => {
+    let todas = snap.docs.map(d => ({id: d.id, ...d.data()}))
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
+
+    // Filtra: mostra só as do próprio representante (ou sem repId se for master)
+    if (!repAtual?.master) {
+      todas = todas.filter(i => !i.representanteId || i.representanteId === repId);
+    }
+
+    todasIndicacoes = todas;
 
     // Notificação sonora/vibração em nova indicação
     if (_qtdIndicacoesAnterior !== null && todasIndicacoes.length > _qtdIndicacoesAnterior) {
@@ -944,14 +947,16 @@ function iniciar() {
     aplicarFiltroConsultoras(document.getElementById('busca')?.value?.toLowerCase() || '');
   });
 
-  // Consultoras — filtra por representanteId se não for master
-  const consulQuery = repAtual?.master
-    ? db.collection('consultoras')
-    : db.collection('consultoras').where('representanteId', '==', repId);
-
-  consulQuery.onSnapshot(snap => {
-    todasConsultoras = snap.docs.map(d => ({id: d.id, ...d.data()}))
+  // Consultoras — busca tudo e filtra no JS
+  db.collection('consultoras').onSnapshot(snap => {
+    let todas = snap.docs.map(d => ({id: d.id, ...d.data()}))
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
+
+    if (!repAtual?.master) {
+      todas = todas.filter(c => !c.representanteId || c.representanteId === repId);
+    }
+
+    todasConsultoras = todas;
     const elConsultoras = document.getElementById('s-consultoras');
     if (elConsultoras) elConsultoras.textContent = todasConsultoras.length;
     const consultatasAtivas = todasConsultoras.filter(c => c.acessouApp === true).length;
@@ -964,14 +969,16 @@ function iniciar() {
     renderRanking();
   });
 
-  // Resgates — filtra por representanteId se não for master
-  const resgQuery = repAtual?.master
-    ? db.collection('resgates')
-    : db.collection('resgates').where('representanteId', '==', repId);
-
-  resgQuery.onSnapshot(snap => {
-    todosResgates = snap.docs.map(d => ({id: d.id, ...d.data()}))
+  // Resgates — busca tudo e filtra no JS
+  db.collection('resgates').onSnapshot(snap => {
+    let todos = snap.docs.map(d => ({id: d.id, ...d.data()}))
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
+
+    if (!repAtual?.master) {
+      todos = todos.filter(r => !r.representanteId || r.representanteId === repId);
+    }
+
+    todosResgates = todos;
     document.getElementById('s-resgates').textContent = todosResgates.filter(r => r.status === 'pendente').length;
     renderResgates();
   });
