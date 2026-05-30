@@ -1240,12 +1240,10 @@ window.copiarMeuLink = function() {
 window.compartilharMeuLink = function() {
   const link = gerarMeuLink();
   const msg = encodeURIComponent(
-    `Oi! 🌟\n\n` +
-    `Você sabia que pode ganhar *presentes* só por indicar amigas para a Romance?\n\n` +
-    `🥤 *Copo personalizado* na 1ª indicação aprovada\n` +
-    `⭐ *Sacola Estrelas* ao acumular 30 pontos\n` +
-    `🥪 *Sanduicheira, Batedeira, Air Fryer* e muito mais!\n\n` +
-    `É simples: você indica, sua amiga se cadastra e *você ganha pontos!* 🎁\n\n` +
+    `Oi _Estrela_ 🌟\n\n` +
+    `Você sabia que pode ganhar *PRESENTES* só por indicar amigas para a Romance?\n\n` +
+    `🥤 _Na 1ª indicação aprovada você já ganha um lindo Copo personalizado!_\n\n` +
+    `E pode ganhar também uma Sanduicheira, Batedeira, Air Fryer e muito mais!\n\n` +
     `Baixe o app agora e comece a indicar:\n${link}`
   );
   window.open('https://wa.me/?text=' + msg, '_blank');
