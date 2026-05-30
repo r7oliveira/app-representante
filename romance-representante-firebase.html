@@ -898,9 +898,14 @@ function tocarSom(tipo) {
 // ===== INICIAR LISTENERS =====
 function iniciar() {
   let _qtdIndicacoesAnterior = null;
+  const repId = repAtual?.uid || '';
 
-  // Indicações
-  db.collection('indicacoes').onSnapshot(snap => {
+  // Indicações — filtra por representanteId se não for master
+  const indQuery = repAtual?.master
+    ? db.collection('indicacoes')
+    : db.collection('indicacoes').where('representanteId', '==', repId);
+
+  indQuery.onSnapshot(snap => {
     todasIndicacoes = snap.docs.map(d => ({id: d.id, ...d.data()}))
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
 
@@ -927,8 +932,12 @@ function iniciar() {
     aplicarFiltroConsultoras(document.getElementById('busca')?.value?.toLowerCase() || '');
   });
 
-  // Consultoras
-  db.collection('consultoras').onSnapshot(snap => {
+  // Consultoras — filtra por representanteId se não for master
+  const consulQuery = repAtual?.master
+    ? db.collection('consultoras')
+    : db.collection('consultoras').where('representanteId', '==', repId);
+
+  consulQuery.onSnapshot(snap => {
     todasConsultoras = snap.docs.map(d => ({id: d.id, ...d.data()}))
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
     const elConsultoras = document.getElementById('s-consultoras');
@@ -943,8 +952,12 @@ function iniciar() {
     renderRanking();
   });
 
-  // Resgates
-  db.collection('resgates').onSnapshot(snap => {
+  // Resgates — filtra por representanteId se não for master
+  const resgQuery = repAtual?.master
+    ? db.collection('resgates')
+    : db.collection('resgates').where('representanteId', '==', repId);
+
+  resgQuery.onSnapshot(snap => {
     todosResgates = snap.docs.map(d => ({id: d.id, ...d.data()}))
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
     document.getElementById('s-resgates').textContent = todosResgates.filter(r => r.status === 'pendente').length;
@@ -1018,12 +1031,21 @@ document.body.addEventListener('click', async function(e) {
   if (btnAp) {
     const id = btnAp.dataset.id;
     const indId = btnAp.dataset.indid;
+    const indcadaId = btnAp.dataset.indicadaid;
     load(true, 'Aprovando...');
     try {
-      await db.collection('indicacoes').doc(id).update({ status: 'aprovada' });
+      const repId = repAtual?.uid || '';
+      await db.collection('indicacoes').doc(id).update({
+        status: 'aprovada',
+        representanteId: repId
+      });
       if (indId) await db.collection('consultoras').doc(indId).update({
         pontos: firebase.firestore.FieldValue.increment(10),
-        indicacoes: firebase.firestore.FieldValue.increment(1)
+        indicacoes: firebase.firestore.FieldValue.increment(1),
+        representanteId: repId
+      });
+      if (indcadaId) await db.collection('consultoras').doc(indcadaId).update({
+        representanteId: repId
       });
       document.getElementById('m-aprov').classList.add('show'); tocarSom('aprovado');
     } catch(err) { alert('Erro: ' + err.message); }
