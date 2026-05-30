@@ -1217,7 +1217,7 @@ function renderRanking() {
 
 // ===== LINK ÚNICO DO REPRESENTANTE =====
 function gerarMeuLink() {
-  const base = 'https://r7oliveira.github.io/romance-app.html';
+  const base = 'https://r7oliveira.github.io/romance-app/romance-app.html';
   const repId = repAtual?.uid || '';
   const repNome = encodeURIComponent(repAtual?.nome || 'Representante');
   return `${base}?repId=${repId}&repNome=${repNome}`;
