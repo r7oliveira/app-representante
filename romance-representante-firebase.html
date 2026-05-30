@@ -323,6 +323,17 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
       <div id="lista-recentes"></div>
     </div>
 
+    <!-- MEU LINK ÚNICO -->
+    <div style="background:white;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🔗 Meu link para consultoras</div>
+      <div style="font-size:12px;color:#555;margin-bottom:12px;line-height:1.5;">Compartilhe esse link com novas consultoras. Qualquer cadastro feito por ele fica vinculado a você automaticamente.</div>
+      <div style="background:#f5f5f5;border-radius:10px;padding:12px;font-size:12px;color:#555;word-break:break-all;margin-bottom:12px;" id="meu-link-url">Gerando link...</div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="copiarMeuLink()" style="flex:1;background:var(--black);color:white;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;">📋 Copiar</button>
+        <button onclick="compartilharMeuLink()" style="flex:1;background:#25D366;color:white;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;">WhatsApp</button>
+      </div>
+    </div>
+
     <!-- GRÁFICO CRESCIMENTO -->
     <div style="background:white;border-radius:var(--radius);padding:18px 16px;box-shadow:var(--shadow);margin-bottom:16px;">
       <div class="sec-hd" style="margin-bottom:16px;">
@@ -682,6 +693,7 @@ function entrarNoApp() {
   window.scrollTo(0, 0);
   iniciar();
   ouvirFeedRep();
+  atualizarExibicaoLink();
   load(false);
 
   setTimeout(() => {
@@ -1201,6 +1213,34 @@ function renderRanking() {
       <div class="rank-pts">${c.pontos||0} pts</div>
     </div>`;
   }).join('');
+}
+
+// ===== LINK ÚNICO DO REPRESENTANTE =====
+function gerarMeuLink() {
+  const base = 'https://r7oliveira.github.io/romance-app.html';
+  const repId = repAtual?.uid || '';
+  const repNome = encodeURIComponent(repAtual?.nome || 'Representante');
+  return `${base}?repId=${repId}&repNome=${repNome}`;
+}
+
+function atualizarExibicaoLink() {
+  const el = document.getElementById('meu-link-url');
+  if (el) el.textContent = gerarMeuLink();
+}
+
+window.copiarMeuLink = function() {
+  navigator.clipboard?.writeText(gerarMeuLink()).then(() => {
+    alert('Link copiado!');
+  }).catch(() => {
+    const el = document.getElementById('meu-link-url');
+    if (el) { const r = document.createRange(); r.selectNode(el); window.getSelection().removeAllRanges(); window.getSelection().addRange(r); document.execCommand('copy'); alert('Link copiado!'); }
+  });
+}
+
+window.compartilharMeuLink = function() {
+  const link = gerarMeuLink();
+  const msg = encodeURIComponent(`Oi! 👋\n\nVocê foi convidada para ser consultora Romance!\n\nFaça seu cadastro pelo link abaixo:\n${link}`);
+  window.open('https://wa.me/?text=' + msg, '_blank');
 }
 
 // ===== GRÁFICO CRESCIMENTO =====
