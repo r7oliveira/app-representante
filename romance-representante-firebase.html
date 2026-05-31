@@ -1000,7 +1000,7 @@ function iniciar() {
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
 
     if (!repAtual?.master) {
-      todas = todas.filter(c => c.representanteId === repId || (!c.representanteId && c.acessouApp));
+      todas = todas.filter(c => c.representanteId === repId || !c.representanteId);
     }
 
     todasConsultoras = todas;
@@ -1179,8 +1179,8 @@ window.filtrarApp = function(el, filtro) {
 function aplicarFiltroConsultoras(q) {
   const idsIndicadas = new Set(todasIndicacoes.map(i => i.indicadaId).filter(Boolean));
   let lista = todasConsultoras.filter(c => idsIndicadas.has(c.id));
-  if (filtroApp === 'sim') lista = lista.filter(c => c.acessouApp);
-  if (filtroApp === 'nao') lista = lista.filter(c => !c.acessouApp);
+  if (filtroApp === 'sim') lista = lista.filter(c => c.acessouApp === true);
+  if (filtroApp === 'nao') lista = lista.filter(c => !c.acessouApp);  if (filtroApp === 'nao') lista = lista.filter(c => !c.acessouApp);
   if (q) lista = lista.filter(c => (c.nome||'').toLowerCase().includes(q) || (c.cidade||'').toLowerCase().includes(q));
   renderConsultoras(lista);
 }
