@@ -394,8 +394,56 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 
   <!-- ADMIN (só para master) -->
   <div class="page" id="pg-admin" style="display:none;">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Representantes</div>
-    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Gerencie os acessos ao painel.</p>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Painel Master</div>
+    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Visão geral de todos os representantes.</p>
+
+    <!-- RELATÓRIO GERAL -->
+    <div style="background:linear-gradient(135deg,#1a0612,#6b0d3a);border-radius:var(--radius);padding:20px;margin-bottom:16px;color:white;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.8px;opacity:.7;text-transform:uppercase;margin-bottom:14px;">Totais do sistema</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;" id="rel-total-ind">—</div>
+          <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.4px;">Indicações</div>
+        </div>
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;" id="rel-total-aprov">—</div>
+          <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.4px;">Aprovadas</div>
+        </div>
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;" id="rel-total-naoaprov">—</div>
+          <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.4px;">Não aprovadas</div>
+        </div>
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;" id="rel-total-consult">—</div>
+          <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.4px;">Consultoras</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESGATES -->
+    <div style="background:white;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:14px;">🎁 Resgates de prêmios</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div style="background:#dcfce7;border-radius:12px;padding:14px;text-align:center;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#16a34a;" id="rel-entregues">—</div>
+          <div style="font-size:11px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.4px;">Entregues</div>
+        </div>
+        <div style="background:#fef3cd;border-radius:12px;padding:14px;text-align:center;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#d97706;" id="rel-pendentes">—</div>
+          <div style="font-size:11px;font-weight:700;color:#d97706;text-transform:uppercase;letter-spacing:.4px;">Pendentes</div>
+        </div>
+      </div>
+      <div id="rel-lista-resgates"><div class="empty-state">Carregando...</div></div>
+    </div>
+
+    <!-- POR REPRESENTANTE -->
+    <div style="background:white;border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:14px;">👥 Por representante</div>
+      <div id="rel-por-rep"><div class="empty-state">Carregando...</div></div>
+    </div>
+
+    <!-- GERENCIAR REPRESENTANTES -->
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px;">⚙️ Gerenciar acessos</div>
     <button class="btn-main" id="btn-novo-rep" style="margin-bottom:16px;">+ Adicionar representante</button>
     <div id="lista-representantes"><div class="empty-state">Carregando...</div></div>
   </div>
@@ -952,7 +1000,7 @@ function iniciar() {
       .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
 
     if (!repAtual?.master) {
-      todas = todas.filter(c => c.representanteId === repId);
+      todas = todas.filter(c => c.representanteId === repId || (!c.representanteId && c.acessouApp));
     }
 
     todasConsultoras = todas;
@@ -1221,6 +1269,85 @@ function renderRanking() {
   }).join('');
 }
 
+// ===== RELATÓRIO MASTER =====
+function renderRelatorioMaster() {
+  if (!repAtual?.master) return;
+
+  // Busca TUDO sem filtro
+  Promise.all([
+    db.collection('indicacoes').get(),
+    db.collection('consultoras').get(),
+    db.collection('resgates').get(),
+    db.collection('representantes').get()
+  ]).then(([indSnap, consulSnap, resgSnap, repSnap]) => {
+    const inds = indSnap.docs.map(d => ({id: d.id, ...d.data()}));
+    const consuls = consulSnap.docs.map(d => ({id: d.id, ...d.data()}));
+    const resgs = resgSnap.docs.map(d => ({id: d.id, ...d.data()}))
+      .sort((a,b) => (b.criadoEm?.toMillis()||0) - (a.criadoEm?.toMillis()||0));
+    const reps = repSnap.docs.map(d => ({id: d.id, ...d.data()}));
+
+    // Totais gerais
+    const aprovadas = inds.filter(i => i.status === 'aprovada').length;
+    const naoAprov = inds.filter(i => i.status === 'reprovada' || i.status === 'cadastrada').length;
+    document.getElementById('rel-total-ind').textContent = inds.length;
+    document.getElementById('rel-total-aprov').textContent = aprovadas;
+    document.getElementById('rel-total-naoaprov').textContent = naoAprov;
+    document.getElementById('rel-total-consult').textContent = consuls.length;
+
+    // Resgates
+    const entregues = resgs.filter(r => r.status === 'entregue');
+    const pendentes = resgs.filter(r => r.status === 'pendente');
+    document.getElementById('rel-entregues').textContent = entregues.length;
+    document.getElementById('rel-pendentes').textContent = pendentes.length;
+
+    // Lista de resgates
+    const elResg = document.getElementById('rel-lista-resgates');
+    if (elResg) {
+      if (!resgs.length) { elResg.innerHTML = '<div class="empty-state">Nenhum resgate.</div>'; }
+      else {
+        elResg.innerHTML = resgs.map(r => {
+          const data = r.criadoEm?.toDate().toLocaleDateString('pt-BR') || '—';
+          const badge = r.status === 'entregue'
+            ? '<span style="background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;">✓ Entregue</span>'
+            : '<span style="background:#fef3cd;color:#d97706;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;">⏳ Pendente</span>';
+          return `<div style="border-bottom:1px solid #f5f5f5;padding:10px 0;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <div>
+              <div style="font-size:13px;font-weight:700;">${r.consultorNome||'—'}</div>
+              <div style="font-size:11px;color:var(--gray);">${r.produto||'—'} · ${data}</div>
+            </div>
+            ${badge}
+          </div>`;
+        }).join('');
+      }
+    }
+
+    // Por representante
+    const elPorRep = document.getElementById('rel-por-rep');
+    if (elPorRep) {
+      if (!reps.length) { elPorRep.innerHTML = '<div class="empty-state">Nenhum representante.</div>'; }
+      else {
+        elPorRep.innerHTML = reps.map(r => {
+          const minhasInd = inds.filter(i => i.representanteId === r.id);
+          const minhasAprov = minhasInd.filter(i => i.status === 'aprovada').length;
+          const minhasConsul = consuls.filter(c => c.representanteId === r.id).length;
+          const meusResg = resgs.filter(rg => rg.representanteId === r.id);
+          const entreguesRep = meusResg.filter(rg => rg.status === 'entregue').length;
+          const pendentesRep = meusResg.filter(rg => rg.status === 'pendente').length;
+          return `<div style="background:#f9f9f9;border-radius:12px;padding:14px;margin-bottom:10px;">
+            <div style="font-size:14px;font-weight:800;margin-bottom:8px;">${r.nome||r.email||'—'}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;color:var(--gray);">
+              <div>📋 <strong>${minhasInd.length}</strong> indicações</div>
+              <div>✅ <strong>${minhasAprov}</strong> aprovadas</div>
+              <div>👥 <strong>${minhasConsul}</strong> consultoras</div>
+              <div>🎁 <strong>${entreguesRep}</strong> entregues · <strong>${pendentesRep}</strong> pend.</div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+    }
+  }).catch(e => console.error('Erro relatório:', e));
+}
+
 // ===== LINK ÚNICO DO REPRESENTANTE =====
 function gerarMeuLink() {
   const base = 'https://r7oliveira.github.io/romance-app/romance-app.html';
@@ -1362,6 +1489,8 @@ document.querySelectorAll('.bnav-item').forEach(item => {
     // Mostrar FAB só no feed
     const fab = document.getElementById('feed-fab-rep');
     if (fab) fab.classList.toggle('show', pg === 'pg-feed');
+    // Atualiza relatório ao entrar no admin
+    if (pg === 'pg-admin') renderRelatorioMaster();
   });
 });
 
