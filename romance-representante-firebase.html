@@ -131,6 +131,24 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 .rank-av{width:40px;height:40px;min-width:40px;background:var(--pink-soft);border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--pink);}
 .rank-nome{flex:1;font-size:14px;font-weight:600;}
 .rank-pts{font-size:15px;font-weight:700;color:var(--pink);}
+/* ACERTO MODAL */
+.acerto-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+.acerto-overlay.hidden{display:none;}
+.acerto-sheet{background:white;border-radius:24px 24px 0 0;padding:28px 22px 44px;width:100%;max-width:430px;animation:up .28s ease;}
+.acerto-h{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;margin-bottom:4px;}
+.acerto-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+.acerto-label{font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:block;}
+.acerto-input{width:100%;padding:13px 16px;border:1.5px solid #e5e5e5;border-radius:var(--radius-sm);font-size:15px;font-family:'Outfit',sans-serif;color:var(--black);outline:none;margin-bottom:14px;background:white;}
+.acerto-input:focus{border-color:var(--pink);}
+.acerto-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.acerto-meta-info{background:var(--pink-pale);border:1.5px solid var(--pink-soft);border-radius:12px;padding:12px 14px;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.acerto-meta-txt{font-size:13px;color:var(--pink-deep);font-weight:600;line-height:1.4;}
+.acerto-meta-val{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--pink);white-space:nowrap;}
+.pct-wrap{display:flex;align-items:center;gap:8px;margin-bottom:18px;}
+.pct-label{font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.pct-input{width:72px;padding:10px 12px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:15px;font-family:'Outfit',sans-serif;text-align:center;outline:none;}
+.pct-input:focus{border-color:var(--pink);}
+.pct-desc{font-size:12px;color:var(--gray);}
 /* FILTROS */
 .filter-tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;}
 .filter-tabs::-webkit-scrollbar{display:none;}
@@ -486,6 +504,51 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
       <span class="bnav-lbl">Admin</span>
     </div>
   </nav>
+</div>
+
+<!-- MODAL ACERTO -->
+<div class="acerto-overlay hidden" id="m-acerto">
+  <div class="acerto-sheet">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div class="acerto-h">💰 Registrar Acerto</div>
+      <button onclick="fecharAcerto()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;padding:4px;">✕</button>
+    </div>
+    <div class="acerto-sub" id="acerto-nome-sub">Consultora</div>
+
+    <span class="acerto-label">Valor vendido (base da meta)</span>
+    <input class="acerto-input" type="number" id="acerto-vendido" placeholder="R$ 0,00" min="0" step="0.01" oninput="calcularMetaAcerto()" />
+
+    <div class="pct-wrap">
+      <span class="pct-label">Meta:</span>
+      <input class="pct-input" type="number" id="acerto-pct" value="50" min="1" max="200" oninput="calcularMetaAcerto()" />
+      <span class="pct-desc">% acima do valor vendido</span>
+    </div>
+
+    <div class="acerto-meta-info" id="acerto-meta-preview" style="display:none;">
+      <div style="font-size:22px;">🎯</div>
+      <div style="flex:1;">
+        <div class="acerto-meta-txt">Nova meta da consultora</div>
+        <div class="acerto-meta-val" id="acerto-meta-val">R$ 0,00</div>
+      </div>
+    </div>
+
+    <span class="acerto-label">Pagamento recebido</span>
+    <div class="acerto-row">
+      <div>
+        <span style="font-size:11px;color:#aaa;font-weight:600;display:block;margin-bottom:5px;">💳 Pix</span>
+        <input class="acerto-input" type="number" id="acerto-pix" placeholder="R$ 0,00" min="0" step="0.01" style="margin-bottom:0;" />
+      </div>
+      <div>
+        <span style="font-size:11px;color:#aaa;font-weight:600;display:block;margin-bottom:5px;">💵 Dinheiro</span>
+        <input class="acerto-input" type="number" id="acerto-dinheiro" placeholder="R$ 0,00" min="0" step="0.01" style="margin-bottom:0;" />
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--gray);margin-bottom:18px;margin-top:6px;">
+      Total pago: <strong id="acerto-total-pago">R$ 0,00</strong>
+    </div>
+
+    <button class="btn-main" id="btn-salvar-acerto" onclick="salvarAcerto()">Salvar acerto</button>
+  </div>
 </div>
 
 <!-- FAB FEED -->
@@ -1211,10 +1274,13 @@ function renderConsultoras(lista) {
           <div class="dado-row"><span class="dado-label">Cadastro</span><span class="dado-val">${data}</span></div>
         </div>
       </div>
-      <div class="consul-footer">
+      <div class="consul-footer" style="display:flex;gap:8px;align-items:center;">
         <button class="btn-whats" data-tel="${c.tel||''}" data-nome="${c.nome||''}">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.16 1.6 5.97L0 24l6.18-1.62A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.21-1.25-6.22-3.48-8.52z" fill="#25D366"/></svg>
           WhatsApp
+        </button>
+        <button onclick="abrirAcerto('${c.id}','${c.nome||''}')" style="flex:1;background:var(--pink);color:white;border:none;border-radius:7px;padding:7px 13px;font-size:12px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:5px;">
+          💰 Registrar Acerto
         </button>
       </div>
     </div>`;
@@ -1653,6 +1719,90 @@ function ouvirFeedRep() {
       </div>`;
     }).join('');
   });
+}
+
+
+// ===== ACERTO DE CONTAS =====
+let acertoConsultoraId = null;
+
+window.abrirAcerto = function(uid, nome) {
+  acertoConsultoraId = uid;
+  document.getElementById('acerto-nome-sub').textContent = nome;
+  document.getElementById('acerto-vendido').value = '';
+  document.getElementById('acerto-pix').value = '';
+  document.getElementById('acerto-dinheiro').value = '';
+  document.getElementById('acerto-pct').value = '50';
+  document.getElementById('acerto-meta-preview').style.display = 'none';
+  document.getElementById('acerto-total-pago').textContent = 'R$ 0,00';
+  document.getElementById('m-acerto').classList.remove('hidden');
+}
+
+window.fecharAcerto = function() {
+  document.getElementById('m-acerto').classList.add('hidden');
+  acertoConsultoraId = null;
+}
+
+window.calcularMetaAcerto = function() {
+  const vendido = parseFloat(document.getElementById('acerto-vendido').value) || 0;
+  const pct = parseFloat(document.getElementById('acerto-pct').value) || 50;
+  const pix = parseFloat(document.getElementById('acerto-pix').value) || 0;
+  const din = parseFloat(document.getElementById('acerto-dinheiro').value) || 0;
+  const meta = vendido * (1 + pct / 100);
+  document.getElementById('acerto-total-pago').textContent = 'R$ ' + (pix + din).toFixed(2).replace('.', ',');
+  if (vendido > 0) {
+    document.getElementById('acerto-meta-val').textContent = 'R$ ' + meta.toFixed(2).replace('.', ',');
+    document.getElementById('acerto-meta-preview').style.display = 'flex';
+  } else {
+    document.getElementById('acerto-meta-preview').style.display = 'none';
+  }
+}
+
+window.salvarAcerto = function() {
+  if (!acertoConsultoraId) return;
+  const vendido = parseFloat(document.getElementById('acerto-vendido').value) || 0;
+  const pct = parseFloat(document.getElementById('acerto-pct').value) || 50;
+  const pix = parseFloat(document.getElementById('acerto-pix').value) || 0;
+  const dinheiro = parseFloat(document.getElementById('acerto-dinheiro').value) || 0;
+  if (vendido <= 0) { alert('Informe o valor vendido.'); return; }
+  const meta = parseFloat((vendido * (1 + pct / 100)).toFixed(2));
+  const btn = document.getElementById('btn-salvar-acerto');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+  const acertoData = {
+    consultorId: acertoConsultoraId,
+    valorVendido: vendido,
+    percentualMeta: pct,
+    proximaMeta: meta,
+    pagamentoPix: pix,
+    pagamentoDinheiro: dinheiro,
+    totalPago: pix + dinheiro,
+    data: firebase.firestore.FieldValue.serverTimestamp(),
+    repId: repAtual?.uid || ''
+  };
+  db.collection('acertos').add(acertoData).then(() => {
+    // Atualiza proximaMeta na consultora
+    return db.collection('consultoras').doc(acertoConsultoraId).update({ proximaMeta: meta, ultimoVendido: vendido });
+  }).then(() => {
+    btn.disabled = false; btn.textContent = 'Salvar acerto';
+    fecharAcerto();
+    mostrarToastAcerto('✅ Acerto salvo! Meta da consultora atualizada.');
+  }).catch(e => {
+    btn.disabled = false; btn.textContent = 'Salvar acerto';
+    mostrarToastAcerto('❌ Erro ao salvar: ' + e.message);
+  });
+}
+
+function mostrarToastAcerto(msg) {
+  let toast = document.getElementById('toast-acerto');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast-acerto';
+    toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:14px 24px;border-radius:99px;font-size:14px;font-weight:600;font-family:Outfit,sans-serif;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.25);transition:opacity .3s;white-space:nowrap;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
 }
 
 </script>
