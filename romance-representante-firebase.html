@@ -551,6 +551,18 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
   </div>
 </div>
 
+<!-- BOTTOM SHEET HISTÓRICO ACERTOS -->
+<div class="acerto-overlay hidden" id="m-historico-acertos">
+  <div class="acerto-sheet" style="max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div class="acerto-h">📋 Histórico de Acertos</div>
+      <button onclick="fecharHistoricoAcertos()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#aaa;padding:4px;">✕</button>
+    </div>
+    <div class="acerto-sub" id="hist-nome-sub">Consultora</div>
+    <div id="hist-acertos-lista"><div class="empty-state">Carregando...</div></div>
+  </div>
+</div>
+
 <!-- FAB FEED -->
 <button class="feed-fab-rep" id="feed-fab-rep" onclick="abrirNovoPostRep()">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
@@ -1282,6 +1294,9 @@ function renderConsultoras(lista) {
         <button onclick="abrirAcerto('${c.id}','${c.nome||''}')" style="flex:1;background:var(--pink);color:white;border:none;border-radius:7px;padding:7px 13px;font-size:12px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:5px;">
           💰 Registrar Acerto
         </button>
+        <button onclick="verHistoricoAcertos('${c.id}','${c.nome||''}')" style="background:#f5f5f5;color:#333;border:none;border-radius:7px;padding:7px 10px;font-size:12px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;">
+          📋
+        </button>
       </div>
     </div>`;
   }).join('');
@@ -1785,6 +1800,12 @@ window.salvarAcerto = function() {
     btn.disabled = false; btn.textContent = 'Salvar acerto';
     fecharAcerto();
     mostrarToastAcerto('✅ Acerto salvo! Meta da consultora atualizada.');
+    // Se o histórico desta consultora estiver aberto, recarrega
+    const histSheet = document.getElementById('m-historico-acertos');
+    if (histSheet && !histSheet.classList.contains('hidden')) {
+      const nomeSub = document.getElementById('hist-nome-sub').textContent;
+      verHistoricoAcertos(acertoConsultoraId || '', nomeSub);
+    }
   }).catch(e => {
     btn.disabled = false; btn.textContent = 'Salvar acerto';
     mostrarToastAcerto('❌ Erro ao salvar: ' + e.message);
@@ -1804,6 +1825,65 @@ function mostrarToastAcerto(msg) {
   clearTimeout(toast._t);
   toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
 }
+
+
+// ===== HISTÓRICO DE ACERTOS =====
+window.verHistoricoAcertos = function(uid, nome) {
+  document.getElementById('hist-nome-sub').textContent = nome;
+  document.getElementById('hist-acertos-lista').innerHTML = '<div class="empty-state">Carregando...</div>';
+  document.getElementById('m-historico-acertos').classList.remove('hidden');
+
+  db.collection('acertos')
+    .where('consultorId', '==', uid)
+    .orderBy('data', 'desc')
+    .get()
+    .then(snap => {
+      if (snap.empty) {
+        document.getElementById('hist-acertos-lista').innerHTML = '<div class="empty-state">Nenhum acerto registrado ainda.</div>';
+        return;
+      }
+      const acertos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      document.getElementById('hist-acertos-lista').innerHTML = acertos.map((a, i) => {
+        const dataStr = a.data?.toDate ? a.data.toDate().toLocaleDateString('pt-BR') : '—';
+        const v = (a.valorVendido || 0).toFixed(2).replace('.', ',');
+        const m = (a.proximaMeta || 0).toFixed(2).replace('.', ',');
+        const pix = (a.pagamentoPix || 0).toFixed(2).replace('.', ',');
+        const din = (a.pagamentoDinheiro || 0).toFixed(2).replace('.', ',');
+        const total = (a.totalPago || 0).toFixed(2).replace('.', ',');
+        const pct = a.percentualMeta || 50;
+        return `
+          <div style="background:#fafafa;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #f0f0f0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <div style="font-size:11px;font-weight:700;color:var(--gray);">${i === 0 ? '🟢 ÚLTIMO' : 'ACERTO'} · ${dataStr}</div>
+              <div style="font-size:11px;color:var(--gray);">Meta +${pct}%</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+              <div style="background:white;border-radius:10px;padding:10px;border:1px solid #eee;">
+                <div style="font-size:10px;color:var(--gray);font-weight:600;margin-bottom:2px;">Valor vendido</div>
+                <div style="font-size:16px;font-weight:800;color:var(--black);">R$ ${v}</div>
+              </div>
+              <div style="background:var(--pink-pale);border-radius:10px;padding:10px;border:1px solid var(--pink-soft);">
+                <div style="font-size:10px;color:var(--pink-deep);font-weight:600;margin-bottom:2px;">Meta gerada</div>
+                <div style="font-size:16px;font-weight:800;color:var(--pink);">R$ ${m}</div>
+              </div>
+            </div>
+            <div style="font-size:12px;color:var(--gray);border-top:1px solid #eee;padding-top:8px;display:flex;gap:12px;flex-wrap:wrap;">
+              <span>💳 Pix: <strong>R$ ${pix}</strong></span>
+              <span>💵 Dinheiro: <strong>R$ ${din}</strong></span>
+              <span style="color:var(--black);">Total: <strong>R$ ${total}</strong></span>
+            </div>
+          </div>`;
+      }).join('');
+    })
+    .catch(e => {
+      document.getElementById('hist-acertos-lista').innerHTML = '<div class="empty-state">Erro ao carregar. Verifique o índice no Firebase.</div>';
+      console.error(e);
+    });
+};
+
+window.fecharHistoricoAcertos = function() {
+  document.getElementById('m-historico-acertos').classList.add('hidden');
+};
 
 </script>
 </body>
