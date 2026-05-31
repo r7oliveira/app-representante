@@ -722,7 +722,7 @@ document.getElementById('btn-logout').addEventListener('click', async () => {
 function entrarNoApp() {
   // Atualiza nome e saudação conforme gênero
   const primeiroNome = (repAtual.nome || 'Representante').split(' ')[0];
-  const bemVindo = repAtual.genero === 'M' ? 'Bem-vindo de volta,' : 'Bem-vinda de volta,';
+  const bemVindo = 'Olá,';
   // topbar fixo
   document.getElementById('saudacao-nome').textContent = primeiroNome;
   document.getElementById('saudacao-ola').textContent = bemVindo;
