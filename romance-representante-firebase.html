@@ -37,6 +37,23 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 .hint{text-align:center;margin-top:14px;font-size:13px;color:var(--gray);}
 /* TOPBAR */
 .topbar{background:white;padding:16px 20px 14px;border-bottom:1px solid #ececec;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,0.05);}
+/* ===== MENU LATERAL REP ===== */
+.rep-menu-overlay{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:300;pointer-events:none;transition:background .3s;}
+.rep-menu-overlay.open{background:rgba(0,0,0,0.45);pointer-events:auto;}
+.rep-menu-lateral{position:fixed;top:0;left:-320px;width:300px;height:100%;background:white;z-index:301;transition:left .3s cubic-bezier(.4,0,.2,1);box-shadow:4px 0 24px rgba(0,0,0,0.15);display:flex;flex-direction:column;overflow-y:auto;}
+.rep-menu-lateral.open{left:0;}
+.rep-menu-header{background:linear-gradient(135deg,#4a0030,#D91A7A);padding:40px 20px 24px;display:flex;align-items:center;gap:14px;position:relative;}
+.rep-menu-avatar{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:white;flex-shrink:0;}
+.rep-menu-nome{font-size:17px;font-weight:700;color:white;line-height:1.2;}
+.rep-menu-sub{font-size:12px;color:rgba(255,255,255,0.75);margin-top:2px;}
+.rep-menu-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.2);border:none;color:white;font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.rep-menu-item{display:flex;align-items:center;gap:14px;padding:16px 20px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .15s;}
+.rep-menu-item:active{background:#f9f9f9;}
+.rep-menu-item-icon{font-size:20px;width:28px;text-align:center;}
+.rep-menu-item-label{font-size:15px;font-weight:600;color:#333;}
+.rep-menu-item-sub{font-size:12px;color:#999;margin-top:1px;}
+.rep-menu-btn{background:none;border:none;cursor:pointer;padding:4px;display:flex;flex-direction:column;gap:5px;}
+.rep-menu-btn span{display:block;width:22px;height:2px;background:#333;border-radius:2px;}
 .tb-brand{display:flex;align-items:center;gap:9px;}
 .tb-icon{width:32px;height:32px;background:var(--black);border-radius:9px;display:flex;align-items:center;justify-content:center;}
 .tb-icon svg{width:18px;height:18px;}
@@ -259,9 +276,62 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 
 <!-- APP -->
 <div id="tela-app" class="screen" style="min-height:100vh;display:none;">
+  <!-- MENU OVERLAY REP -->
+  <div class="rep-menu-overlay" id="rep-menu-overlay" onclick="fecharMenuRep()"></div>
+
+  <!-- MENU LATERAL REP -->
+  <div class="rep-menu-lateral" id="rep-menu-lateral">
+    <div class="rep-menu-header">
+      <button class="rep-menu-close" onclick="fecharMenuRep()">✕</button>
+      <div class="rep-menu-avatar" id="rep-menu-avatar">R</div>
+      <div>
+        <div class="rep-menu-nome" id="rep-menu-nome">Representante</div>
+        <div class="rep-menu-sub">App Representante</div>
+      </div>
+    </div>
+
+    <div class="rep-menu-item" onclick="abrirMenuRepPerfil()">
+      <div class="rep-menu-item-icon">👤</div>
+      <div>
+        <div class="rep-menu-item-label">Meu Perfil</div>
+        <div class="rep-menu-item-sub">Seus dados pessoais</div>
+      </div>
+    </div>
+
+    <div class="rep-menu-item" onclick="abrirMenuRepRelatorio()">
+      <div class="rep-menu-item-icon">📊</div>
+      <div>
+        <div class="rep-menu-item-label">Relatório do Mês</div>
+        <div class="rep-menu-item-sub">Resumo de vendas e indicações</div>
+      </div>
+    </div>
+
+    <div class="rep-menu-item" onclick="abrirMenuRepCursos()">
+      <div class="rep-menu-item-icon">🎓</div>
+      <div>
+        <div class="rep-menu-item-label">Cursos</div>
+        <div class="rep-menu-item-sub">Capacitação para representantes</div>
+      </div>
+    </div>
+
+    <div class="rep-menu-item" onclick="abrirMenuRepConfig()">
+      <div class="rep-menu-item-icon">⚙️</div>
+      <div>
+        <div class="rep-menu-item-label">Configurações</div>
+        <div class="rep-menu-item-sub">Percentual de meta e preferências</div>
+      </div>
+    </div>
+
+  </div>
+
   <div class="topbar">
-    <div class="tb-brand">
-      <div class="tb-title">APP<small>Representante</small></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="rep-menu-btn" onclick="abrirMenuRep()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="tb-brand">
+        <div class="tb-title">APP<small>Representante</small></div>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <div class="notif-btn" id="btn-notif">
@@ -1635,6 +1705,57 @@ window.enviarNotificacaoPush = async function() {
   });
 
   alert(`✅ Notificação enviada para ${snap.size} consultora(s)!`);
+};
+
+// ===== MENU LATERAL REP =====
+window.abrirMenuRep = function() {
+  document.getElementById('rep-menu-lateral').classList.add('open');
+  document.getElementById('rep-menu-overlay').classList.add('open');
+  // Atualiza nome no header
+  const nome = repAtual?.nome || repAtual?.email || 'Representante';
+  const inicial = nome[0].toUpperCase();
+  const av = document.getElementById('rep-menu-avatar');
+  const nm = document.getElementById('rep-menu-nome');
+  if (av) av.textContent = inicial;
+  if (nm) nm.textContent = nome;
+};
+
+window.fecharMenuRep = function() {
+  document.getElementById('rep-menu-lateral').classList.remove('open');
+  document.getElementById('rep-menu-overlay').classList.remove('open');
+};
+
+window.abrirMenuRepPerfil = function() {
+  fecharMenuRep();
+  // Navega para a aba Admin onde ficam os dados do representante
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('ativo'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('ativo'));
+  const pg = document.getElementById('pg-admin');
+  if (pg) pg.classList.add('ativo');
+};
+
+window.abrirMenuRepRelatorio = function() {
+  fecharMenuRep();
+  // Mostra resumo do mês em toast por enquanto
+  const total = todasConsultoras.length;
+  const vendas = todasConsultoras.reduce((s,c) => s + (c.ultimoVendido||0), 0);
+  const ind = todasConsultoras.reduce((s,c) => s + (c.indicacoes||0), 0);
+  const valFmt = vendas.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+  alert(`📊 Relatório do Mês
+
+👥 Consultoras ativas: ${total}
+💰 Total vendido: R$ ${valFmt}
+📋 Total indicações: ${ind}`);
+};
+
+window.abrirMenuRepCursos = function() {
+  fecharMenuRep();
+  alert('🎓 Cursos para representantes em breve!');
+};
+
+window.abrirMenuRepConfig = function() {
+  fecharMenuRep();
+  alert('⚙️ Configurações em breve!');
 };
 
 // ===== FILTRO INDICAÇÕES =====
