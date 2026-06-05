@@ -471,6 +471,21 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
   <div class="page" id="pg-feed">
     <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Feed</div>
     <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Publique novidades, dicas e conquistas para suas consultoras.</p>
+
+    <!-- BOTÃO NOTIFICAÇÃO -->
+    <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;padding:18px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">📣 Enviar Notificação Push</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:14px;">Avise todas as consultoras que aceitaram notificações</div>
+      <select id="notif-tipo" style="width:100%;padding:10px;border-radius:10px;border:none;font-size:13px;margin-bottom:10px;background:#fff;">
+        <option value="nova-aula">📚 Nova aula disponível 🎓</option>
+        <option value="novo-premio">🎁 Novo prêmio disponível!</option>
+        <option value="desafio">⚡ Desafio relâmpago ativo!</option>
+        <option value="custom">✏️ Mensagem personalizada</option>
+      </select>
+      <input id="notif-custom" placeholder="Digite sua mensagem..." style="width:100%;padding:10px;border-radius:10px;border:none;font-size:13px;margin-bottom:10px;display:none;box-sizing:border-box;">
+      <button onclick="enviarNotificacaoPush()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--pink);color:white;font-size:14px;font-weight:700;cursor:pointer;">Enviar para todas 🚀</button>
+    </div>
+
     <div id="lista-feed-rep"><div class="empty-state">Carregando...</div></div>
   </div>
 
@@ -1587,6 +1602,39 @@ document.getElementById('btn-notif').addEventListener('click', () => {
   document.getElementById('pg-indicacoes').classList.add('ativo');
   document.querySelector('[data-pg="pg-indicacoes"]').classList.add('ativo');
 });
+
+// ===== NOTIFICAÇÃO PUSH =====
+document.getElementById('notif-tipo').addEventListener('change', function() {
+  const custom = document.getElementById('notif-custom');
+  custom.style.display = this.value === 'custom' ? 'block' : 'none';
+});
+
+window.enviarNotificacaoPush = async function() {
+  const tipo = document.getElementById('notif-tipo').value;
+  const custom = document.getElementById('notif-custom').value;
+  const mensagens = {
+    'nova-aula':   { title: 'Nova aula disponível 🎓', body: 'Acesse o app e continue aprendendo!' },
+    'novo-premio': { title: 'Novo prêmio disponível! 🎁', body: 'Confira os prêmios que você pode resgatar!' },
+    'desafio':     { title: 'Desafio relâmpago! ⚡', body: 'Corra! Indicações valem pontos extras agora!' },
+    'custom':      { title: 'Sua representante enviou uma mensagem', body: custom || '' },
+  };
+  const msg = mensagens[tipo];
+  if (!msg.body) { alert('Digite sua mensagem!'); return; }
+
+  // Busca todos os tokens FCM das consultoras
+  const snap = await db.collection('consultoras').where('fcmToken', '!=', '').get();
+  if (snap.empty) { alert('Nenhuma consultora com notificação ativa ainda.'); return; }
+
+  // Salva a notificação no Firestore para ser processada
+  await db.collection('notificacoes_push').add({
+    title: msg.title,
+    body: msg.body,
+    criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+    enviadoPor: auth.currentUser?.uid || 'representante'
+  });
+
+  alert(`✅ Notificação enviada para ${snap.size} consultora(s)!`);
+};
 
 // ===== FILTRO INDICAÇÕES =====
 document.querySelectorAll('.ftab').forEach(tab => {
