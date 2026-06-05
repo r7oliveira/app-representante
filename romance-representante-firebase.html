@@ -406,7 +406,7 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
   <!-- RANKING -->
   <div class="page" id="pg-ranking">
     <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Ranking</div>
-    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Consultoras com mais pontos este mês.</p>
+    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Consultoras com maior valor vendido no último acerto.</p>
     <div class="card" id="lista-ranking"><div class="empty-state">Carregando...</div></div>
   </div>
 
@@ -1349,17 +1349,18 @@ window.whatsResgate = function(btn) {
 function renderRanking() {
   const el = document.getElementById('lista-ranking');
   const sorted = [...todasConsultoras]
-    .filter(c => (c.pontos||0) > 0)
-    .sort((a,b) => (b.pontos||0)-(a.pontos||0));
-  if (!sorted.length) { el.innerHTML = '<div class="empty-state">Nenhuma consultora com pontos ainda.</div>'; return; }
+    .filter(c => (c.ultimoVendido||0) > 0)
+    .sort((a,b) => (b.ultimoVendido||0)-(a.ultimoVendido||0));
+  if (!sorted.length) { el.innerHTML = '<div class="empty-state">Nenhuma consultora com vendas ainda.</div>'; return; }
   const cls = ['p1','p2','p3'];
   el.innerHTML = sorted.slice(0,10).map((c,i) => {
     const ini = (c.nome||'').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const valor = (c.ultimoVendido||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
     return `<div class="rank-row">
       <div class="rank-pos ${cls[i]||''}">${i+1}</div>
       <div class="rank-av">${ini}</div>
-      <div style="flex:1"><div class="rank-nome">${c.nome||'—'}</div><div style="font-size:12px;color:var(--gray)">${c.indicacoes||0} indicações</div></div>
-      <div class="rank-pts">${c.pontos||0} pts</div>
+      <div style="flex:1"><div class="rank-nome">${c.nome||'—'}</div><div style="font-size:12px;color:var(--gray)">último acerto</div></div>
+      <div class="rank-pts">R$ ${valor}</div>
     </div>`;
   }).join('');
 }
