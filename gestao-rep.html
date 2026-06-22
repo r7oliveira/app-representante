@@ -176,6 +176,24 @@
     .ai-loading.show { display:block; }
     @keyframes spin { to { transform:rotate(360deg); } }
     .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(217,26,122,.3); border-top-color:var(--pink); border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
+    /* IMPORT DO SISTEMA */
+    .import-slot { border: 2px dashed #e3e3e8; border-radius: 13px; padding: 14px; margin-bottom: 10px; cursor: pointer; transition: .15s; text-align: center; position: relative; }
+    .import-slot.has-file { border-color: var(--green); background: var(--green-bg); }
+    .import-slot.processing { border-color: var(--pink); background: #fff0f8; }
+    .import-slot .slot-ico { font-size: 26px; margin-bottom: 4px; }
+    .import-slot .slot-lbl { font-size: 13px; font-weight: 700; color: var(--dark); }
+    .import-slot .slot-sub { font-size: 11px; color: var(--gray); margin-top: 2px; }
+    .import-slot .slot-ok { font-size: 11px; color: var(--green); font-weight: 700; margin-top: 4px; }
+    .import-slot input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .import-thumb { width: 100%; max-height: 80px; object-fit: cover; border-radius: 8px; margin-top: 8px; }
+    .result-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .result-row:last-child { border-bottom: none; }
+    .result-row .rn { font-weight: 600; flex: 1; }
+    .result-row .rv { color: var(--pink); font-weight: 700; }
+    .result-row .rp { color: var(--green); font-weight: 700; margin-left: 10px; }
+    .step-badge { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--pink); color: white; font-size: 11px; font-weight: 800; flex-shrink: 0; margin-right: 6px; }
+    .import-status { font-size: 13px; font-weight: 600; color: var(--pink); padding: 10px; text-align: center; display: none; }
+    .import-status.show { display: block; }
   </style>
 </head>
 <body>
@@ -210,6 +228,50 @@
 
   <!-- ══════════ SEMANA / LANÇAMENTOS ══════════ -->
   <div class="view" id="view-semana">
+
+    <!-- IMPORTAR DO SISTEMA -->
+    <div class="card" id="importCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="card-title" style="margin:0;">📷 Importar do sistema</div>
+        <button class="btn small secondary" onclick="toggleImport()">Ocultar</button>
+      </div>
+      <p class="muted" style="margin-bottom:12px;line-height:1.6;">Fotografe as 3 telas do seu sistema. O app extrai os dados e preenche a semana automaticamente.</p>
+
+      <div class="import-slot" id="slot1" onclick="document.getElementById('fi1').click()">
+        <input type="file" id="fi1" accept="image/*" onchange="setSlot(1,this)" onclick="event.stopPropagation()">
+        <div class="slot-ico">1️⃣</div>
+        <div class="slot-lbl">Informações da semana</div>
+        <div class="slot-sub">Tela com Região, Semana ativa e Suas cobranças</div>
+        <div class="slot-ok" id="slotOk1" style="display:none;">✓ Foto carregada</div>
+        <img id="slotThumb1" class="import-thumb" style="display:none;">
+      </div>
+
+      <div class="import-slot" id="slot2" onclick="document.getElementById('fi2').click()">
+        <input type="file" id="fi2" accept="image/*" onchange="setSlot(2,this)" onclick="event.stopPropagation()">
+        <div class="slot-ico">2️⃣</div>
+        <div class="slot-lbl">Minha cobrança na semana</div>
+        <div class="slot-sub">Tabela com consultoras e valores pagos</div>
+        <div class="slot-ok" id="slotOk2" style="display:none;">✓ Foto carregada</div>
+        <img id="slotThumb2" class="import-thumb" style="display:none;">
+      </div>
+
+      <div class="import-slot" id="slot3" onclick="document.getElementById('fi3').click()">
+        <input type="file" id="fi3" accept="image/*" onchange="setSlot(3,this)" onclick="event.stopPropagation()">
+        <div class="slot-ico">3️⃣</div>
+        <div class="slot-lbl">Notas distribuídas</div>
+        <div class="slot-sub">Tabela com valor da nota de cada consultora</div>
+        <div class="slot-ok" id="slotOk3" style="display:none;">✓ Foto carregada</div>
+        <img id="slotThumb3" class="import-thumb" style="display:none;">
+      </div>
+
+      <div class="import-status" id="importStatus"><span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(217,26,122,.3);border-top-color:var(--pink);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;"></span><span id="importStatusTxt">Processando…</span></div>
+      <div id="importResult" style="display:none;"></div>
+
+      <button class="btn w100" id="btnProcessar" onclick="processarFotos()" style="margin-top:10px;" disabled>
+        Processar fotos
+      </button>
+    </div>
+
     <div class="card">
       <div class="card-title">Semana de trabalho</div>
       <div class="week-row" style="margin-bottom:10px;">
@@ -800,6 +862,278 @@ function renderPainel() {
 
     <button class="btn w100 secondary" onclick="switchTab('config')">⚙️ Configurar meta / caixa</button>
   `;
+}
+
+/* ════════════════════ IMPORTAR DO SISTEMA ════════════════════ */
+const importSlots = {1: null, 2: null, 3: null};
+let importVisible = true;
+
+function toggleImport() {
+  importVisible = !importVisible;
+  const card = document.getElementById('importCard');
+  const slots = card.querySelectorAll('.import-slot, #importResult, #importStatus, #btnProcessar, .muted');
+  slots.forEach(el => el.style.display = importVisible ? '' : 'none');
+  card.querySelector('button.btn.small').textContent = importVisible ? 'Ocultar' : 'Mostrar';
+}
+
+function setSlot(n, input) {
+  const file = input.files[0]; if (!file) return;
+  importSlots[n] = file;
+  document.getElementById('slot'+n).classList.add('has-file');
+  document.getElementById('slotOk'+n).style.display = 'block';
+  const thumb = document.getElementById('slotThumb'+n);
+  thumb.src = URL.createObjectURL(file);
+  thumb.style.display = 'block';
+  const anyLoaded = Object.values(importSlots).some(Boolean);
+  document.getElementById('btnProcessar').disabled = !anyLoaded;
+  document.getElementById('importResult').style.display = 'none';
+}
+
+async function rotateImg(file, deg) {
+  return new Promise(res => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const sw = (deg===90||deg===270) ? img.height : img.width;
+      const sh = (deg===90||deg===270) ? img.width  : img.height;
+      const cv = document.createElement('canvas');
+      cv.width = sw; cv.height = sh;
+      const ctx = cv.getContext('2d');
+      ctx.translate(sw/2, sh/2);
+      ctx.rotate(deg * Math.PI / 180);
+      ctx.drawImage(img, -img.width/2, -img.height/2);
+      URL.revokeObjectURL(url);
+      cv.toBlob(res, 'image/jpeg', 0.88);
+    };
+    img.src = url;
+  });
+}
+
+async function smartOCR(file, label) {
+  setStatus(`Lendo ${label}…`);
+  const kwRe = /Região|Semana|Pessoa|Valor|Quitada|cobranças|Nota|distribuída|R\$/gi;
+  let best = {score: 0, text: ''};
+  for (const deg of [90, 0, 270, 180]) {
+    setStatus(`Lendo ${label} (rotação ${deg}°)…`);
+    const blob = deg === 0 ? file : await rotateImg(file, deg);
+    const r = await Tesseract.recognize(blob, 'por+eng');
+    const text = r.data.text;
+    const score = (text.match(kwRe)||[]).length;
+    if (score > best.score) best = {score, text};
+    if (score >= 4) break;
+  }
+  return best.text;
+}
+
+function setStatus(msg) {
+  const s = document.getElementById('importStatus');
+  document.getElementById('importStatusTxt').textContent = msg;
+  s.classList.add('show');
+}
+
+// Parsers
+const parseMoney = s => {
+  const m = String(s).match(/([0-9]+[.,][0-9]{3}[.,][0-9]{2}|[0-9]+[.,][0-9]{2})/);
+  if (!m) return 0;
+  let v = m[1];
+  // handle 1.234,56 → 1234.56
+  if (v.match(/\./)) v = v.replace(/\./g,'').replace(',','.');
+  else v = v.replace(',','.');
+  return parseFloat(v)||0;
+};
+
+const normN = s => String(s).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+
+function parseInfo(text) {
+  const f = (re, def='') => { const m = text.match(re); return m ? m[1].trim() : def; };
+  return {
+    regiao:    f(/Regi[aã]o\s+([A-Za-záéíóúâêîôûãõç]+)/i),
+    semana:    f(/Semana ativa\s+(\d{1,2}\/\d{4})/i),
+    cobrancas: parseMoney(f(/Suas cobran[cç]as\s+(R\$[0-9.,]+)/i) || f(/Total pr[oó]prio[:\s]+(R\$[0-9.,]+)/i)),
+    novas:     parseInt(f(/Novas\s*\(regi[aã]o atual\)\s+(\d+)/i,'0'))||0,
+    acertos:   parseInt(f(/Acertos\s*\(regi[aã]o atual\)\s+(\d+)/i,'0'))||0,
+  };
+}
+
+function parseCobranca(text) {
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const res = [];
+  const nameRe = /^[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ\s\.]{4,}$/;
+  const skip = /ALCEU|NANTAL|ROGERIO|AJUDANTE|MINHA|COBRAN|SEMANA|PESSOA|NOTA|DATA|VALOR|SALDO/i;
+  let pend = null;
+  for (const line of lines) {
+    if (nameRe.test(line) && !skip.test(line) && line.split(' ').length >= 2) {
+      pend = line;
+    }
+    if (pend && (line.includes('Quitada') || line.includes('quitada') || line.match(/R\$/))) {
+      const m = line.match(/R\$\s?([0-9.]+,[0-9]{2})/);
+      if (m) {
+        const v = parseMoney(m[0]);
+        if (v > 0 && v < 99999) { res.push({nome: pend, pago: v}); pend = null; }
+      }
+    }
+  }
+  // Fallback: scan for name→amount pairs without Quitada
+  if (res.length === 0) {
+    for (let i = 0; i < lines.length; i++) {
+      const l = lines[i];
+      if (nameRe.test(l) && !skip.test(l) && l.split(' ').length >= 2) {
+        for (let j=i+1; j<=Math.min(i+4,lines.length-1); j++) {
+          const m = lines[j].match(/R\$\s?([0-9.]+,[0-9]{2})/);
+          if (m) { res.push({nome:l, pago:parseMoney(m[0])}); break; }
+        }
+      }
+    }
+  }
+  return res;
+}
+
+function parseNotas(text) {
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const res = [];
+  const nameRe = /^[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ\s\.]{4,}$/;
+  const skip = /NOTAS|DISTRIBU|PENDENTE|ACERTO|PESSOA|NOTA|DATA|SEMANA|VALOR|OCULTAR/i;
+  let pend = null;
+  for (const line of lines) {
+    if (nameRe.test(line) && !skip.test(line) && line.split(' ').length >= 2) {
+      pend = line;
+    }
+    if (pend) {
+      const amounts = [...line.matchAll(/R\$\s?([0-9.]+,[0-9]{2})/g)];
+      if (amounts.length > 0) {
+        const v = parseMoney(amounts[amounts.length-1][0]);
+        if (v > 0 && v < 99999) { res.push({nome: pend, vendido: v}); pend = null; }
+      }
+    }
+  }
+  return res;
+}
+
+function mergeData(cobranca, notas) {
+  const map = {};
+  notas.forEach(n => { map[normN(n.nome)] = {nome: n.nome, vendido: n.vendido, pago: 0, forma:'pix'}; });
+  cobranca.forEach(c => {
+    const k = normN(c.nome);
+    if (map[k]) map[k].pago = c.pago;
+    else map[k] = {nome: c.nome, vendido: 0, pago: c.pago, forma: 'pix'};
+  });
+  return Object.values(map);
+}
+
+async function processarFotos() {
+  const btn = document.getElementById('btnProcessar');
+  btn.disabled = true;
+  document.getElementById('importResult').style.display = 'none';
+  setStatus('Iniciando leitura…');
+
+  try {
+    let info = {regiao:'', semana:'', cobrancas:0, novas:0, acertos:0};
+    let cobranca = [], notas = [];
+
+    if (importSlots[1]) {
+      const t1 = await smartOCR(importSlots[1], 'Informações');
+      info = parseInfo(t1);
+    }
+    if (importSlots[2]) {
+      const t2 = await smartOCR(importSlots[2], 'Cobranças');
+      cobranca = parseCobranca(t2);
+    }
+    if (importSlots[3]) {
+      const t3 = await smartOCR(importSlots[3], 'Notas');
+      notas = parseNotas(t3);
+    }
+
+    const entradas = mergeData(cobranca, notas);
+    const totalVendido = entradas.reduce((s,e)=>s+(e.vendido||0),0);
+    const totalPago    = entradas.reduce((s,e)=>s+(e.pago||0),0);
+
+    // Show result preview
+    const wrap = document.getElementById('importResult');
+    wrap.style.display = 'block';
+    document.getElementById('importStatus').classList.remove('show');
+
+    wrap.innerHTML = `
+      <div style="background:var(--green-bg);border-radius:12px;padding:12px;margin-bottom:10px;">
+        <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:6px;">✓ Dados extraídos — confirme antes de importar</div>
+        ${info.semana ? `<div class="muted">Semana: <b>${esc(info.semana)}</b> · Região: <b>${esc(info.regiao||'—')}</b></div>` : ''}
+        <div class="muted">Total vendido: <b>${brl(totalVendido)}</b> · Recebido: <b>${brl(totalPago)}</b></div>
+        <div class="muted">Novas: <b>${info.novas}</b> · Acertos: <b>${info.acertos}</b></div>
+      </div>
+
+      ${entradas.length ? `
+        <div style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">
+          ${entradas.length} consultora(s) encontrada(s)
+        </div>
+        ${entradas.map(e=>`
+          <div class="result-row">
+            <span class="rn">${esc(e.nome)}</span>
+            <span class="rv">${brl(e.vendido)}</span>
+            <span class="rp">${brl(e.pago)}</span>
+          </div>`).join('')}
+        <div style="font-size:11px;color:var(--gray);margin-top:6px;">rosa = vendido · verde = pago</div>
+      ` : '<div class="muted">Não encontrei consultoras. Verifique a nitidez das fotos.</div>'}
+
+      <div class="btn-row" style="margin-top:14px;">
+        <button class="btn secondary" onclick="document.getElementById('importResult').style.display='none'">Cancelar</button>
+        <button class="btn" onclick="confirmarImport(${JSON.stringify({info,entradas}).replace(/"/g,'&quot;')})">✓ Importar semana</button>
+      </div>
+    `;
+  } catch(e) {
+    setStatus('⚠️ Erro: ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function confirmarImport(dataStr) {
+  let data;
+  try { data = typeof dataStr === 'string' ? JSON.parse(dataStr.replace(/&quot;/g,'"')) : dataStr; }
+  catch(e) { alert('Erro ao importar dados.'); return; }
+
+  const {info, entradas} = data;
+  const nome = info.semana || ('Semana ' + (DB.semanas.length+1));
+
+  // Find or create region
+  let reg = DB.regioes.find(r => normN(r.nome) === normN(info.regiao||''));
+  if (!reg && info.regiao) {
+    reg = {id: uid(), nome: info.regiao, consultoras: []};
+    // Add consultoras from entries
+    entradas.forEach(e => {
+      if (!reg.consultoras.find(c=>normN(c.nome)===normN(e.nome))) {
+        reg.consultoras.push({id: uid(), nome: e.nome, tel:'', cpf:'', bairro:'', cidade:'', aniv:''});
+      }
+    });
+    DB.regioes.push(reg);
+  }
+
+  // Map entradas to consultora IDs
+  const entrsFinal = entradas.map(e => {
+    const c = reg ? reg.consultoras.find(c=>normN(c.nome)===normN(e.nome)) : null;
+    return {consId: c?.id||uid(), nome: e.nome, vendido: e.vendido||0, pago: e.pago||0, forma: 'pix'};
+  });
+
+  const sem = {
+    id: uid(), nome, regiaoId: reg?.id||uid(), regiaoNome: info.regiao||'Importada',
+    criada: Date.now(),
+    entradas: entrsFinal,
+    meta: 0, caixa: 0,
+    ativas: info.acertos||entradas.length,
+    novas: info.novas||0, nota: ''
+  };
+  DB.semanas.unshift(sem);
+  save(); refreshSelects();
+  document.getElementById('selSemana').value = sem.id;
+  document.getElementById('importResult').style.display = 'none';
+  // Reset slots
+  [1,2,3].forEach(n => {
+    importSlots[n] = null;
+    document.getElementById('slot'+n).classList.remove('has-file');
+    document.getElementById('slotOk'+n).style.display = 'none';
+    document.getElementById('slotThumb'+n).style.display = 'none';
+    document.getElementById('fi'+n).value = '';
+  });
+  renderSemanaView();
+  switchTab('painel');
 }
 
 /* ════════════════════ INIT ════════════════════ */
