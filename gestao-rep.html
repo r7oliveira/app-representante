@@ -995,13 +995,46 @@ const parseMoney = s => {
   const m = String(s).match(/([0-9]+[.,][0-9]{3}[.,][0-9]{2}|[0-9]+[.,][0-9]{2})/);
   if (!m) return 0;
   let v = m[1];
-  // handle 1.234,56 → 1234.56
   if (v.match(/\./)) v = v.replace(/\./g,'').replace(',','.');
   else v = v.replace(',','.');
   return parseFloat(v)||0;
 };
 
-const normN = s => String(s).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+const normN = s => String(s||'').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+
+function cleanName(raw) {
+  // Remove palavras iniciais com lixo OCR: ≤2 chars OU 3+ consoantes seguidas
+  if (!raw) return '';
+  const words = raw.trim().split(/\s+/);
+  const badWord = w => w.length <= 2 || /[BCDFGHJKLMNPQRSTVWXYZ]{3}/i.test(w);
+  let start = 0;
+  for (let i = 0; i < Math.min(words.length - 1, 4); i++) {
+    if (badWord(words[i])) start = i + 1; else break;
+  }
+  return words.slice(start).join(' ').trim();
+}
+
+function matchName(raw) {
+  const cleaned = cleanName(raw.toUpperCase());
+  // Fuzzy match com consultoras já cadastradas no DB
+  const allNames = DB.regioes.flatMap(r => r.consultoras.map(c => c.nome));
+  if (!allNames.length) return cleaned || raw.toUpperCase();
+  const nCleaned = normN(cleaned);
+  // Exact match
+  const exact = allNames.find(n => normN(n) === nCleaned);
+  if (exact) return exact.toUpperCase();
+  // Word overlap ≥60%
+  const cleanedWords = nCleaned.split(' ').filter(w => w.length > 2);
+  let bestMatch = null, bestScore = 0;
+  for (const n of allNames) {
+    const nWords = normN(n).split(' ').filter(w => w.length > 2);
+    const hits = nWords.filter(w => cleanedWords.some(cw => cw.includes(w) || w.includes(cw))).length;
+    const score = hits / Math.max(nWords.length, 1);
+    if (score > bestScore && score >= 0.6) { bestScore = score; bestMatch = n; }
+  }
+  return (bestMatch || cleaned || raw).toUpperCase();
+}
+
 
 function parseInfo(text) {
   const f  = (re, def='') => { const m = text.match(re); return m ? m[1].trim() : def; };
@@ -1084,7 +1117,7 @@ function parseCobranca(text) {
 
     // Avoid duplicates (same name)
     if (!results.find(r => normN(r.nome) === normN(nome))) {
-      results.push({ nome: nome.toUpperCase(), data, pago: amounts[0]||0, saldo: saldoLabel, saldoValor, notaNova: notaNovaVal });
+      results.push({ nome: matchName(nome), data, pago: amounts[0]||0, saldo: saldoLabel, saldoValor, notaNova: notaNovaVal });
     }
   }
 
@@ -1095,7 +1128,7 @@ function parseCobranca(text) {
       if (nameRe.test(line) && !skipRe.test(line) && line.split(' ').length >= 2) pend = line;
       if (pend) {
         const m = line.match(/R\$\s?([0-9.]+,[0-9]{2})/);
-        if (m) { results.push({nome:pend.toUpperCase(), data:'', pago:parseMoney(m[0]), saldo:'—', saldoValor:0, notaNova:0}); pend=null; }
+        if (m) { results.push({nome:matchName(pend), data:'', pago:parseMoney(m[0]), saldo:'—', saldoValor:0, notaNova:0}); pend=null; }
       }
     }
   }
@@ -1149,7 +1182,7 @@ function parseNotas(text) {
     const vendido = amounts[amounts.length - 1] || 0;
 
     if (vendido > 0 && !results.find(r => normN(r.nome) === normN(nome))) {
-      results.push({ nome: nome.toUpperCase(), data, semanaCobranca, vendido });
+      results.push({ nome: matchName(nome), data, semanaCobranca, vendido });
     }
   }
 
@@ -1164,7 +1197,7 @@ function parseNotas(text) {
         const amounts = [...line.matchAll(/R\$\s?([0-9.]+,[0-9]{2})/g)];
         if (amounts.length > 0) {
           const v = parseMoney(amounts[amounts.length-1][0]);
-          if (v > 0 && v < 99999) { results.push({nome:pend.toUpperCase(), data:'', semanaCobranca:'', vendido:v}); pend=null; }
+          if (v > 0 && v < 99999) { results.push({nome:matchName(pend), data:'', semanaCobranca:'', vendido:v}); pend=null; }
         }
       }
     }
