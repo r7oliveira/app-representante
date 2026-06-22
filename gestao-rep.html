@@ -266,7 +266,7 @@
       <div class="import-status" id="importStatus"><span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(217,26,122,.3);border-top-color:var(--pink);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;"></span><span id="importStatusTxt">Processando…</span></div>
       <div id="importResult" style="display:none;"></div>
 
-      <button class="btn w100" id="btnProcessar" onclick="processarFotos()" style="margin-top:10px;" disabled>
+      <button class="btn w100" id="btnProcessar" onclick="processarFotos()" style="margin-top:10px;">
         Processar fotos
       </button>
     </div>
@@ -1031,6 +1031,18 @@ function mergeData(cobranca, notas) {
 
 async function processarFotos() {
   const btn = document.getElementById('btnProcessar');
+  // Verify at least one file is loaded
+  const hasFiles = Object.values(importSlots).some(Boolean);
+  if (!hasFiles) {
+    alert('Carregue pelo menos uma foto antes de processar.');
+    return;
+  }
+  // Verify Gemini key
+  const apiKey = localStorage.getItem('gemini_key') || '';
+  if (!apiKey) {
+    alert('Configure a chave Gemini em ⚙️ Config antes de processar.');
+    return;
+  }
   btn.disabled = true;
   document.getElementById('importResult').style.display = 'none';
   setStatus('Iniciando…');
