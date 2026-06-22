@@ -201,6 +201,7 @@
   <div class="header-logo">Representante Romance</div>
   <div class="header-titulo">Gestão</div>
   <div class="header-sub">Painel · Consultoras · Indicadores</div>
+  <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:4px;">v4.0 — Gemini Vision</div>
   <div class="header-week" id="headerWeek"></div>
 </div>
 
@@ -932,18 +933,8 @@ function setSlot(n, input) {
 
 /* ═══════════ GEMINI VISION — IMPORTAÇÃO DE FOTOS ═══════════ */
 
-async function fileToBase64(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload  = () => res(r.result.split(',')[1]);
-    r.onerror = () => rej(new Error('Erro ao ler imagem'));
-    r.readAsDataURL(file);
-  });
-}
-
-async function compressImage(file) {
-  // Reduz a imagem para max 1024px e 60% qualidade antes de enviar ao Gemini
-  // Fotos iPhone são ~4MB+; comprimidas ficam ~100-200KB — muito mais rápido
+// Comprime e converte para base64 usando toDataURL (funciona no iOS Safari)
+async function imageToBase64(file) {
   return new Promise(resolve => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -958,19 +949,34 @@ async function compressImage(file) {
       cv.width = w; cv.height = h;
       cv.getContext('2d').drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(url);
-      cv.toBlob(blob => resolve(blob || file), 'image/jpeg', 0.3);
+      try {
+        // toDataURL é confiável no iOS (toBlob pode retornar null)
+        resolve(cv.toDataURL('image/jpeg', 0.35).split(',')[1]);
+      } catch(e) {
+        const r = new FileReader();
+        r.onload  = () => resolve(r.result.split(',')[1]);
+        r.onerror = () => resolve(null);
+        r.readAsDataURL(file);
+      }
     };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      const r = new FileReader();
+      r.onload  = () => resolve(r.result.split(',')[1]);
+      r.onerror = () => resolve(null);
+      r.readAsDataURL(file);
+    };
     img.src = url;
   });
 }
 
+
 async function geminiVision(imageFile, prompt) {
   const apiKey = localStorage.getItem('gemini_key') || '';
   if (!apiKey) throw new Error('Chave Gemini não configurada. Vá em ⚙️ Config e cole sua chave AIza.');
-  // Comprime a imagem antes de enviar (fotos iPhone são muito pesadas)
-  const compressed = await compressImage(imageFile);
-  const b64 = await fileToBase64(compressed);
+  // Comprime e converte para base64 (512px, 35% qualidade, ~50KB)
+  const b64 = await imageToBase64(imageFile);
+  if (!b64) throw new Error('Não foi possível processar a imagem.');
   const mime = 'image/jpeg';
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
@@ -1097,16 +1103,57 @@ async function processarFotos() {
   }, 1000);
   try {
     let info = {}, cobranca = [], notas = [];
-    // Foto 1 primeiro (tem os dados da semana), depois 2 e 3 em paralelo
+    setStatus('📷 Comprimindo imagens…');
+
+    // Comprime todas as fotos disponíveis
+    const parts = [];
     if (importSlots[1]) {
-      setStatus('📷 Lendo Foto 1 — Informações…');
-      info = await extractInfo(importSlots[1]);
+      const b64 = await imageToBase64(importSlots[1]);
+      if (b64) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64}}); parts.push({text:'[FOTO1 - Informações da semana]'}); }
     }
-    setStatus('📷 Lendo Fotos 2 e 3 em paralelo…');
-    [cobranca, notas] = await Promise.all([
-      importSlots[2] ? extractCobranca(importSlots[2]) : Promise.resolve([]),
-      importSlots[3] ? extractNotas(importSlots[3])    : Promise.resolve([]),
-    ]);
+    if (importSlots[2]) {
+      const b64 = await imageToBase64(importSlots[2]);
+      if (b64) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64}}); parts.push({text:'[FOTO2 - Minha cobrança na semana]'}); }
+    }
+    if (importSlots[3]) {
+      const b64 = await imageToBase64(importSlots[3]);
+      if (b64) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64}}); parts.push({text:'[FOTO3 - Notas distribuídas]'}); }
+    }
+
+    setStatus('🤖 Enviando para o Gemini (1 chamada)…');
+    const apiKey = localStorage.getItem('gemini_key') || '';
+    const prompt = `Analise as imagens de sistema de vendas e extraia os dados em JSON.
+
+Da FOTO1 (Informações): {"semana":"XX/XXXX","regiao":"NOME","totalGeral":0.00,"totalDebitos":0.00,"acertosRegiao":0,"acertosOutras":0,"novasRegiao":0,"novasOutras":0,"notasRemarcadas":0}
+
+Da FOTO2 (Cobranças - tabela com Pessoa, #Nota, Data, Valor, Saldo, Valor nota nova):
+[{"nome":"NOME EM MAIÚSCULO","data":"DD-MM-YYYY HH:MM:SS","pago":0.00,"saldo":"Quitada","notaNova":0.00}]
+
+Da FOTO3 (Notas distribuídas - tabela com Pessoa, #Nota, Data, Semana cobrança, Valor da nota):
+[{"nome":"NOME EM MAIÚSCULO","data":"DD-MM-YYYY","semanaCobranca":"30/2026","vendido":0.00}]
+
+Responda SOMENTE com JSON puro neste formato (sem markdown):
+{"info":{...},"cobranca":[...],"notas":[...]}
+
+Valores numéricos sem R$ (ex: 83.99). Se uma foto não estiver presente, use {} ou [].`;
+
+    parts.push({text: prompt});
+
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 45000);
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      { method:'POST', headers:{'Content-Type':'application/json'}, signal:ctrl.signal,
+        body: JSON.stringify({contents:[{parts}], generationConfig:{temperature:0, maxOutputTokens:3000}}) }
+    );
+    clearTimeout(t);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(raw);
+    info     = parsed.info     || {};
+    cobranca = parsed.cobranca || [];
+    notas    = parsed.notas    || [];
 
     const entradas = mergeData(cobranca, notas);
     previewEntradas = entradas;
