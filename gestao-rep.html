@@ -907,10 +907,10 @@ function setSlot(n, input) {
   document.getElementById('importResult').style.display = 'none';
 }
 
-async function rotateImg(file, deg) {
+async function rotateImg(blob, deg) {
   return new Promise(res => {
     const img = new Image();
-    const url = URL.createObjectURL(file);
+    const url = URL.createObjectURL(blob);
     img.onload = () => {
       const sw = (deg===90||deg===270) ? img.height : img.width;
       const sh = (deg===90||deg===270) ? img.width  : img.height;
@@ -921,24 +921,59 @@ async function rotateImg(file, deg) {
       ctx.rotate(deg * Math.PI / 180);
       ctx.drawImage(img, -img.width/2, -img.height/2);
       URL.revokeObjectURL(url);
-      cv.toBlob(res, 'image/jpeg', 0.88);
+      cv.toBlob(res, 'image/png');
+    };
+    img.src = url;
+  });
+}
+
+async function preprocessForOCR(file) {
+  // Escala 2x + binarização → converte fundo verde/colorido para preto e branco puro
+  // Isso remove o fundo verde das linhas alternadas que confunde o Tesseract
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const cv = document.createElement('canvas');
+      cv.width  = img.width  * 2;
+      cv.height = img.height * 2;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      const id = ctx.getImageData(0, 0, cv.width, cv.height);
+      const d  = id.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+        // Limiar 160: texto escuro → preto, fundo branco/verde → branco
+        const v = gray < 160 ? 0 : 255;
+        d[i] = d[i+1] = d[i+2] = v; d[i+3] = 255;
+      }
+      ctx.putImageData(id, 0, 0);
+      URL.revokeObjectURL(url);
+      cv.toBlob(resolve, 'image/png');
     };
     img.src = url;
   });
 }
 
 async function smartOCR(file, label) {
-  setStatus(`Lendo ${label}…`);
+  setStatus(`Preparando ${label}…`);
+  // Pré-processa a imagem: escala 2x + P&B para eliminar fundo colorido
+  const processed = await preprocessForOCR(file);
   const kwRe = /Região|Semana|Pessoa|Valor|Quitada|cobranças|Nota|distribuída|R\$|\d{2}-\d{2}-\d{4}|10\d{4}/gi;
   let best = {score: 0, text: ''};
   for (const deg of [0, 90, 270, 180]) {
-    setStatus(`Lendo ${label} (rotação ${deg}°)…`);
-    const blob = deg === 0 ? file : await rotateImg(file, deg);
-    const r = await Tesseract.recognize(blob, 'por+eng');
+    setStatus(`Lendo ${label} (${deg}°)…`);
+    const blob = deg === 0 ? processed : await rotateImg(processed, deg);
+    // PSM 11 = sparse text: encontra todo texto independente da estrutura da página
+    const r = await Tesseract.recognize(blob, 'por+eng', {
+      tessedit_pageseg_mode: '11',
+    });
     const text = r.data.text;
     const score = (text.match(kwRe)||[]).length;
     if (score > best.score) best = {score, text};
-    if (score >= 4) break;
+    if (score >= 3) break;
   }
   return best.text;
 }
@@ -1001,16 +1036,24 @@ function parseCobranca(text) {
     const notaMatch = lines[i].match(notaRe);
     if (!notaMatch) continue;
 
-    // Look backward up to 4 lines for the name
+    // Look backward up to 6 lines, same line, or 1 line forward for name
     let nome = '';
-    for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
-      const l = lines[j];
-      if (nameRe.test(l) && !skipRe.test(l) && l.split(' ').length >= 2) { nome = l; break; }
-    }
-    // Name might be on the same line before the nota number
+    // 1. Same line: text before the nota number
+    const beforeNota = lines[i].substring(0, lines[i].indexOf(notaMatch[1])).trim();
+    if (nameRe.test(beforeNota) && !skipRe.test(beforeNota) && beforeNota.split(' ').length >= 2) nome = beforeNota;
+    // 2. Lines before nota line (most common case)
     if (!nome) {
-      const before = lines[i].substring(0, lines[i].indexOf(notaMatch[1])).trim();
-      if (nameRe.test(before) && !skipRe.test(before) && before.split(' ').length >= 2) nome = before;
+      for (let j = i - 1; j >= Math.max(0, i - 6); j--) {
+        const l = lines[j];
+        // Skip lines that contain nota numbers or amounts (they're data rows, not names)
+        if (/\b1\d{5}\b/.test(l) || /R\$/.test(l)) continue;
+        if (nameRe.test(l) && !skipRe.test(l) && l.split(' ').length >= 2) { nome = l; break; }
+      }
+    }
+    // 3. Lines after nota line (OCR sometimes flips order)
+    if (!nome && i + 1 < lines.length) {
+      const next = lines[i+1].trim();
+      if (nameRe.test(next) && !skipRe.test(next) && next.split(' ').length >= 2 && !/\b1\d{5}\b/.test(next) && !/R\$/.test(next)) nome = next;
     }
     if (!nome) continue;
 
@@ -1068,15 +1111,20 @@ function parseNotas(text) {
     const notaMatch = lines[i].match(notaRe);
     if (!notaMatch) continue;
 
-    // Look backward up to 4 lines for the name
+    // Look backward up to 6 lines, same line, or 1 line forward for name
     let nome = '';
-    for (let j = i - 1; j >= Math.max(0, i - 4); j--) {
-      const l = lines[j];
-      if (nameRe.test(l) && !skipRe.test(l) && l.split(' ').length >= 2) { nome = l; break; }
-    }
+    const beforeNota = lines[i].substring(0, lines[i].indexOf(notaMatch[1])).trim();
+    if (nameRe.test(beforeNota) && !skipRe.test(beforeNota) && beforeNota.split(' ').length >= 2) nome = beforeNota;
     if (!nome) {
-      const before = lines[i].substring(0, lines[i].indexOf(notaMatch[1])).trim();
-      if (nameRe.test(before) && !skipRe.test(before) && before.split(' ').length >= 2) nome = before;
+      for (let j = i - 1; j >= Math.max(0, i - 6); j--) {
+        const l = lines[j];
+        if (/\b1\d{5}\b/.test(l) || /R\$/.test(l)) continue;
+        if (nameRe.test(l) && !skipRe.test(l) && l.split(' ').length >= 2) { nome = l; break; }
+      }
+    }
+    if (!nome && i + 1 < lines.length) {
+      const next = lines[i+1].trim();
+      if (nameRe.test(next) && !skipRe.test(next) && next.split(' ').length >= 2 && !/\b1\d{5}\b/.test(next) && !/R\$/.test(next)) nome = next;
     }
     if (!nome) continue;
 
