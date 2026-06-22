@@ -413,18 +413,9 @@ async function extractFromPhoto(input) {
 
   const apiKey = localStorage.getItem('gemini_key') || '';
   if (!apiKey) {
-    msg.textContent = '⚠️ Cole sua chave do Google Gemini na aba Config antes de usar a IA.';
+    msg.textContent = '⚠️ Cole sua chave do Google na aba Config.';
     msg.style.color = 'var(--red)'; msg.style.display = 'block'; return;
   }
-
-  // Suporte a chaves AQ. (OAuth2 token) e AIza (API key)
-  const isOAuth = apiKey.startsWith('AQ.');
-  const apiUrl = isOAuth
-    ? 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
-    : `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-  const headers = isOAuth
-    ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }
-    : { 'Content-Type': 'application/json' };
 
   btn.disabled = true; load.classList.add('show'); msg.style.display = 'none';
   try {
@@ -435,23 +426,32 @@ async function extractFromPhoto(input) {
       r.readAsDataURL(file);
     });
     const mediaType = file.type || 'image/jpeg';
-    const resp = await fetch(apiUrl,
-      {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              { inline_data: { mime_type: mediaType, data: b64 } },
-              { text: 'Você é um assistente de extração de dados. Leia esta imagem de cadastro e extraia as informações. Responda SOMENTE com JSON puro (sem markdown, sem explicações): {"nome":"","tel":"","cpf":"","bairro":"","cidade":"","aniv":"YYYY-MM-DD"}. Se um campo não estiver visível, use string vazia. Para aniversário, converta para YYYY-MM-DD.' }
-            ]
-          }],
-          generationConfig: { temperature: 0, maxOutputTokens: 300 }
-        })
-      }
-    );
-    const data = await resp.json();
+    const prompt = 'Você é um assistente de extração de dados. Leia esta imagem de cadastro e extraia as informações. Responda SOMENTE com JSON puro (sem markdown, sem explicações): {"nome":"","tel":"","cpf":"","bairro":"","cidade":"","aniv":"YYYY-MM-DD"}. Se um campo não estiver visível, use string vazia. Para aniversário, converta para YYYY-MM-DD.';
+    const body = JSON.stringify({
+      contents: [{ parts: [
+        { inline_data: { mime_type: mediaType, data: b64 } },
+        { text: prompt }
+      ]}],
+      generationConfig: { temperature: 0, maxOutputTokens: 300 }
+    });
+
+    // Tenta como API key (?key=) primeiro; se falhar, tenta como Bearer token
+    let data;
+    const baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+    const r1 = await fetch(`${baseUrl}?key=${apiKey}`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body
+    });
+    data = await r1.json();
+    if (data.error) {
+      const r2 = await fetch(baseUrl, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+        body
+      });
+      data = await r2.json();
+    }
     if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const clean = text.replace(/```json|```/g,'').trim();
     const parsed = JSON.parse(clean);
@@ -464,7 +464,7 @@ async function extractFromPhoto(input) {
     msg.textContent = '✓ Dados preenchidos! Confira e salve.';
     msg.style.color = 'var(--green)'; msg.style.display = 'block';
   } catch(e) {
-    msg.textContent = '⚠️ Erro: ' + e.message;
+    msg.textContent = '⚠️ ' + e.message;
     msg.style.color = 'var(--red)'; msg.style.display = 'block';
   } finally {
     btn.disabled = false; load.classList.remove('show');
@@ -618,7 +618,6 @@ function renderConfig() {
             onchange="setCfg('caixa',this.value,'num')"></label>
       </div>
     </div>
-
     <div class="section-lbl"><div class="num">👥</div>Consultoras</div>
     <div class="card">
       <div class="two-col">
@@ -630,13 +629,11 @@ function renderConfig() {
             onchange="setCfg('novas',this.value,'int')"></label>
       </div>
     </div>
-
     <div class="section-lbl"><div class="num">📝</div>Observações</div>
     <div class="card">
       <textarea rows="3" placeholder="Anotações da semana..."
         onchange="setCfg('nota',this.value,'str')">${esc(sem.nota||'')}</textarea>
     </div>
-
     <button class="btn w100" onclick="switchTab('painel')" style="margin-top:4px;">Ver Painel →</button>
   ` : '<div class="empty">Crie uma semana primeiro.</div>';
 
@@ -644,21 +641,20 @@ function renderConfig() {
     <div class="section-lbl"><div class="num">🤖</div>IA — Google Gemini</div>
     <div class="card">
       <p class="muted" style="margin-bottom:10px;line-height:1.6;">
-        Cole aqui sua chave do <b>Google AI Studio</b> (gratuito).<br>
-        Acesse <b>aistudio.google.com</b> → Get API Key → Create API key.
+        Cole aqui a chave do <b>Google AI Studio</b>.<br>
+        Acesse <b>aistudio.google.com</b> → ícone 🗝️ → copie a chave.
       </p>
       <label class="field">
-        <span>Chave da API (começa com AIza…)</span>
-        <input id="geminiKeyInput" type="password" placeholder="AIzaSy..."
-          value="${esc(savedKey)}"
-          style="font-family:monospace;font-size:13px;">
+        <span>Chave da API</span>
+        <input id="geminiKeyInput" type="password" placeholder="Cole a chave aqui..."
+          value="${esc(savedKey)}" style="font-family:monospace;font-size:13px;">
       </label>
       <div class="btn-row">
         <button class="btn small secondary" onclick="toggleKeyVis()">👁 Ver</button>
-        <button class="btn small" onclick="saveGeminiKey()">Salvar chave</button>
+        <button class="btn small" onclick="saveGeminiKey()">Salvar</button>
       </div>
-      ${savedKey ? `<div style="margin-top:10px;font-size:12px;font-weight:700;color:${keyOk?'var(--green)':'var(--red)'};">
-        ${keyOk ? '✓ Chave salva — IA pronta para usar' : '⚠️ Chave muito curta, verifique'}
+      ${savedKey ? `<div style="margin-top:10px;font-size:12px;font-weight:700;color:var(--green);">
+        ✓ Chave salva — tente usar a IA
       </div>` : ''}
     </div>
     ${semHtml}
@@ -672,7 +668,7 @@ function saveGeminiKey() {
 }
 function toggleKeyVis() {
   const inp = document.getElementById('geminiKeyInput');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
+  if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
 }
 function setCfg(campo, val, tipo) {
   const sem = activeSem('selConfig'); if (!sem) return;
