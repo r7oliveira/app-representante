@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão · Representante Romance</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Gestão">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#8B0045">
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAALBElEQVR4nO3ceVgTdx7H8UkIkCAgp1RuEEoR0XJ51IrrUdDSS626j23VWrvtPtut67Fa62639PFp17W2XV3XdW2lLj5WW9taq6JSrPXgEqQg4IFcEYjIGZCEHCT7B/v4pDP5kpCEZPZ5Pq8/f8xMvvK8mxlmkgq2M08wAMYIHT0A8BfiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiAJLI0QOYIPEbHZ6WNHbKI37xEZ6h/m7+XiKJC8Mw6vv96p4+ef3djuvSu8U3604VK+51m3PA37Uflfh6Wj/YgErzsThj6G2EzqLQ2Y+GpMb7xoX5xISIvd2d3SUisYtWqdL09Sva5F01zZ3XpQ1nS5svV+m0A9ZPZVuC7cwTjp7BuPD05KQ1C8LTkwVCgemt9Xrp+YribUcazpQMvaF94hD7eEzdsmzCy+lib3dzjqZsl5d89PXVncc0ff3Wz2YrfIzDa1xg2r61obMmWbBv4w9Xc1Z+eL+5ndrADnFEZkzJOLjJ1cusLAx1XJcee/YvXTXNVk9nG7y75hj31JQVP++xrAyGYcLmJq6s2BuQFG3bqcz3yNKZC77LtKAMhmF8Y0OX/rjdzX+0zaeyDL/iiF4w/bljmc7uEmsOIvbxWJy7zS8uzFZTmc8jxD/t32sFTkZ+q+peZWtpTcOZkrqTRc2XKhVtcqNHcA/yS/9s/QiPaS4eXZD6xUdkHNps9Der1+lbCqobc6923mpStskH1BqJr6dvXFhEenLQ9DhGwL4oEXu7ZxzafDDljQG11uTrSs/9fOaVHcOdVq83spiyYbGLpxtrUVZ4/eKWrDs/VegHdIbrY6fGzti6MnROAmv7cU9PDUiKbi2tGe5INseXOARCQUb2JpHYhfujulPFFzbua69qZK3X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">
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAALBElEQVR4nO3ceVgTdx7H8UkIkCAgp1RuEEoR0XJ51IrrUdDSS626j23VWrvtPtut67Fa62639PFp17W2XV3XdW2lLj5WW9taq6JSrPXgEqQg4IFcEYjIGZCEHCT7B/v4pDP5kpCEZPZ5Pq8/f8xMvvK8mxlmkgq2M08wAMYIHT0A8BfiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiABLiAJLI0QOYIPEbHZ6WNHbKI37xEZ6h/m7+XiKJC8Mw6vv96p4+ef3djuvSu8U3604VK+51m3PA37Uflfh6Wj/YgErzsThj6G2EzqLQ2Y+GpMb7xoX5xISIvd2d3SUisYtWqdL09Sva5F01zZ3XpQ1nS5svV+m0A9ZPZVuC7cwTjp7BuPD05KQ1C8LTkwVCgemt9Xrp+YribUcazpQMvaF94hD7eEzdsmzCy+lib3dzjqZsl5d89PXVncc0ff3Wz2YrfIzDa1xg2r61obMmWbBv4w9Xc1Z+eL+5ndrADnFEZkzJOLjJ1cusLAx1XJcee/YvXTXNVk9nG7y75hj31JQVP++xrAyGYcLmJq6s2BuQFG3bqcz3yNKZC77LtKAMhmF8Y0OX/rjdzX+0zaeyDL/iiF4w/bljmc7uEmsOIvbxWJy7zS8uzFZTmc8jxD/t32sFTkZ+q+peZWtpTcOZkrqTRc2XKhVtcqNHcA/yS/9s/QiPaS4eXZD6xUdkHNps9Der1+lbCqobc6923mpStskH1BqJr6dvXFhEenLQ9DhGwL4oEXu7ZxzafDDljQG11uTrSs/9fOaVHcOdVq83spiyYbGLpxtrUVZ4/eKWrDs/VegHdIbrY6fGzti6MnROAmv7cU9PDUiKbi2tGe5INseXOARCQUb2JpHYhfujulPFFzbua69qZK3X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">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pink: #D91A7A;
+      --pink-deep: #8B0045;
+      --dark: #1a1a1a;
+      --gray: #888;
+      --bg: #f5f5f7;
+      --green: #1BA672;
+      --green-bg: #e6f7f0;
+      --red: #e03131;
+      --red-bg: #fff0f0;
+      --blue: #2563eb;
+      --blue-bg: #e9f0ff;
+      --amber: #d97706;
+      --amber-bg: #fff8e1;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); min-height: 100vh; color: var(--dark); }
+
+    /* HEADER */
+    .header { background: var(--pink-deep); padding: 44px 20px 28px; text-align: center; }
+    .header-logo { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-weight: 600; color: rgba(255,255,255,.4); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px; }
+    .header-titulo { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 700; color: white; line-height: 1.1; margin-bottom: 6px; }
+    .header-sub { font-size: 13px; color: rgba(255,255,255,.55); }
+    .header-week { font-size: 12px; color: rgba(255,255,255,.7); font-weight: 700; margin-top: 8px; letter-spacing: .5px; }
+
+    /* TABS */
+    .tabs { display: flex; gap: 5px; max-width: 520px; margin: 0 auto; padding: 12px 12px 0; }
+    .tab { flex: 1; text-align: center; padding: 10px 2px; font-size: 12px; font-weight: 700; color: var(--gray); background: #ececef; border-radius: 12px; cursor: pointer; border: none; font-family: inherit; transition: .15s; line-height: 1.3; }
+    .tab.active { background: var(--pink); color: white; box-shadow: 0 4px 14px rgba(217,26,122,.3); }
+
+    /* BODY */
+    .body { padding: 14px; max-width: 520px; margin: 0 auto 48px; }
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* CARD */
+    .card { background: white; border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+    .card-title { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+    /* WEEK ROW */
+    .week-row { display: flex; gap: 8px; align-items: center; }
+    select.weeksel { flex: 1; padding: 11px 12px; font-size: 14px; font-weight: 700; font-family: inherit; border: 1.5px solid #e3e3e8; border-radius: 12px; background: #fafafa; color: var(--dark); }
+    select.weeksel:focus { outline: none; border-color: var(--pink); }
+
+    /* FORM */
+    label.field { display: block; margin-bottom: 12px; }
+    label.field span { display: block; font-size: 12px; font-weight: 600; color: var(--gray); margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 11px 13px; font-size: 14px; font-family: inherit; border: 1.5px solid #e3e3e8; border-radius: 12px; background: #fafafa; color: var(--dark); }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--pink); background: white; }
+    textarea { resize: none; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .section-lbl { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; margin: 18px 2px 10px; }
+    .section-lbl .num { width: 24px; height: 24px; border-radius: 50%; background: var(--pink); color: white; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    /* BUTTONS */
+    .btn { padding: 13px 16px; font-size: 14px; font-weight: 700; font-family: inherit; border: none; border-radius: 13px; background: var(--pink); color: white; cursor: pointer; box-shadow: 0 4px 14px rgba(217,26,122,.3); }
+    .btn.w100 { width: 100%; }
+    .btn.small { padding: 9px 13px; font-size: 13px; border-radius: 10px; }
+    .btn.secondary { background: #ececef; color: var(--dark); box-shadow: none; }
+    .btn.danger { background: var(--red-bg); color: var(--red); box-shadow: none; }
+    .btn-row { display: flex; gap: 8px; }
+    .btn-row .btn { flex: 1; }
+
+    /* CHIPS / LISTS */
+    .chip-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #fafafa; border-radius: 10px; margin-bottom: 6px; font-size: 14px; }
+    .x { color: #d33; font-weight: 700; cursor: pointer; font-size: 17px; padding: 0 4px; flex-shrink: 0; }
+    .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+    .pill.pix { background: var(--blue-bg); color: var(--blue); }
+    .pill.dinheiro { background: var(--green-bg); color: var(--green); }
+    .muted { color: var(--gray); font-size: 13px; }
+    .empty { text-align: center; color: var(--gray); font-size: 14px; padding: 28px 12px; }
+
+    /* LANCAMENTO */
+    .lanc { background: white; border-radius: 14px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+    .lanc .nm { font-weight: 700; font-size: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .lanc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .lanc-grid .full { grid-column: 1/-1; }
+    .saldo { font-size: 12px; font-weight: 700; margin-top: 8px; }
+    .saldo.ok { color: var(--green); }
+    .saldo.pend { color: var(--red); }
+
+    /* KPI GRID */
+    .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .kpi { background: white; border-radius: 14px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+    .kpi.full { grid-column: 1/-1; }
+    .kpi .lbl { font-size: 10px; color: var(--gray); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+    .kpi .val { font-size: 20px; font-weight: 800; margin-top: 4px; line-height: 1.1; }
+    .kpi .val.pink { color: var(--pink); }
+    .kpi .val.green { color: var(--green); }
+    .kpi .val.red { color: var(--red); }
+    .kpi .val.blue { color: var(--blue); }
+    .kpi .val.amber { color: var(--amber); }
+    .kpi .sub { font-size: 11px; color: var(--gray); margin-top: 3px; }
+
+    /* BAR */
+    .bar { height: 8px; border-radius: 8px; background: #ececef; overflow: hidden; margin-top: 6px; }
+    .bar > div { height: 100%; border-radius: 8px; }
+    .bar.pink > div { background: var(--pink); }
+    .bar.green > div { background: var(--green); }
+    .bar.red > div { background: var(--red); }
+    .meta-labels { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+
+    .pct-badge { display: inline-block; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 20px; margin-top: 6px; }
+    .pct-badge.ok { background: var(--green-bg); color: var(--green); }
+    .pct-badge.warn { background: var(--amber-bg); color: var(--amber); }
+    .pct-badge.bad { background: var(--red-bg); color: var(--red); }
+
+    /* RANKING */
+    .rank-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f0f0f0; }
+    .rank-row:last-child { border-bottom: none; }
+    .rank-row .pos { min-width: 24px; height: 24px; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: var(--gray); flex-shrink: 0; }
+    .rank-row .pos.gold { background: #fef9c3; color: #b45309; }
+    .rank-row .pos.silver { background: #f0f0f0; color: #555; }
+    .rank-row .pos.bronze { background: #fef3e2; color: #92400e; }
+    .rank-row .nm { flex: 1; font-weight: 600; font-size: 14px; }
+    .rank-row .rv { font-weight: 700; color: var(--pink); font-size: 14px; flex-shrink: 0; }
+    .rank-bar { height: 4px; border-radius: 4px; background: #ececef; overflow: hidden; margin-top: 3px; }
+    .rank-bar > div { height: 100%; background: var(--pink); }
+
+    .reg-bar-row { padding: 9px 0; border-bottom: 1px solid #f0f0f0; }
+    .reg-bar-row:last-child { border-bottom: none; }
+    .reg-bar-row .rtop { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+    .reg-bar-row .rtop span:last-child { color: var(--pink); }
+
+    .caixa-box { display: flex; flex-direction: column; align-items: center; padding: 18px; border-radius: 14px; margin-bottom: 12px; }
+    .caixa-box.pos { background: var(--green-bg); }
+    .caixa-box.neg { background: var(--red-bg); }
+    .caixa-box .cval { font-size: 28px; font-weight: 800; }
+    .caixa-box.pos .cval { color: var(--green); }
+    .caixa-box.neg .cval { color: var(--red); }
+    .caixa-box .clbl { font-size: 12px; color: var(--gray); margin-top: 4px; }
+
+    .reg-item { background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+    .footer { text-align: center; padding: 20px 16px 36px; font-size: 12px; color: var(--gray); }
+    .footer strong { color: var(--green); }
+    .divider { height: 1px; background: #f0f0f0; margin: 12px 0; }
+
+    /* CONSULTORA CARD */
+    .cons-card { background: #fafafa; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+    .cons-card .cn { font-weight: 700; font-size: 14px; }
+    .cons-card .cd { font-size: 12px; color: var(--gray); margin-top: 2px; }
+    .cons-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .cons-actions button { flex:1; padding:7px; font-size:12px; font-weight:700; font-family:inherit; border:none; border-radius:8px; cursor:pointer; }
+    .cons-actions .edit-btn { background: var(--blue-bg); color: var(--blue); }
+    .cons-actions .del-btn  { background: var(--red-bg);  color: var(--red); }
+
+    /* MODAL */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:1000; align-items:flex-end; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:white; border-radius:24px 24px 0 0; padding:24px 18px 36px; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; }
+    .modal-title { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:700; margin-bottom:16px; }
+    .modal-close { float:right; background:none; border:none; font-size:22px; color:var(--gray); cursor:pointer; margin-top:-4px; }
+
+    /* AI PHOTO BUTTON */
+    .ai-photo-btn { width:100%; padding:13px; border:2px dashed var(--pink); border-radius:13px; background:transparent; color:var(--pink); font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; margin-bottom:14px; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .ai-photo-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .ai-loading { text-align:center; padding:12px; color:var(--pink); font-size:13px; font-weight:700; display:none; }
+    .ai-loading.show { display:block; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(217,26,122,.3); border-top-color:var(--pink); border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">Representante Romance</div>
+  <div class="header-titulo">Gestão</div>
+  <div class="header-sub">Painel · Consultoras · Indicadores</div>
+  <div class="header-week" id="headerWeek"></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-view="painel"   onclick="switchTab('painel')">📊<br>Painel</button>
+  <button class="tab"        data-view="semana"   onclick="switchTab('semana')">💰<br>Semana</button>
+  <button class="tab"        data-view="regioes"  onclick="switchTab('regioes')">🗺️<br>Regiões</button>
+  <button class="tab"        data-view="config"   onclick="switchTab('config')">⚙️<br>Config</button>
+</div>
+
+<div class="body">
+
+  <!-- ══════════ PAINEL ══════════ -->
+  <div class="view active" id="view-painel">
+    <div class="card">
+      <div class="card-title">Semana</div>
+      <div class="week-row">
+        <select class="weeksel" id="selPainel" onchange="renderPainel()"></select>
+        <button class="btn small secondary" onclick="switchTab('semana')">+ Nova</button>
+      </div>
+    </div>
+    <div id="painelConteudo"></div>
+  </div>
+
+  <!-- ══════════ SEMANA / LANÇAMENTOS ══════════ -->
+  <div class="view" id="view-semana">
+    <div class="card">
+      <div class="card-title">Semana de trabalho</div>
+      <div class="week-row" style="margin-bottom:10px;">
+        <select class="weeksel" id="selSemana" onchange="renderSemanaView()"></select>
+        <button class="btn small" onclick="novaSemana()">+ Nova</button>
+      </div>
+      <div id="semanaInfo"></div>
+    </div>
+    <div id="lancamentos"></div>
+  </div>
+
+  <!-- ══════════ REGIÕES ══════════ -->
+  <div class="view" id="view-regioes">
+    <div class="card">
+      <div class="card-title">Nova região</div>
+      <div class="btn-row">
+        <input id="novaRegiao" placeholder="Ex: Candelária">
+        <button class="btn small" onclick="addRegiao()">Adicionar</button>
+      </div>
+    </div>
+    <div id="listaRegioes"></div>
+  </div>
+
+  <!-- ══════════ CONFIG / METAS ══════════ -->
+  <div class="view" id="view-config">
+    <div class="card">
+      <div class="card-title">Semana</div>
+      <div class="week-row">
+        <select class="weeksel" id="selConfig" onchange="renderConfig()"></select>
+      </div>
+    </div>
+    <div id="configConteudo"></div>
+  </div>
+
+</div>
+
+<div class="footer"><p>Desenvolvido pela <strong>Levvel</strong></p></div>
+
+<!-- ══════════ MODAL CADASTRO CONSULTORA ══════════ -->
+<div class="modal-overlay" id="modalCons">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modalTitle">Cadastrar Consultora</div>
+
+    <!-- IA: preencher com foto -->
+    <button class="ai-photo-btn" id="aiBtnPhoto" onclick="document.getElementById('photoInput').click()">
+      <span>📷</span> Preencher com foto do cadastro (IA)
+    </button>
+    <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="extractFromPhoto(this)">
+    <div class="ai-loading" id="aiLoading"><span class="spinner"></span>Lendo cadastro com IA…</div>
+    <div id="aiMsg" style="font-size:12px;color:var(--green);margin-bottom:10px;display:none;"></div>
+
+    <label class="field"><span>Nome completo *</span><input id="mNome" placeholder="Ex: Alexandra Silva"></label>
+    <label class="field"><span>Telefone</span><input id="mTel" inputmode="tel" placeholder="(51) 99999-9999"></label>
+    <div class="two-col">
+      <label class="field" style="margin:0;"><span>CPF</span><input id="mCpf" inputmode="numeric" placeholder="000.000.000-00"></label>
+      <label class="field" style="margin:0;"><span>Aniversário</span><input id="mAniv" type="date"></label>
+    </div>
+    <div class="two-col" style="margin-top:12px;">
+      <label class="field" style="margin:0;"><span>Bairro</span><input id="mBairro" placeholder="Ex: Centro"></label>
+      <label class="field" style="margin:0;"><span>Cidade</span><input id="mCidade" placeholder="Ex: Gramado"></label>
+    </div>
+
+    <div class="btn-row" style="margin-top:18px;">
+      <button class="btn secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn" onclick="saveConsultora()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════ STORAGE ════════════════════ */
+const KEY = 'gestao_rep_v1';
+let DB = (() => {
+  try { const r = localStorage.getItem(KEY); if (r) return JSON.parse(r); } catch(e) {}
+  return { regioes: [], semanas: [], seq: 1 };
+})();
+function save() { localStorage.setItem(KEY, JSON.stringify(DB)); }
+function uid()  { return 'id' + (DB.seq++) + Date.now().toString(36); }
+
+/* ════════════════════ UTILS ════════════════════ */
+const brl = v => (v||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+const pctN = (a,b) => b > 0 ? Math.round(a / b * 100) : 0;
+function parseNum(s) {
+  if (typeof s === 'number') return s;
+  if (!s) return 0;
+  s = String(s).replace(/[^\d,.-]/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.');
+  const n = parseFloat(s); return isNaN(n) ? 0 : n;
+}
+function fmtIn(v) { return (v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function esc(s) { return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function badgePct(p) { return p>=100?'ok':p>=70?'warn':'bad'; }
+const posCls = ['gold','silver','bronze'];
+
+/* ════════════════════ TABS ════════════════════ */
+function switchTab(v) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view===v));
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  refreshSelects();
+  if (v==='painel')  renderPainel();
+  if (v==='semana')  renderSemanaView();
+  if (v==='regioes') renderRegioes();
+  if (v==='config')  renderConfig();
+}
+
+function refreshSelects() {
+  ['selPainel','selSemana','selConfig'].forEach(id => {
+    const sel = document.getElementById(id); if (!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = DB.semanas.length
+      ? DB.semanas.map(s=>`<option value="${s.id}">${esc(s.nome)} — ${esc(s.regiaoNome)}</option>`).join('')
+      : '<option value="">— Crie uma semana —</option>';
+    if (DB.semanas.some(s=>s.id===prev)) sel.value = prev;
+  });
+  const sem = activeSem('selPainel') || activeSem('selSemana');
+  document.getElementById('headerWeek').textContent = sem ? sem.nome : '';
+}
+
+function activeSem(selId) {
+  const sel = document.getElementById(selId); if (!sel) return null;
+  return DB.semanas.find(s=>s.id===sel.value) || null;
+}
+
+/* ════════════════════ REGIÕES ════════════════════ */
+function addRegiao() {
+  const inp = document.getElementById('novaRegiao');
+  const nome = inp.value.trim(); if (!nome) return;
+  DB.regioes.push({ id: uid(), nome, consultoras: [] });
+  inp.value = ''; save(); renderRegioes();
+}
+function delRegiao(id) {
+  if (!confirm('Excluir esta região?')) return;
+  DB.regioes = DB.regioes.filter(r=>r.id!==id);
+  save(); renderRegioes();
+}
+/* ════════════════════ CONSULTORAS — CADASTRO COMPLETO ════════════════════ */
+let _modalRegId = null;
+let _modalConsId = null; // null = novo, string = editar
+
+function openModalNova(regId) {
+  _modalRegId = regId; _modalConsId = null;
+  document.getElementById('modalTitle').textContent = 'Cadastrar Consultora';
+  ['mNome','mTel','mCpf','mBairro','mCidade'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('mAniv').value = '';
+  document.getElementById('aiMsg').style.display = 'none';
+  document.getElementById('aiLoading').classList.remove('show');
+  document.getElementById('photoInput').value = '';
+  document.getElementById('modalCons').classList.add('open');
+}
+function openModalEditar(regId, cId) {
+  _modalRegId = regId; _modalConsId = cId;
+  const r = DB.regioes.find(r=>r.id===regId);
+  const c = r.consultoras.find(c=>c.id===cId);
+  document.getElementById('modalTitle').textContent = 'Editar Consultora';
+  document.getElementById('mNome').value   = c.nome    || '';
+  document.getElementById('mTel').value    = c.tel     || '';
+  document.getElementById('mCpf').value    = c.cpf     || '';
+  document.getElementById('mBairro').value = c.bairro  || '';
+  document.getElementById('mCidade').value = c.cidade  || '';
+  document.getElementById('mAniv').value   = c.aniv    || '';
+  document.getElementById('aiMsg').style.display = 'none';
+  document.getElementById('aiLoading').classList.remove('show');
+  document.getElementById('modalCons').classList.add('open');
+}
+function closeModal() { document.getElementById('modalCons').classList.remove('open'); }
+
+function saveConsultora() {
+  const nome = document.getElementById('mNome').value.trim();
+  if (!nome) { alert('Informe o nome da consultora.'); return; }
+  const dados = {
+    nome,
+    tel:    document.getElementById('mTel').value.trim(),
+    cpf:    document.getElementById('mCpf').value.trim(),
+    bairro: document.getElementById('mBairro').value.trim(),
+    cidade: document.getElementById('mCidade').value.trim(),
+    aniv:   document.getElementById('mAniv').value
+  };
+  const r = DB.regioes.find(r=>r.id===_modalRegId);
+  if (_modalConsId) {
+    const c = r.consultoras.find(c=>c.id===_modalConsId);
+    Object.assign(c, dados);
+  } else {
+    r.consultoras.push({ id: uid(), ...dados });
+  }
+  save(); closeModal(); renderRegioes();
+}
+
+function delConsultora(regId, cId) {
+  if (!confirm('Excluir esta consultora?')) return;
+  const r = DB.regioes.find(r=>r.id===regId);
+  r.consultoras = r.consultoras.filter(c=>c.id!==cId);
+  save(); renderRegioes();
+}
+
+/* ── IA: extrair cadastro da foto ── */
+async function extractFromPhoto(input) {
+  const file = input.files[0]; if (!file) return;
+  const btn  = document.getElementById('aiBtnPhoto');
+  const load = document.getElementById('aiLoading');
+  const msg  = document.getElementById('aiMsg');
+
+  const apiKey = localStorage.getItem('gemini_key') || '';
+  if (!apiKey) {
+    msg.textContent = '⚠️ Cole sua chave do Google Gemini na aba Config antes de usar a IA.';
+    msg.style.color = 'var(--red)'; msg.style.display = 'block'; return;
+  }
+
+  // Suporte a chaves AQ. (OAuth2 token) e AIza (API key)
+  const isOAuth = apiKey.startsWith('AQ.');
+  const apiUrl = isOAuth
+    ? 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
+    : `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const headers = isOAuth
+    ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` }
+    : { 'Content-Type': 'application/json' };
+
+  btn.disabled = true; load.classList.add('show'); msg.style.display = 'none';
+  try {
+    const b64 = await new Promise((res,rej) => {
+      const r = new FileReader();
+      r.onload  = () => res(r.result.split(',')[1]);
+      r.onerror = () => rej(new Error('Erro ao ler imagem'));
+      r.readAsDataURL(file);
+    });
+    const mediaType = file.type || 'image/jpeg';
+    const resp = await fetch(apiUrl,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: mediaType, data: b64 } },
+              { text: 'Você é um assistente de extração de dados. Leia esta imagem de cadastro e extraia as informações. Responda SOMENTE com JSON puro (sem markdown, sem explicações): {"nome":"","tel":"","cpf":"","bairro":"","cidade":"","aniv":"YYYY-MM-DD"}. Se um campo não estiver visível, use string vazia. Para aniversário, converta para YYYY-MM-DD.' }
+            ]
+          }],
+          generationConfig: { temperature: 0, maxOutputTokens: 300 }
+        })
+      }
+    );
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+    if (parsed.nome)   document.getElementById('mNome').value   = parsed.nome;
+    if (parsed.tel)    document.getElementById('mTel').value    = parsed.tel;
+    if (parsed.cpf)    document.getElementById('mCpf').value    = parsed.cpf;
+    if (parsed.bairro) document.getElementById('mBairro').value = parsed.bairro;
+    if (parsed.cidade) document.getElementById('mCidade').value = parsed.cidade;
+    if (parsed.aniv)   document.getElementById('mAniv').value   = parsed.aniv;
+    msg.textContent = '✓ Dados preenchidos! Confira e salve.';
+    msg.style.color = 'var(--green)'; msg.style.display = 'block';
+  } catch(e) {
+    msg.textContent = '⚠️ Erro: ' + e.message;
+    msg.style.color = 'var(--red)'; msg.style.display = 'block';
+  } finally {
+    btn.disabled = false; load.classList.remove('show');
+    input.value = '';
+  }
+}
+
+function renderRegioes() {
+  const wrap = document.getElementById('listaRegioes');
+  if (!DB.regioes.length) {
+    wrap.innerHTML = '<div class="empty">Nenhuma região cadastrada.<br>Adicione a primeira acima 👆</div>'; return;
+  }
+  wrap.innerHTML = DB.regioes.map(r => `
+    <div class="reg-item">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div><div style="font-weight:700;font-size:15px;">${esc(r.nome)}</div>
+        <div class="muted">${r.consultoras.length} consultora(s)</div></div>
+        <span class="x" onclick="delRegiao('${r.id}')">✕</span>
+      </div>
+      ${r.consultoras.map(c=>`
+        <div class="cons-card">
+          <div class="cn">${esc(c.nome)}</div>
+          <div class="cd">${[c.tel,c.cidade?c.bairro+' · '+c.cidade:'',c.aniv?'🎂 '+fmtAniv(c.aniv):''].filter(Boolean).join(' · ') || 'Sem dados complementares'}</div>
+          <div class="cons-actions">
+            <button class="edit-btn" onclick="openModalEditar('${r.id}','${c.id}')">✏️ Editar</button>
+            <button class="del-btn"  onclick="delConsultora('${r.id}','${c.id}')">✕ Excluir</button>
+          </div>
+        </div>
+      `).join('')}
+      <button class="btn small" style="width:100%;margin-top:8px;" onclick="openModalNova('${r.id}')">+ Cadastrar consultora</button>
+    </div>
+  `).join('');
+}
+function fmtAniv(s) {
+  if (!s) return '';
+  const [y,m,d] = s.split('-');
+  return `${d}/${m}`;
+}
+
+/* ════════════════════ SEMANAS ════════════════════ */
+function novaSemana() {
+  if (!DB.regioes.length) { alert('Cadastre uma região primeiro.'); switchTab('regioes'); return; }
+  const label = prompt('Nome da semana (ex: 24/2026):'); if (label===null) return;
+  const nome = label.trim() || 'Semana ' + (DB.semanas.length+1);
+  const opcoes = DB.regioes.map((r,i)=>`${i+1}) ${r.nome}`).join('\n');
+  const esc2 = prompt('Qual região desta semana?\n\n'+opcoes+'\n\nDigite o número:'); if (esc2===null) return;
+  const reg = DB.regioes[parseInt(esc2,10)-1];
+  if (!reg) { alert('Região inválida.'); return; }
+  const sem = {
+    id: uid(), nome, regiaoId: reg.id, regiaoNome: reg.nome, criada: Date.now(),
+    entradas: reg.consultoras.map(c=>({ consId:c.id, nome:c.nome, vendido:0, pago:0, forma:'pix' })),
+    meta:0, caixa:0, ativas: reg.consultoras.length, novas:0, nota:''
+  };
+  DB.semanas.unshift(sem);
+  save(); refreshSelects();
+  document.getElementById('selSemana').value = sem.id;
+  renderSemanaView();
+}
+
+function calcTotais(sem) {
+  let vendido=0, pago=0, pix=0, dinheiro=0, inadimplencia=0;
+  sem.entradas.forEach(e => {
+    vendido     += e.vendido||0;
+    pago        += e.pago||0;
+    inadimplencia += Math.max(0, (e.vendido||0)-(e.pago||0));
+    if (e.forma==='dinheiro') dinheiro += e.pago||0; else pix += e.pago||0;
+  });
+  const ticket = sem.ativas > 0 ? vendido/sem.ativas : (sem.entradas.length>0 ? vendido/sem.entradas.length : 0);
+  return { vendido, pago, pix, dinheiro, inadimplencia, ticket, n: sem.entradas.length };
+}
+
+function renderSemanaView() {
+  refreshSelects();
+  const sem = activeSem('selSemana');
+  const info = document.getElementById('semanaInfo');
+  const lanc = document.getElementById('lancamentos');
+  if (!sem) {
+    info.innerHTML = '<div class="muted">Toque em <b>+ Nova</b> para criar uma semana.</div>';
+    lanc.innerHTML = ''; return;
+  }
+  const t = calcTotais(sem);
+  info.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div><div class="muted" style="font-size:11px;">REGIÃO</div>
+      <div style="font-weight:700;font-size:16px;">${esc(sem.regiaoNome)}</div></div>
+      <button class="btn small danger" onclick="delSemana()">Excluir</button>
+    </div>
+    <div class="kpi-grid" style="margin-bottom:0;">
+      <div class="kpi"><div class="lbl">Vendido</div><div class="val pink" style="font-size:17px;">${brl(t.vendido)}</div></div>
+      <div class="kpi"><div class="lbl">Recebido</div><div class="val green" style="font-size:17px;">${brl(t.pago)}</div></div>
+    </div>`;
+
+  if (!sem.entradas.length) {
+    lanc.innerHTML = '<div class="empty">Região sem consultoras cadastradas.<br>Adicione em <b>Regiões</b>.</div>'; return;
+  }
+  lanc.innerHTML = '<div class="section-lbl" style="margin-top:4px;"><div class="num">$</div>Lançamentos</div>'
+    + sem.entradas.map((e,i) => {
+      const saldo = (e.vendido||0)-(e.pago||0);
+      const saldoTxt = saldo>0.01 ? `Falta ${brl(saldo)}` : saldo<-0.01 ? `Pagou a mais ${brl(-saldo)}` : '✓ Quitada';
+      return `
+      <div class="lanc">
+        <div class="nm">${esc(e.nome)}<span class="pill ${e.forma}">${e.forma==='pix'?'Pix':'Dinheiro'}</span></div>
+        <div class="lanc-grid">
+          <label class="field" style="margin:0;"><span>Vendido (R$)</span>
+            <input inputmode="decimal" value="${e.vendido?fmtIn(e.vendido):''}" placeholder="0,00"
+              onchange="setEntrada('${sem.id}',${i},'vendido',this.value)"></label>
+          <label class="field" style="margin:0;"><span>Pago (R$)</span>
+            <input inputmode="decimal" value="${e.pago?fmtIn(e.pago):''}" placeholder="0,00"
+              onchange="setEntrada('${sem.id}',${i},'pago',this.value)"></label>
+          <label class="field full" style="margin:0;"><span>Forma</span>
+            <select onchange="setEntrada('${sem.id}',${i},'forma',this.value)">
+              <option value="pix"      ${e.forma==='pix'?'selected':''}>Pix</option>
+              <option value="dinheiro" ${e.forma==='dinheiro'?'selected':''}>Dinheiro</option>
+            </select></label>
+        </div>
+        <div class="saldo ${saldo>0.01?'pend':'ok'}">${saldoTxt}</div>
+      </div>`;
+    }).join('');
+}
+
+function setEntrada(semId, i, campo, val) {
+  const sem = DB.semanas.find(s=>s.id===semId); if (!sem) return;
+  if (campo==='forma') sem.entradas[i].forma = val;
+  else sem.entradas[i][campo] = parseNum(val);
+  save(); renderSemanaView();
+}
+function delSemana() {
+  if (!confirm('Excluir esta semana?')) return;
+  const id = document.getElementById('selSemana').value;
+  DB.semanas = DB.semanas.filter(s=>s.id!==id);
+  save(); refreshSelects(); renderSemanaView();
+}
+
+/* ════════════════════ CONFIG ════════════════════ */
+function renderConfig() {
+  refreshSelects();
+  const sem = activeSem('selConfig');
+  const wrap = document.getElementById('configConteudo');
+  const savedKey = localStorage.getItem('gemini_key') || '';
+  const keyOk = savedKey.length > 10;
+
+  const semHtml = sem ? `
+    <div class="section-lbl"><div class="num">🎯</div>Meta e caixa</div>
+    <div class="card">
+      <div class="two-col">
+        <label class="field" style="margin:0;"><span>Meta da semana (R$)</span>
+          <input inputmode="decimal" value="${sem.meta?fmtIn(sem.meta):''}" placeholder="0,00"
+            onchange="setCfg('meta',this.value,'num')"></label>
+        <label class="field" style="margin:0;"><span>Caixa disponível (R$)</span>
+          <input inputmode="decimal" value="${sem.caixa?fmtIn(sem.caixa):''}" placeholder="0,00"
+            onchange="setCfg('caixa',this.value,'num')"></label>
+      </div>
+    </div>
+
+    <div class="section-lbl"><div class="num">👥</div>Consultoras</div>
+    <div class="card">
+      <div class="two-col">
+        <label class="field" style="margin:0;"><span>Ativas</span>
+          <input inputmode="numeric" value="${sem.ativas||''}" placeholder="0"
+            onchange="setCfg('ativas',this.value,'int')"></label>
+        <label class="field" style="margin:0;"><span>Novas</span>
+          <input inputmode="numeric" value="${sem.novas||''}" placeholder="0"
+            onchange="setCfg('novas',this.value,'int')"></label>
+      </div>
+    </div>
+
+    <div class="section-lbl"><div class="num">📝</div>Observações</div>
+    <div class="card">
+      <textarea rows="3" placeholder="Anotações da semana..."
+        onchange="setCfg('nota',this.value,'str')">${esc(sem.nota||'')}</textarea>
+    </div>
+
+    <button class="btn w100" onclick="switchTab('painel')" style="margin-top:4px;">Ver Painel →</button>
+  ` : '<div class="empty">Crie uma semana primeiro.</div>';
+
+  wrap.innerHTML = `
+    <div class="section-lbl"><div class="num">🤖</div>IA — Google Gemini</div>
+    <div class="card">
+      <p class="muted" style="margin-bottom:10px;line-height:1.6;">
+        Cole aqui sua chave do <b>Google AI Studio</b> (gratuito).<br>
+        Acesse <b>aistudio.google.com</b> → Get API Key → Create API key.
+      </p>
+      <label class="field">
+        <span>Chave da API (começa com AIza…)</span>
+        <input id="geminiKeyInput" type="password" placeholder="AIzaSy..."
+          value="${esc(savedKey)}"
+          style="font-family:monospace;font-size:13px;">
+      </label>
+      <div class="btn-row">
+        <button class="btn small secondary" onclick="toggleKeyVis()">👁 Ver</button>
+        <button class="btn small" onclick="saveGeminiKey()">Salvar chave</button>
+      </div>
+      ${savedKey ? `<div style="margin-top:10px;font-size:12px;font-weight:700;color:${keyOk?'var(--green)':'var(--red)'};">
+        ${keyOk ? '✓ Chave salva — IA pronta para usar' : '⚠️ Chave muito curta, verifique'}
+      </div>` : ''}
+    </div>
+    ${semHtml}
+  `;
+}
+function saveGeminiKey() {
+  const val = document.getElementById('geminiKeyInput').value.trim();
+  if (!val) { localStorage.removeItem('gemini_key'); renderConfig(); return; }
+  localStorage.setItem('gemini_key', val);
+  renderConfig();
+}
+function toggleKeyVis() {
+  const inp = document.getElementById('geminiKeyInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+function setCfg(campo, val, tipo) {
+  const sem = activeSem('selConfig'); if (!sem) return;
+  if (tipo==='num') sem[campo] = parseNum(val);
+  else if (tipo==='int') sem[campo] = parseInt(val)||0;
+  else sem[campo] = val;
+  save();
+}
+
+/* ════════════════════ PAINEL ════════════════════ */
+function renderPainel() {
+  refreshSelects();
+  const sem = activeSem('selPainel');
+  const wrap = document.getElementById('painelConteudo');
+  if (!sem) {
+    wrap.innerHTML = '<div class="empty">Nenhuma semana ainda.<br>Crie uma na aba <b>Semana</b>.</div>'; return;
+  }
+
+  const t = calcTotais(sem);
+  const pctMeta  = pctN(t.vendido, sem.meta);
+  const pctCob   = pctN(t.pago, t.vendido);
+  const pctInad  = pctN(t.inadimplencia, t.vendido);
+
+  // Top 10 a partir dos lançamentos
+  const top10 = [...sem.entradas].filter(e=>e.vendido>0).sort((a,b)=>b.vendido-a.vendido).slice(0,10);
+  const maxTop = top10.length ? Math.max(...top10.map(e=>e.vendido)) : 1;
+
+  // Vendas por região: a semana é sempre de uma região, mas mostramos todas as semanas agrupadas
+  const regMap = {};
+  DB.semanas.forEach(s => {
+    if (!regMap[s.regiaoNome]) regMap[s.regiaoNome] = 0;
+    regMap[s.regiaoNome] += calcTotais(s).vendido;
+  });
+  const regioes = Object.entries(regMap).sort((a,b)=>b[1]-a[1]);
+  const maxReg = regioes.length ? regioes[0][1] : 1;
+
+  // Pendentes desta semana
+  const pendentes = sem.entradas.filter(e=>(e.vendido||0)-(e.pago||0)>0.01);
+  const caixaPos  = sem.caixa >= 0;
+
+  wrap.innerHTML = `
+    <!-- 1+2: Vendas e cobranças -->
+    <div class="kpi-grid">
+      <div class="kpi full">
+        <div class="lbl">💰 Vendas da semana</div>
+        <div class="val pink">${brl(t.vendido)}</div>
+        ${sem.nota?`<div class="sub" style="font-style:italic;margin-top:6px;">"${esc(sem.nota)}"</div>`:''}
+      </div>
+      <div class="kpi">
+        <div class="lbl">📥 Cobranças</div>
+        <div class="val green">${brl(t.pago)}</div>
+        <div class="sub">${pctCob}% do vendido</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">⚠️ Inadimplência</div>
+        <div class="val red">${brl(t.inadimplencia)}</div>
+        <div class="sub">${pctInad}% do vendido</div>
+      </div>
+    </div>
+
+    <!-- 4+5: Consultoras -->
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="lbl">👥 Ativas</div>
+        <div class="val blue">${sem.ativas || t.n}</div>
+        <div class="sub">${t.n} com lançamento</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">✨ Novas</div>
+        <div class="val amber">+${sem.novas}</div>
+        <div class="sub">esta semana</div>
+      </div>
+    </div>
+
+    <!-- 6: Ticket médio -->
+    <div class="card">
+      <div class="card-title">🎯 Ticket médio</div>
+      <div class="val pink" style="font-size:26px;">${brl(t.ticket)}</div>
+      <div class="sub" style="margin-top:4px;">por consultora ativa · Pix ${brl(t.pix)} · Dinheiro ${brl(t.dinheiro)}</div>
+    </div>
+
+    <!-- 7: Top 10 consultoras — vindas dos lançamentos -->
+    <div class="card">
+      <div class="card-title">🏆 Top consultoras — semana ${esc(sem.nome)}</div>
+      ${top10.length ? top10.map((e,i) => `
+        <div class="rank-row">
+          <div class="pos ${posCls[i]||''}">${i+1}</div>
+          <div style="flex:1;">
+            <div class="nm">${esc(e.nome)}</div>
+            <div class="rank-bar"><div style="width:${pctN(e.vendido,maxTop)}%;"></div></div>
+          </div>
+          <div class="rv">${brl(e.vendido)}</div>
+        </div>`).join('')
+      : '<div class="muted">Lance os valores na aba Semana.</div>'}
+    </div>
+
+    <!-- 8: Vendas por região — acumulado de todas as semanas -->
+    <div class="card">
+      <div class="card-title">🗺️ Vendas por região — acumulado</div>
+      ${regioes.length ? regioes.map(([nome,val])=>`
+        <div class="reg-bar-row">
+          <div class="rtop"><span>${esc(nome)}</span><span>${brl(val)}</span></div>
+          <div class="bar pink"><div style="width:${pctN(val,maxReg)}%;"></div></div>
+        </div>`).join('')
+      : '<div class="muted">Nenhum dado ainda.</div>'}
+    </div>
+
+    <!-- 9: Meta x Realizado -->
+    <div class="card">
+      <div class="card-title">📊 Meta × Realizado</div>
+      ${sem.meta>0 ? `
+        <div class="meta-labels"><span>${brl(t.vendido)}</span><span>Meta: ${brl(sem.meta)}</span></div>
+        <div class="bar pink"><div style="width:${Math.min(pctMeta,100)}%;"></div></div>
+        <span class="pct-badge ${badgePct(pctMeta)}">${pctMeta}% da meta</span>
+        <div class="muted" style="margin-top:8px;">${pctMeta>=100?'🎉 Meta batida!':'Faltam '+brl(sem.meta-t.vendido)+' para bater a meta.'}</div>
+      ` : '<div class="muted">Defina a meta na aba <b>Config</b>.</div>'}
+    </div>
+
+    <!-- 10: Caixa -->
+    <div class="caixa-box ${caixaPos?'pos':'neg'}">
+      <div class="lbl" style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💵 Caixa disponível</div>
+      <div class="cval">${brl(sem.caixa)}</div>
+      <div class="clbl">${caixaPos?'Saldo positivo ✓':'Atenção: saldo negativo'}</div>
+    </div>
+
+    <!-- Pendências -->
+    <div class="card">
+      <div class="card-title">⏳ Pendências (${pendentes.length})</div>
+      ${pendentes.length ? pendentes.map(e=>`
+        <div class="rank-row">
+          <div class="nm" style="font-size:14px;">${esc(e.nome)}</div>
+          <div class="rv" style="color:var(--red);">${brl((e.vendido||0)-(e.pago||0))}</div>
+        </div>`).join('')
+      : '<div class="muted">Tudo quitado nesta semana! 🎉</div>'}
+    </div>
+
+    <button class="btn w100 secondary" onclick="switchTab('config')">⚙️ Configurar meta / caixa</button>
+  `;
+}
+
+/* ════════════════════ INIT ════════════════════ */
+refreshSelects();
+renderPainel();
+</script>
+</body>
+</html>
