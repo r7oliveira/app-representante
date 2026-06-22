@@ -1031,21 +1031,30 @@ function mergeData(cobranca, notas) {
 
 async function processarFotos() {
   const btn = document.getElementById('btnProcessar');
+  const origTxt = btn.textContent;
+  btn.textContent = '⏳ Processando...';
+  btn.disabled = true;
+  document.getElementById('importResult').style.display = 'none';
+
   // Verify at least one file is loaded
   const hasFiles = Object.values(importSlots).some(Boolean);
   if (!hasFiles) {
-    alert('Carregue pelo menos uma foto antes de processar.');
+    btn.textContent = origTxt; btn.disabled = false;
+    const wrap = document.getElementById('importResult');
+    wrap.style.display = 'block';
+    wrap.innerHTML = '<div style="background:var(--amber-bg);border-radius:12px;padding:14px;color:var(--amber);"><b>⚠️</b> Carregue pelo menos uma foto antes de processar.</div>';
     return;
   }
   // Verify Gemini key
   const apiKey = localStorage.getItem('gemini_key') || '';
   if (!apiKey) {
-    alert('Configure a chave Gemini em ⚙️ Config antes de processar.');
+    btn.textContent = origTxt; btn.disabled = false;
+    const wrap = document.getElementById('importResult');
+    wrap.style.display = 'block';
+    wrap.innerHTML = '<div style="background:var(--red-bg);border-radius:12px;padding:14px;color:var(--red);"><b>⚠️</b> Configure a chave Gemini em ⚙️ Config antes de processar.</div>';
     return;
   }
-  btn.disabled = true;
-  document.getElementById('importResult').style.display = 'none';
-  setStatus('Iniciando…');
+  setStatus('Iniciando — enviando fotos para o Gemini…');
   try {
     let info = {}, cobranca = [], notas = [];
     if (importSlots[1]) info     = await extractInfo(importSlots[1]);
@@ -1101,6 +1110,7 @@ async function processarFotos() {
     </div>`;
   } finally {
     btn.disabled = false;
+    btn.textContent = 'Processar fotos';
   }
 }
 
