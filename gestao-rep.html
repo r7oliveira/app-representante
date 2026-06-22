@@ -647,11 +647,12 @@ function renderSemanaView() {
       return `
       <div class="lanc">
         <div class="nm">${esc(e.nome)}<span class="pill ${e.forma}">${e.forma==='pix'?'Pix':'Dinheiro'}</span></div>
+        ${e.data ? `<div style="font-size:11px;color:var(--gray);margin-bottom:8px;">📅 Kit: ${esc(e.data)}${e.semanaCobranca ? ' · Cobrança: sem. '+esc(e.semanaCobranca) : ''}</div>` : ''}
         <div class="lanc-grid">
-          <label class="field" style="margin:0;"><span>Vendido (R$)</span>
+          <label class="field" style="margin:0;"><span>Nota nova / Vendido (R$)</span>
             <input inputmode="decimal" value="${e.vendido?fmtIn(e.vendido):''}" placeholder="0,00"
               onchange="setEntrada('${sem.id}',${i},'vendido',this.value)"></label>
-          <label class="field" style="margin:0;"><span>Pago (R$)</span>
+          <label class="field" style="margin:0;"><span>Pago esta semana (R$)</span>
             <input inputmode="decimal" value="${e.pago?fmtIn(e.pago):''}" placeholder="0,00"
               onchange="setEntrada('${sem.id}',${i},'pago',this.value)"></label>
           <label class="field full" style="margin:0;"><span>Forma</span>
@@ -660,7 +661,11 @@ function renderSemanaView() {
               <option value="dinheiro" ${e.forma==='dinheiro'?'selected':''}>Dinheiro</option>
             </select></label>
         </div>
-        <div class="saldo ${saldo>0.01?'pend':'ok'}">${saldoTxt}</div>
+        <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;">
+          <div class="saldo ${saldo>0.01?'pend':'ok'}">${saldoTxt}</div>
+          ${e.saldo && e.saldo!=='—' ? `<div class="saldo ${e.saldo==='Quitada'?'ok':'pend'}">Sistema: ${esc(e.saldo)}</div>` : ''}
+          ${e.notaNova ? `<div class="saldo ok">🆕 Nota nova: ${brl(e.notaNova)}</div>` : ''}
+        </div>
       </div>`;
     }).join('');
 }
@@ -787,16 +792,29 @@ function renderPainel() {
     <!-- 4+5: Consultoras -->
     <div class="kpi-grid">
       <div class="kpi">
-        <div class="lbl">👥 Ativas</div>
+        <div class="lbl">✅ Acertos</div>
         <div class="val blue">${sem.ativas || t.n}</div>
-        <div class="sub">${t.n} com lançamento</div>
+        <div class="sub">${sem.acertosRegiao||0} região · ${sem.acertosOutras||0} outras</div>
       </div>
       <div class="kpi">
         <div class="lbl">✨ Novas</div>
         <div class="val amber">+${sem.novas}</div>
-        <div class="sub">esta semana</div>
+        <div class="sub">${sem.novasRegiao||0} região · ${sem.novasOutras||0} outras</div>
       </div>
     </div>
+
+    <!-- Notas remarcadas + débitos -->
+    ${(sem.notasRemarcadas > 0 || sem.totalDebitos > 0) ? `
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="lbl">📋 Notas remarcadas</div>
+        <div class="val" style="color:var(--amber);">${sem.notasRemarcadas||0}</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">⚠️ Débitos gerados</div>
+        <div class="val red">${brl(sem.totalDebitos||0)}</div>
+      </div>
+    </div>` : ''}
 
     <!-- 6: Ticket médio -->
     <div class="card">
@@ -945,77 +963,175 @@ const parseMoney = s => {
 const normN = s => String(s).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
 
 function parseInfo(text) {
-  const f = (re, def='') => { const m = text.match(re); return m ? m[1].trim() : def; };
+  const f  = (re, def='') => { const m = text.match(re); return m ? m[1].trim() : def; };
+  const fn = (re) => { const m = text.match(re); return m ? parseMoney(m[1]) : 0; };
+  const fi = (re) => { const m = text.match(re); return m ? (parseInt(m[1])||0) : 0; };
+
+  const acertosRegiao  = fi(/Acertos\s*\(regi[aã]o atual\)\s+(\d+)/i);
+  const acertosOutras  = fi(/Acertos\s*\(outras regi[oõ]es\)\s+(\d+)/i);
+  const novasRegiao    = fi(/Novas\s*\(regi[aã]o atual\)\s+(\d+)/i);
+  const novasOutras    = fi(/Novas\s*\(outras regi[oõ]es\)\s+(\d+)/i);
+
   return {
-    regiao:    f(/Regi[aã]o\s+([A-Za-záéíóúâêîôûãõç]+)/i),
-    semana:    f(/Semana ativa\s+(\d{1,2}\/\d{4})/i),
-    cobrancas: parseMoney(f(/Suas cobran[cç]as\s+(R\$[0-9.,]+)/i) || f(/Total pr[oó]prio[:\s]+(R\$[0-9.,]+)/i)),
-    novas:     parseInt(f(/Novas\s*\(regi[aã]o atual\)\s+(\d+)/i,'0'))||0,
-    acertos:   parseInt(f(/Acertos\s*\(regi[aã]o atual\)\s+(\d+)/i,'0'))||0,
+    semana:        f(/Semana ativa\s+(\d{1,2}\/\d{4})/i),
+    regiao:        f(/Regi[aã]o\s+([A-Za-záéíóúâêîôûãõç]+)/i),
+    totalGeral:    fn(/Total Geral[:\s]+R?\$?\s*([0-9.,]+)/i) || fn(/Total pr[oó]prio[:\s]+R?\$?\s*([0-9.,]+)/i),
+    totalDebitos:  fn(/Total de D[eé]bitos Gerados na Semana\s+R?\$?\s*([0-9.,]+)/i),
+    acertos:       acertosRegiao + acertosOutras,
+    acertosRegiao, acertosOutras,
+    novas:         novasRegiao + novasOutras,
+    novasRegiao,   novasOutras,
+    notasRemarcadas: fi(/Notas remarcadas\s+(\d+)/i),
+    cobrancas:     fn(/Suas cobran[cç]as\s+R?\$?\s*([0-9.,]+)/i),
   };
 }
 
 function parseCobranca(text) {
-  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-  const res = [];
-  const nameRe = /^[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ\s\.]{4,}$/;
-  const skip = /ALCEU|NANTAL|ROGERIO|AJUDANTE|MINHA|COBRAN|SEMANA|PESSOA|NOTA|DATA|VALOR|SALDO/i;
-  let pend = null;
-  for (const line of lines) {
-    if (nameRe.test(line) && !skip.test(line) && line.split(' ').length >= 2) {
-      pend = line;
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const results = [];
+  const dateRe   = /(\d{2}[-\/]\d{2}[-\/]\d{4}(?:\s+\d{2}:\d{2}(?::\d{2})?)?)/;
+  const moneyRe  = /R\$\s*([0-9.]+,[0-9]{2})/g;
+  const nameRe   = /^[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ\s\.]{4,}$/;
+  const skipRe   = /ALCEU|NANTAL|ROGERIO|AJUDANTE|MINHA|COBRAN|SEMANA|PESSOA|NOTA|DATA|VALOR|SALDO|TOTAL|DEBITO|RECEBIDO|DISTRIBUIDA/i;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const dateMatch = line.match(dateRe);
+    if (!dateMatch) continue;
+    const data = dateMatch[1];
+
+    // Find name: look backward up to 3 lines
+    let nome = '';
+    for (let j = i - 1; j >= Math.max(0, i - 3); j--) {
+      if (nameRe.test(lines[j]) && !skipRe.test(lines[j])) { nome = lines[j]; break; }
     }
-    if (pend && (line.includes('Quitada') || line.includes('quitada') || line.match(/R\$/))) {
-      const m = line.match(/R\$\s?([0-9.]+,[0-9]{2})/);
-      if (m) {
-        const v = parseMoney(m[0]);
-        if (v > 0 && v < 99999) { res.push({nome: pend, pago: v}); pend = null; }
+    if (!nome) {
+      const beforeDate = line.substring(0, line.indexOf(dateMatch[0])).trim();
+      if (nameRe.test(beforeDate) && !skipRe.test(beforeDate)) nome = beforeDate;
+    }
+    if (!nome) continue;
+
+    // Gather amounts from this line + next line
+    const ctx = line + ' ' + (lines[i+1] || '');
+    const amounts = [...ctx.matchAll(moneyRe)].map(m => parseMoney(m[0]));
+    const isQuitada = /quitada/i.test(ctx);
+
+    let saldoLabel, saldoValor, notaNovaVal;
+    if (isQuitada) {
+      saldoLabel = 'Quitada'; saldoValor = 0;
+      notaNovaVal = amounts[1] || 0;
+    } else if (amounts.length >= 3) {
+      saldoLabel = brl(amounts[1]); saldoValor = amounts[1]; notaNovaVal = amounts[2];
+    } else if (amounts.length === 2) {
+      saldoLabel = brl(amounts[1]); saldoValor = amounts[1]; notaNovaVal = 0;
+    } else {
+      saldoLabel = '—'; saldoValor = 0; notaNovaVal = 0;
+    }
+
+    results.push({ nome, data, pago: amounts[0]||0, saldo: saldoLabel, saldoValor, notaNova: notaNovaVal });
+  }
+
+  // Fallback: old name→amount approach
+  if (results.length === 0) {
+    let pend = null;
+    for (const line of lines) {
+      if (nameRe.test(line) && !skipRe.test(line) && line.split(' ').length >= 2) pend = line;
+      if (pend) {
+        const m = line.match(/R\$\s?([0-9.]+,[0-9]{2})/);
+        if (m) { results.push({nome:pend, data:'', pago:parseMoney(m[0]), saldo:'—', saldoValor:0, notaNova:0}); pend=null; }
       }
     }
   }
-  // Fallback: scan for name→amount pairs without Quitada
-  if (res.length === 0) {
-    for (let i = 0; i < lines.length; i++) {
-      const l = lines[i];
-      if (nameRe.test(l) && !skip.test(l) && l.split(' ').length >= 2) {
-        for (let j=i+1; j<=Math.min(i+4,lines.length-1); j++) {
-          const m = lines[j].match(/R\$\s?([0-9.]+,[0-9]{2})/);
-          if (m) { res.push({nome:l, pago:parseMoney(m[0])}); break; }
+  return results;
+}
+
+function parseNotas(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const results = [];
+  const dateRe    = /(\d{2}[-\/]\d{2}[-\/]\d{4}(?:\s+\d{2}:\d{2}(?::\d{2})?)?)/;
+  const semCobRe  = /\b(\d{1,2}\/\d{4})\b/;
+  const moneyRe   = /R\$\s*([0-9.]+,[0-9]{2})/g;
+  const nameRe    = /^[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ\s\.]{4,}$/;
+  const skipRe    = /NOTAS|DISTRIBU|PENDENTE|ACERTO|PESSOA|DATA|OCULTAR|TOTAL|ADICIONAL/i;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const dateMatch = line.match(dateRe);
+    if (!dateMatch) continue;
+
+    const data = dateMatch[1];
+
+    // Find name: look backward up to 3 lines
+    let nome = '';
+    for (let j = i - 1; j >= Math.max(0, i - 3); j--) {
+      if (nameRe.test(lines[j]) && !skipRe.test(lines[j])) { nome = lines[j]; break; }
+    }
+    if (!nome) {
+      const before = line.substring(0, line.indexOf(dateMatch[0])).trim();
+      if (nameRe.test(before) && !skipRe.test(before)) nome = before;
+    }
+    if (!nome) continue;
+
+    // Gather context: this line + next line
+    const ctx = line + ' ' + (lines[i+1] || '');
+
+    // Semana cobrança: XX/XXXX pattern (ignore the main semana like 24/2026 found in line if it appears)
+    const semMatches = [...ctx.matchAll(/\b(\d{1,2}\/\d{4})\b/g)];
+    const semanaCobranca = semMatches.length > 0 ? semMatches[semMatches.length-1][1] : '';
+
+    // Valor da nota: last R$ amount in context
+    const amounts = [...ctx.matchAll(moneyRe)].map(m => parseMoney(m[0]));
+    const vendido = amounts[amounts.length - 1] || 0;
+
+    if (vendido > 0) {
+      results.push({ nome, data, semanaCobranca, vendido });
+    }
+  }
+
+  // Fallback: old name→amount approach
+  if (results.length === 0) {
+    const skipRe2 = /NOTAS|DISTRIBU|PENDENTE|ACERTO|PESSOA|NOTA|DATA|SEMANA|VALOR|OCULTAR/i;
+    let pend = null;
+    for (const line of lines) {
+      if (nameRe.test(line) && !skipRe2.test(line) && line.split(' ').length >= 2) pend = line;
+      if (pend) {
+        const amounts = [...line.matchAll(/R\$\s?([0-9.]+,[0-9]{2})/g)];
+        if (amounts.length > 0) {
+          const v = parseMoney(amounts[amounts.length-1][0]);
+          if (v > 0 && v < 99999) { results.push({nome:pend, data:'', semanaCobranca:'', vendido:v}); pend=null; }
         }
       }
     }
   }
-  return res;
-}
-
-function parseNotas(text) {
-  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-  const res = [];
-  const nameRe = /^[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ][A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇÜÀÈ\s\.]{4,}$/;
-  const skip = /NOTAS|DISTRIBU|PENDENTE|ACERTO|PESSOA|NOTA|DATA|SEMANA|VALOR|OCULTAR/i;
-  let pend = null;
-  for (const line of lines) {
-    if (nameRe.test(line) && !skip.test(line) && line.split(' ').length >= 2) {
-      pend = line;
-    }
-    if (pend) {
-      const amounts = [...line.matchAll(/R\$\s?([0-9.]+,[0-9]{2})/g)];
-      if (amounts.length > 0) {
-        const v = parseMoney(amounts[amounts.length-1][0]);
-        if (v > 0 && v < 99999) { res.push({nome: pend, vendido: v}); pend = null; }
-      }
-    }
-  }
-  return res;
+  return results;
 }
 
 function mergeData(cobranca, notas) {
   const map = {};
-  notas.forEach(n => { map[normN(n.nome)] = {nome: n.nome, vendido: n.vendido, pago: 0, forma:'pix'}; });
+  // Photo 3: vendido = valor da nota, + data e semanaCobranca
+  notas.forEach(n => {
+    map[normN(n.nome)] = {
+      nome: n.nome,
+      data: n.data,                     // data que deixou o kit
+      semanaCobranca: n.semanaCobranca, // semana de cobrança
+      pago: 0, saldo: '—', saldoValor: 0, notaNova: 0,
+      vendido: n.vendido,               // valor da nota
+      forma: 'pix'
+    };
+  });
+  // Photo 2: complementa com pago, saldo, notaNova e data (se photo 3 não tiver)
   cobranca.forEach(c => {
     const k = normN(c.nome);
-    if (map[k]) map[k].pago = c.pago;
-    else map[k] = {nome: c.nome, vendido: 0, pago: c.pago, forma: 'pix'};
+    if (map[k]) {
+      if (c.data) map[k].data = c.data;
+      map[k].pago     = c.pago;
+      map[k].saldo    = c.saldo;
+      map[k].saldoValor = c.saldoValor;
+      map[k].notaNova = c.notaNova;
+      if (!map[k].vendido) map[k].vendido = c.notaNova;
+    } else {
+      map[k] = {nome:c.nome, data:c.data, semanaCobranca:'', pago:c.pago, saldo:c.saldo, saldoValor:c.saldoValor, notaNova:c.notaNova, vendido:c.notaNova, forma:'pix'};
+    }
   });
   return Object.values(map);
 }
@@ -1054,23 +1170,32 @@ async function processarFotos() {
 
     wrap.innerHTML = `
       <div style="background:var(--green-bg);border-radius:12px;padding:12px;margin-bottom:10px;">
-        <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:6px;">✓ Dados extraídos — confirme antes de importar</div>
-        ${info.semana ? `<div class="muted">Semana: <b>${esc(info.semana)}</b> · Região: <b>${esc(info.regiao||'—')}</b></div>` : ''}
-        <div class="muted">Total vendido: <b>${brl(totalVendido)}</b> · Recebido: <b>${brl(totalPago)}</b></div>
-        <div class="muted">Novas: <b>${info.novas}</b> · Acertos: <b>${info.acertos}</b></div>
+        <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:8px;">✓ Dados extraídos — confirme antes de importar</div>
+        ${info.semana ? `<div class="muted" style="margin-bottom:3px;">📅 Semana: <b>${esc(info.semana)}</b> · Região: <b>${esc(info.regiao||'—')}</b></div>` : ''}
+        <div class="muted" style="margin-bottom:3px;">💰 Total Geral: <b>${brl(info.totalGeral)}</b> · Débitos: <b>${brl(info.totalDebitos)}</b></div>
+        <div class="muted" style="margin-bottom:3px;">✅ Acertos: <b>${info.acertos}</b> (região: ${info.acertosRegiao} + outras: ${info.acertosOutras})</div>
+        <div class="muted" style="margin-bottom:3px;">✨ Novas: <b>${info.novas}</b> (região: ${info.novasRegiao} + outras: ${info.novasOutras})</div>
+        <div class="muted">📋 Notas remarcadas: <b>${info.notasRemarcadas}</b></div>
       </div>
 
       ${entradas.length ? `
-        <div style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">
-          ${entradas.length} consultora(s) encontrada(s)
+        <div style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px;">
+          ${entradas.length} consultora(s)
         </div>
+        <div style="overflow-x:auto;">
         ${entradas.map(e=>`
-          <div class="result-row">
-            <span class="rn">${esc(e.nome)}</span>
-            <span class="rv">${brl(e.vendido)}</span>
-            <span class="rp">${brl(e.pago)}</span>
+          <div class="result-row" style="flex-direction:column;align-items:flex-start;gap:2px;">
+            <div style="font-weight:700;font-size:14px;">${esc(e.nome)}</div>
+            ${e.data ? `<div style="font-size:11px;color:var(--gray);">📅 ${esc(e.data)}</div>` : ''}
+            <div style="display:flex;gap:12px;font-size:12px;margin-top:2px;flex-wrap:wrap;">
+              <span>💰 Pago: <b style="color:var(--green);">${brl(e.pago)}</b></span>
+              <span>📋 Saldo: <b style="color:${e.saldo==='Quitada'?'var(--green)':'var(--red)'};">${esc(e.saldo)}</b></span>
+              ${e.notaNova ? `<span>🆕 Nota nova: <b style="color:var(--pink);">${brl(e.notaNova)}</b></span>` : ''}
+              ${e.semanaCobranca ? `<span>📅 Sem. cobrança: <b>${esc(e.semanaCobranca)}</b></span>` : ''}
+            </div>
           </div>`).join('')}
-        <div style="font-size:11px;color:var(--gray);margin-top:6px;">rosa = vendido · verde = pago</div>
+        </div>
+        <div style="font-size:11px;color:var(--gray);margin-top:6px;">💰 pago esta semana · 📋 saldo · 🆕 próxima nota</div>
       ` : '<div class="muted">Não encontrei consultoras. Verifique a nitidez das fotos.</div>'}
 
       <div class="btn-row" style="margin-top:14px;">
@@ -1116,9 +1241,18 @@ function confirmarImport(dataStr) {
     id: uid(), nome, regiaoId: reg?.id||uid(), regiaoNome: info.regiao||'Importada',
     criada: Date.now(),
     entradas: entrsFinal,
+    // campos do sistema (foto 1)
     meta: 0, caixa: 0,
     ativas: info.acertos||entradas.length,
-    novas: info.novas||0, nota: ''
+    novas: info.novas||0,
+    nota: '',
+    totalGeral:      info.totalGeral||0,
+    totalDebitos:    info.totalDebitos||0,
+    acertosRegiao:   info.acertosRegiao||0,
+    acertosOutras:   info.acertosOutras||0,
+    novasRegiao:     info.novasRegiao||0,
+    novasOutras:     info.novasOutras||0,
+    notasRemarcadas: info.notasRemarcadas||0,
   };
   DB.semanas.unshift(sem);
   save(); refreshSelects();
