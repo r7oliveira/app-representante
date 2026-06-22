@@ -948,7 +948,7 @@ async function compressImage(file) {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
-      const MAX = 1024;
+      const MAX = 768;
       let w = img.width, h = img.height;
       if (w > MAX || h > MAX) {
         if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -958,7 +958,7 @@ async function compressImage(file) {
       cv.width = w; cv.height = h;
       cv.getContext('2d').drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(url);
-      cv.toBlob(blob => resolve(blob || file), 'image/jpeg', 0.6);
+      cv.toBlob(blob => resolve(blob || file), 'image/jpeg', 0.4);
     };
     img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
     img.src = url;
@@ -1086,18 +1086,25 @@ async function processarFotos() {
   }
   setStatus('Iniciando — enviando fotos para o Gemini…');
 
-  // Temporizador: mostra quantos segundos está processando
+  // Temporizador: mostra no próprio botão (sempre visível)
   let seconds = 0;
-  const timerEl = document.getElementById('importTimer');
   const timerInterval = setInterval(() => {
     seconds++;
-    if (timerEl) timerEl.textContent = `${seconds}s`;
+    btn.textContent = `⏳ Processando... ${seconds}s`;
   }, 1000);
+  const timerEl = document.getElementById('importTimer');
   try {
     let info = {}, cobranca = [], notas = [];
-    if (importSlots[1]) info     = await extractInfo(importSlots[1]);
-    if (importSlots[2]) cobranca = await extractCobranca(importSlots[2]);
-    if (importSlots[3]) notas    = await extractNotas(importSlots[3]);
+    // Foto 1 primeiro (tem os dados da semana), depois 2 e 3 em paralelo
+    if (importSlots[1]) {
+      setStatus('📷 Lendo Foto 1 — Informações…');
+      info = await extractInfo(importSlots[1]);
+    }
+    setStatus('📷 Lendo Fotos 2 e 3 em paralelo…');
+    [cobranca, notas] = await Promise.all([
+      importSlots[2] ? extractCobranca(importSlots[2]) : Promise.resolve([]),
+      importSlots[3] ? extractNotas(importSlots[3])    : Promise.resolve([]),
+    ]);
 
     const entradas = mergeData(cobranca, notas);
     previewEntradas = entradas;
