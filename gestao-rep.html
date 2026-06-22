@@ -263,7 +263,7 @@
         <img id="slotThumb3" class="import-thumb" style="display:none;">
       </div>
 
-      <div class="import-status" id="importStatus"><span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(217,26,122,.3);border-top-color:var(--pink);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;"></span><span id="importStatusTxt">Processando…</span></div>
+      <div class="import-status" id="importStatus"><span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(217,26,122,.3);border-top-color:var(--pink);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;"></span><span id="importStatusTxt">Processando…</span> <span id="importTimer" style="font-size:11px;color:var(--gray);margin-left:6px;"></span></div>
       <div id="importResult" style="display:none;"></div>
 
       <button class="btn w100" id="btnProcessar" onclick="processarFotos()" style="margin-top:10px;">
@@ -1085,6 +1085,14 @@ async function processarFotos() {
     return;
   }
   setStatus('Iniciando — enviando fotos para o Gemini…');
+
+  // Temporizador: mostra quantos segundos está processando
+  let seconds = 0;
+  const timerEl = document.getElementById('importTimer');
+  const timerInterval = setInterval(() => {
+    seconds++;
+    if (timerEl) timerEl.textContent = `${seconds}s`;
+  }, 1000);
   try {
     let info = {}, cobranca = [], notas = [];
     if (importSlots[1]) info     = await extractInfo(importSlots[1]);
@@ -1139,6 +1147,8 @@ async function processarFotos() {
       <b>⚠️ Erro:</b><br><span style="font-size:13px;">${esc(e?.message||String(e))}</span>
     </div>`;
   } finally {
+    clearInterval(timerInterval);
+    if (timerEl) timerEl.textContent = '';
     btn.disabled = false;
     btn.textContent = 'Processar fotos';
   }
