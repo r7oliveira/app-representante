@@ -1197,18 +1197,7 @@ async function analisarComIA() {
   const prompt = 'Voce e um assistente de gestao para uma representante de vendas de cosmeticos Romance. Analise os dados do fechamento semanal e gere um relatorio executivo em portugues com: 1. Resumo do fechamento 2. Destaques positivos 3. Pontos de atencao 4. Consultoras em destaque 5. Proximos passos sugeridos. Use linguagem simples e pratica. Use emojis. DADOS: ' + resumo;
 
   try {
-    const resp = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-      { method: 'POST',
-        headers: {'Content-Type': 'application/json', 'x-goog-api-key': apiKey},
-        body: JSON.stringify({
-          contents: [{parts: [{text: prompt}]}],
-          generationConfig: {temperature: 0.7, maxOutputTokens: 1500}
-        })
-      }
-    );
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error.message);
+    const data = await geminiCall(apiKey, {contents: [{parts: [{text: prompt}]}], generationConfig: {temperature: 0.7, maxOutputTokens: 1500}});
     const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const html = texto
       .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
@@ -1417,18 +1406,7 @@ Retorne APENAS o JSON com os dados reais. Sem markdown, sem explicações.`;
     parts.push({text: prompt});
 
     overlayStatus.textContent = 'Aguardando resposta do Gemini...';
-
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 90000);
-    // Auth keys (AQ.) use x-goog-api-key header; standard keys (AIza) also work with it
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
-      { method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':apiKey}, signal:ctrl.signal,
-        body: JSON.stringify({contents:[{parts}], generationConfig:{temperature:0, maxOutputTokens:8192}}) }
-    );
-    clearTimeout(t);
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+    const data = await geminiCall(apiKey, {contents:[{parts}], generationConfig:{temperature:0, maxOutputTokens:8192}}, 90000);
 
     overlayStatus.textContent = 'Lendo resposta...';
     let raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
@@ -1702,18 +1680,7 @@ async function enviarAssist() {
   }
 
   try {
-    var resp = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-      { method: 'POST',
-        headers: {'Content-Type': 'application/json', 'x-goog-api-key': apiKey},
-        body: JSON.stringify({
-          contents: messages,
-          generationConfig: {temperature: 0.5, maxOutputTokens: 2000}
-        })
-      }
-    );
-    var data = await resp.json();
-    if (data.error) throw new Error(data.error.message);
+    var data = await geminiCall(apiKey, {contents: messages, generationConfig: {temperature: 0.5, maxOutputTokens: 2000}});
     var resposta = data.candidates && data.candidates[0] && data.candidates[0].content &&
       data.candidates[0].content.parts && data.candidates[0].content.parts[0] ?
       data.candidates[0].content.parts[0].text : 'Nao obtive resposta.';
@@ -1725,6 +1692,45 @@ async function enviarAssist() {
     var st2 = document.getElementById('assistStatus'); if(st2) st2.textContent = 'online';
     renderAssist();
   }
+}
+
+/* ════════════════════ GEMINI HELPER ════════════════════ */
+const MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash'
+];
+
+async function geminiCall(apiKey, body, timeout) {
+  timeout = timeout || 90000;
+  for (var i = 0; i < MODELS.length; i++) {
+    var model = MODELS[i];
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){ ctrl.abort(); }, timeout);
+    try {
+      var resp = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent',
+        { method: 'POST', headers: {'Content-Type':'application/json','x-goog-api-key': apiKey}, signal: ctrl.signal, body: JSON.stringify(body) }
+      );
+      clearTimeout(t);
+      var data = await resp.json();
+      if (data.error) {
+        var msg = data.error.message || '';
+        // Try next model if overloaded or not found
+        if (msg.indexOf('high demand') !== -1 || msg.indexOf('RESOURCE_EXHAUSTED') !== -1 || msg.indexOf('not found') !== -1 || msg.indexOf('quota') !== -1) {
+          continue;
+        }
+        throw new Error(msg);
+      }
+      return data;
+    } catch(e) {
+      clearTimeout(t);
+      if (e.name === 'AbortError') throw new Error('Tempo limite excedido. Tente novamente.');
+      if (i === MODELS.length - 1) throw e;
+      // else try next model
+    }
+  }
+  throw new Error('Todos os modelos indisponíveis. Tente em alguns minutos.');
 }
 
 /* ════════════════════ INIT ════════════════════ */
