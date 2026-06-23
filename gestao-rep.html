@@ -149,6 +149,14 @@
 
     .reg-item { background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
     .footer { text-align: center; padding: 20px 16px 36px; font-size: 12px; color: var(--gray); }
+    .chat-msg { margin-bottom: 12px; }
+    .chat-msg.user { text-align: right; }
+    .chat-msg.user .bubble { background: var(--pink); color: white; display: inline-block; padding: 10px 14px; border-radius: 18px 18px 4px 18px; font-size: 14px; max-width: 85%; text-align: left; }
+    .chat-msg.ia .bubble { background: white; color: var(--dark); display: inline-block; padding: 12px 14px; border-radius: 18px 18px 18px 4px; font-size: 13px; max-width: 95%; line-height: 1.65; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+    .chat-msg.ia .bubble b { color: var(--pink-deep); }
+    .chat-msg .ts { font-size: 10px; color: var(--gray); margin-top: 3px; }
+    .suggest-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .suggest-chip { background: white; border: 1.5px solid var(--pink); color: var(--pink); border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
     .footer strong { color: var(--green); }
     .divider { height: 1px; background: #f0f0f0; margin: 12px 0; }
 
@@ -216,6 +224,7 @@
   <button class="tab"        data-view="semana"   onclick="switchTab('semana')">💰<br>Semana</button>
   <button class="tab"        data-view="regioes"  onclick="switchTab('regioes')">🗺️<br>Regiões</button>
   <button class="tab"        data-view="config"   onclick="switchTab('config')">⚙️<br>Config</button>
+  <button class="tab"        data-view="assist"   onclick="switchTab('assist')">🤖<br>IA</button>
 </div>
 
 <div class="body">
@@ -312,6 +321,22 @@
     <div id="configConteudo"></div>
   </div>
 
+  <!-- ══════════ ASSISTENTE IA ══════════ -->
+  <div class="view" id="view-assist">
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-title">🤖 Assistente de Gestão</div>
+      <p class="muted" style="line-height:1.6;margin-bottom:0;">Peça qualquer relatório sobre seus dados. Ex: <em>"Me mostre o painel executivo de 2026"</em> ou <em>"Qual foi minha melhor semana?"</em></p>
+    </div>
+    <div id="assistChat" style="margin-bottom:12px;"></div>
+    <div style="display:flex;gap:8px;position:sticky;bottom:12px;">
+      <input id="assistInput" placeholder="Peça um relatório..." style="flex:1;border-radius:13px;padding:12px 14px;font-size:14px;font-family:inherit;border:1.5px solid #e3e3e8;background:#fafafa;">
+      <button class="btn" id="assistBtn" onclick="enviarAssist()" style="padding:12px 16px;border-radius:13px;flex-shrink:0;">Enviar</button>
+    </div>
+    <div style="text-align:center;margin-top:8px;">
+      <button onclick="limparChat()" style="background:none;border:none;font-size:12px;color:var(--gray);cursor:pointer;">Limpar conversa</button>
+    </div>
+  </div>
+
 </div>
 
 <div class="footer"><p>Desenvolvido pela <strong>Levvel</strong></p></div>
@@ -383,6 +408,7 @@ function switchTab(v) {
   if (v==='semana')  renderSemanaView();
   if (v==='regioes') renderRegioes();
   if (v==='config')  renderConfig();
+  if (v==='assist')   renderAssist();
 }
 
 function refreshSelects() {
@@ -1321,6 +1347,148 @@ function confirmarImport(dataStr) {
   });
   renderSemanaView();
   switchTab('painel');
+}
+
+/* ════════════════════ ASSISTENTE IA ════════════════════ */
+let assistHistory = [];
+
+const SUGESTOES = [
+  'Painel executivo de 2026',
+  'Melhor e pior semana',
+  'Ranking das regioes',
+  'Media semanal de cobrancas',
+  'Consultoras mais frequentes',
+  'Comparativo entre semanas'
+];
+
+function renderAssist() {
+  const chat = document.getElementById('assistChat');
+  if (!chat) return;
+  if (assistHistory.length === 0) {
+    chat.innerHTML =
+      '<div class="card" style="text-align:center;padding:20px;">' +
+        '<div style="font-size:32px;margin-bottom:8px;">🤖</div>' +
+        '<div style="font-weight:700;margin-bottom:6px;">Assistente de Gestao</div>' +
+        '<div class="muted" style="margin-bottom:14px;">Escolha uma sugestao ou digite seu pedido</div>' +
+        '<div class="suggest-row" style="justify-content:center;">' +
+          SUGESTOES.map(function(s) {
+            return '<button class="suggest-chip" onclick="usarSugestao(\'' + s.replace(/'/g, "\\'") + '\')">' + s + '</button>';
+          }).join('') +
+        '</div>' +
+      '</div>';
+    return;
+  }
+  chat.innerHTML = assistHistory.map(function(m) {
+    var html = m.texto
+      .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+      .replace(/^#{1,3} (.+)$/gm, '<div style="font-size:13px;font-weight:800;color:var(--pink-deep);margin:10px 0 4px;">$1</div>')
+      .replace(/^[*\-] (.+)$/gm, '<div style="padding:2px 0 2px 10px;border-left:3px solid var(--pink);margin:3px 0;">$1</div>')
+      .replace(/\n/g, '<br>');
+    return '<div class="chat-msg ' + m.role + '">' +
+      '<div class="bubble">' + (m.role === 'user' ? m.texto : html) + '</div>' +
+      '<div class="ts">' + m.hora + '</div>' +
+    '</div>';
+  }).join('');
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function usarSugestao(texto) {
+  document.getElementById('assistInput').value = texto;
+  enviarAssist();
+}
+
+function limparChat() {
+  assistHistory = [];
+  renderAssist();
+}
+
+function gerarContextoDB() {
+  var linhas = [];
+  linhas.push('=== DADOS DO APP ===');
+  linhas.push('Total de semanas: ' + DB.semanas.length);
+  linhas.push('Total de regioes: ' + DB.regioes.length);
+
+  DB.semanas.forEach(function(sem) {
+    var t = calcTotais(sem);
+    linhas.push('--- Semana ' + sem.nome + ' | Regiao: ' + sem.regiaoNome + ' ---');
+    linhas.push('Cobranca: R$' + t.vendido.toFixed(2) + ' | Recebido: R$' + t.pago.toFixed(2));
+    linhas.push('Pix: R$' + t.pix.toFixed(2) + ' | Dinheiro: R$' + t.dinheiro.toFixed(2));
+    linhas.push('Acertos: ' + sem.ativas + ' (regiao: ' + (sem.acertosRegiao||0) + ' outras: ' + (sem.acertosOutras||0) + ')');
+    linhas.push('Novas: ' + sem.novas + ' (regiao: ' + (sem.novasRegiao||0) + ' outras: ' + (sem.novasOutras||0) + ')');
+    linhas.push('Notas remarcadas: ' + (sem.notasRemarcadas||0));
+    linhas.push('Notas novas distribuidas: R$' + t.notasNovas.toFixed(2));
+    linhas.push('Ticket medio: R$' + t.ticket.toFixed(2));
+    if (sem.meta > 0) linhas.push('Meta: R$' + sem.meta.toFixed(2));
+    if (sem.nota) linhas.push('Obs: ' + sem.nota);
+    sem.entradas.forEach(function(e) {
+      var pago = (e.pagoPix||0) + (e.pagoDinheiro||0);
+      linhas.push('  ' + e.nome + ': cobrado R$' + (e.vendido||0).toFixed(2) + ' pago R$' + pago.toFixed(2) + ' nota nova R$' + (e.notaNova||0).toFixed(2) + ' saldo:' + (e.saldo||'—'));
+    });
+  });
+  return linhas.join('\n');
+}
+
+async function enviarAssist() {
+  const input = document.getElementById('assistInput');
+  const btn = document.getElementById('assistBtn');
+  const pergunta = input.value.trim();
+  if (!pergunta) return;
+
+  const apiKey = localStorage.getItem('gemini_key') || '';
+  if (!apiKey) { alert('Configure a chave Gemini em Config.'); return; }
+
+  var hora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  assistHistory.push({role: 'user', texto: pergunta, hora: hora});
+  input.value = '';
+  btn.disabled = true;
+  renderAssist();
+
+  assistHistory.push({role: 'ia', texto: 'Analisando seus dados...', hora: hora});
+  renderAssist();
+
+  var contexto = gerarContextoDB();
+  var systemPrompt = 'Voce e um assistente de gestao para uma representante de vendas de cosmeticos (Romance). ' +
+    'Voce tem acesso a todos os dados historicos do app dela. ' +
+    'Responda em portugues, de forma clara e pratica, usando emojis e formatacao markdown (negrito com **, listas com -). ' +
+    'Seja objetivo mas completo. Quando mostrar valores use formato R$ 1.234,56. ' +
+    'DADOS HISTORICOS COMPLETOS:\n' + contexto;
+
+  var messages = [{role: 'user', parts: [{text: systemPrompt + '\n\nPERGUNTA: ' + pergunta}]}];
+  if (assistHistory.length > 3) {
+    messages = [];
+    var hist = assistHistory.slice(0, -2);
+    messages.push({role: 'user', parts: [{text: systemPrompt}]});
+    messages.push({role: 'model', parts: [{text: 'Entendido! Estou pronto para ajudar com os relatorios.'}]});
+    hist.slice(-6).forEach(function(m) {
+      if (m.texto === 'Analisando seus dados...') return;
+      messages.push({role: m.role === 'user' ? 'user' : 'model', parts: [{text: m.texto}]});
+    });
+    messages.push({role: 'user', parts: [{text: pergunta}]});
+  }
+
+  try {
+    var resp = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+      { method: 'POST',
+        headers: {'Content-Type': 'application/json', 'x-goog-api-key': apiKey},
+        body: JSON.stringify({
+          contents: messages,
+          generationConfig: {temperature: 0.5, maxOutputTokens: 2000}
+        })
+      }
+    );
+    var data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    var resposta = data.candidates && data.candidates[0] && data.candidates[0].content &&
+      data.candidates[0].content.parts && data.candidates[0].content.parts[0] ?
+      data.candidates[0].content.parts[0].text : 'Nao obtive resposta.';
+    assistHistory[assistHistory.length - 1].texto = resposta;
+  } catch(e) {
+    assistHistory[assistHistory.length - 1].texto = 'Erro: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    renderAssist();
+  }
 }
 
 /* ════════════════════ INIT ════════════════════ */
