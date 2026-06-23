@@ -371,6 +371,7 @@ function fmtIn(v) { return (v||0).toLocaleString('pt-BR',{minimumFractionDigits:
 function esc(s) { return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function badgePct(p) { return p>=100?'ok':p>=70?'warn':'bad'; }
 const posCls = ['gold','silver','bronze'];
+    function normN(s) { return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim(); }
 
 /* ════════════════════ TABS ════════════════════ */
 function switchTab(v) {
