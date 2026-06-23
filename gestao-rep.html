@@ -909,7 +909,7 @@ function renderPainel() {
     <button class="btn w100 secondary" onclick="switchTab('config')" style="margin-bottom:10px;">⚙️ Configurar meta / caixa</button>
     <button class="btn w100" id="btnAnalisar" onclick="analisarComIA()" style="background:linear-gradient(135deg,#8B0045,#D91A7A);">🤖 Analisar fechamento com IA</button>
     <div id="analiseResult" style="display:none;margin-top:12px;"></div>
-  \`;
+  `;
 }
 
 /* ════════════════════ ANÁLISE IA ════════════════════ */
@@ -917,91 +917,71 @@ async function analisarComIA() {
   const btn = document.getElementById('btnAnalisar');
   const wrap = document.getElementById('analiseResult');
   const apiKey = localStorage.getItem('gemini_key') || '';
-  if (!apiKey) { alert('Configure a chave Gemini em ⚙️ Config.'); return; }
-
+  if (!apiKey) { alert('Configure a chave Gemini em Config.'); return; }
   const sem = activeSem('selPainel');
   if (!sem) { alert('Selecione uma semana.'); return; }
 
   btn.disabled = true;
-  btn.textContent = '⏳ Analisando...';
+  btn.textContent = 'Analisando...';
   wrap.style.display = 'block';
-  wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--pink);font-weight:700;"><span class="spinner"></span> Gerando análise...</div>';
+  wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--pink);font-weight:700;">Gerando analise...</div>';
 
   const t = calcTotais(sem);
+  const linhas = sem.entradas.map(function(e) {
+    return '- ' + e.nome + ': cobrado R$' + (e.vendido||0).toFixed(2) +
+      ', pago R$' + ((e.pagoPix||0)+(e.pagoDinheiro||0)).toFixed(2) +
+      ', saldo: ' + (e.saldo||'--') +
+      ', nota nova: R$' + (e.notaNova||0).toFixed(2);
+  }).join('\n');
 
-  const resumo = `
-Semana: ${sem.nome} | Região: ${sem.regiaoNome}
-Cobrança total: R$${t.vendido.toFixed(2)}
-Recebido (Pix): R$${t.pix.toFixed(2)} | Recebido (Dinheiro): R$${t.dinheiro.toFixed(2)}
-Total recebido: R$${t.pago.toFixed(2)}
-Acertos: ${sem.ativas} (${sem.acertosRegiao||0} região + ${sem.acertosOutras||0} outras)
-Novas consultoras: ${sem.novas} (${sem.novasRegiao||0} região + ${sem.novasOutras||0} outras)
-Notas remarcadas: ${sem.notasRemarcadas||0}
-Ticket médio: R$${t.ticket.toFixed(2)}
-Meta: ${sem.meta>0?'R$'+sem.meta.toFixed(2):'não definida'}
-Caixa disponível: R$${(sem.caixa||0).toFixed(2)}
-Notas novas distribuídas: R$${t.notasNovas.toFixed(2)}
+  const resumo = 'Semana: ' + sem.nome + ' | Regiao: ' + sem.regiaoNome + '\n' +
+    'Cobranca total: R$' + t.vendido.toFixed(2) + '\n' +
+    'Recebido Pix: R$' + t.pix.toFixed(2) + ' | Recebido Dinheiro: R$' + t.dinheiro.toFixed(2) + '\n' +
+    'Total recebido: R$' + t.pago.toFixed(2) + '\n' +
+    'Acertos: ' + sem.ativas + ' (' + (sem.acertosRegiao||0) + ' regiao + ' + (sem.acertosOutras||0) + ' outras)\n' +
+    'Novas consultoras: ' + sem.novas + ' (' + (sem.novasRegiao||0) + ' regiao + ' + (sem.novasOutras||0) + ' outras)\n' +
+    'Notas remarcadas: ' + (sem.notasRemarcadas||0) + '\n' +
+    'Ticket medio: R$' + t.ticket.toFixed(2) + '\n' +
+    'Meta: ' + (sem.meta>0 ? 'R$'+sem.meta.toFixed(2) : 'nao definida') + '\n' +
+    'Caixa disponivel: R$' + (sem.caixa||0).toFixed(2) + '\n' +
+    'Notas novas distribuidas: R$' + t.notasNovas.toFixed(2) + '\n\n' +
+    'Consultoras:\n' + linhas +
+    (sem.nota ? '\nObservacao: ' + sem.nota : '');
 
-Consultoras e pagamentos:
-${sem.entradas.map(e=>`- ${e.nome}: cobrado R$${(e.vendido||0).toFixed(2)}, pago R$${((e.pagoPix||0)+(e.pagoDinheiro||0)).toFixed(2)}, saldo: ${e.saldo||'—'}, nota nova: R$${(e.notaNova||0).toFixed(2)}`).join('
-')}
-${sem.nota ? '
-Observação da semana: ' + sem.nota : ''}
-  `.trim();
+  const prompt = 'Voce e um assistente de gestao para uma representante de vendas de cosmeticos Romance. Analise os dados do fechamento semanal e gere um relatorio executivo em portugues com: 1. Resumo do fechamento 2. Destaques positivos 3. Pontos de atencao 4. Consultoras em destaque 5. Proximos passos sugeridos. Use linguagem simples e pratica. Use emojis. DADOS: ' + resumo;
 
   try {
     const resp = await fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-      { method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':apiKey},
+      { method: 'POST',
+        headers: {'Content-Type': 'application/json', 'x-goog-api-key': apiKey},
         body: JSON.stringify({
-          contents:[{parts:[{text:
-            `Você é um assistente de gestão para uma representante de vendas de cosméticos (Romance).
-Analise os dados do fechamento semanal abaixo e gere um relatório executivo em português com:
-
-1. **Resumo do fechamento** — como foi a semana em geral
-2. **Destaques positivos** — o que foi bem
-3. **Pontos de atenção** — o que precisa melhorar
-4. **Consultoras em destaque** — top pagadoras desta semana
-5. **Próximos passos sugeridos** — ações concretas para a próxima semana
-
-Seja direto, use linguagem simples e prática. Use emojis para tornar mais visual.
-
-DADOS DA SEMANA:
-${resumo}`
-          }]}],
-          generationConfig:{temperature:0.7, maxOutputTokens:1500}
+          contents: [{parts: [{text: prompt}]}],
+          generationConfig: {temperature: 0.7, maxOutputTokens: 1500}
         })
       }
     );
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message);
     const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    // Convert markdown to simple HTML
     const html = texto
       .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-      .replace(/^### (.+)$/gm, '<div style="font-size:13px;font-weight:800;color:var(--pink);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;">$1</div>')
-      .replace(/^## (.+)$/gm, '<div style="font-size:15px;font-weight:800;color:var(--pink-deep);margin:16px 0 6px;">$1</div>')
-      .replace(/^# (.+)$/gm, '<div style="font-size:17px;font-weight:800;color:var(--pink-deep);margin:16px 0 8px;">$1</div>')
-      .replace(/^[\*\-] (.+)$/gm, '<div style="padding:3px 0 3px 12px;border-left:3px solid var(--pink);margin:4px 0;font-size:13px;">$1</div>')
-      .replace(/
-
-/g, '<br>')
-      .replace(/
-/g, '<br>');
-    wrap.innerHTML = \`
-      <div class="card" style="border-left:4px solid var(--pink);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <div style="font-weight:800;font-size:14px;color:var(--pink);">🤖 Análise IA — ${sem.nome}</div>
-          <button onclick="document.getElementById('analiseResult').style.display='none'" style="background:none;border:none;font-size:18px;color:var(--gray);cursor:pointer;">✕</button>
-        </div>
-        <div style="font-size:13px;line-height:1.7;color:var(--dark);">\${html}</div>
-      </div>
-    \`;
+      .replace(/^#{1,3} (.+)$/gm, '<div style="font-size:14px;font-weight:800;color:var(--pink);margin:14px 0 6px;">$1</div>')
+      .replace(/^[*\-] (.+)$/gm, '<div style="padding:3px 0 3px 12px;border-left:3px solid var(--pink);margin:4px 0;font-size:13px;">$1</div>')
+      .replace(/\n/g, '<br>');
+    wrap.innerHTML =
+      '<div class="card" style="border-left:4px solid var(--pink);">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+          '<div style="font-weight:800;font-size:14px;color:var(--pink);">Analise IA - ' + esc(sem.nome) + '</div>' +
+          '<button onclick="document.getElementById(\'analiseResult\').style.display=\'none\'" style="background:none;border:none;font-size:18px;color:var(--gray);cursor:pointer;">x</button>' +
+        '</div>' +
+        '<div style="font-size:13px;line-height:1.7;color:var(--dark);">' + html + '</div>' +
+      '</div>';
   } catch(e) {
-    wrap.innerHTML = \`<div style="background:var(--red-bg);border-radius:12px;padding:14px;color:var(--red);font-size:13px;"><b>⚠️ Erro:</b> \${esc(e.message)}</div>\`;
+    wrap.innerHTML = '<div style="background:var(--red-bg);border-radius:12px;padding:14px;color:var(--red);font-size:13px;"><b>Erro:</b> ' + esc(e.message) + '</div>';
   } finally {
     btn.disabled = false;
-    btn.textContent = '🤖 Analisar fechamento com IA';
+    btn.textContent = 'Analisar fechamento com IA';
   }
 }
 
@@ -1071,74 +1051,9 @@ async function imageToBase64(file) {
 }
 
 
-async function geminiVision(imageFile, prompt) {
-  const apiKey = localStorage.getItem('gemini_key') || '';
-  if (!apiKey) throw new Error('Chave Gemini não configurada. Vá em ⚙️ Config e cole sua chave AIza.');
-  // Comprime e converte para base64 (512px, 35% qualidade, ~50KB)
-  const b64 = await imageToBase64(imageFile);
-  if (!b64) throw new Error('Não foi possível processar a imagem.');
-  const mime = 'image/jpeg';
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
-  const resp = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
-      body: JSON.stringify({
-        contents: [{ parts: [
-          { inline_data: { mime_type: mime, data: b64 } },
-          { text: prompt }
-        ]}],
-        generationConfig: { temperature: 0, maxOutputTokens: 2000 }
-      })
-    }
-  );
-  clearTimeout(timeout);
-  const data = await resp.json();
-  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  return text.replace(/```json|```/g, '').trim();
-}
 
-async function extractInfo(file) {
-  setStatus('Lendo Foto 1 — Informações da semana…');
-  const json = await geminiVision(file,
-    'Leia esta tela de sistema de vendas. Extraia os dados e responda SOMENTE com JSON puro (sem markdown): ' +
-    '{"semana":"XX/XXXX","regiao":"NOME","totalGeral":0.00,"totalDebitos":0.00,' +
-    '"acertosRegiao":0,"acertosOutras":0,"novasRegiao":0,"novasOutras":0,"notasRemarcadas":0}. ' +
-    'Use 0 para campos não visíveis. Números devem ser em formato numérico (ex: 3499.34, não R$3.499,34).'
-  );
-  try { return JSON.parse(json); }
-  catch(e) { console.warn('parseInfo fail:', json); return {}; }
-}
 
-async function extractCobranca(file) {
-  setStatus('Lendo Foto 2 — Cobranças da semana…');
-  const json = await geminiVision(file,
-    'Leia a tabela "Minha Cobrança na Semana" desta tela. Para cada linha da tabela (excluindo cabeçalho e totais), ' +
-    'retorne um objeto. Responda SOMENTE com JSON array puro (sem markdown): ' +
-    '[{"nome":"NOME COMPLETO EM MAIUSCULA","data":"DD-MM-YYYY HH:MM:SS","pago":0.00,"saldo":"Quitada","notaNova":0.00}]. ' +
-    'saldo: se for "Quitada" use a string "Quitada"; se for um valor use o número. ' +
-    'notaNova: use 0 se não houver valor ou se aparecer "—". ' +
-    'Valores numéricos sem símbolo R$ (ex: 83.99 não R$83,99).'
-  );
-  try { return JSON.parse(json); }
-  catch(e) { console.warn('parseCobranca fail:', json); return []; }
-}
 
-async function extractNotas(file) {
-  setStatus('Lendo Foto 3 — Notas distribuídas…');
-  const json = await geminiVision(file,
-    'Leia a tabela "Notas Distribuídas" desta tela. Para cada linha da tabela (excluindo cabeçalho e totais), ' +
-    'retorne um objeto. Responda SOMENTE com JSON array puro (sem markdown): ' +
-    '[{"nome":"NOME COMPLETO EM MAIUSCULA","data":"DD-MM-YYYY","semanaCobranca":"30/2026","vendido":0.00}]. ' +
-    'Valores numéricos sem símbolo R$ (ex: 3708.46 não R$3.708,46).'
-  );
-  try { return JSON.parse(json); }
-  catch(e) { console.warn('parseNotas fail:', json); return []; }
-}
 
 function mergeData(cobranca, notas) {
   const map = {};
