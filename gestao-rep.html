@@ -90,7 +90,7 @@
     /* ── HOME HERO ── */
     .home-hero {
       background: linear-gradient(160deg, #6B0030 0%, var(--rose-deep) 40%, var(--rose) 100%);
-      padding: 24px 20px 48px;
+      padding: 24px 20px 24px;
       position: relative; overflow: hidden;
     }
     .home-hero::before {
@@ -407,19 +407,20 @@
           <span id="heroTrendTxt"></span>
         </div>
       </div>
-      <div class="hero-stat-row">
-        <div class="hero-stat">
-          <div class="hs-lbl">Acertos</div>
-          <div class="hs-val" id="heroAcertos">—</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hs-lbl">Novas</div>
-          <div class="hs-val" id="heroNovas">—</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hs-lbl">Ticket</div>
-          <div class="hs-val" id="heroTicket">—</div>
-        </div>
+    </div>
+    <!-- Stats row below hero -->
+    <div style="display:flex;gap:0;background:var(--white);border-bottom:1px solid var(--surface-2);">
+      <div style="flex:1;padding:14px 0;text-align:center;border-right:1px solid var(--surface-2);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px;">Acertos</div>
+        <div style="font-size:22px;font-weight:800;color:var(--blue);" id="heroAcertos">—</div>
+      </div>
+      <div style="flex:1;padding:14px 0;text-align:center;border-right:1px solid var(--surface-2);">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px;">Novas</div>
+        <div style="font-size:22px;font-weight:800;color:var(--amber);" id="heroNovas">—</div>
+      </div>
+      <div style="flex:1;padding:14px 0;text-align:center;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px;">Ticket</div>
+        <div style="font-size:22px;font-weight:800;color:var(--rose);" id="heroTicket">—</div>
       </div>
     </div>
     <div class="scroll-body">
