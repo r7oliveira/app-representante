@@ -38,16 +38,17 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+    html, body { height: 100%; }
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--surface);
-      min-height: 100vh;
+      min-height: 100%;
       color: var(--ink);
       overflow-x: hidden;
     }
 
     /* ── APP SHELL ── */
-    #app { display: flex; flex-direction: column; min-height: 100vh; max-width: 480px; margin: 0 auto; }
+    #app { display: flex; flex-direction: column; height: 100%; min-height: 100vh; max-width: 480px; margin: 0 auto; }
 
     /* ── BOTTOM NAV ── */
     .bottom-nav {
@@ -287,11 +288,11 @@
 
     /* ── CHAT WHATSAPP ── */
     #view-assist { overflow: hidden; }
-    #view-assist.active { display: block !important; position: fixed; inset: 0; z-index: 50; }
-    .assist-wrap { display: flex; flex-direction: column; height: 100%; width: 100%; }
-    .assist-wrap .assist-header { flex-shrink: 0; }
-    .assist-wrap .wa-body { flex: 1; min-height: 0; overflow-y: auto; }
-    .assist-wrap .wa-footer { flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom, 8px); }
+    #view-assist.active { display: flex !important; flex-direction: column; height: 100%; }
+    .assist-wrap { display: contents; }
+    #view-assist .assist-header { flex-shrink: 0; }
+    #view-assist .wa-body { flex: 1; min-height: 0; overflow-y: auto; }
+    #view-assist .wa-footer { flex-shrink: 0; }
     .assist-header { background: var(--rose-deep); padding: 52px 16px 16px; flex-shrink: 0; }
     .assist-header-inner { display: flex; align-items: center; gap: 12px; }
     .assist-avatar { width: 42px; height: 42px; border-radius: 14px; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; letter-spacing: .5px; flex-shrink: 0; }
@@ -356,7 +357,7 @@
   </button>
 </nav>
 
-<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+<div style="flex:1;overflow:hidden;display:flex;flex-direction:column;height:100%;">
 
 
   <!-- ══════════ HOME ══════════ -->
@@ -604,10 +605,8 @@ function switchTab(v) {
   if (v==='assist') {
     renderAssist();
     document.querySelector('.bottom-nav').style.display = 'none';
-    startViewportWatcher();
   } else {
     document.querySelector('.bottom-nav').style.display = '';
-    stopViewportWatcher();
   }
 }
 
@@ -1776,33 +1775,7 @@ async function geminiCall(apiKey, body, timeout) {
   throw new Error('Todos os modelos indisponíveis. Tente em alguns minutos.');
 }
 
-/* ════════════════════ VIEWPORT WATCHER ════════════════════ */
-var _vpWatcher = null;
-function startViewportWatcher() {
-  function onResize() {
-    var view = document.getElementById('view-assist');
-    if (!view) return;
-    var visH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    view.style.height = visH + 'px';
-    var chat = document.getElementById('assistChat');
-    if (chat) setTimeout(function(){ chat.scrollTop = chat.scrollHeight; }, 50);
-  }
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', onResize);
-  }
-  window.addEventListener('resize', onResize);
-  _vpWatcher = onResize;
-  onResize();
-}
-function stopViewportWatcher() {
-  if (_vpWatcher) {
-    if (window.visualViewport) window.visualViewport.removeEventListener('resize', _vpWatcher);
-    window.removeEventListener('resize', _vpWatcher);
-    _vpWatcher = null;
-  }
-  var view = document.getElementById('view-assist');
-  if (view) view.style.height = '';
-}
+
 
 /* ════════════════════ INIT ════════════════════ */
 refreshSelects();
