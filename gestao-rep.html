@@ -696,12 +696,26 @@ async function extractFromPhoto(input) {
 
   btn.disabled = true; load.classList.add('show'); msg.style.display = 'none';
   try {
-    // Convert image to base64
+    // Convert image to base64 at full quality for cadastro reading
     const b64 = await new Promise(function(resolve, reject) {
-      const reader = new FileReader();
-      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = function() {
+        // Keep original size up to 1600px for readability
+        const MAX = 1600;
+        var w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        resolve(cv.toDataURL('image/jpeg', 0.92).split(',')[1]);
+      };
+      img.onerror = reject;
+      img.src = url;
     });
 
     const prompt = 'Leia esta imagem e me diga o nome completo da pessoa, CPF, data de nascimento, telefone, bairro e cidade. ' +
@@ -718,9 +732,6 @@ async function extractFromPhoto(input) {
     }, 30000);
 
     let raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
-    // Show raw response in msg for debugging
-    msg.textContent = 'IA respondeu: ' + raw.substring(0,200);
-    msg.style.color = 'var(--ink-3)'; msg.style.display = 'block';
     let parsed;
     try {
       parsed = JSON.parse(raw);
@@ -1422,9 +1433,6 @@ Retorne APENAS o JSON com os dados reais. Sem markdown, sem explicações.`;
 
     overlayStatus.textContent = 'Lendo resposta...';
     let raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
-    // Show raw response in msg for debugging
-    msg.textContent = 'IA respondeu: ' + raw.substring(0,200);
-    msg.style.color = 'var(--ink-3)'; msg.style.display = 'block';
     let parsed;
     try {
       parsed = JSON.parse(raw);
