@@ -288,11 +288,11 @@
 
     /* ── CHAT WHATSAPP ── */
     #view-assist { overflow: hidden; }
-    #view-assist.active { display: flex !important; flex-direction: column; height: 100%; }
-    .assist-wrap { display: contents; }
-    #view-assist .assist-header { flex-shrink: 0; }
-    #view-assist .wa-body { flex: 1; min-height: 0; overflow-y: auto; }
-    #view-assist .wa-footer { flex-shrink: 0; }
+    #view-assist.active { display: block !important; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; }
+    .assist-wrap { height: 100%; display: flex; flex-direction: column; }
+    .assist-wrap .assist-header { flex-shrink: 0; }
+    .assist-wrap .wa-body { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 70px; }
+    .assist-wrap .wa-footer { flex-shrink: 0; position: sticky; bottom: 0; background: white; z-index: 5; }
     .assist-header { background: var(--rose-deep); padding: 52px 16px 16px; flex-shrink: 0; }
     .assist-header-inner { display: flex; align-items: center; gap: 12px; }
     .assist-avatar { width: 42px; height: 42px; border-radius: 14px; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; letter-spacing: .5px; flex-shrink: 0; }
@@ -605,6 +605,16 @@ function switchTab(v) {
   if (v==='assist') {
     renderAssist();
     document.querySelector('.bottom-nav').style.display = 'none';
+    setTimeout(function() {
+      var inp = document.getElementById('assistInput');
+      if (!inp) return;
+      inp.addEventListener('focus', function() {
+        setTimeout(function() {
+          var footer = document.querySelector('.wa-footer');
+          if (footer) footer.scrollIntoView(false);
+        }, 400);
+      });
+    }, 200);
   } else {
     document.querySelector('.bottom-nav').style.display = '';
   }
