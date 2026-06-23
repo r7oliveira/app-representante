@@ -288,11 +288,11 @@
 
     /* ── CHAT WHATSAPP ── */
     #view-assist { overflow: hidden; }
-    #view-assist.active { display: block !important; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 50; }
-    .assist-wrap { height: 100%; display: flex; flex-direction: column; }
-    .assist-wrap .assist-header { flex-shrink: 0; }
-    .assist-wrap .wa-body { flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 70px; }
-    .assist-wrap .wa-footer { flex-shrink: 0; position: sticky; bottom: 0; background: white; z-index: 5; }
+    #view-assist.active { display: flex !important; flex-direction: column; min-height: 100dvh; }
+    .assist-wrap { display: contents; }
+    #view-assist .assist-header { flex-shrink: 0; position: sticky; top: 0; z-index: 5; }
+    #view-assist .wa-body { flex: 1; overflow-y: auto; min-height: 200px; }
+    #view-assist .wa-footer { position: sticky; bottom: 0; background: white; z-index: 5; flex-shrink: 0; }
     .assist-header { background: var(--rose-deep); padding: 52px 16px 16px; flex-shrink: 0; }
     .assist-header-inner { display: flex; align-items: center; gap: 12px; }
     .assist-avatar { width: 42px; height: 42px; border-radius: 14px; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; letter-spacing: .5px; flex-shrink: 0; }
@@ -307,12 +307,14 @@
     .chat-msg.ia .bubble { background: white; color: var(--ink); padding: 10px 13px; border-radius: 16px 16px 16px 4px; font-size: 13px; max-width: 88%; line-height: 1.7; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
     .chat-msg.ia .bubble b { color: var(--rose-deep); }
     .chat-msg .ts { font-size: 10px; color: var(--ink-3); margin-top: 3px; padding: 0 4px; }
-    .wa-footer { background: white; padding: 10px 12px; padding-bottom: max(10px, env(safe-area-inset-bottom)); display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--surface-2); flex-shrink: 0; }
-    .wa-input { flex: 1; padding: 11px 14px; font-size: 14px; font-family: inherit; border: 1.5px solid var(--surface-2); border-radius: 22px; background: var(--surface); color: var(--ink); outline: none; }
-    .wa-input:focus { border-color: var(--rose); }
-    .wa-send { width: 44px; height: 44px; border-radius: 50%; background: var(--rose); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(200,24,90,.3); }
-    .wa-send svg { width: 20px; height: 20px; fill: white; }
-    .wa-send:disabled { background: var(--ink-3); box-shadow: none; }
+    .wa-footer { background: white; border-top: 1px solid var(--surface-2); flex-shrink: 0; padding: 10px 14px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+    .wa-footer-inner { border: 1.5px solid var(--surface-2); border-radius: 16px; background: var(--surface); overflow: hidden; }
+    .wa-footer-inner:focus-within { border-color: var(--rose); background: white; }
+    .wa-input { width: 100%; padding: 12px 14px 6px; font-size: 15px; font-family: inherit; border: none; background: transparent; color: var(--ink); outline: none; resize: none; min-height: 44px; max-height: 120px; display: block; line-height: 1.5; }
+    .wa-send-row { display: flex; justify-content: flex-end; padding: 4px 8px 8px; }
+    .wa-send { width: 34px; height: 34px; border-radius: 50%; background: var(--rose); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .wa-send svg { width: 16px; height: 16px; fill: white; }
+    .wa-send:disabled { background: var(--ink-3); opacity: .5; }
     .suggest-row { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
     .suggest-chip { background: white; border: none; color: var(--ink); border-radius: var(--r-sm); padding: 13px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.05); display: flex; align-items: center; justify-content: space-between; }
     .suggest-chip::after { content: '→'; color: var(--rose); font-weight: 700; font-size: 15px; }
@@ -523,10 +525,16 @@
       <div class="wa-body" id="assistChat"></div>
       <!-- Input bar - LAST so it stays at bottom -->
       <div class="wa-footer">
-        <input id="assistInput" class="wa-input" placeholder="Digite sua pergunta..." onkeydown="if(event.key==='Enter')enviarAssist()">
-        <button class="wa-send" id="assistBtn" onclick="enviarAssist()">
-          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-        </button>
+        <div class="wa-footer-inner">
+          <textarea id="assistInput" class="wa-input" placeholder="Digite sua pergunta..." rows="1"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarAssist();}"></textarea>
+          <div class="wa-send-row">
+            <button class="wa-send" id="assistBtn" onclick="enviarAssist()">
+              <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -610,11 +618,10 @@ function switchTab(v) {
       if (!inp) return;
       inp.addEventListener('focus', function() {
         setTimeout(function() {
-          var footer = document.querySelector('.wa-footer');
-          if (footer) footer.scrollIntoView(false);
-        }, 400);
+          document.querySelector('.wa-footer').scrollIntoView({ block: 'end' });
+        }, 300);
       });
-    }, 200);
+    }, 100);
   } else {
     document.querySelector('.bottom-nav').style.display = '';
   }
@@ -813,7 +820,7 @@ async function extractFromPhoto(input) {
   } finally {
     btn.disabled = false;
     load.classList.remove('show');
-    input.value = '';
+    input.value = ''; input.style.height = 'auto';
   }
 }
 
@@ -1687,7 +1694,7 @@ function gerarContextoDB() {
 async function enviarAssist() {
   const input = document.getElementById('assistInput');
   const btn = document.getElementById('assistBtn');
-  const pergunta = input.value.trim();
+  const pergunta = (input.value || input.innerText || '').trim();
   if (!pergunta) return;
 
   const apiKey = localStorage.getItem('gemini_key') || '';
@@ -1695,7 +1702,7 @@ async function enviarAssist() {
 
   var hora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
   assistHistory.push({role: 'user', texto: pergunta, hora: hora});
-  input.value = '';
+  input.value = ''; input.style.height = 'auto';
   btn.disabled = true;
   renderAssist();
 
