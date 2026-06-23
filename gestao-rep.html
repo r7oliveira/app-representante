@@ -704,11 +704,12 @@ async function extractFromPhoto(input) {
       reader.readAsDataURL(file);
     });
 
-    const prompt = 'Voce deve extrair dados de um formulario de cadastro nesta imagem. ' +
-      'Responda SOMENTE com este JSON, sem nenhum texto antes ou depois, sem markdown: ' +
-      '{"nome":"","telefone":"","cpf":"","aniversario":"","bairro":"","cidade":""}. ' +
-      'Preencha os campos com os valores encontrados na imagem. ' +
-      'Nome em MAIUSCULO. Data no formato DD/MM/YYYY. Campos nao encontrados ficam vazios string.';
+    const prompt = 'Extraia os dados desta imagem de cadastro. ' +
+      'Retorne EXATAMENTE este JSON preenchido, sem mais nada: ' +
+      '{"nome":"NOME COMPLETO EM MAIUSCULO","telefone":"numero do telefone","cpf":"numero do cpf","aniversario":"DD/MM/AAAA","bairro":"nome do bairro","cidade":"nome da cidade"}. ' +
+      'Use os rotulos: Nome, CPF, Data de nascimento, Bairro, Telefone, Cidade/Municipio. ' +
+      'Para cidade: se aparecer "Cidade/RS" extraia so o nome da cidade. ' +
+      'Se um campo nao existir na imagem deixe string vazia. Retorne APENAS o JSON.';
 
     const data = await geminiCall(apiKey, {
       contents: [{parts: [
@@ -763,7 +764,7 @@ async function extractFromPhoto(input) {
       msg.textContent = preenchidos + ' campo(s) preenchido(s). Confira e ajuste se necessario.';
       msg.style.color = 'var(--green)';
     } else {
-      msg.textContent = 'Nao foi possivel identificar os campos. Tente com uma foto mais clara.';
+      msg.textContent = 'Nenhum campo identificado. Dados recebidos: ' + JSON.stringify(parsed).substring(0,100);
       msg.style.color = 'var(--amber)';
     }
     msg.style.display = 'block';
