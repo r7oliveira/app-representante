@@ -695,7 +695,7 @@ function renderConfig() {
   const sem = activeSem('selConfig');
   const wrap = document.getElementById('configConteudo');
   const savedKey = localStorage.getItem('gemini_key') || '';
-  const keyOk = savedKey.startsWith('AIza');
+  const keyOk = savedKey.startsWith('AIza') || savedKey.startsWith('AQ.');
 
   const semHtml = sem ? `
     <div class="section-lbl"><div class="num">🎯</div>Meta e caixa</div>
@@ -744,7 +744,7 @@ function renderConfig() {
         <button class="btn small secondary" onclick="toggleKeyVis()">👁 Ver</button>
         <button class="btn small" onclick="saveGeminiKey()">Salvar chave</button>
       </div>
-      ${savedKey ? '<div style="margin-top:10px;font-size:12px;font-weight:700;color:' + (keyOk?'var(--green)':'var(--amber)') + '">' + (keyOk ? '✓ Chave Gemini ativa — IA de visão pronta!' : '⚠️ Chave salva mas não começa com AIza — verifique') + '</div>' : ''}
+      ${savedKey ? '<div style="margin-top:10px;font-size:12px;font-weight:700;color:' + (keyOk?'var(--green)':'var(--amber)') + '">' + (keyOk ? '✓ Chave Gemini ativa — IA de visão pronta!' : '⚠️ Chave salva mas formato não reconhecido — verifique') + '</div>' : ''}
     </div>
     ${semHtml}
   `;
@@ -1141,7 +1141,7 @@ Valores numéricos sem R$ (ex: 83.99). Se uma foto não estiver presente, use {}
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 50000);
     const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       { method:'POST', headers:{'Content-Type':'application/json'}, signal:ctrl.signal,
         body: JSON.stringify({contents:[{parts}], generationConfig:{temperature:0, maxOutputTokens:3000}}) }
     );
