@@ -654,7 +654,7 @@ function renderSemanaView() {
       return `
       <div class="lanc">
         <div class="nm">${esc(e.nome)}<span class="pill ${e.forma}">${e.forma==='pix'?'Pix':'Dinheiro'}</span></div>
-        ${e.data ? `<div style="font-size:11px;color:var(--gray);margin-bottom:8px;">📅 Kit: ${esc(e.data)}${e.semanaCobranca ? ' · Cobrança: sem. '+esc(e.semanaCobranca) : ''}</div>` : ''}
+        ${e.data ? `<div style="font-size:11px;color:var(--gray);margin-bottom:8px;">📅 Atendimento: ${esc(e.data)}${e.semanaCobranca ? ' · Cobrança: sem. '+esc(e.semanaCobranca) : ''}</div>` : ''}
         <div class="lanc-grid">
           <label class="field" style="margin:0;"><span>Nota nova / Vendido (R$)</span>
             <input inputmode="decimal" value="${e.vendido?fmtIn(e.vendido):''}" placeholder="0,00"
@@ -1138,7 +1138,7 @@ A resposta deve ser um JSON com esta estrutura:
   "cobranca": [
     {
       "nome": [nome real em maiúsculo],
-      "data": [data real no formato DD-MM-YYYY],
+      "data": [data e hora reais no formato DD-MM-YYYY HH:MM],
       "pago": [valor numérico real sem R$],
       "saldo": [texto real: "Quitada" ou valor],
       "notaNova": [valor numérico real sem R$ ou 0]
@@ -1147,7 +1147,7 @@ A resposta deve ser um JSON com esta estrutura:
   "notas": [
     {
       "nome": [nome real em maiúsculo],
-      "data": [data real no formato DD-MM-YYYY],
+      "data": [data e hora reais no formato DD-MM-YYYY HH:MM],
       "semanaCobranca": [semana real ex: "30/2026"],
       "vendido": [valor numérico real sem R$]
     }
