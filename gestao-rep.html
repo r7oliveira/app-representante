@@ -612,15 +612,20 @@ function novaSemana() {
 }
 
 function calcTotais(sem) {
-  let vendido=0, pago=0, pix=0, dinheiro=0, inadimplencia=0;
+  let vendido=0, pago=0, pix=0, dinheiro=0, inadimplencia=0, notasNovas=0;
   sem.entradas.forEach(e => {
-    vendido     += e.vendido||0;
-    pago        += e.pago||0;
-    inadimplencia += Math.max(0, (e.vendido||0)-(e.pago||0));
-    if (e.forma==='dinheiro') dinheiro += e.pago||0; else pix += e.pago||0;
+    vendido      += e.vendido||0;
+    notasNovas   += e.notaNova||0;
+    const pagoPix = e.pagoPix||0;
+    const pagoDin = e.pagoDinheiro||0;
+    const totalPago = pagoPix + pagoDin;
+    pago      += totalPago;
+    pix       += pagoPix;
+    dinheiro  += pagoDin;
+    inadimplencia += Math.max(0, (e.vendido||0) - totalPago);
   });
   const ticket = sem.ativas > 0 ? vendido/sem.ativas : (sem.entradas.length>0 ? vendido/sem.entradas.length : 0);
-  return { vendido, pago, pix, dinheiro, inadimplencia, ticket, n: sem.entradas.length };
+  return { vendido, pago, pix, dinheiro, inadimplencia, ticket, notasNovas, n: sem.entradas.length };
 }
 
 function renderSemanaView() {
@@ -649,29 +654,32 @@ function renderSemanaView() {
   }
   lanc.innerHTML = '<div class="section-lbl" style="margin-top:4px;"><div class="num">$</div>Lançamentos</div>'
     + sem.entradas.map((e,i) => {
-      const saldo = (e.vendido||0)-(e.pago||0);
+      const pagoPix = e.pagoPix||0;
+      const pagoDin = e.pagoDinheiro||0;
+      const totalPago = pagoPix + pagoDin;
+      const saldo = (e.vendido||0) - totalPago;
       const saldoTxt = saldo>0.01 ? `Falta ${brl(saldo)}` : saldo<-0.01 ? `Pagou a mais ${brl(-saldo)}` : '✓ Quitada';
       return `
       <div class="lanc">
-        <div class="nm">${esc(e.nome)}<span class="pill ${e.forma}">${e.forma==='pix'?'Pix':'Dinheiro'}</span></div>
+        <div class="nm">${esc(e.nome)}</div>
         ${e.data ? `<div style="font-size:11px;color:var(--gray);margin-bottom:8px;">📅 Atendimento: ${esc(e.data)}${e.semanaCobranca ? ' · Cobrança: sem. '+esc(e.semanaCobranca) : ''}</div>` : ''}
         <div class="lanc-grid">
-          <label class="field" style="margin:0;"><span>Nota nova / Vendido (R$)</span>
+          <label class="field" style="margin:0;"><span>💰 Vendido (R$)</span>
             <input inputmode="decimal" value="${e.vendido?fmtIn(e.vendido):''}" placeholder="0,00"
               onchange="setEntrada('${sem.id}',${i},'vendido',this.value)"></label>
-          <label class="field" style="margin:0;"><span>Pago esta semana (R$)</span>
-            <input inputmode="decimal" value="${e.pago?fmtIn(e.pago):''}" placeholder="0,00"
-              onchange="setEntrada('${sem.id}',${i},'pago',this.value)"></label>
-          <label class="field full" style="margin:0;"><span>Forma</span>
-            <select onchange="setEntrada('${sem.id}',${i},'forma',this.value)">
-              <option value="pix"      ${e.forma==='pix'?'selected':''}>Pix</option>
-              <option value="dinheiro" ${e.forma==='dinheiro'?'selected':''}>Dinheiro</option>
-            </select></label>
+          <label class="field" style="margin:0;"><span>🆕 Nota nova (R$)</span>
+            <input inputmode="decimal" value="${e.notaNova?fmtIn(e.notaNova):''}" placeholder="0,00"
+              onchange="setEntrada('${sem.id}',${i},'notaNova',this.value)"></label>
+          <label class="field" style="margin:0;"><span>💳 Pago Pix (R$)</span>
+            <input inputmode="decimal" value="${pagoPix?fmtIn(pagoPix):''}" placeholder="0,00"
+              onchange="setEntrada('${sem.id}',${i},'pagoPix',this.value)"></label>
+          <label class="field" style="margin:0;"><span>💵 Pago Dinheiro (R$)</span>
+            <input inputmode="decimal" value="${pagoDin?fmtIn(pagoDin):''}" placeholder="0,00"
+              onchange="setEntrada('${sem.id}',${i},'pagoDinheiro',this.value)"></label>
         </div>
         <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;">
           <div class="saldo ${saldo>0.01?'pend':'ok'}">${saldoTxt}</div>
           ${e.saldo && e.saldo!=='—' ? `<div class="saldo ${e.saldo==='Quitada'?'ok':'pend'}">Sistema: ${esc(e.saldo)}</div>` : ''}
-          ${e.notaNova ? `<div class="saldo ok">🆕 Nota nova: ${brl(e.notaNova)}</div>` : ''}
         </div>
       </div>`;
     }).join('');
@@ -679,8 +687,7 @@ function renderSemanaView() {
 
 function setEntrada(semId, i, campo, val) {
   const sem = DB.semanas.find(s=>s.id===semId); if (!sem) return;
-  if (campo==='forma') sem.entradas[i].forma = val;
-  else sem.entradas[i][campo] = parseNum(val);
+  sem.entradas[i][campo] = parseNum(val);
   save(); renderSemanaView();
 }
 function delSemana() {
@@ -1279,7 +1286,7 @@ function confirmarImport(dataStr) {
   // Map entradas to consultora IDs
   const entrsFinal = entradas.map(e => {
     const c = reg ? reg.consultoras.find(c=>normN(c.nome)===normN(e.nome)) : null;
-    return {consId: c?.id||uid(), nome: e.nome, vendido: e.vendido||0, pago: e.pago||0, forma: 'pix'};
+    return {consId: c?.id||uid(), nome: e.nome, vendido: e.vendido||0, pagoPix: e.pago||0, pagoDinheiro: 0, notaNova: e.notaNova||0, data: e.data||'', semanaCobranca: e.semanaCobranca||'', saldo: e.saldo||'—'};
   });
 
   const sem = {
