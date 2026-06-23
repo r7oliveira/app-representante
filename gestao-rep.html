@@ -655,7 +655,8 @@ function renderSemanaView() {
       const pagoDin = e.pagoDinheiro||0;
       const totalPago = pagoPix + pagoDin;
       const saldo = (e.vendido||0) - totalPago;
-      const saldoTxt = saldo>0.01 ? `Falta ${brl(saldo)}` : saldo<-0.01 ? `Pagou a mais ${brl(-saldo)}` : '✓ Quitada';
+      const saldoTxt = e.saldo === 'Quitada' ? '✓ Quitada' : saldo>0.01 ? `Falta ${brl(saldo)}` : saldo<-0.01 ? `Pagou a mais ${brl(-saldo)}` : '✓ Quitada';
+      const isPend = e.saldo && e.saldo !== 'Quitada' && e.saldo !== '—';
       return `
       <div class="lanc">
         <div class="nm">${esc(e.nome)}</div>
@@ -675,7 +676,7 @@ function renderSemanaView() {
               onchange="setEntrada('${sem.id}',${i},'pagoDinheiro',this.value)"></label>
         </div>
         <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;">
-          <div class="saldo ${saldo>0.01?'pend':'ok'}">${saldoTxt}</div>
+          <div class="saldo ${isPend?'pend':'ok'}">${saldoTxt}</div>
           ${e.saldo && e.saldo!=='—' ? `<div class="saldo ${e.saldo==='Quitada'?'ok':'pend'}">Sistema: ${esc(e.saldo)}</div>` : ''}
         </div>
       </div>`;
@@ -800,7 +801,7 @@ function renderPainel() {
   const maxReg = regioes.length ? regioes[0][1] : 1;
 
   // Pendentes desta semana
-  const pendentes = sem.entradas.filter(e=>(e.vendido||0)-(e.pago||0)>0.01);
+  const pendentes = sem.entradas.filter(e => e.saldo && e.saldo !== 'Quitada' && e.saldo !== '—');
   const caixaPos  = sem.caixa >= 0;
 
   wrap.innerHTML = `
@@ -812,11 +813,7 @@ function renderPainel() {
 
         ${sem.nota?`<div class="sub" style="font-style:italic;margin-top:6px;">"${esc(sem.nota)}"</div>`:''}
       </div>
-      <div class="kpi">
-        <div class="lbl">📥 Cobranças</div>
-        <div class="val green">${brl(t.pago)}</div>
-        <div class="sub">${pctCob}% do vendido</div>
-      </div>
+
 
     </div>
 
