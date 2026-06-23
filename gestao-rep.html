@@ -281,12 +281,12 @@
     .footer strong { color: var(--green); }
 
     /* ── CHAT WHATSAPP ── */
-    #view-assist { height: calc(100vh - 65px); }
+    #view-assist { overflow: hidden; }
     .wa-header { background: var(--rose-deep); padding: 52px 16px 14px; display: flex; align-items: center; gap: 12px; }
     .wa-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
     .wa-header-info .name { font-weight: 700; color: white; font-size: 15px; }
     .wa-header-info .status { font-size: 12px; color: rgba(255,255,255,.65); }
-    .wa-body { flex: 1; overflow-y: auto; padding: 12px 14px 12px; background: #F0EBE8; }
+    .wa-body { flex: 1; overflow-y: auto; padding: 12px 14px 16px; background: #F0EBE8; }
     .chat-msg { margin-bottom: 8px; display: flex; flex-direction: column; }
     .chat-msg.user { align-items: flex-end; }
     .chat-msg.ia { align-items: flex-start; }
@@ -294,7 +294,7 @@
     .chat-msg.ia .bubble { background: white; color: var(--ink); padding: 10px 13px; border-radius: 16px 16px 16px 4px; font-size: 13px; max-width: 88%; line-height: 1.7; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
     .chat-msg.ia .bubble b { color: var(--rose-deep); }
     .chat-msg .ts { font-size: 10px; color: var(--ink-3); margin-top: 3px; padding: 0 4px; }
-    .wa-footer { background: white; padding: 10px 12px; display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--surface-2); }
+    .wa-footer { background: white; padding: 10px 12px; display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--surface-2); padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
     .wa-input { flex: 1; padding: 11px 14px; font-size: 14px; font-family: inherit; border: 1.5px solid var(--surface-2); border-radius: 22px; background: var(--surface); color: var(--ink); outline: none; }
     .wa-input:focus { border-color: var(--rose); }
     .wa-send { width: 44px; height: 44px; border-radius: 50%; background: var(--rose); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(200,24,90,.3); }
@@ -484,7 +484,7 @@
   </div>
 
   <!-- ══════════ ASSISTENTE IA ══════════ -->
-  <div class="view" id="view-assist">
+  <div class="view" id="view-assist" style="flex-direction:column;height:calc(100vh - 65px);">
     <div class="wa-header">
       <div class="wa-avatar">🤖</div>
       <div class="wa-header-info">
@@ -1657,16 +1657,16 @@ async function enviarAssist() {
   renderAssist();
 
   var contexto = gerarContextoDB();
-  var systemPrompt = 'Voce e a melhor consultora de gestao e vendas para representantes de cosmeticos Romance do Brasil. ' +
+  var systemPrompt = 'Voce e uma consultora especializada em gestao e vendas para representantes de cosmeticos Romance. ' +
     'Voce tem profundo conhecimento em: vendas porta a porta, cobranca de clientes, fidelizacao, ' +
     'gestao de representantes de cosmeticos, tecnicas de negociacao, mensagens de cobranca pelo WhatsApp, ' +
     'como aumentar o ticket medio, como reduzir inadimplencia, como captar novas consultoras e como crescer como empresaria. ' +
     'Voce tem acesso a todos os dados historicos do app da representante. ' +
-    'Ao responder: SEMPRE inclua ao final uma secao chamada DICA PRATICA com uma dica acionavel ' +
-    'baseada nos dados dela (ex: se cobranca baixa, da dica de abordagem; se poucas novas, da dica de captacao; ' +
-    'se ticket baixo, da dica de como aumentar o pedido medio). ' +
-    'Use emojis, markdown (negrito com **, listas com -), linguagem simples e direta. ' +
-    'Quando mostrar valores use formato R$ 1.234,56. ' +
+    'Ao responder: seja direto e profissional. SEMPRE inclua ao final uma secao chamada DICA PRATICA com uma dica acionavel ' +
+    'baseada nos dados (ex: se cobranca baixa, dica de abordagem; se poucas novas, dica de captacao; ' +
+    'se ticket baixo, dica de como aumentar o pedido medio). ' +
+    'NAO use emojis. Use markdown (negrito com **, listas com -), linguagem clara e objetiva. ' +
+    'Quando mostrar valores use formato R$ 1.234,56. Sem saudacoes exageradas. ' +
     'DADOS HISTORICOS COMPLETOS:\n' + contexto;
 
   var messages = [{role: 'user', parts: [{text: systemPrompt + '\n\nPERGUNTA: ' + pergunta}]}];
