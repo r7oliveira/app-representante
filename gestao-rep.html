@@ -85,37 +85,62 @@
 
     /* ── HOME HERO ── */
     .home-hero {
-      background: linear-gradient(145deg, var(--rose-deep) 0%, var(--rose) 60%, #E8457A 100%);
-      padding: 56px 20px 32px;
+      background: linear-gradient(160deg, #6B0030 0%, var(--rose-deep) 40%, var(--rose) 100%);
+      padding: 54px 20px 28px;
       position: relative; overflow: hidden;
     }
     .home-hero::before {
       content: '';
-      position: absolute; top: -60px; right: -40px;
-      width: 220px; height: 220px;
+      position: absolute; top: -80px; right: -60px;
+      width: 280px; height: 280px;
       border-radius: 50%;
-      background: rgba(255,255,255,.07);
+      background: radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 70%);
     }
     .home-hero::after {
       content: '';
-      position: absolute; bottom: -80px; left: -30px;
-      width: 180px; height: 180px;
+      position: absolute; bottom: -40px; left: -40px;
+      width: 200px; height: 200px;
       border-radius: 50%;
-      background: rgba(255,255,255,.05);
+      background: radial-gradient(circle, rgba(255,255,255,.05) 0%, transparent 70%);
     }
-    .hero-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.55); margin-bottom: 6px; }
-    .hero-greeting { font-family: 'Instrument Serif', serif; font-size: 32px; color: white; line-height: 1.15; margin-bottom: 4px; }
-    .hero-week { font-size: 13px; color: rgba(255,255,255,.65); font-weight: 500; margin-bottom: 24px; }
-    .hero-stat-row { display: flex; gap: 10px; position: relative; z-index: 1; }
-    .hero-stat {
-      flex: 1; background: rgba(255,255,255,.13);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: var(--r-sm); padding: 12px 14px;
+    /* Decorative lines */
+    .home-hero-lines {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 40px,
+        rgba(255,255,255,.015) 40px,
+        rgba(255,255,255,.015) 80px
+      );
     }
-    .hero-stat .hs-lbl { font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: rgba(255,255,255,.6); margin-bottom: 4px; }
-    .hero-stat .hs-val { font-size: 18px; font-weight: 800; color: white; line-height: 1; }
-    .hero-stat .hs-sub { font-size: 10px; color: rgba(255,255,255,.5); margin-top: 3px; }
+    .hero-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; position: relative; z-index: 1; }
+    .hero-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: 3px; }
+    .hero-greeting { font-size: 13px; font-weight: 600; color: rgba(255,255,255,.7); }
+    .hero-app-badge { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.15); border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,.7); letter-spacing: .5px; }
+    .hero-main-card { background: rgba(255,255,255,.1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,.15); border-radius: 20px; padding: 20px; margin-bottom: 14px; position: relative; z-index: 1; }
+    .hero-main-lbl { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 6px; }
+    .hero-main-val { font-size: 36px; font-weight: 800; color: white; line-height: 1; letter-spacing: -1px; margin-bottom: 8px; }
+    .hero-main-week { font-size: 12px; color: rgba(255,255,255,.5); font-weight: 500; }
+    .hero-main-trend { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,.12); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 700; color: rgba(255,255,255,.8); margin-top: 8px; }
+    .hero-stat-row { display: flex; gap: 8px; position: relative; z-index: 1; }
+    .hero-stat { flex: 1; background: rgba(0,0,0,.15); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 12px; }
+    .hero-stat .hs-lbl { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: 5px; }
+    .hero-stat .hs-val { font-size: 22px; font-weight: 800; color: white; line-height: 1; }
+    .hero-stat .hs-sub { font-size: 9px; color: rgba(255,255,255,.35); margin-top: 3px; }
+    /* ── QUICK ACTIONS horizontal scroll ── */
+    .quick-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 0 0 8px; scrollbar-width: none; -ms-overflow-style: none; }
+    .quick-scroll::-webkit-scrollbar { display: none; }
+    .quick-chip { flex-shrink: 0; background: var(--white); border: 1px solid rgba(0,0,0,.06); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; font-family: inherit; min-width: 130px; box-shadow: 0 2px 8px rgba(0,0,0,.06); transition: transform .12s; }
+    .quick-chip:active { transform: scale(.96); }
+    .quick-chip .qc-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--rose-soft); display: flex; align-items: center; justify-content: center; }
+    .quick-chip .qc-icon svg { width: 18px; height: 18px; stroke: var(--rose); }
+    .quick-chip .qc-label { font-size: 13px; font-weight: 700; color: var(--ink); text-align: left; }
+    .quick-chip .qc-sub { font-size: 11px; color: var(--ink-3); text-align: left; }
+    /* ── INSIGHT CARD ── */
+    .insight-card { background: linear-gradient(135deg, var(--rose-soft) 0%, white 100%); border: 1px solid var(--rose-mid); border-radius: var(--r); padding: 16px 18px; margin-bottom: 12px; }
+    .insight-card .ic-lbl { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--rose); margin-bottom: 6px; }
+    .insight-card .ic-text { font-size: 14px; color: var(--ink); line-height: 1.55; font-weight: 500; }
 
     /* ── SECTION TITLE ── */
     .sec-title { font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-3); margin: 24px 0 12px; }
@@ -365,39 +390,68 @@
   <!-- ══════════ HOME ══════════ -->
   <div class="view active" id="view-home" style="flex-direction:column;overflow-y:auto;">
     <div class="home-hero">
-      <div class="hero-eyebrow">Representante</div>
-      <div class="hero-greeting">Gestão Romance</div>
-      <div class="hero-week" id="headerWeek">Carregando semana...</div>
-      <div class="hero-stat-row" id="heroStats">
-        <div class="hero-stat"><div class="hs-lbl">Cobrança</div><div class="hs-val" id="heroCobranca">—</div></div>
-        <div class="hero-stat"><div class="hs-lbl">Acertos</div><div class="hs-val" id="heroAcertos">—</div></div>
-        <div class="hero-stat"><div class="hs-lbl">Novas</div><div class="hs-val" id="heroNovas">—</div></div>
+      <div class="home-hero-lines"></div>
+      <div class="hero-top">
+        <div>
+          <div class="hero-eyebrow">Romance</div>
+          <div class="hero-greeting">Gestão</div>
+        </div>
+        <div class="hero-app-badge">v4.2</div>
+      </div>
+      <div class="hero-main-card">
+        <div class="hero-main-lbl">Cobrança da semana</div>
+        <div class="hero-main-val" id="heroCobranca">—</div>
+        <div class="hero-main-week" id="headerWeek">Carregando...</div>
+        <div class="hero-main-trend" id="heroTrend" style="display:none;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+          <span id="heroTrendTxt"></span>
+        </div>
+      </div>
+      <div class="hero-stat-row">
+        <div class="hero-stat">
+          <div class="hs-lbl">Acertos</div>
+          <div class="hs-val" id="heroAcertos">—</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hs-lbl">Novas</div>
+          <div class="hs-val" id="heroNovas">—</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hs-lbl">Ticket</div>
+          <div class="hs-val" id="heroTicket">—</div>
+        </div>
       </div>
     </div>
     <div class="scroll-body">
       <div class="sec-title">Acesso rápido</div>
-      <div class="quick-grid">
-        <button class="quick-btn" onclick="switchTab('semana')">
-          <div class="qb-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
-          <span class="qb-label">Importar semana</span>
-          <span class="qb-sub">Fotografar sistema</span>
+      <div class="quick-scroll">
+        <button class="quick-chip" onclick="switchTab('semana')">
+          <div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+          <div class="qc-label">Importar</div>
+          <div class="qc-sub">Fotografar sistema</div>
         </button>
-        <button class="quick-btn" onclick="switchTab('painel')">
-          <div class="qb-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-          <span class="qb-label">Painel</span>
-          <span class="qb-sub">Indicadores e ranking</span>
+        <button class="quick-chip" onclick="switchTab('painel')">
+          <div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          <div class="qc-label">Painel</div>
+          <div class="qc-sub">Indicadores</div>
         </button>
-        <button class="quick-btn" onclick="switchTab('assist')">
-          <div class="qb-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-          <span class="qb-label">Assistente IA</span>
-          <span class="qb-sub">Relatórios e dicas</span>
+        <button class="quick-chip" onclick="switchTab('assist')">
+          <div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div class="qc-label">Assistente</div>
+          <div class="qc-sub">IA e relatórios</div>
         </button>
-        <button class="quick-btn" onclick="switchTab('regioes')">
-          <div class="qb-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-          <span class="qb-label">Consultoras</span>
-          <span class="qb-sub">Gerenciar cadastros</span>
+        <button class="quick-chip" onclick="switchTab('regioes')">
+          <div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="qc-label">Consultoras</div>
+          <div class="qc-sub">Cadastros</div>
+        </button>
+        <button class="quick-chip" onclick="switchTab('config')">
+          <div class="qc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+          <div class="qc-label">Config</div>
+          <div class="qc-sub">Metas e chave</div>
         </button>
       </div>
+      <div id="homeInsight"></div>
       <div id="homePendencias"></div>
       <div class="footer"><p>Desenvolvido pela <strong>Levvel</strong> · v4.2</p></div>
     </div>
@@ -1041,36 +1095,66 @@ function setCfg(campo, val, tipo) {
 /* ════════════════════ HOME ════════════════════ */
 function renderHome() {
   refreshSelects();
-  const sem = activeSem('selPainel') || (DB.semanas.length ? DB.semanas[0] : null);
-  const hw = document.getElementById('headerWeek');
-  if (hw) hw.textContent = sem ? 'Semana ' + sem.nome + ' — ' + sem.regiaoNome : 'Nenhuma semana ainda';
+  var sems = DB.semanas.slice().sort(function(a,b){ return b.nome.localeCompare(a.nome); });
+  var sem = sems[0] || null;
+  var prevSem = sems[1] || null;
+
+  var hw = document.getElementById('headerWeek');
+  if (hw) hw.textContent = sem ? sem.nome + ' · ' + sem.regiaoNome : 'Nenhuma semana ainda';
 
   if (sem) {
-    const t = calcTotais(sem);
+    var t = calcTotais(sem);
+
+    // Main value
     var el = document.getElementById('heroCobranca');
-    if(el) el.textContent = 'R$' + t.vendido.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-    el = document.getElementById('heroAcertos');
-    if(el) el.textContent = sem.ativas || t.n;
-    el = document.getElementById('heroNovas');
-    if(el) el.textContent = '+' + (sem.novas || 0);
+    if (el) el.textContent = brl(t.vendido);
+
+    // Stats
+    el = document.getElementById('heroAcertos'); if(el) el.textContent = sem.ativas || t.n;
+    el = document.getElementById('heroNovas');   if(el) el.textContent = '+' + (sem.novas || 0);
+    el = document.getElementById('heroTicket');  if(el) el.textContent = t.n > 0 ? 'R$' + Math.round(t.vendido/t.n) : '—';
+
+    // Trend vs previous week
+    if (prevSem) {
+      var tPrev = calcTotais(prevSem);
+      var diff = tPrev.vendido > 0 ? Math.round((t.vendido - tPrev.vendido) / tPrev.vendido * 100) : 0;
+      var trendEl = document.getElementById('heroTrend');
+      var trendTxt = document.getElementById('heroTrendTxt');
+      if (trendEl && trendTxt && diff !== 0) {
+        trendTxt.textContent = (diff > 0 ? '+' : '') + diff + '% vs semana anterior';
+        trendEl.style.display = 'inline-flex';
+        trendEl.style.color = diff > 0 ? 'rgba(255,255,255,.9)' : 'rgba(255,180,180,.9)';
+      }
+    }
+
+    // Insight card
+    var topCons = sem.entradas.slice().sort(function(a,b){ return (b.pagoPix||0)+(b.pagoDinheiro||0) - (a.pagoPix||0)-(a.pagoDinheiro||0); })[0];
+    var insightWrap = document.getElementById('homeInsight');
+    if (insightWrap && topCons) {
+      var topPago = (topCons.pagoPix||0) + (topCons.pagoDinheiro||0);
+      insightWrap.innerHTML = '<div class="insight-card">' +
+        '<div class="ic-lbl">Destaque da semana</div>' +
+        '<div class="ic-text">Melhor consultora: <strong>' + esc(topCons.nome) + '</strong> com ' + brl(topPago) + ' recebido.</div>' +
+        '</div>';
+    }
 
     // Pendencias
-    const pend = sem.entradas.filter(function(e){ return e.saldo && e.saldo !== 'Quitada' && e.saldo !== '—'; });
-    const wrap = document.getElementById('homePendencias');
+    var pend = sem.entradas.filter(function(e){ return e.saldo && e.saldo !== 'Quitada' && e.saldo !== '—'; });
+    var wrap = document.getElementById('homePendencias');
     if (wrap && pend.length > 0) {
-      wrap.innerHTML = '<div class="sec-title">Pendências · ' + pend.length + ' cobranças</div>' +
+      wrap.innerHTML = '<div class="sec-title">Pendências · ' + pend.length + '</div>' +
         '<div class="card">' +
         pend.map(function(e){
           return '<div class="rank-row"><div class="nm">' + esc(e.nome) + '</div><div class="rv" style="color:var(--red);">' + brl(e.vendido||0) + '</div></div>';
-        }).join('') +
-        '</div>';
+        }).join('') + '</div>';
     } else if (wrap) {
-      wrap.innerHTML = '<div class="card" style="text-align:center;padding:20px;"><div style="font-weight:700;margin-bottom:4px;">Sem pendências</div><div class="muted">Todas as cobranças estão quitadas.</div></div>';
+      wrap.innerHTML = '<div class="card" style="text-align:center;padding:18px;"><div style="font-weight:700;font-size:14px;margin-bottom:3px;">Sem pendências</div><div class="muted">Todas as cobranças estão quitadas.</div></div>';
     }
   } else {
     var el = document.getElementById('heroCobranca'); if(el) el.textContent = '—';
     el = document.getElementById('heroAcertos'); if(el) el.textContent = '—';
     el = document.getElementById('heroNovas'); if(el) el.textContent = '—';
+    el = document.getElementById('heroTicket'); if(el) el.textContent = '—';
     var wrap = document.getElementById('homePendencias');
     if(wrap) wrap.innerHTML = '<div class="card" style="text-align:center;padding:24px;"><div style="font-weight:700;margin-bottom:4px;">Nenhuma semana cadastrada</div><div class="muted">Importe sua primeira semana na aba Semana.</div></div>';
   }
