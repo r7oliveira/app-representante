@@ -604,18 +604,10 @@ function switchTab(v) {
   if (v==='assist') {
     renderAssist();
     document.querySelector('.bottom-nav').style.display = 'none';
-    // When keyboard opens on iOS, scroll footer into view
-    setTimeout(function() {
-      var inp = document.getElementById('assistInput');
-      if (!inp) return;
-      inp.addEventListener('focus', function() {
-        setTimeout(function() {
-          document.getElementById('assistInput').scrollIntoView({block:'end', behavior:'smooth'});
-        }, 350);
-      });
-    }, 100);
+    startViewportWatcher();
   } else {
     document.querySelector('.bottom-nav').style.display = '';
+    stopViewportWatcher();
   }
 }
 
@@ -1782,6 +1774,33 @@ async function geminiCall(apiKey, body, timeout) {
     }
   }
   throw new Error('Todos os modelos indisponíveis. Tente em alguns minutos.');
+}
+
+/* ════════════════════ VIEWPORT WATCHER ════════════════════ */
+var _vpWatcher = null;
+function startViewportWatcher() {
+  if (!window.visualViewport) return;
+  function onResize() {
+    var wrap = document.querySelector('.assist-wrap');
+    if (!wrap) return;
+    var h = window.visualViewport.height;
+    wrap.style.height = h + 'px';
+    // Scroll chat to bottom when keyboard opens
+    var chat = document.getElementById('assistChat');
+    if (chat) chat.scrollTop = chat.scrollHeight;
+  }
+  window.visualViewport.addEventListener('resize', onResize);
+  window.visualViewport.addEventListener('scroll', onResize);
+  _vpWatcher = onResize;
+  onResize();
+}
+function stopViewportWatcher() {
+  if (!window.visualViewport || !_vpWatcher) return;
+  window.visualViewport.removeEventListener('resize', _vpWatcher);
+  window.visualViewport.removeEventListener('scroll', _vpWatcher);
+  _vpWatcher = null;
+  var wrap = document.querySelector('.assist-wrap');
+  if (wrap) wrap.style.height = '';
 }
 
 /* ════════════════════ INIT ════════════════════ */
