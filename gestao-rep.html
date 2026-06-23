@@ -1779,28 +1779,29 @@ async function geminiCall(apiKey, body, timeout) {
 /* ════════════════════ VIEWPORT WATCHER ════════════════════ */
 var _vpWatcher = null;
 function startViewportWatcher() {
-  if (!window.visualViewport) return;
   function onResize() {
-    var wrap = document.querySelector('.assist-wrap');
-    if (!wrap) return;
-    var h = window.visualViewport.height;
-    wrap.style.height = h + 'px';
-    // Scroll chat to bottom when keyboard opens
+    var view = document.getElementById('view-assist');
+    if (!view) return;
+    var visH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    view.style.height = visH + 'px';
     var chat = document.getElementById('assistChat');
-    if (chat) chat.scrollTop = chat.scrollHeight;
+    if (chat) setTimeout(function(){ chat.scrollTop = chat.scrollHeight; }, 50);
   }
-  window.visualViewport.addEventListener('resize', onResize);
-  window.visualViewport.addEventListener('scroll', onResize);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', onResize);
+  }
+  window.addEventListener('resize', onResize);
   _vpWatcher = onResize;
   onResize();
 }
 function stopViewportWatcher() {
-  if (!window.visualViewport || !_vpWatcher) return;
-  window.visualViewport.removeEventListener('resize', _vpWatcher);
-  window.visualViewport.removeEventListener('scroll', _vpWatcher);
-  _vpWatcher = null;
-  var wrap = document.querySelector('.assist-wrap');
-  if (wrap) wrap.style.height = '';
+  if (_vpWatcher) {
+    if (window.visualViewport) window.visualViewport.removeEventListener('resize', _vpWatcher);
+    window.removeEventListener('resize', _vpWatcher);
+    _vpWatcher = null;
+  }
+  var view = document.getElementById('view-assist');
+  if (view) view.style.height = '';
 }
 
 /* ════════════════════ INIT ════════════════════ */
