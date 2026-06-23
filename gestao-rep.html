@@ -1119,20 +1119,17 @@ async function processarFotos() {
     if (b64_2) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64_2}}); parts.push({text:'[FOTO2 - Minha cobrança na semana]'}); }
     if (b64_3) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64_3}}); parts.push({text:'[FOTO3 - Notas distribuídas]'}); }
 
-    const prompt = `Analise as imagens de sistema de vendas e extraia os dados em JSON.
+    const prompt = `Analise as imagens de sistema de vendas e extraia os dados em JSON puro (sem markdown, sem texto extra, sem comentários).
 
-Da FOTO1 (Informações): {"semana":"XX/XXXX","regiao":"NOME","totalGeral":0.00,"totalDebitos":0.00,"acertosRegiao":0,"acertosOutras":0,"novasRegiao":0,"novasOutras":0,"notasRemarcadas":0}
+Formato EXATO da resposta:
+{"info":{"semana":"30/2026","regiao":"NOME","totalGeral":0.00,"totalDebitos":0.00,"acertosRegiao":0,"acertosOutras":0,"novasRegiao":0,"novasOutras":0,"notasRemarcadas":0},"cobranca":[{"nome":"NOME MAIÚSCULO","data":"DD-MM-YYYY","pago":0.00,"saldo":"Quitada","notaNova":0.00}],"notas":[{"nome":"NOME MAIÚSCULO","data":"DD-MM-YYYY","semanaCobranca":"30/2026","vendido":0.00}]}
 
-Da FOTO2 (Cobranças - tabela com Pessoa, #Nota, Data, Valor, Saldo, Valor nota nova):
-[{"nome":"NOME EM MAIÚSCULO","data":"DD-MM-YYYY HH:MM:SS","pago":0.00,"saldo":"Quitada","notaNova":0.00}]
-
-Da FOTO3 (Notas distribuídas - tabela com Pessoa, #Nota, Data, Semana cobrança, Valor da nota):
-[{"nome":"NOME EM MAIÚSCULO","data":"DD-MM-YYYY","semanaCobranca":"30/2026","vendido":0.00}]
-
-Responda SOMENTE com JSON puro neste formato (sem markdown):
-{"info":{...},"cobranca":[...],"notas":[...]}
-
-Valores numéricos sem R$ (ex: 83.99). Se uma foto não estiver presente, use {} ou [].`;
+Regras:
+- Responda APENAS com o JSON, sem nenhum texto antes ou depois
+- Valores numéricos sem R$ (ex: 83.99)
+- Nomes em MAIÚSCULO
+- Se foto ausente use {} ou []
+- FOTO1=info da semana, FOTO2=cobranças, FOTO3=notas distribuídas`;
 
     parts.push({text: prompt});
 
@@ -1144,7 +1141,7 @@ Valores numéricos sem R$ (ex: 83.99). Se uma foto não estiver presente, use {}
     const resp = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
       { method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':apiKey}, signal:ctrl.signal,
-        body: JSON.stringify({contents:[{parts}], generationConfig:{temperature:0, maxOutputTokens:3000}}) }
+        body: JSON.stringify({contents:[{parts}], generationConfig:{temperature:0, maxOutputTokens:8192}}) }
     );
     clearTimeout(t);
     const data = await resp.json();
