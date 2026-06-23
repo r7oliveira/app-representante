@@ -1249,11 +1249,18 @@ Retorne APENAS o JSON com os dados reais. Sem markdown, sem explicações.`;
 
 
 function confirmarImport(dataStr) {
-  let data;
-  try { data = typeof dataStr === 'string' ? JSON.parse(dataStr.replace(/&quot;/g,'"')) : dataStr; }
-  catch(e) { alert('Erro ao importar dados.'); return; }
-
-  const {info, entradas} = data;
+  let info, entradas;
+  if (dataStr) {
+    let data;
+    try { data = typeof dataStr === 'string' ? JSON.parse(dataStr.replace(/&quot;/g,'"')) : dataStr; }
+    catch(e) { alert('Erro ao importar dados.'); return; }
+    info = data.info; entradas = data.entradas;
+  } else {
+    // Use global variables set by processarFotos
+    info = _importInfo || {};
+    entradas = previewEntradas || [];
+  }
+  if (!entradas || !entradas.length) { alert('Nenhuma consultora para importar.'); return; }
   const nome = info.semana || ('Semana ' + (DB.semanas.length+1));
 
   // Find or create region
