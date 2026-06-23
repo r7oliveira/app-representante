@@ -1120,17 +1120,45 @@ async function processarFotos() {
     if (b64_2) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64_2}}); parts.push({text:'[FOTO2 - Minha cobrança na semana]'}); }
     if (b64_3) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64_3}}); parts.push({text:'[FOTO3 - Notas distribuídas]'}); }
 
-    const prompt = `Analise as imagens de sistema de vendas e extraia os dados em JSON puro (sem markdown, sem texto extra, sem comentários).
+    const prompt = `Você é um extrator de dados de imagens de sistema de vendas. Analise as fotos e retorne SOMENTE um objeto JSON com os dados reais visíveis nas imagens. Não use valores de exemplo.
 
-Formato EXATO da resposta:
-{"info":{"semana":"30/2026","regiao":"NOME","totalGeral":0.00,"totalDebitos":0.00,"acertosRegiao":0,"acertosOutras":0,"novasRegiao":0,"novasOutras":0,"notasRemarcadas":0},"cobranca":[{"nome":"NOME MAIÚSCULO","data":"DD-MM-YYYY","pago":0.00,"saldo":"Quitada","notaNova":0.00}],"notas":[{"nome":"NOME MAIÚSCULO","data":"DD-MM-YYYY","semanaCobranca":"30/2026","vendido":0.00}]}
+A resposta deve ser um JSON com esta estrutura:
+{
+  "info": {
+    "semana": [valor real da semana ativa, ex: "24/2026"],
+    "regiao": [nome real da região],
+    "totalGeral": [número real sem R$],
+    "totalDebitos": [número real sem R$],
+    "acertosRegiao": [número inteiro real],
+    "acertosOutras": [número inteiro real],
+    "novasRegiao": [número inteiro real],
+    "novasOutras": [número inteiro real],
+    "notasRemarcadas": [número inteiro real]
+  },
+  "cobranca": [
+    {
+      "nome": [nome real em maiúsculo],
+      "data": [data real no formato DD-MM-YYYY],
+      "pago": [valor numérico real sem R$],
+      "saldo": [texto real: "Quitada" ou valor],
+      "notaNova": [valor numérico real sem R$ ou 0]
+    }
+  ],
+  "notas": [
+    {
+      "nome": [nome real em maiúsculo],
+      "data": [data real no formato DD-MM-YYYY],
+      "semanaCobranca": [semana real ex: "30/2026"],
+      "vendido": [valor numérico real sem R$]
+    }
+  ]
+}
 
-Regras:
-- Responda APENAS com o JSON, sem nenhum texto antes ou depois
-- Valores numéricos sem R$ (ex: 83.99)
-- Nomes em MAIÚSCULO
-- Se foto ausente use {} ou []
-- FOTO1=info da semana, FOTO2=cobranças, FOTO3=notas distribuídas`;
+FOTO1 = tela de Informações da semana (região, semana ativa, acertos, novas, totais)
+FOTO2 = tabela Minha Cobrança na Semana (pessoa, nota, data, valor, saldo, valor nota nova)
+FOTO3 = tabela Notas Distribuídas (pessoa, nota, data, semana cobrança, valor da nota)
+
+Retorne APENAS o JSON com os dados reais. Sem markdown, sem explicações.`;
 
     parts.push({text: prompt});
 
