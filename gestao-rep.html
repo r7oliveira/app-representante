@@ -682,86 +682,74 @@ function delConsultora(regId, cId) {
   save(); renderRegioes();
 }
 
-/* ── OCR: extrair cadastro da foto com Tesseract.js ── */
+/* ── Extrair cadastro da foto com Gemini ── */
 async function extractFromPhoto(input) {
   const file = input.files[0]; if (!file) return;
   const btn  = document.getElementById('aiBtnPhoto');
   const load = document.getElementById('aiLoading');
   const msg  = document.getElementById('aiMsg');
+  const apiKey = localStorage.getItem('gemini_key') || '';
+  if (!apiKey) {
+    msg.textContent = 'Configure a chave Gemini em Config.';
+    msg.style.color = 'var(--red)'; msg.style.display = 'block'; return;
+  }
 
   btn.disabled = true; load.classList.add('show'); msg.style.display = 'none';
   try {
-    const imgUrl = URL.createObjectURL(file);
-    const result = await Tesseract.recognize(imgUrl, 'por+eng', {
-      logger: m => {
-        if (m.status === 'recognizing text') {
-          load.querySelector('span.spinner') && (load.innerHTML = `<span class="spinner"></span>Lendo... ${Math.round(m.progress*100)}%`);
-        }
-      }
+    // Convert image to base64
+    const b64 = await new Promise(function(resolve, reject) {
+      const reader = new FileReader();
+      reader.onload = function(e) { resolve(e.target.result.split(',')[1]); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
-    URL.revokeObjectURL(imgUrl);
-    const text = result.data.text;
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
-    // Extrai valor logo após um rótulo na mesma linha ou na linha seguinte
-    function extract(labels) {
-      for (const label of labels) {
-        const re = new RegExp(label + '[:\\s]+(.+)', 'i');
-        for (const line of lines) {
-          const m = line.match(re);
-          if (m && m[1].trim()) return m[1].trim();
-        }
-        // tenta linha seguinte ao label
-        for (let i = 0; i < lines.length - 1; i++) {
-          if (new RegExp(label, 'i').test(lines[i])) {
-            const next = lines[i+1].trim();
-            if (next && next.length > 1) return next;
-          }
-        }
-      }
-      return '';
-    }
+    const prompt = 'Analise esta imagem de cadastro de consultora e extraia os dados. ' +
+      'Retorne APENAS um JSON puro sem markdown: ' +
+      '{"nome":"","telefone":"","cpf":"","aniversario":"DD/MM/YYYY ou vazio","bairro":"","cidade":""}. ' +
+      'Se um campo nao estiver visivel, deixe vazio. Nome em maiusculo.';
 
-    // Data: converte vários formatos para YYYY-MM-DD
-    function parseDate(s) {
+    const data = await geminiCall(apiKey, {
+      contents: [{parts: [
+        {inline_data: {mime_type: 'image/jpeg', data: b64}},
+        {text: prompt}
+      ]}],
+      generationConfig: {temperature: 0, maxOutputTokens: 500}
+    }, 30000);
+
+    let raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Nao foi possivel ler os dados da imagem.');
+    const parsed = JSON.parse(match[0]);
+
+    // Convert date DD/MM/YYYY to YYYY-MM-DD for input[type=date]
+    function toInputDate(s) {
       if (!s) return '';
-      const m1 = s.match(/(\d{2})[\/\-\.](\d{2})[\/\-\.](\d{4})/);
-      if (m1) return `${m1[3]}-${m1[2]}-${m1[1]}`;
-      const m2 = s.match(/(\d{4})[\/\-\.](\d{2})[\/\-\.](\d{2})/);
-      if (m2) return `${m2[1]}-${m2[2]}-${m2[3]}`;
-      return '';
+      const m = s.match(/(\d{2})[\/\-\.](\d{2})[\/\-\.](\d{4})/);
+      return m ? m[3]+'-'+m[2]+'-'+m[1] : '';
     }
-
-    const nome   = extract(['nome','name','cliente','razão social','participante']);
-    const tel    = extract(['telefone','celular','fone','tel','whatsapp','contato']);
-    const cpf    = extract(['cpf','c\\.p\\.f']);
-    const bairro = extract(['bairro','district']);
-    const cidade = extract(['cidade','city','município','municipio']);
-    const anivRaw= extract(['aniversário','aniversario','nascimento','data de nascimento','data nasc','dt\\.nasc','dt nasc']);
-    const aniv   = parseDate(anivRaw);
 
     let preenchidos = 0;
-    if (nome)   { document.getElementById('mNome').value   = nome;   preenchidos++; }
-    if (tel)    { document.getElementById('mTel').value    = tel;    preenchidos++; }
-    if (cpf)    { document.getElementById('mCpf').value    = cpf;    preenchidos++; }
-    if (bairro) { document.getElementById('mBairro').value = bairro; preenchidos++; }
-    if (cidade) { document.getElementById('mCidade').value = cidade; preenchidos++; }
-    if (aniv)   { document.getElementById('mAniv').value   = aniv;   preenchidos++; }
+    if (parsed.nome)        { document.getElementById('mNome').value   = parsed.nome;           preenchidos++; }
+    if (parsed.telefone)    { document.getElementById('mTel').value    = parsed.telefone;        preenchidos++; }
+    if (parsed.cpf)         { document.getElementById('mCpf').value    = parsed.cpf;             preenchidos++; }
+    if (parsed.bairro)      { document.getElementById('mBairro').value = parsed.bairro;          preenchidos++; }
+    if (parsed.cidade)      { document.getElementById('mCidade').value = parsed.cidade;          preenchidos++; }
+    if (parsed.aniversario) { document.getElementById('mAniv').value   = toInputDate(parsed.aniversario); preenchidos++; }
 
     if (preenchidos > 0) {
-      msg.textContent = `${preenchidos} campo(s) preenchido(s)! Confira e ajuste se precisar.`;
+      msg.textContent = preenchidos + ' campo(s) preenchido(s). Confira e ajuste se necessario.';
       msg.style.color = 'var(--green)';
     } else {
-      msg.textContent = ' Não identifiquei os campos. Verifique se a imagem está legível e os rótulos visíveis (Nome:, CPF:, etc).';
+      msg.textContent = 'Nao foi possivel identificar os campos. Tente com uma foto mais clara.';
       msg.style.color = 'var(--amber)';
     }
     msg.style.display = 'block';
   } catch(e) {
-    msg.textContent = ' Erro ao ler imagem: ' + e.message;
+    msg.textContent = 'Erro ao ler imagem: ' + e.message;
     msg.style.color = 'var(--red)'; msg.style.display = 'block';
   } finally {
     btn.disabled = false;
-    load.innerHTML = '<span class="spinner"></span>Lendo texto da imagem…';
     load.classList.remove('show');
     input.value = '';
   }
