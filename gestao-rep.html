@@ -1795,17 +1795,7 @@ async function geminiCall(apiKey, body, timeout) {
 
 
 /* ════════════════════ INIT ════════════════════ */
-// Fix iOS Safari viewport height jump (address bar show/hide)
-(function() {
-  function setAppHeight() {
-    document.getElementById('app').style.minHeight = window.innerHeight + 'px';
-  }
-  setAppHeight();
-  // Only update on orientation change, not on scroll/keyboard
-  window.addEventListener('orientationchange', function() {
-    setTimeout(setAppHeight, 300);
-  });
-})();
+
 refreshSelects();
 renderHome();
 </script>
