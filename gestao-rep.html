@@ -1151,10 +1151,20 @@ Valores numéricos sem R$ (ex: 83.99). Se uma foto não estiver presente, use {}
     if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
 
     overlayStatus.textContent = 'Lendo resposta...';
-    const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
+    let raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
     let parsed;
-    try { parsed = JSON.parse(raw); }
-    catch(e) { throw new Error('Gemini não retornou JSON válido: ' + raw.substring(0,100)); }
+    try {
+      parsed = JSON.parse(raw);
+    } catch(e) {
+      // Try to extract JSON object from surrounding text
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) {
+        try { parsed = JSON.parse(match[0]); }
+        catch(e2) { throw new Error('Gemini não retornou JSON válido: ' + raw.substring(0,200)); }
+      } else {
+        throw new Error('Gemini não retornou JSON válido: ' + raw.substring(0,200));
+      }
+    }
 
     const info     = parsed.info     || {};
     const cobranca = parsed.cobranca || [];
