@@ -479,9 +479,9 @@
   </div>
 
   <!-- ══════════ REGIÕES ══════════ -->
-  <div class="view" id="view-regioes" style="flex-direction:column;">
+  <div class="view" id="view-regioes" style="flex-direction:column;overflow-y:auto;">
     <div class="page-header"><div class="ph-title">Regiões</div><div class="ph-sub">Consultoras e cadastros</div></div>
-    <div class="scroll-body" style="padding-top:16px;">
+    <div class="scroll-body" style="padding-top:16px;overflow-y:visible;">
     <div class="card">
       <div class="card-title">Nova região</div>
       <div class="btn-row">
@@ -839,10 +839,10 @@ function renderRegioes() {
       ${r.consultoras.map(c=>`
         <div class="cons-card">
           <div class="cn">${esc(c.nome)}</div>
-          <div class="cd">${[c.tel,c.cidade?c.bairro+' · '+c.cidade:'',c.aniv?'🎂 '+fmtAniv(c.aniv):''].filter(Boolean).join(' · ') || 'Sem dados complementares'}</div>
+          <div class="cd">${[c.tel,c.cidade?c.bairro+' · '+c.cidade:'',c.aniv?''+fmtAniv(c.aniv):''].filter(Boolean).join(' · ') || 'Sem dados complementares'}</div>
           <div class="cons-actions">
-            <button class="edit-btn" onclick="openModalEditar('${r.id}','${c.id}')">✏️ Editar</button>
-            <button class="del-btn"  onclick="delConsultora('${r.id}','${c.id}')">✕ Excluir</button>
+            <button class="edit-btn" onclick="openModalEditar('${r.id}','${c.id}')">Editar</button>
+            <button class="del-btn"  onclick="delConsultora('${r.id}','${c.id}')">Excluir</button>
           </div>
         </div>
       `).join('')}
