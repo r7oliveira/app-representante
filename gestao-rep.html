@@ -193,6 +193,12 @@
     .step-badge { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--pink); color: white; font-size: 11px; font-weight: 800; flex-shrink: 0; margin-right: 6px; }
     .import-status { font-size: 13px; font-weight: 600; color: var(--pink); padding: 10px; text-align: center; display: none; }
     .import-status.show { display: block; }
+    /* LOADING OVERLAY */
+    #loadingOverlay { display:none; position:fixed; inset:0; background:rgba(139,0,69,0.95); z-index:9999; flex-direction:column; align-items:center; justify-content:center; color:white; font-family:'DM Sans',sans-serif; }
+    #loadingOverlay.show { display:flex; }
+    #overlayTimer { font-size:56px; font-weight:800; font-family:'Cormorant Garamond',serif; margin:8px 0; }
+    #overlayStatus { font-size:15px; font-weight:600; opacity:.85; text-align:center; padding:0 20px; }
+    #overlayStep { font-size:12px; opacity:.6; margin-top:8px; text-align:center; }
   </style>
 </head>
 <body>
@@ -1067,61 +1073,52 @@ function mergeData(cobranca, notas) {
 
 async function processarFotos() {
   const btn = document.getElementById('btnProcessar');
-  const origTxt = btn.textContent;
-  btn.textContent = '⏳ Processando...';
-  btn.disabled = true;
-  document.getElementById('importResult').style.display = 'none';
+  const overlay = document.getElementById('loadingOverlay');
+  const overlayTimer = document.getElementById('overlayTimer');
+  const overlayStatus = document.getElementById('overlayStatus');
+  const overlayStep = document.getElementById('overlayStep');
 
-  // Verify at least one file is loaded
-  const hasFiles = Object.values(importSlots).some(Boolean);
-  if (!hasFiles) {
-    btn.textContent = origTxt; btn.disabled = false;
-    const wrap = document.getElementById('importResult');
-    wrap.style.display = 'block';
-    wrap.innerHTML = '<div style="background:var(--amber-bg);border-radius:12px;padding:14px;color:var(--amber);"><b>⚠️</b> Carregue pelo menos uma foto antes de processar.</div>';
-    return;
+  // Checks
+  if (!Object.values(importSlots).some(Boolean)) {
+    alert('Carregue pelo menos uma foto.'); return;
   }
-  // Verify Gemini key
   const apiKey = localStorage.getItem('gemini_key') || '';
   if (!apiKey) {
-    btn.textContent = origTxt; btn.disabled = false;
-    const wrap = document.getElementById('importResult');
-    wrap.style.display = 'block';
-    wrap.innerHTML = '<div style="background:var(--red-bg);border-radius:12px;padding:14px;color:var(--red);"><b>⚠️</b> Configure a chave Gemini em ⚙️ Config antes de processar.</div>';
-    return;
+    alert('Configure a chave Gemini em ⚙️ Config.'); return;
   }
-  setStatus('Iniciando — enviando fotos para o Gemini…');
 
-  // Temporizador visível no botão e no status
-  let seconds = 0;
-  const statusEl = document.getElementById('importStatusTxt');
-  const timerEl  = document.getElementById('importTimer');
-  const timerInterval = setInterval(() => {
-    seconds++;
-    btn.textContent = `⏳ Aguarde... ${seconds}s`;
-    if (timerEl)  timerEl.textContent  = `${seconds}s`;
+  // Show overlay
+  btn.disabled = true;
+  btn.textContent = '⏳ Processando...';
+  overlay.classList.add('show');
+  document.getElementById('importResult').style.display = 'none';
+
+  // Timer on overlay (always visible, independent of button)
+  let secs = 0;
+  const timer = setInterval(() => {
+    secs++;
+    overlayTimer.textContent = secs + 's';
   }, 1000);
+
   try {
-    let info = {}, cobranca = [], notas = [];
-    setStatus('📷 Comprimindo imagens…');
+    overlayStatus.textContent = 'Comprimindo imagens...';
+    overlayStep.textContent = 'Preparando fotos para envio';
 
-    // Comprime todas as fotos disponíveis
+    // Compress all images in parallel
+    const [b64_1, b64_2, b64_3] = await Promise.all([
+      importSlots[1] ? imageToBase64(importSlots[1]) : Promise.resolve(null),
+      importSlots[2] ? imageToBase64(importSlots[2]) : Promise.resolve(null),
+      importSlots[3] ? imageToBase64(importSlots[3]) : Promise.resolve(null),
+    ]);
+
+    overlayStatus.textContent = 'Enviando para o Gemini...';
+    overlayStep.textContent = '1 chamada com as 3 fotos juntas';
+
     const parts = [];
-    if (importSlots[1]) {
-      const b64 = await imageToBase64(importSlots[1]);
-      if (b64) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64}}); parts.push({text:'[FOTO1 - Informações da semana]'}); }
-    }
-    if (importSlots[2]) {
-      const b64 = await imageToBase64(importSlots[2]);
-      if (b64) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64}}); parts.push({text:'[FOTO2 - Minha cobrança na semana]'}); }
-    }
-    if (importSlots[3]) {
-      const b64 = await imageToBase64(importSlots[3]);
-      if (b64) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64}}); parts.push({text:'[FOTO3 - Notas distribuídas]'}); }
-    }
+    if (b64_1) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64_1}}); parts.push({text:'[FOTO1 - Informações da semana]'}); }
+    if (b64_2) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64_2}}); parts.push({text:'[FOTO2 - Minha cobrança na semana]'}); }
+    if (b64_3) { parts.push({inline_data:{mime_type:'image/jpeg',data:b64_3}}); parts.push({text:'[FOTO3 - Notas distribuídas]'}); }
 
-    setStatus('🤖 Enviando para o Gemini (1 chamada)…');
-    const apiKey = localStorage.getItem('gemini_key') || '';
     const prompt = `Analise as imagens de sistema de vendas e extraia os dados em JSON.
 
 Da FOTO1 (Informações): {"semana":"XX/XXXX","regiao":"NOME","totalGeral":0.00,"totalDebitos":0.00,"acertosRegiao":0,"acertosOutras":0,"novasRegiao":0,"novasOutras":0,"notasRemarcadas":0}
@@ -1139,43 +1136,47 @@ Valores numéricos sem R$ (ex: 83.99). Se uma foto não estiver presente, use {}
 
     parts.push({text: prompt});
 
+    overlayStatus.textContent = 'Aguardando resposta do Gemini...';
+
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 20000);
+    const t = setTimeout(() => ctrl.abort(), 50000);
     const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       { method:'POST', headers:{'Content-Type':'application/json'}, signal:ctrl.signal,
         body: JSON.stringify({contents:[{parts}], generationConfig:{temperature:0, maxOutputTokens:3000}}) }
     );
     clearTimeout(t);
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-    const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
-    const parsed = JSON.parse(raw);
-    info     = parsed.info     || {};
-    cobranca = parsed.cobranca || [];
-    notas    = parsed.notas    || [];
 
+    overlayStatus.textContent = 'Lendo resposta...';
+    const raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
+    let parsed;
+    try { parsed = JSON.parse(raw); }
+    catch(e) { throw new Error('Gemini não retornou JSON válido: ' + raw.substring(0,100)); }
+
+    const info     = parsed.info     || {};
+    const cobranca = parsed.cobranca || [];
+    const notas    = parsed.notas    || [];
     const entradas = mergeData(cobranca, notas);
     previewEntradas = entradas;
     _importInfo = info;
     const totalVendido = entradas.reduce((s,e)=>s+(e.vendido||0),0);
     const totalPago    = entradas.reduce((s,e)=>s+(e.pago||0),0);
 
+    overlay.classList.remove('show');
     const wrap = document.getElementById('importResult');
     wrap.style.display = 'block';
     document.getElementById('importStatus').classList.remove('show');
     wrap.innerHTML = `
       <div style="background:var(--green-bg);border-radius:12px;padding:12px;margin-bottom:10px;">
-        <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:8px;">✓ Gemini leu as fotos — confirme antes de importar</div>
+        <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:8px;">✓ Gemini leu as fotos (${secs}s) — confirme antes de importar</div>
         ${info.semana ? `<div class="muted" style="margin-bottom:3px;">📅 Semana: <b>${esc(info.semana)}</b> · Região: <b>${esc(info.regiao||'—')}</b></div>` : ''}
         <div class="muted" style="margin-bottom:3px;">💰 Total: <b>${brl(info.totalGeral||totalVendido)}</b> · Débitos: <b>${brl(info.totalDebitos||0)}</b></div>
-        <div class="muted" style="margin-bottom:3px;">✅ Acertos: <b>${(info.acertosRegiao||0)+(info.acertosOutras||0)}</b> (região: ${info.acertosRegiao||0} + outras: ${info.acertosOutras||0})</div>
-        <div class="muted" style="margin-bottom:3px;">✨ Novas: <b>${(info.novasRegiao||0)+(info.novasOutras||0)}</b> · 📋 Remarcadas: <b>${info.notasRemarcadas||0}</b></div>
+        <div class="muted" style="margin-bottom:3px;">✅ Acertos: <b>${(info.acertosRegiao||0)+(info.acertosOutras||0)}</b> · ✨ Novas: <b>${(info.novasRegiao||0)+(info.novasOutras||0)}</b></div>
       </div>
       ${entradas.length ? `
-        <div style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px;">
-          ${entradas.length} consultora(s) — toque no nome para editar
-        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px;">${entradas.length} consultora(s) — toque no nome para editar</div>
         ${entradas.map((e,i)=>`
           <div class="result-row" style="flex-direction:column;align-items:flex-start;gap:4px;padding:10px 0;">
             <input id="prev-nome-${i}" value="${esc(e.nome)}"
@@ -1196,18 +1197,14 @@ Valores numéricos sem R$ (ex: 83.99). Se uma foto não estiver presente, use {}
       </div>
     `;
   } catch(e) {
-    document.getElementById('importStatus').classList.remove('show');
+    overlay.classList.remove('show');
     const wrap = document.getElementById('importResult');
     wrap.style.display = 'block';
-    const msg = e?.name === 'AbortError' ? 'Tempo esgotado (20s). Tente com fotos menores ou verifique sua conexão.' : (e?.message || String(e));
-    wrap.innerHTML = `<div style="background:var(--red-bg);border-radius:12px;padding:16px;color:var(--red);">
-      <div style="font-weight:700;font-size:15px;margin-bottom:8px;">⚠️ Erro ao processar</div>
-      <div style="font-size:13px;line-height:1.6;">${esc(msg)}</div>
-      <div style="font-size:12px;color:var(--gray);margin-top:8px;">Verifique: chave Gemini em Config · conexão WiFi · tente novamente</div>
+    wrap.innerHTML = `<div style="background:var(--red-bg);border-radius:12px;padding:14px;color:var(--red);">
+      <b>⚠️ Erro (${secs}s):</b><br><span style="font-size:13px;">${esc(e?.message||String(e))}</span>
     </div>`;
   } finally {
-    clearInterval(timerInterval);
-    if (timerEl) timerEl.textContent = '';
+    clearInterval(timer);
     btn.disabled = false;
     btn.textContent = 'Processar fotos';
   }
@@ -1278,5 +1275,12 @@ function confirmarImport(dataStr) {
 refreshSelects();
 renderPainel();
 </script>
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay">
+  <div style="font-size:48px;margin-bottom:8px;">🤖</div>
+  <div id="overlayTimer">0s</div>
+  <div id="overlayStatus">Enviando para o Gemini...</div>
+  <div id="overlayStep">Analisando as 3 fotos com IA</div>
+</div>
 </body>
 </html>
