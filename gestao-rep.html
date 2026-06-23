@@ -906,8 +906,103 @@ function renderPainel() {
       : '<div class="muted">Tudo quitado nesta semana! 🎉</div>'}
     </div>
 
-    <button class="btn w100 secondary" onclick="switchTab('config')">⚙️ Configurar meta / caixa</button>
-  `;
+    <button class="btn w100 secondary" onclick="switchTab('config')" style="margin-bottom:10px;">⚙️ Configurar meta / caixa</button>
+    <button class="btn w100" id="btnAnalisar" onclick="analisarComIA()" style="background:linear-gradient(135deg,#8B0045,#D91A7A);">🤖 Analisar fechamento com IA</button>
+    <div id="analiseResult" style="display:none;margin-top:12px;"></div>
+  \`;
+}
+
+/* ════════════════════ ANÁLISE IA ════════════════════ */
+async function analisarComIA() {
+  const btn = document.getElementById('btnAnalisar');
+  const wrap = document.getElementById('analiseResult');
+  const apiKey = localStorage.getItem('gemini_key') || '';
+  if (!apiKey) { alert('Configure a chave Gemini em ⚙️ Config.'); return; }
+
+  const sem = activeSem('selPainel');
+  if (!sem) { alert('Selecione uma semana.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Analisando...';
+  wrap.style.display = 'block';
+  wrap.innerHTML = '<div style="text-align:center;padding:20px;color:var(--pink);font-weight:700;"><span class="spinner"></span> Gerando análise...</div>';
+
+  const t = calcTotais(sem);
+
+  const resumo = `
+Semana: ${sem.nome} | Região: ${sem.regiaoNome}
+Cobrança total: R$${t.vendido.toFixed(2)}
+Recebido (Pix): R$${t.pix.toFixed(2)} | Recebido (Dinheiro): R$${t.dinheiro.toFixed(2)}
+Total recebido: R$${t.pago.toFixed(2)}
+Acertos: ${sem.ativas} (${sem.acertosRegiao||0} região + ${sem.acertosOutras||0} outras)
+Novas consultoras: ${sem.novas} (${sem.novasRegiao||0} região + ${sem.novasOutras||0} outras)
+Notas remarcadas: ${sem.notasRemarcadas||0}
+Ticket médio: R$${t.ticket.toFixed(2)}
+Meta: ${sem.meta>0?'R$'+sem.meta.toFixed(2):'não definida'}
+Caixa disponível: R$${(sem.caixa||0).toFixed(2)}
+Notas novas distribuídas: R$${t.notasNovas.toFixed(2)}
+
+Consultoras e pagamentos:
+${sem.entradas.map(e=>`- ${e.nome}: cobrado R$${(e.vendido||0).toFixed(2)}, pago R$${((e.pagoPix||0)+(e.pagoDinheiro||0)).toFixed(2)}, saldo: ${e.saldo||'—'}, nota nova: R$${(e.notaNova||0).toFixed(2)}`).join('
+')}
+${sem.nota ? '
+Observação da semana: ' + sem.nota : ''}
+  `.trim();
+
+  try {
+    const resp = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+      { method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':apiKey},
+        body: JSON.stringify({
+          contents:[{parts:[{text:
+            `Você é um assistente de gestão para uma representante de vendas de cosméticos (Romance).
+Analise os dados do fechamento semanal abaixo e gere um relatório executivo em português com:
+
+1. **Resumo do fechamento** — como foi a semana em geral
+2. **Destaques positivos** — o que foi bem
+3. **Pontos de atenção** — o que precisa melhorar
+4. **Consultoras em destaque** — top pagadoras desta semana
+5. **Próximos passos sugeridos** — ações concretas para a próxima semana
+
+Seja direto, use linguagem simples e prática. Use emojis para tornar mais visual.
+
+DADOS DA SEMANA:
+${resumo}`
+          }]}],
+          generationConfig:{temperature:0.7, maxOutputTokens:1500}
+        })
+      }
+    );
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    const texto = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    // Convert markdown to simple HTML
+    const html = texto
+      .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+      .replace(/^### (.+)$/gm, '<div style="font-size:13px;font-weight:800;color:var(--pink);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;">$1</div>')
+      .replace(/^## (.+)$/gm, '<div style="font-size:15px;font-weight:800;color:var(--pink-deep);margin:16px 0 6px;">$1</div>')
+      .replace(/^# (.+)$/gm, '<div style="font-size:17px;font-weight:800;color:var(--pink-deep);margin:16px 0 8px;">$1</div>')
+      .replace(/^[\*\-] (.+)$/gm, '<div style="padding:3px 0 3px 12px;border-left:3px solid var(--pink);margin:4px 0;font-size:13px;">$1</div>')
+      .replace(/
+
+/g, '<br>')
+      .replace(/
+/g, '<br>');
+    wrap.innerHTML = \`
+      <div class="card" style="border-left:4px solid var(--pink);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-weight:800;font-size:14px;color:var(--pink);">🤖 Análise IA — ${sem.nome}</div>
+          <button onclick="document.getElementById('analiseResult').style.display='none'" style="background:none;border:none;font-size:18px;color:var(--gray);cursor:pointer;">✕</button>
+        </div>
+        <div style="font-size:13px;line-height:1.7;color:var(--dark);">\${html}</div>
+      </div>
+    \`;
+  } catch(e) {
+    wrap.innerHTML = \`<div style="background:var(--red-bg);border-radius:12px;padding:14px;color:var(--red);font-size:13px;"><b>⚠️ Erro:</b> \${esc(e.message)}</div>\`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🤖 Analisar fechamento com IA';
+  }
 }
 
 /* ════════════════════ IMPORTAR DO SISTEMA ════════════════════ */
