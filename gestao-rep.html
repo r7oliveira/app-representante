@@ -704,10 +704,11 @@ async function extractFromPhoto(input) {
       reader.readAsDataURL(file);
     });
 
-    const prompt = 'Analise esta imagem de cadastro de consultora e extraia os dados. ' +
-      'Retorne APENAS um JSON puro sem markdown: ' +
-      '{"nome":"","telefone":"","cpf":"","aniversario":"DD/MM/YYYY ou vazio","bairro":"","cidade":""}. ' +
-      'Se um campo nao estiver visivel, deixe vazio. Nome em maiusculo.';
+    const prompt = 'Voce deve extrair dados de um formulario de cadastro nesta imagem. ' +
+      'Responda SOMENTE com este JSON, sem nenhum texto antes ou depois, sem markdown: ' +
+      '{"nome":"","telefone":"","cpf":"","aniversario":"","bairro":"","cidade":""}. ' +
+      'Preencha os campos com os valores encontrados na imagem. ' +
+      'Nome em MAIUSCULO. Data no formato DD/MM/YYYY. Campos nao encontrados ficam vazios string.';
 
     const data = await geminiCall(apiKey, {
       contents: [{parts: [
@@ -718,9 +719,30 @@ async function extractFromPhoto(input) {
     }, 30000);
 
     let raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
-    const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('Nao foi possivel ler os dados da imagem.');
-    const parsed = JSON.parse(match[0]);
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch(e1) {
+      const match = raw.match(/\{[\s\S]*?\}/);
+      if (match) {
+        try { parsed = JSON.parse(match[0]); } catch(e2) { throw new Error('Formato inesperado da resposta: ' + raw.substring(0,80)); }
+      } else {
+        // Gemini returned plain text — try to extract fields manually
+        parsed = {};
+        var nomeM = raw.match(/nome[:\s]+([A-Z ]+)/i);
+        var telM  = raw.match(/telefone[:\s]+([\d\s()+-]+)/i);
+        var cpfM  = raw.match(/cpf[:\s]+([\d.\-]+)/i);
+        var anivM = raw.match(/(\d{2}[\/\-]\d{2}[\/\-]\d{4})/);
+        var bairM = raw.match(/bairro[:\s]+([^\n,]+)/i);
+        var cidM  = raw.match(/cidade[:\s]+([^\n,]+)/i);
+        if (nomeM) parsed.nome = nomeM[1].trim();
+        if (telM)  parsed.telefone = telM[1].trim();
+        if (cpfM)  parsed.cpf = cpfM[1].trim();
+        if (anivM) parsed.aniversario = anivM[1];
+        if (bairM) parsed.bairro = bairM[1].trim();
+        if (cidM)  parsed.cidade = cidM[1].trim();
+      }
+    }
 
     // Convert date DD/MM/YYYY to YYYY-MM-DD for input[type=date]
     function toInputDate(s) {
