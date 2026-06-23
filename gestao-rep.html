@@ -70,7 +70,8 @@
       color: var(--ink-3); transition: color .15s;
       letter-spacing: .2px;
     }
-    .nav-item .nav-icon { font-size: 22px; line-height: 1; transition: transform .15s; }
+    .nav-item svg { width: 22px; height: 22px; margin-bottom: 2px; transition: transform .15s; stroke: currentColor; }
+    .nav-item.active svg { transform: scale(1.08); }
     .nav-item.active { color: var(--rose); }
     .nav-item.active .nav-icon { transform: scale(1.12); }
 
@@ -137,7 +138,8 @@
       transition: transform .12s, box-shadow .12s;
     }
     .quick-btn:active { transform: scale(.97); box-shadow: none; }
-    .quick-btn .qb-icon { font-size: 26px; line-height: 1; }
+    .qb-icon-wrap { width: 36px; height: 36px; border-radius: 10px; background: var(--rose-soft); display: flex; align-items: center; justify-content: center; margin-bottom: 2px; }
+    .qb-icon-wrap svg { width: 18px; height: 18px; stroke: var(--rose); }
     .quick-btn .qb-label { font-size: 13px; font-weight: 700; color: var(--ink); }
     .quick-btn .qb-sub { font-size: 11px; color: var(--ink-3); }
 
@@ -242,7 +244,8 @@
     /* ── IMPORT SLOTS ── */
     .import-slot { border: 2px dashed var(--surface-2); border-radius: var(--r); padding: 16px; margin-bottom: 10px; cursor: pointer; transition: .15s; text-align: center; position: relative; }
     .import-slot.has-file { border-color: var(--green); background: var(--green-bg); }
-    .import-slot .slot-ico { font-size: 28px; margin-bottom: 4px; }
+    .import-slot .slot-num { width:32px;height:32px;border-radius:50%;background:var(--ink);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;margin:0 auto 8px; }
+    .import-slot.has-file .slot-num { background:var(--green); }
     .import-slot .slot-lbl { font-size: 13px; font-weight: 700; color: var(--ink); }
     .import-slot .slot-sub { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
     .import-slot .slot-ok { font-size: 11px; color: var(--green); font-weight: 700; margin-top: 4px; }
@@ -282,11 +285,14 @@
 
     /* ── CHAT WHATSAPP ── */
     #view-assist { overflow: hidden; }
-    .wa-header { background: var(--rose-deep); padding: 52px 16px 14px; display: flex; align-items: center; gap: 12px; }
-    .wa-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-    .wa-header-info .name { font-weight: 700; color: white; font-size: 15px; }
-    .wa-header-info .status { font-size: 12px; color: rgba(255,255,255,.65); }
-    .wa-body { flex: 1; overflow-y: auto; padding: 12px 14px 16px; background: #F0EBE8; }
+    #view-assist.active { display: flex !important; flex-direction: column; height: calc(100dvh - 65px); max-height: calc(100dvh - 65px); }
+    .assist-header { background: var(--rose-deep); padding: 52px 16px 16px; flex-shrink: 0; }
+    .assist-header-inner { display: flex; align-items: center; gap: 12px; }
+    .assist-avatar { width: 42px; height: 42px; border-radius: 14px; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; letter-spacing: .5px; flex-shrink: 0; }
+    .assist-name { font-size: 16px; font-weight: 700; color: white; }
+    .assist-status { font-size: 11px; color: rgba(255,255,255,.6); margin-top: 1px; font-weight: 500; }
+    .assist-clear-btn { margin-left: auto; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); color: white; border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .wa-body { flex: 1; overflow-y: auto; padding: 12px 14px 16px; background: #F7F5F3; min-height: 0; }
     .chat-msg { margin-bottom: 8px; display: flex; flex-direction: column; }
     .chat-msg.user { align-items: flex-end; }
     .chat-msg.ia { align-items: flex-start; }
@@ -294,14 +300,15 @@
     .chat-msg.ia .bubble { background: white; color: var(--ink); padding: 10px 13px; border-radius: 16px 16px 16px 4px; font-size: 13px; max-width: 88%; line-height: 1.7; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
     .chat-msg.ia .bubble b { color: var(--rose-deep); }
     .chat-msg .ts { font-size: 10px; color: var(--ink-3); margin-top: 3px; padding: 0 4px; }
-    .wa-footer { background: white; padding: 10px 12px; display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--surface-2); padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+    .wa-footer { background: white; padding: 10px 12px 10px; display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--surface-2); flex-shrink: 0; }
     .wa-input { flex: 1; padding: 11px 14px; font-size: 14px; font-family: inherit; border: 1.5px solid var(--surface-2); border-radius: 22px; background: var(--surface); color: var(--ink); outline: none; }
     .wa-input:focus { border-color: var(--rose); }
     .wa-send { width: 44px; height: 44px; border-radius: 50%; background: var(--rose); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(200,24,90,.3); }
     .wa-send svg { width: 20px; height: 20px; fill: white; }
     .wa-send:disabled { background: var(--ink-3); box-shadow: none; }
-    .suggest-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; justify-content: center; }
-    .suggest-chip { background: white; border: 1.5px solid var(--rose-mid); color: var(--rose); border-radius: 20px; padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .suggest-row { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
+    .suggest-chip { background: white; border: none; color: var(--ink); border-radius: var(--r-sm); padding: 13px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; text-align: left; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.05); display: flex; align-items: center; justify-content: space-between; }
+    .suggest-chip::after { content: '→'; color: var(--rose); font-weight: 700; font-size: 15px; }
     .typing-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--ink-3); margin: 0 2px; animation: typing 1.2s infinite; }
     .typing-dot:nth-child(2) { animation-delay: .2s; }
     .typing-dot:nth-child(3) { animation-delay: .4s; }
@@ -322,19 +329,24 @@
 <!-- ══ BOTTOM NAV ══ -->
 <nav class="bottom-nav">
   <button class="nav-item active" data-view="home" onclick="switchTab('home')">
-    <span class="nav-icon">🏠</span>Home
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Início
   </button>
   <button class="nav-item" data-view="painel" onclick="switchTab('painel')">
-    <span class="nav-icon">📊</span>Painel
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="7" height="9"/><rect x="15" y="3" width="7" height="5"/><rect x="15" y="12" width="7" height="9"/><rect x="2" y="16" width="7" height="5"/></svg>
+    Painel
   </button>
   <button class="nav-item" data-view="semana" onclick="switchTab('semana')">
-    <span class="nav-icon">💰</span>Semana
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    Semana
   </button>
   <button class="nav-item" data-view="regioes" onclick="switchTab('regioes')">
-    <span class="nav-icon">🗺️</span>Regiões
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Regiões
   </button>
   <button class="nav-item" data-view="assist" onclick="switchTab('assist')">
-    <span class="nav-icon">🤖</span>IA
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Assistente
   </button>
 </nav>
 
@@ -344,8 +356,8 @@
   <!-- ══════════ HOME ══════════ -->
   <div class="view active" id="view-home" style="flex-direction:column;">
     <div class="home-hero">
-      <div class="hero-eyebrow">Representante Romance</div>
-      <div class="hero-greeting">Olá, bom dia! 👋</div>
+      <div class="hero-eyebrow">Representante</div>
+      <div class="hero-greeting">Gestão Romance</div>
       <div class="hero-week" id="headerWeek">Carregando semana...</div>
       <div class="hero-stat-row" id="heroStats">
         <div class="hero-stat"><div class="hs-lbl">Cobrança</div><div class="hs-val" id="heroCobranca">—</div></div>
@@ -357,22 +369,22 @@
       <div class="sec-title">Acesso rápido</div>
       <div class="quick-grid">
         <button class="quick-btn" onclick="switchTab('semana')">
-          <span class="qb-icon">📷</span>
+          <div class="qb-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
           <span class="qb-label">Importar semana</span>
           <span class="qb-sub">Fotografar sistema</span>
         </button>
         <button class="quick-btn" onclick="switchTab('painel')">
-          <span class="qb-icon">📊</span>
-          <span class="qb-label">Ver painel</span>
+          <div class="qb-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          <span class="qb-label">Painel</span>
           <span class="qb-sub">Indicadores e ranking</span>
         </button>
         <button class="quick-btn" onclick="switchTab('assist')">
-          <span class="qb-icon">🤖</span>
+          <div class="qb-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
           <span class="qb-label">Assistente IA</span>
           <span class="qb-sub">Relatórios e dicas</span>
         </button>
         <button class="quick-btn" onclick="switchTab('regioes')">
-          <span class="qb-icon">👩‍💼</span>
+          <div class="qb-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
           <span class="qb-label">Consultoras</span>
           <span class="qb-sub">Gerenciar cadastros</span>
         </button>
@@ -405,35 +417,35 @@
     <div class="scroll-body" style="padding-top:16px;">
     <div class="card" id="importCard">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div class="card-title" style="margin:0;">📷 Importar do sistema</div>
+        <div class="card-title" style="margin:0;">Importar do sistema</div>
         <button class="btn small secondary" onclick="toggleImport()">Ocultar</button>
       </div>
       <p class="muted" style="margin-bottom:12px;line-height:1.6;">Fotografe as 3 telas do seu sistema. O app extrai os dados e preenche a semana automaticamente.</p>
 
       <div class="import-slot" id="slot1" onclick="document.getElementById('fi1').click()">
         <input type="file" id="fi1" accept="image/*" onchange="setSlot(1,this)" onclick="event.stopPropagation()">
-        <div class="slot-ico">1️⃣</div>
+        <div class="slot-num">01</div>
         <div class="slot-lbl">Informações da semana</div>
         <div class="slot-sub">Tela com Região, Semana ativa e Suas cobranças</div>
-        <div class="slot-ok" id="slotOk1" style="display:none;">✓ Foto carregada</div>
+        <div class="slot-ok" id="slotOk1" style="display:none;">Foto carregada</div>
         <img id="slotThumb1" class="import-thumb" style="display:none;">
       </div>
 
       <div class="import-slot" id="slot2" onclick="document.getElementById('fi2').click()">
         <input type="file" id="fi2" accept="image/*" onchange="setSlot(2,this)" onclick="event.stopPropagation()">
-        <div class="slot-ico">2️⃣</div>
+        <div class="slot-num">02</div>
         <div class="slot-lbl">Minha cobrança na semana</div>
         <div class="slot-sub">Tabela com consultoras e valores pagos</div>
-        <div class="slot-ok" id="slotOk2" style="display:none;">✓ Foto carregada</div>
+        <div class="slot-ok" id="slotOk2" style="display:none;">Foto carregada</div>
         <img id="slotThumb2" class="import-thumb" style="display:none;">
       </div>
 
       <div class="import-slot" id="slot3" onclick="document.getElementById('fi3').click()">
         <input type="file" id="fi3" accept="image/*" onchange="setSlot(3,this)" onclick="event.stopPropagation()">
-        <div class="slot-ico">3️⃣</div>
+        <div class="slot-num">03</div>
         <div class="slot-lbl">Notas distribuídas</div>
         <div class="slot-sub">Tabela com valor da nota de cada consultora</div>
-        <div class="slot-ok" id="slotOk3" style="display:none;">✓ Foto carregada</div>
+        <div class="slot-ok" id="slotOk3" style="display:none;">Foto carregada</div>
         <img id="slotThumb3" class="import-thumb" style="display:none;">
       </div>
 
@@ -484,18 +496,23 @@
   </div>
 
   <!-- ══════════ ASSISTENTE IA ══════════ -->
-  <div class="view" id="view-assist" style="flex-direction:column;height:calc(100vh - 65px);">
-    <div class="wa-header">
-      <div class="wa-avatar">🤖</div>
-      <div class="wa-header-info">
-        <div class="name">Assistente Romance</div>
-        <div class="status" id="assistStatus">online</div>
+  <div class="view" id="view-assist">
+    <!-- Header -->
+    <div class="assist-header">
+      <div class="assist-header-inner">
+        <div class="assist-avatar">IA</div>
+        <div>
+          <div class="assist-name">Assistente de Gestão</div>
+          <div class="assist-status" id="assistStatus">disponível</div>
+        </div>
+        <button onclick="limparChat()" class="assist-clear-btn">Limpar</button>
       </div>
-      <button onclick="limparChat()" style="margin-left:auto;background:rgba(255,255,255,.15);border:none;color:white;border-radius:20px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">Limpar</button>
     </div>
+    <!-- Chat body -->
     <div class="wa-body" id="assistChat"></div>
+    <!-- Input bar -->
     <div class="wa-footer">
-      <input id="assistInput" class="wa-input" placeholder="Mensagem..." onkeydown="if(event.key==='Enter')enviarAssist()">
+      <input id="assistInput" class="wa-input" placeholder="Digite sua pergunta..." onkeydown="if(event.key==='Enter')enviarAssist()">
       <button class="wa-send" id="assistBtn" onclick="enviarAssist()">
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
@@ -513,7 +530,7 @@
 
     <!-- IA: preencher com foto -->
     <button class="ai-photo-btn" id="aiBtnPhoto" onclick="document.getElementById('photoInput').click()">
-      <span>📷</span> Preencher com foto do cadastro (IA)
+      <span></span> Preencher com foto do cadastro (IA)
     </button>
     <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="extractFromPhoto(this)">
     <div class="ai-loading" id="aiLoading"><span class="spinner"></span>Lendo texto da imagem…</div>
@@ -732,15 +749,15 @@ async function extractFromPhoto(input) {
     if (aniv)   { document.getElementById('mAniv').value   = aniv;   preenchidos++; }
 
     if (preenchidos > 0) {
-      msg.textContent = `✓ ${preenchidos} campo(s) preenchido(s)! Confira e ajuste se precisar.`;
+      msg.textContent = `${preenchidos} campo(s) preenchido(s)! Confira e ajuste se precisar.`;
       msg.style.color = 'var(--green)';
     } else {
-      msg.textContent = '⚠️ Não identifiquei os campos. Verifique se a imagem está legível e os rótulos visíveis (Nome:, CPF:, etc).';
+      msg.textContent = ' Não identifiquei os campos. Verifique se a imagem está legível e os rótulos visíveis (Nome:, CPF:, etc).';
       msg.style.color = 'var(--amber)';
     }
     msg.style.display = 'block';
   } catch(e) {
-    msg.textContent = '⚠️ Erro ao ler imagem: ' + e.message;
+    msg.textContent = ' Erro ao ler imagem: ' + e.message;
     msg.style.color = 'var(--red)'; msg.style.display = 'block';
   } finally {
     btn.disabled = false;
@@ -753,7 +770,7 @@ async function extractFromPhoto(input) {
 function renderRegioes() {
   const wrap = document.getElementById('listaRegioes');
   if (!DB.regioes.length) {
-    wrap.innerHTML = '<div class="empty">Nenhuma região cadastrada.<br>Adicione a primeira acima 👆</div>'; return;
+    wrap.innerHTML = '<div class="empty">Nenhuma região cadastrada.<br>Adicione a primeira acima </div>'; return;
   }
   wrap.innerHTML = DB.regioes.map(r => `
     <div class="reg-item">
@@ -846,23 +863,23 @@ function renderSemanaView() {
       const pagoDin = e.pagoDinheiro||0;
       const totalPago = pagoPix + pagoDin;
       const saldo = (e.vendido||0) - totalPago;
-      const saldoTxt = e.saldo === 'Quitada' ? '✓ Quitada' : saldo>0.01 ? `Falta ${brl(saldo)}` : saldo<-0.01 ? `Pagou a mais ${brl(-saldo)}` : '✓ Quitada';
+      const saldoTxt = e.saldo === 'Quitada' ? 'Quitada' : saldo>0.01 ? `Falta ${brl(saldo)}` : saldo<-0.01 ? `Pagou a mais ${brl(-saldo)}` : 'Quitada';
       const isPend = e.saldo && e.saldo !== 'Quitada' && e.saldo !== '—';
       return `
       <div class="lanc">
         <div class="nm">${esc(e.nome)}</div>
-        ${e.data ? `<div style="font-size:11px;color:var(--gray);margin-bottom:8px;">📅 Atendimento: ${esc(e.data)}${e.semanaCobranca ? ' · Cobrança: sem. '+esc(e.semanaCobranca) : ''}</div>` : ''}
+        ${e.data ? `<div style="font-size:11px;color:var(--gray);margin-bottom:8px;"> Atendimento: ${esc(e.data)}${e.semanaCobranca ? ' · Cobrança: sem. '+esc(e.semanaCobranca) : ''}</div>` : ''}
         <div class="lanc-grid">
-          <label class="field" style="margin:0;"><span>💰 Vendido (R$)</span>
+          <label class="field" style="margin:0;"><span> Vendido (R$)</span>
             <input inputmode="decimal" value="${e.vendido?fmtIn(e.vendido):''}" placeholder="0,00"
               onchange="setEntrada('${sem.id}',${i},'vendido',this.value)"></label>
-          <label class="field" style="margin:0;"><span>🆕 Nota nova (R$)</span>
+          <label class="field" style="margin:0;"><span> Nota nova (R$)</span>
             <input inputmode="decimal" value="${e.notaNova?fmtIn(e.notaNova):''}" placeholder="0,00"
               onchange="setEntrada('${sem.id}',${i},'notaNova',this.value)"></label>
-          <label class="field" style="margin:0;"><span>💳 Pago Pix (R$)</span>
+          <label class="field" style="margin:0;"><span> Pago Pix (R$)</span>
             <input inputmode="decimal" value="${pagoPix?fmtIn(pagoPix):''}" placeholder="0,00"
               onchange="setEntrada('${sem.id}',${i},'pagoPix',this.value)"></label>
-          <label class="field" style="margin:0;"><span>💵 Pago Dinheiro (R$)</span>
+          <label class="field" style="margin:0;"><span> Pago Dinheiro (R$)</span>
             <input inputmode="decimal" value="${pagoDin?fmtIn(pagoDin):''}" placeholder="0,00"
               onchange="setEntrada('${sem.id}',${i},'pagoDinheiro',this.value)"></label>
         </div>
@@ -895,7 +912,7 @@ function renderConfig() {
   const keyOk = savedKey.startsWith('AIza') || savedKey.startsWith('AQ.');
 
   const semHtml = sem ? `
-    <div class="section-lbl"><div class="num">🎯</div>Meta e caixa</div>
+    <div class="section-lbl"><div class="num"></div>Meta e caixa</div>
     <div class="card">
       <div class="two-col">
         <label class="field" style="margin:0;"><span>Meta da semana (R$)</span>
@@ -926,7 +943,7 @@ function renderConfig() {
   ` : '<div class="empty">Crie uma semana primeiro.</div>';
 
   wrap.innerHTML = `
-    <div class="section-lbl"><div class="num">🤖</div>IA — Gemini Vision</div>
+    <div class="section-lbl"><div class="num"></div>IA — Gemini Vision</div>
     <div class="card">
       <p class="muted" style="margin-bottom:10px;line-height:1.65;">
         Cole aqui a chave do <b>Google AI Studio</b> (AIza…).<br>
@@ -941,7 +958,7 @@ function renderConfig() {
         <button class="btn small secondary" onclick="toggleKeyVis()">👁 Ver</button>
         <button class="btn small" onclick="saveGeminiKey()">Salvar chave</button>
       </div>
-      ${savedKey ? '<div style="margin-top:10px;font-size:12px;font-weight:700;color:' + (keyOk?'var(--green)':'var(--amber)') + '">' + (keyOk ? '✓ Chave Gemini ativa — IA de visão pronta!' : '⚠️ Chave salva mas formato não reconhecido — verifique') + '</div>' : ''}
+      ${savedKey ? '<div style="margin-top:10px;font-size:12px;font-weight:700;color:' + (keyOk?'var(--green)':'var(--amber)') + '">' + (keyOk ? 'Chave ativa' : 'Formato não reconhecido — verifique') + '</div>' : ''}
     </div>
     ${semHtml}
   `;
@@ -984,21 +1001,21 @@ function renderHome() {
     const pend = sem.entradas.filter(function(e){ return e.saldo && e.saldo !== 'Quitada' && e.saldo !== '—'; });
     const wrap = document.getElementById('homePendencias');
     if (wrap && pend.length > 0) {
-      wrap.innerHTML = '<div class="sec-title">Pendências (' + pend.length + ')</div>' +
+      wrap.innerHTML = '<div class="sec-title">Pendências · ' + pend.length + ' cobranças</div>' +
         '<div class="card">' +
         pend.map(function(e){
           return '<div class="rank-row"><div class="nm">' + esc(e.nome) + '</div><div class="rv" style="color:var(--red);">' + brl(e.vendido||0) + '</div></div>';
         }).join('') +
         '</div>';
     } else if (wrap) {
-      wrap.innerHTML = '<div class="card" style="text-align:center;padding:20px;"><div style="font-size:28px;margin-bottom:8px;">🎉</div><div style="font-weight:700;margin-bottom:4px;">Tudo quitado!</div><div class="muted">Sem pendências esta semana.</div></div>';
+      wrap.innerHTML = '<div class="card" style="text-align:center;padding:20px;"><div style="font-weight:700;margin-bottom:4px;">Sem pendências</div><div class="muted">Todas as cobranças estão quitadas.</div></div>';
     }
   } else {
     var el = document.getElementById('heroCobranca'); if(el) el.textContent = '—';
     el = document.getElementById('heroAcertos'); if(el) el.textContent = '—';
     el = document.getElementById('heroNovas'); if(el) el.textContent = '—';
     var wrap = document.getElementById('homePendencias');
-    if(wrap) wrap.innerHTML = '<div class="card" style="text-align:center;padding:24px;"><div style="font-size:28px;margin-bottom:8px;">👆</div><div style="font-weight:700;margin-bottom:4px;">Comece por aqui</div><div class="muted">Importe sua primeira semana na aba Semana.</div></div>';
+    if(wrap) wrap.innerHTML = '<div class="card" style="text-align:center;padding:24px;"><div style="font-weight:700;margin-bottom:4px;">Nenhuma semana cadastrada</div><div class="muted">Importe sua primeira semana na aba Semana.</div></div>';
   }
 }
 
@@ -1037,7 +1054,7 @@ function renderPainel() {
     <!-- 1+2: Vendas e cobranças -->
     <div class="kpi-grid">
       <div class="kpi full">
-        <div class="lbl">💰 Cobrança da semana</div>
+        <div class="lbl"> Cobrança da semana</div>
         <div class="val pink">${brl(t.vendido)}</div>
 
         ${sem.nota?`<div class="sub" style="font-style:italic;margin-top:6px;">"${esc(sem.nota)}"</div>`:''}
@@ -1049,12 +1066,12 @@ function renderPainel() {
     <!-- 4+5: Consultoras -->
     <div class="kpi-grid">
       <div class="kpi">
-        <div class="lbl">✅ Acertos</div>
+        <div class="lbl"> Acertos</div>
         <div class="val blue">${sem.ativas || t.n}</div>
         <div class="sub">${sem.acertosRegiao||0} região · ${sem.acertosOutras||0} outras</div>
       </div>
       <div class="kpi">
-        <div class="lbl">✨ Novas</div>
+        <div class="lbl"> Novas</div>
         <div class="val amber">+${sem.novas}</div>
         <div class="sub">${sem.novasRegiao||0} região · ${sem.novasOutras||0} outras</div>
       </div>
@@ -1068,14 +1085,14 @@ function renderPainel() {
         <div class="val" style="color:var(--amber);">${sem.notasRemarcadas||0}</div>
       </div>
       <div class="kpi">
-        <div class="lbl">⚠️ Débitos gerados</div>
+        <div class="lbl"> Débitos gerados</div>
         <div class="val red">${brl(sem.totalDebitos||0)}</div>
       </div>
     </div>` : ''}
 
     <!-- 6: Ticket médio -->
     <div class="card">
-      <div class="card-title">🎯 Ticket médio</div>
+      <div class="card-title"> Ticket médio</div>
       <div class="val pink" style="font-size:26px;">${brl(t.ticket)}</div>
       <div class="sub" style="margin-top:4px;">por consultora ativa · Pix ${brl(t.pix)} · Dinheiro ${brl(t.dinheiro)}</div>
     </div>
@@ -1097,7 +1114,7 @@ function renderPainel() {
 
     <!-- 8: Vendas por região — acumulado de todas as semanas -->
     <div class="card">
-      <div class="card-title">🗺️ Vendas por região — acumulado</div>
+      <div class="card-title"> Vendas por região — acumulado</div>
       ${regioes.length ? regioes.map(([nome,val])=>`
         <div class="reg-bar-row">
           <div class="rtop"><span>${esc(nome)}</span><span>${brl(val)}</span></div>
@@ -1108,35 +1125,35 @@ function renderPainel() {
 
     <!-- 9: Meta x Realizado -->
     <div class="card">
-      <div class="card-title">📊 Meta × Realizado</div>
+      <div class="card-title"> Meta × Realizado</div>
       ${sem.meta>0 ? `
         <div class="meta-labels"><span>${brl(t.vendido)}</span><span>Meta: ${brl(sem.meta)}</span></div>
         <div class="bar pink"><div style="width:${Math.min(pctMeta,100)}%;"></div></div>
         <span class="pct-badge ${badgePct(pctMeta)}">${pctMeta}% da meta</span>
-        <div class="muted" style="margin-top:8px;">${pctMeta>=100?'🎉 Meta batida!':'Faltam '+brl(sem.meta-t.vendido)+' para bater a meta.'}</div>
+        <div class="muted" style="margin-top:8px;">${pctMeta>=100?' Meta batida!':'Faltam '+brl(sem.meta-t.vendido)+' para bater a meta.'}</div>
       ` : '<div class="muted">Defina a meta na aba <b>Config</b>.</div>'}
     </div>
 
     <!-- 10: Caixa -->
     <div class="caixa-box ${caixaPos?'pos':'neg'}">
-      <div class="lbl" style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💵 Caixa disponível</div>
+      <div class="lbl" style="font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;"> Caixa disponível</div>
       <div class="cval">${brl(sem.caixa)}</div>
       <div class="clbl">${caixaPos?'Saldo positivo ✓':'Atenção: saldo negativo'}</div>
     </div>
 
     <!-- Pendências -->
     <div class="card">
-      <div class="card-title">⏳ Pendências (${pendentes.length})</div>
+      <div class="card-title"> Pendências (${pendentes.length})</div>
       ${pendentes.length ? pendentes.map(e=>`
         <div class="rank-row">
           <div class="nm" style="font-size:14px;">${esc(e.nome)}</div>
           <div class="rv" style="color:var(--red);">${brl((e.vendido||0)-(e.pago||0))}</div>
         </div>`).join('')
-      : '<div class="muted">Tudo quitado nesta semana! 🎉</div>'}
+      : '<div class="muted">Sem pendências nesta semana.</div>'}
     </div>
 
-    <button class="btn w100 secondary" onclick="switchTab('config')" style="margin-bottom:10px;">⚙️ Configurar meta / caixa</button>
-    <button class="btn w100" id="btnAnalisar" onclick="analisarComIA()" style="background:linear-gradient(135deg,#8B0045,#D91A7A);">🤖 Analisar fechamento com IA</button>
+    <button class="btn w100 secondary" onclick="switchTab('config')" style="margin-bottom:10px;">Configurar meta / caixa</button>
+    <button class="btn w100" id="btnAnalisar" onclick="analisarComIA()" style="background:linear-gradient(135deg,#8B0045,#D91A7A);">Analisar fechamento com IA</button>
     <div id="analiseResult" style="display:none;margin-top:12px;"></div>
   `;
 }
@@ -1201,7 +1218,7 @@ async function analisarComIA() {
     wrap.innerHTML =
       '<div class="card" style="border-left:4px solid var(--rose);">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
-          '<div style="font-weight:800;font-size:14px;color:var(--rose);">Analise IA - ' + esc(sem.nome) + '</div>' +
+          '<div style="font-weight:800;font-size:14px;color:var(--rose);">Análise — ' + esc(sem.nome) + '</div>' +
           '<button onclick="document.getElementById(\'analiseResult\').style.display=\'none\'" style="background:none;border:none;font-size:18px;color:var(--gray);cursor:pointer;">x</button>' +
         '</div>' +
         '<div style="font-size:13px;line-height:1.7;color:var(--dark);">' + html + '</div>' +
@@ -1322,12 +1339,12 @@ async function processarFotos() {
   }
   const apiKey = localStorage.getItem('gemini_key') || '';
   if (!apiKey) {
-    alert('Configure a chave Gemini em ⚙️ Config.'); return;
+    alert('Configure a chave Gemini em  Config.'); return;
   }
 
   // Show overlay
   btn.disabled = true;
-  btn.textContent = '⏳ Processando...';
+  btn.textContent = ' Processando...';
   overlay.classList.add('show');
   document.getElementById('importResult').style.display = 'none';
 
@@ -1444,10 +1461,10 @@ Retorne APENAS o JSON com os dados reais. Sem markdown, sem explicações.`;
     document.getElementById('importStatus').classList.remove('show');
     wrap.innerHTML = `
       <div style="background:var(--green-bg);border-radius:12px;padding:12px;margin-bottom:10px;">
-        <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:8px;">✓ Gemini leu as fotos (${secs}s) — confirme antes de importar</div>
-        ${info.semana ? `<div class="muted" style="margin-bottom:3px;">📅 Semana: <b>${esc(info.semana)}</b> · Região: <b>${esc(info.regiao||'—')}</b></div>` : ''}
-        <div class="muted" style="margin-bottom:3px;">💰 Total: <b>${brl(info.totalGeral||totalVendido)}</b> · Débitos: <b>${brl(info.totalDebitos||0)}</b></div>
-        <div class="muted" style="margin-bottom:3px;">✅ Acertos: <b>${(info.acertosRegiao||0)+(info.acertosOutras||0)}</b> · ✨ Novas: <b>${(info.novasRegiao||0)+(info.novasOutras||0)}</b></div>
+        <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:8px;">Dados extraídos (${secs}s) — confirme antes de importar</div>
+        ${info.semana ? `<div class="muted" style="margin-bottom:3px;"> Semana: <b>${esc(info.semana)}</b> · Região: <b>${esc(info.regiao||'—')}</b></div>` : ''}
+        <div class="muted" style="margin-bottom:3px;"> Total: <b>${brl(info.totalGeral||totalVendido)}</b> · Débitos: <b>${brl(info.totalDebitos||0)}</b></div>
+        <div class="muted" style="margin-bottom:3px;"> Acertos: <b>${(info.acertosRegiao||0)+(info.acertosOutras||0)}</b> ·  Novas: <b>${(info.novasRegiao||0)+(info.novasOutras||0)}</b></div>
       </div>
       ${entradas.length ? `
         <div style="font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px;">${entradas.length} consultora(s) — toque no nome para editar</div>
@@ -1456,18 +1473,18 @@ Retorne APENAS o JSON com os dados reais. Sem markdown, sem explicações.`;
             <input id="prev-nome-${i}" value="${esc(e.nome)}"
               style="font-weight:700;font-size:14px;padding:6px 10px;border:1.5px solid #e3e3e8;border-radius:8px;width:100%;"
               oninput="previewEntradas[${i}].nome=this.value">
-            ${e.data ? `<div style="font-size:11px;color:var(--gray);">📅 ${esc(e.data)}${e.semanaCobranca?' · Sem.cob: '+esc(e.semanaCobranca):''}</div>` : ''}
+            ${e.data ? `<div style="font-size:11px;color:var(--gray);"> ${esc(e.data)}${e.semanaCobranca?' · Sem.cob: '+esc(e.semanaCobranca):''}</div>` : ''}
             <div style="display:flex;gap:12px;font-size:12px;flex-wrap:wrap;">
-              <span>💰 <b style="color:var(--green);">${brl(e.pago)}</b></span>
+              <span> <b style="color:var(--green);">${brl(e.pago)}</b></span>
               <span>📋 <b style="color:${e.saldo==='Quitada'?'var(--green)':'var(--red)'};">${esc(e.saldo)}</b></span>
-              ${e.notaNova ? `<span>🆕 <b style="color:var(--rose);">${brl(e.notaNova)}</b></span>` : ''}
+              ${e.notaNova ? `<span> <b style="color:var(--rose);">${brl(e.notaNova)}</b></span>` : ''}
               ${e.vendido ? `<span>📦 <b style="color:var(--blue);">${brl(e.vendido)}</b></span>` : ''}
             </div>
           </div>`).join('')}
       ` : '<div class="muted">Nenhuma consultora encontrada nas fotos.</div>'}
       <div class="btn-row" style="margin-top:14px;">
         <button class="btn secondary" onclick="document.getElementById('importResult').style.display='none'">Cancelar</button>
-        <button class="btn" onclick="confirmarImport()">✓ Importar semana</button>
+        <button class="btn" onclick="confirmarImport()">Importar semana</button>
       </div>
     `;
   } catch(e) {
@@ -1475,7 +1492,7 @@ Retorne APENAS o JSON com os dados reais. Sem markdown, sem explicações.`;
     const wrap = document.getElementById('importResult');
     wrap.style.display = 'block';
     wrap.innerHTML = `<div style="background:var(--red-bg);border-radius:12px;padding:14px;color:var(--red);">
-      <b>⚠️ Erro (${secs}s):</b><br><span style="font-size:13px;">${esc(e?.message||String(e))}</span>
+      <b> Erro (${secs}s):</b><br><span style="font-size:13px;">${esc(e?.message||String(e))}</span>
     </div>`;
   } finally {
     clearInterval(timer);
@@ -1572,11 +1589,13 @@ function renderAssist() {
   if (!chat) return;
   if (assistHistory.length === 0) {
     chat.innerHTML =
-      '<div style="text-align:center;padding:20px 12px;">' +
-        '<div style="background:rgba(255,255,255,.9);border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.1);">' +
-          '<div style="font-size:13px;color:#555;line-height:1.7;">👋 Oi! Sou sua assistente de gestao e vendas.<br>Posso gerar relatorios e te dar dicas praticas para aumentar sua cobranca!</div>' +
+      '<div style="padding:16px 4px 8px;">' +
+        '<div style="background:white;border-radius:16px;padding:18px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.06),0 0 0 1px rgba(0,0,0,.05);">' +
+          '<div style="font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;">Assistente de Gestão</div>' +
+          '<div style="font-size:14px;color:var(--ink);line-height:1.65;">Posso analisar seus dados, gerar relatorios e orientar suas estrategias de venda.</div>' +
         '</div>' +
-        '<div class="suggest-row" style="justify-content:center;">' +
+        '<div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px;">Sugestoes</div>' +
+        '<div class="suggest-row">' +
           SUGESTOES.map(function(s) {
             return '<button class="suggest-chip" onclick="usarSugestao(\'' + s.replace(/'/g, "\\'") + '\')">' + s + '</button>';
           }).join('') +
@@ -1714,7 +1733,7 @@ renderHome();
 </script>
 <!-- LOADING OVERLAY -->
 <div id="loadingOverlay">
-  <div style="font-size:48px;margin-bottom:8px;">🤖</div>
+  <div style="font-size:48px;margin-bottom:8px;"></div>
   <div id="overlayTimer">0s</div>
   <div id="overlayStatus">Enviando para o Gemini...</div>
   <div id="overlayStep">Analisando as 3 fotos com IA</div>
