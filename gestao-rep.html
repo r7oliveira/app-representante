@@ -946,7 +946,7 @@ async function imageToBase64(file) {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
-      const MAX = 1600;
+      const MAX = 1024;
       let w = img.width, h = img.height;
       if (w > MAX || h > MAX) {
         if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -958,7 +958,7 @@ async function imageToBase64(file) {
       URL.revokeObjectURL(url);
       try {
         // toDataURL é confiável no iOS (toBlob pode retornar null)
-        resolve(cv.toDataURL('image/jpeg', 0.85).split(',')[1]);
+        resolve(cv.toDataURL('image/jpeg', 0.70).split(',')[1]);
       } catch(e) {
         const r = new FileReader();
         r.onload  = () => resolve(r.result.split(',')[1]);
@@ -1165,7 +1165,7 @@ Retorne APENAS o JSON com os dados reais. Sem markdown, sem explicações.`;
     overlayStatus.textContent = 'Aguardando resposta do Gemini...';
 
     const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 50000);
+    const t = setTimeout(() => ctrl.abort(), 90000);
     // Auth keys (AQ.) use x-goog-api-key header; standard keys (AIza) also work with it
     const resp = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent`,
