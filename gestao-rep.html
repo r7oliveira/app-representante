@@ -809,7 +809,7 @@ function renderPainel() {
       <div class="kpi full">
         <div class="lbl">💰 Cobrança da semana</div>
         <div class="val pink">${brl(t.vendido)}</div>
-        <div class="sub" style="margin-top:4px;">🆕 Notas novas distribuídas: ${brl(t.notasNovas)}</div>
+
         ${sem.nota?`<div class="sub" style="font-style:italic;margin-top:6px;">"${esc(sem.nota)}"</div>`:''}
       </div>
       <div class="kpi">
@@ -817,11 +817,7 @@ function renderPainel() {
         <div class="val green">${brl(t.pago)}</div>
         <div class="sub">${pctCob}% do vendido</div>
       </div>
-      <div class="kpi">
-        <div class="lbl">⚠️ Inadimplência</div>
-        <div class="val red">${brl(t.inadimplencia)}</div>
-        <div class="sub">${pctInad}% do vendido</div>
-      </div>
+
     </div>
 
     <!-- 4+5: Consultoras -->
@@ -1057,7 +1053,7 @@ function mergeData(cobranca, notas) {
   notas.forEach(n => {
     const k = normN(n.nome||'');
     if (!k) return;
-    map[k] = { nome:(n.nome||'').toUpperCase(), data:n.data||'', semanaCobranca:n.semanaCobranca||'', pago:0, saldo:'—', saldoValor:0, notaNova:0, vendido:n.vendido||0, forma:'pix' };
+    map[k] = { nome:(n.nome||'').toUpperCase(), data:n.data||'', semanaCobranca:n.semanaCobranca||'', pago:0, saldo:'—', saldoValor:0, notaNova:n.vendido||0, vendido:0, forma:'pix' };
   });
   cobranca.forEach(c => {
     const k = normN(c.nome||'');
@@ -1069,9 +1065,9 @@ function mergeData(cobranca, notas) {
       map[k].pago = c.pago||0;
       map[k].saldo = saldoLabel; map[k].saldoValor = saldoVal;
       map[k].notaNova = c.notaNova||0;
-      if (!map[k].vendido) map[k].vendido = c.notaNova||0;
+      if (!map[k].vendido) map[k].vendido = c.pago||0;
     } else {
-      map[k] = { nome:(c.nome||'').toUpperCase(), data:c.data||'', semanaCobranca:'', pago:c.pago||0, saldo:saldoLabel, saldoValor:saldoVal, notaNova:c.notaNova||0, vendido:c.notaNova||0, forma:'pix' };
+      map[k] = { nome:(c.nome||'').toUpperCase(), data:c.data||'', semanaCobranca:'', pago:c.pago||0, saldo:saldoLabel, saldoValor:saldoVal, notaNova:c.notaNova||0, vendido:c.pago||0, forma:'pix' };
     }
   });
   return Object.values(map).filter(e => e.nome);
@@ -1284,7 +1280,7 @@ function confirmarImport(dataStr) {
   // Map entradas to consultora IDs
   const entrsFinal = entradas.map(e => {
     const c = reg ? reg.consultoras.find(c=>normN(c.nome)===normN(e.nome)) : null;
-    return {consId: c?.id||uid(), nome: e.nome, vendido: e.vendido||0, pagoPix: e.pago||0, pagoDinheiro: 0, notaNova: e.notaNova||0, data: e.data||'', semanaCobranca: e.semanaCobranca||'', saldo: e.saldo||'—'};
+    return {consId: c?.id||uid(), nome: e.nome, vendido: e.pago||0, pagoPix: e.pago||0, pagoDinheiro: 0, notaNova: e.notaNova||0, data: e.data||'', semanaCobranca: e.semanaCobranca||'', saldo: e.saldo||'—'};
   });
 
   const sem = {
@@ -1293,8 +1289,8 @@ function confirmarImport(dataStr) {
     entradas: entrsFinal,
     // campos do sistema (foto 1)
     meta: 0, caixa: 0,
-    ativas: info.acertos||entradas.length,
-    novas: info.novas||0,
+    ativas: (info.acertosRegiao||0)+(info.acertosOutras||0)||entradas.length,
+    novas: (info.novasRegiao||0)+(info.novasOutras||0),
     nota: '',
     totalGeral:      info.totalGeral||0,
     totalDebitos:    info.totalDebitos||0,
