@@ -612,20 +612,17 @@ function novaSemana() {
 }
 
 function calcTotais(sem) {
-  let vendido=0, pago=0, pix=0, dinheiro=0, inadimplencia=0, notasNovas=0;
+  let cobranca=0, pagoPix=0, pagoDinheiro=0, notasNovas=0, inadimplencia=0;
   sem.entradas.forEach(e => {
-    vendido      += e.vendido||0;
-    notasNovas   += e.notaNova||0;
-    const pagoPix = e.pagoPix||0;
-    const pagoDin = e.pagoDinheiro||0;
-    const totalPago = pagoPix + pagoDin;
-    pago      += totalPago;
-    pix       += pagoPix;
-    dinheiro  += pagoDin;
-    inadimplencia += Math.max(0, (e.vendido||0) - totalPago);
+    cobranca    += e.vendido||0;          // valor cobrado desta semana (coluna Valor)
+    notasNovas  += e.notaNova||0;         // kit novo distribuído
+    pagoPix     += e.pagoPix||0;
+    pagoDinheiro+= e.pagoDinheiro||0;
+    inadimplencia += Math.max(0, (e.vendido||0) - (e.pagoPix||0) - (e.pagoDinheiro||0));
   });
-  const ticket = sem.ativas > 0 ? vendido/sem.ativas : (sem.entradas.length>0 ? vendido/sem.entradas.length : 0);
-  return { vendido, pago, pix, dinheiro, inadimplencia, ticket, notasNovas, n: sem.entradas.length };
+  const totalPago = pagoPix + pagoDinheiro;
+  const ticket = sem.ativas > 0 ? cobranca/sem.ativas : (sem.entradas.length>0 ? cobranca/sem.entradas.length : 0);
+  return { vendido: cobranca, pago: totalPago, pix: pagoPix, dinheiro: pagoDinheiro, inadimplencia, ticket, notasNovas, n: sem.entradas.length };
 }
 
 function renderSemanaView() {
@@ -645,7 +642,7 @@ function renderSemanaView() {
       <button class="btn small danger" onclick="delSemana()">Excluir</button>
     </div>
     <div class="kpi-grid" style="margin-bottom:0;">
-      <div class="kpi"><div class="lbl">Vendido</div><div class="val pink" style="font-size:17px;">${brl(t.vendido)}</div></div>
+      <div class="kpi"><div class="lbl">Cobrança</div><div class="val pink" style="font-size:17px;">${brl(t.vendido)}</div></div>
       <div class="kpi"><div class="lbl">Recebido</div><div class="val green" style="font-size:17px;">${brl(t.pago)}</div></div>
     </div>`;
 
@@ -810,8 +807,9 @@ function renderPainel() {
     <!-- 1+2: Vendas e cobranças -->
     <div class="kpi-grid">
       <div class="kpi full">
-        <div class="lbl">💰 Vendas da semana</div>
+        <div class="lbl">💰 Cobrança da semana</div>
         <div class="val pink">${brl(t.vendido)}</div>
+        <div class="sub" style="margin-top:4px;">🆕 Notas novas distribuídas: ${brl(t.notasNovas)}</div>
         ${sem.nota?`<div class="sub" style="font-style:italic;margin-top:6px;">"${esc(sem.nota)}"</div>`:''}
       </div>
       <div class="kpi">
