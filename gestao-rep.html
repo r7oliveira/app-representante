@@ -1680,7 +1680,7 @@ async function enviarAssist() {
   }
 
   try {
-    var data = await geminiCall(apiKey, {contents: messages, generationConfig: {temperature: 0.5, maxOutputTokens: 2000}});
+    var data = await geminiCall(apiKey, {contents: messages, generationConfig: {temperature: 0.5, maxOutputTokens: 4000}});
     var resposta = data.candidates && data.candidates[0] && data.candidates[0].content &&
       data.candidates[0].content.parts && data.candidates[0].content.parts[0] ?
       data.candidates[0].content.parts[0].text : 'Nao obtive resposta.';
