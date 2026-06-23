@@ -718,6 +718,9 @@ async function extractFromPhoto(input) {
     }, 30000);
 
     let raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
+    // Show raw response in msg for debugging
+    msg.textContent = 'IA respondeu: ' + raw.substring(0,200);
+    msg.style.color = 'var(--ink-3)'; msg.style.display = 'block';
     let parsed;
     try {
       parsed = JSON.parse(raw);
@@ -1419,6 +1422,9 @@ Retorne APENAS o JSON com os dados reais. Sem markdown, sem explicações.`;
 
     overlayStatus.textContent = 'Lendo resposta...';
     let raw = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').replace(/```json|```/g,'').trim();
+    // Show raw response in msg for debugging
+    msg.textContent = 'IA respondeu: ' + raw.substring(0,200);
+    msg.style.color = 'var(--ink-3)'; msg.style.display = 'block';
     let parsed;
     try {
       parsed = JSON.parse(raw);
