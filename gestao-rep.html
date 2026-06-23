@@ -81,7 +81,7 @@
     /* ── VIEWS ── */
     .view { display: none; flex: 1; }
     .view.active { display: flex; flex-direction: column; }
-    .scroll-body { flex: 1; overflow-y: auto; padding: 0 16px 100px; }
+    .scroll-body { padding: 0 16px 100px; }
 
     /* ── HOME HERO ── */
     .home-hero {
@@ -363,7 +363,7 @@
 
 
   <!-- ══════════ HOME ══════════ -->
-  <div class="view active" id="view-home" style="flex-direction:column;">
+  <div class="view active" id="view-home" style="flex-direction:column;overflow-y:auto;">
     <div class="home-hero">
       <div class="hero-eyebrow">Representante</div>
       <div class="hero-greeting">Gestão Romance</div>
@@ -404,7 +404,7 @@
   </div>
 
   <!-- ══════════ PAINEL ══════════ -->
-  <div class="view" id="view-painel" style="flex-direction:column;">
+  <div class="view" id="view-painel" style="flex-direction:column;overflow-y:auto;">
     <div class="page-header">
       <div class="ph-title">Painel</div>
       <div class="ph-sub">Indicadores e performance</div>
@@ -419,7 +419,7 @@
   </div>
 
   <!-- ══════════ SEMANA / LANÇAMENTOS ══════════ -->
-  <div class="view" id="view-semana" style="flex-direction:column;">
+  <div class="view" id="view-semana" style="flex-direction:column;overflow-y:auto;">
     <div class="page-header"><div class="ph-title">Semana</div><div class="ph-sub">Lançamentos e importação</div></div>
 
     <!-- IMPORTAR DO SISTEMA -->
@@ -494,7 +494,7 @@
   </div>
 
   <!-- ══════════ CONFIG / METAS ══════════ -->
-  <div class="view" id="view-config" style="flex-direction:column;">
+  <div class="view" id="view-config" style="flex-direction:column;overflow-y:auto;">
     <div class="page-header"><div class="ph-title">Configurações</div><div class="ph-sub">Metas, caixa e chave IA</div></div>
     <div class="week-bar">
       <select class="weeksel" id="selConfig" onchange="renderConfig()"></select>
@@ -1156,7 +1156,7 @@ function renderPainel() {
 
     <!-- 7: Top 10 consultoras — vindas dos lançamentos -->
     <div class="card">
-      <div class="card-title">🏆 Top consultoras — semana ${esc(sem.nome)}</div>
+      <div class="card-title">Top consultoras — semana ${esc(sem.nome)}</div>
       ${top10.length ? top10.map((e,i) => `
         <div class="rank-row">
           <div class="pos ${posCls[i]||''}">${i+1}</div>
