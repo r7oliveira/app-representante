@@ -287,10 +287,11 @@
 
     /* ── CHAT WHATSAPP ── */
     #view-assist { overflow: hidden; }
-    #view-assist.active { display: flex !important; flex-direction: column; position: fixed; inset: 0; z-index: 50; background: #F7F5F3; }
-    #view-assist .assist-header { flex-shrink: 0; }
-    #view-assist .wa-body { flex: 1; min-height: 0; overflow-y: auto; }
-    #view-assist .wa-footer { flex-shrink: 0; }
+    #view-assist.active { display: block !important; position: fixed; inset: 0; z-index: 50; }
+    .assist-wrap { display: flex; flex-direction: column; height: 100%; width: 100%; }
+    .assist-wrap .assist-header { flex-shrink: 0; }
+    .assist-wrap .wa-body { flex: 1; min-height: 0; overflow-y: auto; }
+    .assist-wrap .wa-footer { flex-shrink: 0; padding-bottom: env(safe-area-inset-bottom, 8px); }
     .assist-header { background: var(--rose-deep); padding: 52px 16px 16px; flex-shrink: 0; }
     .assist-header-inner { display: flex; align-items: center; gap: 12px; }
     .assist-avatar { width: 42px; height: 42px; border-radius: 14px; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; letter-spacing: .5px; flex-shrink: 0; }
@@ -502,28 +503,30 @@
 
   <!-- ══════════ ASSISTENTE IA ══════════ -->
   <div class="view" id="view-assist">
-    <!-- Header -->
-    <div class="assist-header">
-      <div class="assist-header-inner">
-        <button onclick="switchTab('home')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:white;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <div class="assist-avatar">IA</div>
-        <div>
-          <div class="assist-name">Assistente de Gestão</div>
-          <div class="assist-status" id="assistStatus">disponível</div>
+    <div class="assist-wrap">
+      <!-- Header -->
+      <div class="assist-header">
+        <div class="assist-header-inner">
+          <button onclick="switchTab('home')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:white;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <div class="assist-avatar">IA</div>
+          <div>
+            <div class="assist-name">Assistente de Gestão</div>
+            <div class="assist-status" id="assistStatus">disponível</div>
+          </div>
+          <button onclick="limparChat()" class="assist-clear-btn">Limpar</button>
         </div>
-        <button onclick="limparChat()" class="assist-clear-btn">Limpar</button>
       </div>
-    </div>
-    <!-- Chat body -->
-    <div class="wa-body" id="assistChat"></div>
-    <!-- Input bar -->
-    <div class="wa-footer">
-      <input id="assistInput" class="wa-input" placeholder="Digite sua pergunta..." onkeydown="if(event.key==='Enter')enviarAssist()">
-      <button class="wa-send" id="assistBtn" onclick="enviarAssist()">
-        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-      </button>
+      <!-- Chat body -->
+      <div class="wa-body" id="assistChat"></div>
+      <!-- Input bar - LAST so it stays at bottom -->
+      <div class="wa-footer">
+        <input id="assistInput" class="wa-input" placeholder="Digite sua pergunta..." onkeydown="if(event.key==='Enter')enviarAssist()">
+        <button class="wa-send" id="assistBtn" onclick="enviarAssist()">
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 
