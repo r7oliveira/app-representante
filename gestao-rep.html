@@ -61,6 +61,8 @@
       z-index: 100;
       padding-bottom: env(safe-area-inset-bottom, 0px);
     }
+    #view-assist.active ~ .bottom-nav,
+    body:has(#view-assist.active) .bottom-nav { display: none !important; }
     .nav-item {
       flex: 1; display: flex; flex-direction: column; align-items: center;
       justify-content: center; gap: 4px;
@@ -285,7 +287,10 @@
 
     /* ── CHAT WHATSAPP ── */
     #view-assist { overflow: hidden; }
-    #view-assist.active { display: flex !important; flex-direction: column; height: calc(100dvh - 65px); max-height: calc(100dvh - 65px); }
+    #view-assist.active { display: flex !important; flex-direction: column; height: 100dvh; max-height: 100dvh; }
+    @supports (height: 100svh) {
+      #view-assist.active { height: 100svh; max-height: 100svh; }
+    }
     .assist-header { background: var(--rose-deep); padding: 52px 16px 16px; flex-shrink: 0; }
     .assist-header-inner { display: flex; align-items: center; gap: 12px; }
     .assist-avatar { width: 42px; height: 42px; border-radius: 14px; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: white; letter-spacing: .5px; flex-shrink: 0; }
@@ -300,7 +305,7 @@
     .chat-msg.ia .bubble { background: white; color: var(--ink); padding: 10px 13px; border-radius: 16px 16px 16px 4px; font-size: 13px; max-width: 88%; line-height: 1.7; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
     .chat-msg.ia .bubble b { color: var(--rose-deep); }
     .chat-msg .ts { font-size: 10px; color: var(--ink-3); margin-top: 3px; padding: 0 4px; }
-    .wa-footer { background: white; padding: 10px 12px 10px; display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--surface-2); flex-shrink: 0; }
+    .wa-footer { background: white; padding: 10px 12px 10px; display: flex; gap: 8px; align-items: center; border-top: 1px solid var(--surface-2); flex-shrink: 0; position: sticky; bottom: 0; z-index: 10; }
     .wa-input { flex: 1; padding: 11px 14px; font-size: 14px; font-family: inherit; border: 1.5px solid var(--surface-2); border-radius: 22px; background: var(--surface); color: var(--ink); outline: none; }
     .wa-input:focus { border-color: var(--rose); }
     .wa-send { width: 44px; height: 44px; border-radius: 50%; background: var(--rose); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(200,24,90,.3); }
@@ -500,6 +505,9 @@
     <!-- Header -->
     <div class="assist-header">
       <div class="assist-header-inner">
+        <button onclick="switchTab('home')" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:white;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
         <div class="assist-avatar">IA</div>
         <div>
           <div class="assist-name">Assistente de Gestão</div>
@@ -590,7 +598,8 @@ function switchTab(v) {
   if (v==='semana')  renderSemanaView();
   if (v==='regioes') renderRegioes();
   if (v==='config')  renderConfig();
-  if (v==='assist')  renderAssist();
+  if (v==='assist')  { renderAssist(); document.querySelector('.bottom-nav').style.display = 'none'; }
+  else { document.querySelector('.bottom-nav').style.display = ''; }
 }
 
 function refreshSelects() {
@@ -1721,7 +1730,8 @@ async function enviarAssist() {
 const MODELS = [
   'gemini-2.5-flash',
   'gemini-2.0-flash',
-  'gemini-1.5-flash'
+  'gemini-1.5-flash',
+  'gemini-2.0-flash-lite'
 ];
 
 async function geminiCall(apiKey, body, timeout) {
@@ -1740,7 +1750,7 @@ async function geminiCall(apiKey, body, timeout) {
       if (data.error) {
         var msg = data.error.message || '';
         // Try next model if overloaded or not found
-        if (msg.indexOf('high demand') !== -1 || msg.indexOf('RESOURCE_EXHAUSTED') !== -1 || msg.indexOf('not found') !== -1 || msg.indexOf('quota') !== -1) {
+        if (msg.indexOf('high demand') !== -1 || msg.indexOf('RESOURCE_EXHAUSTED') !== -1 || msg.indexOf('not found') !== -1 || msg.indexOf('quota') !== -1 || msg.indexOf('overloaded') !== -1 || msg.indexOf('503') !== -1 || msg.indexOf('429') !== -1) {
           continue;
         }
         throw new Error(msg);
@@ -1748,9 +1758,10 @@ async function geminiCall(apiKey, body, timeout) {
       return data;
     } catch(e) {
       clearTimeout(t);
-      if (e.name === 'AbortError') throw new Error('Tempo limite excedido. Tente novamente.');
+      if (e.name === 'AbortError') { if (i === MODELS.length - 1) throw new Error('Tempo limite excedido.'); continue; }
       if (i === MODELS.length - 1) throw e;
-      // else try next model
+      // else try next model after short delay
+      await new Promise(function(r){ setTimeout(r, 1000); });
     }
   }
   throw new Error('Todos os modelos indisponíveis. Tente em alguns minutos.');
