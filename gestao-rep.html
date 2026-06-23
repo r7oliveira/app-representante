@@ -704,12 +704,10 @@ async function extractFromPhoto(input) {
       reader.readAsDataURL(file);
     });
 
-    const prompt = 'Extraia os dados desta imagem de cadastro. ' +
-      'Retorne EXATAMENTE este JSON preenchido, sem mais nada: ' +
-      '{"nome":"NOME COMPLETO EM MAIUSCULO","telefone":"numero do telefone","cpf":"numero do cpf","aniversario":"DD/MM/AAAA","bairro":"nome do bairro","cidade":"nome da cidade"}. ' +
-      'Use os rotulos: Nome, CPF, Data de nascimento, Bairro, Telefone, Cidade/Municipio. ' +
-      'Para cidade: se aparecer "Cidade/RS" extraia so o nome da cidade. ' +
-      'Se um campo nao existir na imagem deixe string vazia. Retorne APENAS o JSON.';
+    const prompt = 'Leia esta imagem e me diga o nome completo da pessoa, CPF, data de nascimento, telefone, bairro e cidade. ' +
+      'Responda APENAS com JSON neste formato exato (sem texto, sem markdown): ' +
+      '{"nome":"","cpf":"","aniversario":"","telefone":"","bairro":"","cidade":""}. ' +
+      'Exemplo de resposta correta: {"nome":"MARIA SILVA","cpf":"123.456.789-00","aniversario":"15/03/1990","telefone":"51999887766","bairro":"Centro","cidade":"Gramado"}.';
 
     const data = await geminiCall(apiKey, {
       contents: [{parts: [
