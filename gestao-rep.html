@@ -61,8 +61,8 @@
 
     /* ── BOTTOM NAV ── */
     .bottom-nav {
-      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-      width: 100%; max-width: 480px;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      width: 100%; max-width: 480px; margin: 0 auto;
       background: rgba(255,255,255,0.92);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -105,14 +105,14 @@
     .home-hero::before {
       content: '';
       position: absolute; top: -80px; right: -60px;
-      width: 280px; height: 280px;
+      width: min(280px, 80vw); height: min(280px, 80vw);
       border-radius: 50%;
       background: radial-gradient(circle, rgba(255,255,255,.08) 0%, transparent 70%);
     }
     .home-hero::after {
       content: '';
       position: absolute; bottom: -40px; left: -40px;
-      width: 200px; height: 200px;
+      width: min(200px, 60vw); height: min(200px, 60vw);
       border-radius: 50%;
       background: radial-gradient(circle, rgba(255,255,255,.05) 0%, transparent 70%);
     }
@@ -142,7 +142,7 @@
     .hero-stat .hs-val { font-size: 22px; font-weight: 800; color: white; line-height: 1; }
     .hero-stat .hs-sub { font-size: 9px; color: rgba(255,255,255,.35); margin-top: 3px; }
     /* ── QUICK ACTIONS horizontal scroll ── */
-    .quick-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 0 0 8px; scrollbar-width: none; -ms-overflow-style: none; }
+    .quick-scroll { display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; padding: 0 0 8px; scrollbar-width: none; -ms-overflow-style: none; overscroll-behavior-x: contain; }
     .quick-scroll::-webkit-scrollbar { display: none; }
     .quick-chip { flex-shrink: 0; background: var(--white); border: 1px solid rgba(0,0,0,.06); border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; font-family: inherit; min-width: 130px; box-shadow: 0 2px 8px rgba(0,0,0,.06); transition: transform .12s; }
     .quick-chip:active { transform: scale(.96); }
