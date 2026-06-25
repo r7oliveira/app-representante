@@ -38,7 +38,9 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-    html, body { height: 100%; overflow-x: hidden; }
+    html, body { height: 100%; overflow-x: hidden; touch-action: pan-y; }
+    * { touch-action: pan-y; }
+    input, textarea { touch-action: auto; }
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--surface);
