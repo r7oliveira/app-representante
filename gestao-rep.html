@@ -1893,5 +1893,27 @@ renderHome();
   <div id="overlayStatus">Enviando para o Gemini...</div>
   <div id="overlayStep">Analisando as 3 fotos com IA</div>
 </div>
+
+<script>
+// Bloqueia scroll horizontal em todo o app
+(function() {
+  var startX = 0;
+  var startY = 0;
+  
+  document.addEventListener('touchstart', function(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    var dx = Math.abs(e.touches[0].clientX - startX);
+    var dy = Math.abs(e.touches[0].clientY - startY);
+    // Se movimento horizontal for maior que vertical, bloqueia
+    if (dx > dy) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+})();
+</script>
 </body>
 </html>
