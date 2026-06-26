@@ -687,44 +687,16 @@ function switchTab(v) {
     renderAssist();
     document.querySelector('.bottom-nav').style.display = 'none';
 
-    // Lock assist height to screen size, move footer above keyboard
+    // Scroll chat to bottom when keyboard opens
     var assistInput = document.getElementById('assistInput');
-
-    function onFocus() {
-      // Give keyboard time to open, then reposition footer
-      setTimeout(function() {
-        var footer = document.querySelector('.wa-footer');
-        var chat = document.getElementById('assistChat');
-        if (!footer) return;
-        if (window.visualViewport) {
-          var kbTop = window.visualViewport.height + window.visualViewport.offsetTop;
-          footer.style.position = 'fixed';
-          footer.style.bottom = (window.innerHeight - kbTop) + 'px';
-          footer.style.left = '0';
-          footer.style.right = '0';
-          footer.style.zIndex = '999';
-          // Shrink chat to not go behind footer
-          if (chat) chat.style.paddingBottom = footer.offsetHeight + 'px';
-        }
-        if (chat) chat.scrollTop = chat.scrollHeight;
-      }, 350);
-    }
-
-    function onBlur() {
-      var footer = document.querySelector('.wa-footer');
-      var chat = document.getElementById('assistChat');
-      if (footer) {
-        footer.style.position = '';
-        footer.style.bottom = '';
-        footer.style.left = '';
-        footer.style.right = '';
-      }
-      if (chat) chat.style.paddingBottom = '';
-    }
-
     if (assistInput) {
-      assistInput.addEventListener('focus', onFocus);
-      assistInput.addEventListener('blur', onBlur);
+      assistInput.addEventListener('focus', function() {
+        setTimeout(function() {
+          var chat = document.getElementById('assistChat');
+          if (chat) chat.scrollTop = chat.scrollHeight;
+          assistInput.scrollIntoView({ block: 'end', behavior: 'smooth' });
+        }, 400);
+      });
     }
     setTimeout(function() {
       var inp = document.getElementById('assistInput');
@@ -738,10 +710,7 @@ function switchTab(v) {
   } else {
     document.querySelector('.bottom-nav').style.display = '';
     // Remove viewport listeners
-    var inp = document.getElementById('assistInput');
-    if (inp) { inp.removeEventListener('focus', onFocus); inp.removeEventListener('blur', onBlur); }
-    var footer = document.querySelector('.wa-footer');
-    if (footer) { footer.style.position = ''; footer.style.bottom = ''; footer.style.left = ''; footer.style.right = ''; }
+    // cleanup
   }
 }
 
