@@ -690,12 +690,13 @@ function switchTab(v) {
     // Scroll chat to bottom when keyboard opens
     var assistInput = document.getElementById('assistInput');
     if (assistInput) {
-      assistInput.addEventListener('focus', function() {
+      assistInput.addEventListener('focus', function(e) {
+        // Prevent iOS from scrolling the page when keyboard opens
+        e.preventDefault();
         setTimeout(function() {
-          var chat = document.getElementById('assistChat');
-          if (chat) chat.scrollTop = chat.scrollHeight;
-          assistInput.scrollIntoView({ block: 'end', behavior: 'smooth' });
-        }, 400);
+          // Keep scroll position stable
+          window.scrollTo(0, 0);
+        }, 50);
       });
     }
     setTimeout(function() {
