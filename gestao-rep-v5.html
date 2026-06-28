@@ -1519,16 +1519,113 @@ function abrirRegistro(tipo) {
   const cons = sem.consultoras.find(c => c.id === atendConsId);
 
   document.getElementById('modalRegTitulo').textContent = tipo === 'venda' ? 'Venda e Pagamento' : 'Observação';
-  document.getElementById('modalRegConteudo').innerHTML = tipo === 'venda'
-    ? `<label class="field"><span>Valor vendido (R$)</span><input id="regVenda" type="number" inputmode="decimal" placeholder="0,00"></label>
-       <label class="field"><span>Valor recebido (R$)</span><input id="regRecebido" type="number" inputmode="decimal" placeholder="0,00"></label>
-       <div class="btn-row"><button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
-       <button class="btn-primary" style="flex:1;" onclick="salvarRegistroVenda()">Salvar</button></div>`
-    : `<label class="field"><span>Observação</span><textarea id="regObs" rows="4" style="resize:none;border:1.5px solid var(--border);border-radius:12px;padding:12px;font-size:15px;font-family:var(--font);" placeholder="Ex: Prefere visitas pela manhã..."></textarea></label>
-       <div class="btn-row"><button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
-       <button class="btn-primary" style="flex:1;" onclick="salvarRegistroObs()">Salvar</button></div>`;
+
+  if (tipo === 'venda') {
+    document.getElementById('modalRegConteudo').innerHTML = `
+      <label class="field">
+        <span>Valor vendido (R$)</span>
+        <input id="regVenda" type="number" inputmode="decimal" placeholder="0,00"
+          oninput="calcValorPagar()">
+      </label>
+
+      <label class="field">
+        <span>Valor a pagar <span style="color:var(--ink-3);font-weight:500;">(vendido − 10% comissão)</span></span>
+        <input id="regAPagar" type="number" inputmode="decimal" placeholder="0,00"
+          style="background:var(--surface);">
+        <span style="font-size:11px;color:var(--ink-3);margin-top:2px;">Calculado automaticamente · você pode ajustar</span>
+      </label>
+
+      <label class="field">
+        <span>Forma de recebimento</span>
+        <div style="display:flex;gap:8px;margin-top:2px;">
+          <button type="button" id="frmPix" onclick="selecionarForma('pix')"
+            style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
+            💳 Pix
+          </button>
+          <button type="button" id="frmDinheiro" onclick="selecionarForma('dinheiro')"
+            style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
+            💵 Dinheiro
+          </button>
+          <button type="button" id="frmAmbos" onclick="selecionarForma('ambos')"
+            style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
+            🔀 Ambos
+          </button>
+        </div>
+      </label>
+
+      <div id="camposPix" style="display:none;">
+        <label class="field">
+          <span>Valor recebido via Pix (R$)</span>
+          <input id="regPix" type="number" inputmode="decimal" placeholder="0,00">
+        </label>
+      </div>
+
+      <div id="camposDinheiro" style="display:none;">
+        <label class="field">
+          <span>Valor recebido em dinheiro (R$)</span>
+          <input id="regDinheiro" type="number" inputmode="decimal" placeholder="0,00">
+        </label>
+      </div>
+
+      <div id="resumoRecebido" style="display:none;background:var(--green-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Total a receber</div>
+        <div style="font-size:20px;font-weight:800;color:var(--green);" id="resumoTotal">R$ 0</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
+        <button class="btn-primary" style="flex:1;" onclick="salvarRegistroVenda()">Salvar</button>
+      </div>`;
+
+    window._formaRecebimento = null;
+  } else {
+    document.getElementById('modalRegConteudo').innerHTML = `
+      <label class="field">
+        <span>Observação</span>
+        <textarea id="regObs" rows="4"
+          style="resize:none;border:1.5px solid var(--border);border-radius:12px;padding:12px;font-size:15px;font-family:var(--font);"
+          placeholder="Ex: Prefere visitas pela manhã..."></textarea>
+      </label>
+      <div class="btn-row">
+        <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
+        <button class="btn-primary" style="flex:1;" onclick="salvarRegistroObs()">Salvar</button>
+      </div>`;
+  }
 
   document.getElementById('modalRegistro').classList.add('open');
+}
+
+function calcValorPagar() {
+  const v = parseFloat(document.getElementById('regVenda').value) || 0;
+  const aPagar = Math.round(v * 0.9 * 100) / 100;
+  document.getElementById('regAPagar').value = aPagar > 0 ? aPagar : '';
+  atualizarResumo();
+}
+
+function selecionarForma(forma) {
+  window._formaRecebimento = forma;
+  ['pix','dinheiro','ambos'].forEach(f => {
+    const btn = document.getElementById('frm' + f.charAt(0).toUpperCase() + f.slice(1));
+    if (btn) {
+      btn.style.background = f === forma ? 'var(--rose)' : 'white';
+      btn.style.color = f === forma ? 'white' : 'var(--ink-3)';
+      btn.style.borderColor = f === forma ? 'var(--rose)' : 'var(--border)';
+    }
+  });
+  document.getElementById('camposPix').style.display = (forma === 'pix' || forma === 'ambos') ? '' : 'none';
+  document.getElementById('camposDinheiro').style.display = (forma === 'dinheiro' || forma === 'ambos') ? '' : 'none';
+  atualizarResumo();
+}
+
+function atualizarResumo() {
+  const pix = parseFloat(document.getElementById('regPix')?.value) || 0;
+  const din = parseFloat(document.getElementById('regDinheiro')?.value) || 0;
+  const total = pix + din;
+  const resumo = document.getElementById('resumoRecebido');
+  if (resumo) {
+    resumo.style.display = total > 0 ? '' : 'none';
+    document.getElementById('resumoTotal').textContent = brl(total);
+  }
 }
 
 function salvarRegistroVenda() {
