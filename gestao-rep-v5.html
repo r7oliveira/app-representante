@@ -146,7 +146,7 @@ input,textarea,select{font-family:var(--font);}
 /* ════════════════════════════════════════
    TELA: MODO ATENDIMENTO
 ════════════════════════════════════════ */
-#view-atendimento{z-index:10;}
+#view-atendimento{z-index:100;background:var(--surface);}
 .atend-header{background:#0A2E1A;padding:14px 20px 16px;flex-shrink:0;}
 .atend-back{color:rgba(255,255,255,.55);font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;}
 .atend-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
@@ -180,7 +180,7 @@ input,textarea,select{font-family:var(--font);}
 
 .fav-status{background:white;border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);}
 
-.big-action-green{background:linear-gradient(135deg,#0A2E1A,#0D9E6E);color:white;border-radius:20px;padding:18px 20px;display:flex;align-items:center;gap:14px;width:100%;text-align:left;}
+.big-action-green{background:linear-gradient(135deg,#0A2E1A,#0D9E6E);color:white;border-radius:20px;padding:18px 20px;display:flex;align-items:center;gap:14px;width:100%;text-align:left;overflow:hidden;}
 .big-action-white{background:white;border:2px solid var(--border);border-radius:20px;padding:18px 20px;display:flex;align-items:center;gap:14px;width:100%;text-align:left;}
 .action-icon{font-size:26px;flex-shrink:0;}
 .action-title{font-size:15px;font-weight:800;margin-bottom:2px;}
@@ -398,7 +398,7 @@ input,textarea,select{font-family:var(--font);}
 <!-- ══════════════════════════════════════════
      TELA 2: MODO ATENDIMENTO
 ══════════════════════════════════════════ -->
-<div class="view" id="view-atendimento" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:10;max-width:480px;margin:0 auto;">
+<div class="view" id="view-atendimento" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;max-width:480px;margin:0 auto;background:var(--surface);display:none;flex-direction:column;">
   <div class="atend-header">
     <button class="atend-back" onclick="fecharAtendimento()">← <span id="atendBreadcrumb">Semana</span></button>
     <div class="atend-top">
@@ -1256,7 +1256,6 @@ function goTo(v) {
     document.getElementById('bottomNav').style.display = 'none';
     return;
   }
-
   // Remove active de todas as views normais
   document.querySelectorAll('.view:not(#view-atendimento):not(#view-assist-new):not(#view-iniciativas)').forEach(el => {
     el.classList.remove('active');
