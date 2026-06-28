@@ -1336,6 +1336,10 @@ function renderSemana() {
     document.getElementById('ctaBtn').textContent = 'Continuar Semana →';
     document.getElementById('ctaBtn').onclick = () => abrirAtendimento(proxima.id);
     document.getElementById('ctaSub').textContent = 'Próxima: ' + proxima.nome + ' · ' + (atendidas+1) + 'ª de ' + total;
+  } else if (total === 0) {
+    document.getElementById('ctaBtn').textContent = '+ Adicionar Consultoras';
+    document.getElementById('ctaBtn').onclick = () => adicionarConsultorasSemana();
+    document.getElementById('ctaSub').textContent = 'Nenhuma consultora nesta semana ainda.';
   } else {
     document.getElementById('ctaBtn').textContent = 'Semana Concluída ✓';
     document.getElementById('ctaBtn').onclick = null;
@@ -1365,6 +1369,31 @@ function renderSemana() {
       + '<div class="c-info"><div class="c-name">' + c.nome + '</div><div class="c-sub">' + sub + '</div></div>'
       + badge + '</div>';
   }).join('') + '<div style="height:16px;"></div>';
+}
+
+function adicionarConsultorasSemana() {
+  const sem = getSemanaAtiva();
+  if (!sem) return;
+  const disponiveis = DB.consultoras.filter(c =>
+    c.regiao === sem.regiao && c.status !== 'inativa'
+  );
+  if (!disponiveis.length) {
+    if (confirm('Nenhuma consultora cadastrada para ' + sem.regiao + '.\nDeseja abrir o cadastro para adicionar?')) {
+      abrirModalConsultora();
+    }
+    return;
+  }
+  const novas = disponiveis.filter(d => !sem.consultoras.find(c => c.id === d.id));
+  if (!novas.length) {
+    alert('Todas as consultoras de ' + sem.regiao + ' já estão na semana.');
+    return;
+  }
+  novas.forEach(c => {
+    sem.consultoras.push({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false});
+  });
+  save();
+  renderSemana();
+  alert('✓ ' + novas.length + ' consultora' + (novas.length>1?'s':'') + ' adicionada' + (novas.length>1?'s':'') + ' à semana.');
 }
 
 /* ════════════════════════════════════════════
@@ -1695,20 +1724,49 @@ function mostrarStep(n) {
 function avancarStep2() {
   if (!criarRegiao) return;
   const ultima = ultimaSemanaRegiao(criarRegiao);
-  const consBase = ultima
+
+  // Busca consultoras: primeiro da região, depois todas ativas como fallback
+  let consBase = ultima
     ? ultima.consultoras.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false}))
     : DB.consultoras.filter(c => c.regiao === criarRegiao && c.status !== 'inativa')
         .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false}));
 
+  // Se não achou pela região, pega todas ativas do cadastro
+  const todasAtivas = DB.consultoras.filter(c => c.status !== 'inativa');
+
   window._criarConsultoras = consBase;
 
   document.getElementById('step2RegiaoTitle').textContent = criarRegiao;
-  document.getElementById('step2Info').textContent = ultima ? 'Mesmas consultoras da Sem ' + ultima.numero : 'Consultoras do Cadastro Mestre';
+  document.getElementById('step2Info').textContent = ultima
+    ? 'Mesmas consultoras da Sem ' + ultima.numero
+    : consBase.length + ' encontradas para esta região';
   document.getElementById('step2Count').textContent = consBase.length + ' carregadas';
 
   const lista = document.getElementById('step2Lista');
-  if (!consBase.length) {
-    lista.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);">Nenhuma consultora cadastrada para esta região.<br>Adicione abaixo.</div>';
+
+  if (!consBase.length && todasAtivas.length > 0) {
+    // Mostra todas as consultoras com checkbox para selecionar
+    lista.innerHTML = `
+      <div style="background:var(--amber-bg);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:13px;color:var(--amber);font-weight:600;">
+        ⚠️ Nenhuma consultora encontrada para ${criarRegiao}. Selecione abaixo quais incluir na semana:
+      </div>
+      <div class="card" id="step2CheckLista">
+        ${todasAtivas.map(c => `
+          <div class="card-row" onclick="toggleConsStep2('${c.id}')" style="cursor:pointer;" id="csrow-${c.id}">
+            <div style="width:22px;height:22px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:white;" id="cschk-${c.id}"></div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;color:var(--ink);">${c.nome}</div>
+              <div style="font-size:11px;color:var(--ink-3);">${c.cidade||''} · ${c.regiao||'sem região'}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="padding:8px 0 4px;">
+        <button onclick="selecionarTodasStep2()" style="color:var(--rose);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;">Selecionar todas</button>
+      </div>`;
+    window._step2Selecionadas = new Set();
+    window._step2Todas = todasAtivas;
+  } else if (!consBase.length) {
+    lista.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);">Nenhuma consultora no Cadastro Mestre ainda.<br>Adicione uma consultora primeiro.</div>';
   } else {
     lista.innerHTML = '<div class="card">' + consBase.slice(0,5).map(c =>
       `<div class="card-row"><div style="width:32px;height:32px;border-radius:50%;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--rose);flex-shrink:0;">${iniciais(c.nome)}</div><div style="flex:1;"><div style="font-size:14px;font-weight:700;color:var(--ink);">${c.nome}</div><div style="font-size:11px;color:var(--ink-3);">${c.cidade||''}</div></div><div class="pill pill-green">Ativa</div></div>`
@@ -1716,6 +1774,43 @@ function avancarStep2() {
   }
 
   mostrarStep(2);
+}
+
+function toggleConsStep2(id) {
+  if (!window._step2Selecionadas) return;
+  const sel = window._step2Selecionadas;
+  const chk = document.getElementById('cschk-' + id);
+  if (sel.has(id)) {
+    sel.delete(id);
+    chk.style.background = 'white';
+    chk.style.borderColor = 'var(--border)';
+    chk.innerHTML = '';
+  } else {
+    sel.add(id);
+    chk.style.background = 'var(--rose)';
+    chk.style.borderColor = 'var(--rose)';
+    chk.innerHTML = '<span style="color:white;font-size:11px;font-weight:800;">✓</span>';
+  }
+  // Atualiza _criarConsultoras com as selecionadas
+  window._criarConsultoras = (window._step2Todas||[])
+    .filter(c => sel.has(c.id))
+    .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false}));
+  document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
+}
+
+function selecionarTodasStep2() {
+  const todas = window._step2Todas || [];
+  window._step2Selecionadas = new Set(todas.map(c => c.id));
+  todas.forEach(c => {
+    const chk = document.getElementById('cschk-' + c.id);
+    if (chk) {
+      chk.style.background = 'var(--rose)';
+      chk.style.borderColor = 'var(--rose)';
+      chk.innerHTML = '<span style="color:white;font-size:11px;font-weight:800;">✓</span>';
+    }
+  });
+  window._criarConsultoras = todas.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false}));
+  document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
 }
 
 function avancarStep3() {
