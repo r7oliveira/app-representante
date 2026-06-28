@@ -35,6 +35,7 @@ input,textarea,select{font-family:var(--font);}
 /* ── VIEWS ── */
 .view{display:none;flex-direction:column;overflow:hidden;position:absolute;top:0;left:0;right:0;bottom:56px;background:var(--surface);}
 .view.active{display:flex;}
+#view-atendimento, #view-assist-new, #view-iniciativas {bottom:0;}
 .scroll-body{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;}
 .scroll-body::-webkit-scrollbar{display:none;}
 
@@ -1569,7 +1570,7 @@ function finalizarAtendimento() {
     abrirAtendimento(proxima.id);
   } else {
     goTo('semana');
-    setTimeout(() => alert('✓ Todas as consultoras foram atendidas esta semana!'), 300);
+    setTimeout(() => mostrarFechamentoSemana(), 300);
   }}
 
 function abrirRegistro(tipo) {
@@ -2671,9 +2672,134 @@ function editarConsultora(id) {
 }
 
 /* ════════════════════════════════════════════
+   FECHAMENTO DA SEMANA
+════════════════════════════════════════════ */
+function mostrarFechamentoSemana() {
+  const sem = getSemanaAtiva();
+  if (!sem) return;
+
+  const vendido  = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
+  const recebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
+  const meta     = sem.meta || 15000;
+  const pct      = Math.min(100, Math.round(vendido/meta*100));
+  const comDebito = sem.consultoras.filter(c => (c.debito||0) > 0 || (c.aPagar||0) > 0);
+  const totalDeb  = comDebito.reduce((a,c) => a+(c.debito||0)+(c.aPagar||0), 0);
+
+  document.getElementById('fechSemanaLabel').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
+  document.getElementById('fechVendido').textContent  = brl(vendido);
+  document.getElementById('fechRecebido').textContent = brl(recebido);
+  document.getElementById('fechMeta').textContent     = pct + '%';
+  document.getElementById('fechDebito').textContent   = brl(totalDeb);
+
+  // Seção de débitos
+  const secDebito = document.getElementById('fechDebitoSection');
+  if (comDebito.length > 0) {
+    secDebito.style.display = '';
+    document.getElementById('fechDebitoLista').innerHTML = comDebito.map(c => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(184,110,0,.1);">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome}</div>
+          <div style="font-size:11px;color:var(--amber);">Débito: ${brl((c.debito||0)+(c.aPagar||0))}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input type="number" inputmode="decimal" placeholder="Valor" id="deb-${c.id}"
+            style="width:90px;padding:7px 10px;border:1.5px solid rgba(184,110,0,.3);border-radius:10px;font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink);outline:none;">
+          <button onclick="registrarPgtoDebito('${c.id}')"
+            style="background:var(--amber);color:white;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">OK</button>
+        </div>
+      </div>`).join('');
+  } else {
+    secDebito.style.display = 'none';
+  }
+
+  document.getElementById('modalFechamento').classList.add('open');
+}
+
+function registrarPgtoDebito(consId) {
+  const sem = getSemanaAtiva();
+  const cons = sem?.consultoras.find(c => c.id === consId);
+  if (!cons) return;
+  const val = parseNum(document.getElementById('deb-' + consId)?.value || '0');
+  if (!val) return;
+  cons.recebido = (cons.recebido||0) + val;
+  cons.ultimoPgto = val;
+  const debAnt = (cons.debito||0) + (cons.aPagar||0);
+  const restante = Math.max(0, debAnt - val);
+  cons.debito = restante;
+  cons.aPagar = 0;
+  save();
+  // Atualiza label
+  const el = document.getElementById('deb-' + consId);
+  if (el) {
+    el.value = '';
+    el.placeholder = '✓ ' + brl(val);
+    el.disabled = true;
+    el.style.opacity = '.5';
+  }
+  // Atualiza total
+  const novoRecebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
+  document.getElementById('fechRecebido').textContent = brl(novoRecebido);
+}
+
+function finalizarSemana() {
+  const sem = getSemanaAtiva();
+  if (!sem) return;
+  sem.status = 'concluida';
+  sem.dataFim = new Date().toISOString();
+  DB.semanaAtiva = null;
+  save();
+  fecharModal('modalFechamento');
+  renderSemana();
+}
+
+/* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
 goTo('semana');
 </script>
+<!-- ══════════════════════════════════════════
+     MODAL: FECHAMENTO DA SEMANA
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalFechamento">
+  <div class="modal-box">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:48px;margin-bottom:8px;">🎉</div>
+      <div style="font-size:22px;font-weight:800;color:var(--ink);">Semana Concluída!</div>
+      <div style="font-size:13px;color:var(--ink-3);font-weight:500;margin-top:4px;" id="fechSemanaLabel">Semana —</div>
+    </div>
+
+    <!-- Resumo -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">
+      <div style="background:var(--green-bg);border-radius:14px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Vendido</div>
+        <div style="font-size:18px;font-weight:800;color:var(--green);" id="fechVendido">R$ 0</div>
+      </div>
+      <div style="background:var(--green-bg);border-radius:14px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Recebido</div>
+        <div style="font-size:18px;font-weight:800;color:var(--green);" id="fechRecebido">R$ 0</div>
+      </div>
+      <div style="background:var(--surface);border-radius:14px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Meta</div>
+        <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fechMeta">0%</div>
+      </div>
+      <div style="background:var(--amber-bg);border-radius:14px;padding:12px;text-align:center;" id="fechDebitoBox">
+        <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Débitos</div>
+        <div style="font-size:18px;font-weight:800;color:var(--amber);" id="fechDebito">R$ 0</div>
+      </div>
+    </div>
+
+    <!-- Registrar débito recebido -->
+    <div id="fechDebitoSection" style="display:none;background:var(--amber-bg);border-radius:14px;padding:14px;margin-bottom:16px;border:1px solid rgba(184,110,0,.15);">
+      <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:10px;">💰 Registrar pagamento de débito</div>
+      <div id="fechDebitoLista"></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="btn-primary" onclick="finalizarSemana()">✓ Finalizar Semana</button>
+      <button class="btn-ghost" onclick="fecharModal('modalFechamento')">Continuar editando</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
