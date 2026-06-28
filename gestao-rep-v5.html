@@ -766,10 +766,25 @@ input,textarea,select{font-family:var(--font);}
           </div>
         </div>
       </div>
-      <div style="padding:16px 16px 80px;display:flex;flex-direction:column;gap:8px;">
-        <button class="btn-primary" style="font-size:16px;padding:18px;" onclick="confirmarCriarSemana()">🚀 Iniciar Semana</button>
+      <div style="padding:16px 16px 4px;">
+        <label style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+          <span style="font-size:12px;font-weight:700;color:var(--ink-3);">Número da semana</span>
+          <input id="step3NumSemana" type="number" inputmode="numeric" min="1" max="999"
+            style="padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:20px;font-weight:800;font-family:var(--font);color:var(--ink);background:white;outline:none;width:100%;"
+            oninput="document.getElementById('step3Title').textContent='Semana '+(this.value||'—')"
+            onfocus="this.style.borderColor='var(--rose)'" onblur="this.style.borderColor='var(--border)'">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+          <span style="font-size:12px;font-weight:700;color:var(--ink-3);">Meta da semana (R$)</span>
+          <input id="step3MetaInput" type="number" inputmode="decimal" min="0"
+            style="padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:18px;font-weight:800;font-family:var(--font);color:var(--ink);background:white;outline:none;width:100%;"
+            oninput="document.getElementById('step3Meta').textContent='R$ '+(parseFloat(this.value)||0).toLocaleString('pt-BR')"
+            onfocus="this.style.borderColor='var(--rose)'" onblur="this.style.borderColor='var(--border)'">
+        </label>
+        <button class="btn-primary" style="font-size:16px;padding:18px;margin-bottom:8px;" onclick="confirmarCriarSemana()">🚀 Iniciar Semana</button>
         <button class="btn-ghost" onclick="voltarStep2()">← Voltar e ajustar</button>
       </div>
+      <div style="height:80px;"></div>
     </div>
   </div>
 </div>
@@ -1819,19 +1834,23 @@ function avancarStep3() {
   document.getElementById('step3Regiao').textContent = criarRegiao;
   document.getElementById('step3Cons').textContent = (window._criarConsultoras||[]).length;
   document.getElementById('step3Data').textContent = new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
-  document.getElementById('step3Meta').textContent = brl(DB.config.metaPadrao||15000);
+  const meta = DB.config.metaPadrao || 15000;
+  document.getElementById('step3Meta').textContent = brl(meta);
+  document.getElementById('step3NumSemana').value = num;
+  document.getElementById('step3MetaInput').value = meta;
   mostrarStep(3);
 }
 
 function voltarStep2() { mostrarStep(2); }
 
 function confirmarCriarSemana() {
-  const num = DB.semanas.length + 1;
+  const numInput = parseInt(document.getElementById('step3NumSemana').value) || (DB.semanas.length + 1);
+  const metaInput = parseNum(document.getElementById('step3MetaInput').value) || DB.config.metaPadrao || 15000;
   const semana = {
     id: uid(),
-    numero: num,
+    numero: numInput,
     regiao: criarRegiao,
-    meta: DB.config.metaPadrao || 15000,
+    meta: metaInput,
     dataInicio: new Date().toISOString(),
     status: 'em_andamento',
     consultoras: (window._criarConsultoras || []).map(c => ({...c, id: c.id || uid()}))
