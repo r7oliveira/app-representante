@@ -1803,17 +1803,27 @@ async function extrairFotoConsultora(input) {
   document.getElementById('consAiLoading').classList.add('show');
   try {
     const b64 = await fileToB64(file);
-    const prompt = 'Extraia os dados desta tela de cadastro de consultora. Retorne APENAS um JSON com os campos: nome, telefone, cpf, dataNascimento, endereco, bairro, cidade, observacoes. Use aspas duplas. Não inclua nada além do JSON.';
+    const prompt = 'Extraia os dados desta tela de cadastro de consultora. Retorne APENAS um JSON com os campos: nome, telefone, cpf, dataNascimento, endereco, bairro, cidade, observacoes. Para telefone: retorne apenas os dígitos a partir do DDD (ex: se aparecer "Vivo - 15 - 51996733861", retorne "51996733861"). Para dataNascimento: formato DD-MM-AAAA. Use aspas duplas. Não inclua nada além do JSON.';
     const resp = await geminiCall(key, {
       contents: [{parts: [{text: prompt},{inlineData:{mimeType:file.type,data:b64}}]}]
     });
     const txt = resp.candidates[0].content.parts[0].text;
     const json = JSON.parse(txt.replace(/```json?/g,'').replace(/```/g,'').trim());
     if (json.nome) document.getElementById('cNome').value = json.nome;
-    if (json.telefone) document.getElementById('cTel').value = json.telefone;
+    if (json.telefone) document.getElementById('cTel').value = fmtTelefone(json.telefone);
     if (json.cpf) document.getElementById('cCpf').value = json.cpf;
     if (json.bairro) document.getElementById('cBairro').value = json.bairro;
     if (json.cidade) document.getElementById('cCidade').value = json.cidade;
+    if (json.dataNascimento) {
+      // Converte DD-MM-AAAA para AAAA-MM-DD (formato do input date)
+      const partes = json.dataNascimento.replace(/\//g,'-').split('-');
+      if (partes.length === 3) {
+        const ano = partes[2].length === 4 ? partes[2] : partes[0];
+        const mes = partes[2].length === 4 ? partes[1] : partes[1];
+        const dia = partes[2].length === 4 ? partes[0] : partes[2];
+        document.getElementById('cAniv').value = ano + '-' + mes + '-' + dia;
+      }
+    }
   } catch(e) {
     alert('Erro ao ler foto: ' + e.message);
   } finally {
