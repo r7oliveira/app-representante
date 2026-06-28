@@ -1270,47 +1270,22 @@ let viewHistory = ['semana'];
 let timerInterval = null;
 
 function goTo(v) {
-  // Telas overlay (position:fixed)
-  if (v === 'iniciativas') {
-    const el = document.getElementById('view-iniciativas');
-    el.style.display = 'flex';
-    document.getElementById('bottomNav').style.display = 'none';
-    renderIniciativas();
-    return;
-  }
-  if (v === 'assist-new') {
-    const el = document.getElementById('view-assist-new');
-    el.style.display = 'flex';
-    document.getElementById('bottomNav').style.display = 'none';
-    return;
-  }
-  if (v === 'atendimento') {
-    const el = document.getElementById('view-atendimento');
-    el.style.display = 'flex';
-    el.style.pointerEvents = 'all';
-    document.getElementById('bottomNav').style.display = 'none';
-    return;
-  }
-  // Remove active de todas as views normais
-  document.querySelectorAll('.view:not(#view-atendimento):not(#view-assist-new):not(#view-iniciativas)').forEach(el => {
-    el.classList.remove('active');
-  });
+  // Remove active de TODAS as views
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
 
-  const el = document.getElementById('view-'+v);
-  if (!el) { console.error('View não encontrada: view-'+v); return; }
+  const el = document.getElementById('view-' + v);
+  if (!el) { console.error('View não encontrada: view-' + v); return; }
   el.classList.add('active');
 
   // Nav bar
-  document.getElementById('bottomNav').style.display = 'flex';
+  const semNav = ['atendimento', 'assist-new', 'iniciativas'];
+  document.getElementById('bottomNav').style.display = semNav.includes(v) ? 'none' : 'flex';
 
   // Marca aba ativa
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  const navLabels = { semana:'semana', radar:'radar', mais:'mais' };
-  if (navLabels[v]) {
-    document.querySelectorAll('.nav-item').forEach(b => {
-      if (b.textContent.trim().toLowerCase().startsWith(navLabels[v])) b.classList.add('active');
-    });
-  }
+  const navItems = document.querySelectorAll('.nav-item');
+  const navIdx = { semana:0, radar:1, 'assist-new':2, mais:3 };
+  if (navIdx[v] !== undefined) navItems[navIdx[v]]?.classList.add('active');
 
   viewHistory.push(v);
 
@@ -1321,6 +1296,7 @@ function goTo(v) {
   if (v === 'criar-semana') renderCriarSemana();
   if (v === 'config')       renderConfig();
   if (v === 'domingo')      renderDomingo();
+  if (v === 'iniciativas')  renderIniciativas();
   if (v === 'gerenciar')    renderGerenciar();
 }
 
@@ -1452,6 +1428,7 @@ let atendConsId = null;
 let atendInicio = null;
 
 function abrirAtendimento(consId) {
+  try {
   const sem = getSemanaAtiva();
   if (!sem) { goTo('criar-semana'); return; }
 
@@ -1477,10 +1454,6 @@ function abrirAtendimento(consId) {
   document.getElementById('atendUltimoPgto').textContent = brl(cons.ultimoPgto||0);
   document.getElementById('atendDebito').textContent = brl(cons.debito||0);
   document.getElementById('atendTicket').textContent = brl(cons.ticketMedio||0);
-  document.getElementById('atendFavStatus').textContent = cons.pedidoFavoritaUltimo
-    ? 'Realizado ✓' : 'Não realizado';
-  document.getElementById('atendFavStatus').style.color = cons.pedidoFavoritaUltimo
-    ? 'var(--green)' : 'var(--amber)';
 
   // Timer
   const h = atendInicio.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -1507,17 +1480,12 @@ function abrirAtendimento(consId) {
     btnV.style.borderColor = '';
   }
 
-  goTo('atendimento');}
-
+  goTo('atendimento');
+  } catch(e) { alert('Erro ao abrir atendimento: ' + e.message); }
+}
 function fecharAtendimento() {
   if (timerInterval) clearInterval(timerInterval);
-  const el = document.getElementById('view-atendimento');
-  el.style.display = 'none';
-  el.style.pointerEvents = 'none';
-  document.getElementById('bottomNav').style.display = 'flex';
-  viewHistory.pop();
-  renderSemana();
-  document.getElementById('view-semana').classList.add('active');
+  goTo('semana');
 }
 
 function toggleCrit(campo) {
@@ -1602,8 +1570,7 @@ function finalizarAtendimento() {
   } else {
     goTo('semana');
     setTimeout(() => alert('✓ Todas as consultoras foram atendidas esta semana!'), 300);
-  }
-}
+  }}
 
 function abrirRegistro(tipo) {
   const sem = getSemanaAtiva();
@@ -2254,19 +2221,8 @@ function salvarImportacao() {
 ════════════════════════════════════════════ */
 let assistHistNew = [];
 
-function fecharAssistente() {
-  const el = document.getElementById('view-assist-new');
-  el.style.display = 'none';
-  el.style.pointerEvents = 'none';
-  document.getElementById('bottomNav').style.display = 'flex';
-}
-
-function fecharIniciativas() {
-  const el = document.getElementById('view-iniciativas');
-  el.style.display = 'none';
-  el.style.pointerEvents = 'none';
-  document.getElementById('bottomNav').style.display = 'flex';
-}
+function fecharAssistente() { goTo('semana'); }
+function fecharIniciativas() { goTo('semana'); }
 
 function limparChatNew() {
   assistHistNew = [];
