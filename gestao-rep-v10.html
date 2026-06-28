@@ -33,7 +33,7 @@ input,textarea,select{font-family:var(--font);}
 #app{display:flex;flex-direction:column;height:100%;height:100dvh;max-width:480px;margin:0 auto;position:relative;background:var(--surface);}
 
 /* ── VIEWS ── */
-.view{display:none;flex-direction:column;overflow:hidden;position:absolute;top:0;left:0;right:0;bottom:56px;}
+.view{display:none;flex-direction:column;overflow:hidden;position:absolute;top:0;left:0;right:0;bottom:56px;background:var(--surface);}
 .view.active{display:flex;}
 .scroll-body{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;}
 .scroll-body::-webkit-scrollbar{display:none;}
@@ -398,7 +398,7 @@ input,textarea,select{font-family:var(--font);}
 <!-- ══════════════════════════════════════════
      TELA 2: MODO ATENDIMENTO
 ══════════════════════════════════════════ -->
-<div class="view" id="view-atendimento" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;max-width:480px;margin:0 auto;background:var(--surface);display:none;flex-direction:column;pointer-events:none;">
+<div class="view" id="view-atendimento">
 
   <div class="atend-header">
     <button class="atend-back" onclick="fecharAtendimento()">← <span id="atendBreadcrumb">Semana</span></button>
@@ -584,7 +584,7 @@ input,textarea,select{font-family:var(--font);}
 <!-- ══════════════════════════════════════════
      TELA 4: ASSISTENTE COMERCIAL
 ══════════════════════════════════════════ -->
-<div class="view" id="view-assist-new" style="display:none;flex-direction:column;position:fixed;top:0;left:0;right:0;height:100%;height:100dvh;z-index:50;max-width:480px;margin:0 auto;background:white;">
+<div class="view" id="view-assist-new" style="background:white;">
   <div class="assist-header-new">
     <div class="assist-header-inner">
       <button onclick="fecharAssistente()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:white;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
@@ -1019,7 +1019,7 @@ input,textarea,select{font-family:var(--font);}
 <!-- ══════════════════════════════════════════
      TELA 10: ASSISTENTE COMERCIAL PROATIVO
 ══════════════════════════════════════════ -->
-<div class="view" id="view-iniciativas" style="display:none;flex-direction:column;position:fixed;top:0;left:0;right:0;height:100%;height:100dvh;z-index:50;max-width:480px;margin:0 auto;background:var(--surface);">
+<div class="view" id="view-iniciativas" style="background:var(--surface);">
   <div style="background:linear-gradient(160deg,#1A0A2E,#2D1060);padding:52px 20px 20px;flex-shrink:0;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
       <button onclick="fecharIniciativas()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:white;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
