@@ -314,16 +314,20 @@ input,textarea,select{font-family:var(--font);}
 ══════════════════════════════════════════ -->
 <nav class="bottom-nav" id="bottomNav">
   <button class="nav-item active" onclick="goTo('semana')">
-    <div class="nav-icon">🏠</div>Semana
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    Semana
   </button>
   <button class="nav-item" onclick="goTo('radar')">
-    <div class="nav-icon">📡</div>Radar
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"/></svg>
+    Radar
   </button>
   <button class="nav-item" onclick="goTo('assist-new')">
-    <div class="nav-icon">💬</div>Assistente
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    Assistente
   </button>
   <button class="nav-item" onclick="goTo('mais')">
-    <div class="nav-icon">⋯</div>Mais
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+    Mais
   </button>
 </nav>
 
@@ -361,7 +365,7 @@ input,textarea,select{font-family:var(--font);}
         <div class="hero-box">
           <div class="hero-box-label">Cobranças</div>
           <div class="hero-box-val" id="heroCobrancas">R$ 0</div>
-          <div class="hero-box-sub">⚠️ Pendentes</div>
+          <div class="hero-box-sub">! Pendentes</div>
         </div>
         <div class="hero-box">
           <div class="hero-box-label">Pendentes</div>
@@ -514,7 +518,7 @@ input,textarea,select{font-family:var(--font);}
 
     <!-- Venda e Pagamento -->
     <button class="big-action-white" id="btnVendaPagamento" onclick="abrirRegistro('venda')">
-      <span class="action-icon">💰</span>
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2M9.5 10h3a1.5 1.5 0 010 3h-2a1.5 1.5 0 000 3H14"/></svg>
       <div style="flex:1;">
         <div class="action-title" style="color:var(--ink);">Adicionar Venda e Pagamento</div>
         <div class="action-sub" style="color:var(--ink-3);">Registro manual de valores</div>
@@ -524,7 +528,7 @@ input,textarea,select{font-family:var(--font);}
 
     <!-- Observação -->
     <button class="big-action-white" onclick="abrirRegistro('obs')">
-      <span class="action-icon">📝</span>
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       <div style="flex:1;">
         <div class="action-title" style="color:var(--ink);">Observação</div>
         <div class="action-sub" style="color:var(--ink-3);">Texto livre sobre a visita</div>
@@ -534,10 +538,10 @@ input,textarea,select{font-family:var(--font);}
 
     <!-- Finalizar -->
     <button class="finalizar-btn" onclick="finalizarAtendimento()">
-      <span>✅</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       <div>
         <div class="finalizar-title">Finalizar Atendimento</div>
-        <div class="finalizar-sub">Marca como concluída · Abre a próxima</div>
+        <div class="finalizar-sub">Marca como concluída · Volta para a semana</div>
       </div>
     </button>
   </div>
@@ -633,15 +637,15 @@ input,textarea,select{font-family:var(--font);}
 
     <div class="sec-title" style="padding-left:0;">Operação</div>
     <div class="mais-item" onclick="goTo('domingo')">
-      <div class="mais-icon" style="background:#1A1040;">🌙</div>
+      <div class="mais-icon" style="background:var(--surface-2);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
       <div>
-        <div class="mais-title" style="color:white;">Fluxo de Domingo</div>
+        <div class="mais-title">Fluxo de Domingo</div>
         <div class="mais-sub">Fechamento e planejamento semanal</div>
       </div>
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
     <div class="mais-item" onclick="goTo('iniciativas')">
-      <div class="mais-icon" style="background:var(--purple-bg);">✦</div>
+      <div class="mais-icon" style="background:var(--purple-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
       <div>
         <div class="mais-title">Assistente Comercial</div>
         <div class="mais-sub">Iniciativas e análise do dia</div>
@@ -649,7 +653,7 @@ input,textarea,select{font-family:var(--font);}
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
     <div class="mais-item" onclick="goTo('criar-semana')">
-      <div class="mais-icon" style="background:var(--rose-light);">📅</div>
+      <div class="mais-icon" style="background:var(--rose-light);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
       <div>
         <div class="mais-title">Criar Semana</div>
         <div class="mais-sub">Iniciar uma nova semana de trabalho</div>
@@ -657,7 +661,7 @@ input,textarea,select{font-family:var(--font);}
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
     <div class="mais-item" onclick="goTo('motor')">
-      <div class="mais-icon" style="background:#FFF5E0;">⭐</div>
+      <div class="mais-icon" style="background:var(--amber-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
       <div>
         <div class="mais-title">Motor de Prioridade</div>
         <div class="mais-sub">Score e ranking das consultoras</div>
@@ -667,7 +671,7 @@ input,textarea,select{font-family:var(--font);}
 
     <div class="sec-title" style="padding-left:0;">Configuração</div>
     <div class="mais-item" onclick="abrirModalConsultora()">
-      <div class="mais-icon" style="background:var(--green-bg);">👥</div>
+      <div class="mais-icon" style="background:var(--green-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
       <div>
         <div class="mais-title">Nova Consultora</div>
         <div class="mais-sub">Cadastrar ou importar do tablet</div>
@@ -675,15 +679,15 @@ input,textarea,select{font-family:var(--font);}
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
     <div class="mais-item" onclick="abrirGerenciar()">
-      <div class="mais-icon" style="background:#0F0A14;">🗂️</div>
+      <div class="mais-icon" style="background:var(--surface-2);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
       <div>
-        <div class="mais-title" style="color:var(--ink);">Gerenciar Região</div>
+        <div class="mais-title">Gerenciar Região</div>
         <div class="mais-sub">Editar, inativar, reordenar</div>
       </div>
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
     <div class="mais-item" onclick="goTo('importacao')">
-      <div class="mais-icon" style="background:var(--purple-bg);">📷</div>
+      <div class="mais-icon" style="background:var(--purple-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
       <div>
         <div class="mais-title">Importação Inteligente</div>
         <div class="mais-sub">Fotografar cadastro do tablet</div>
@@ -691,7 +695,7 @@ input,textarea,select{font-family:var(--font);}
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
     <div class="mais-item" onclick="goTo('config')">
-      <div class="mais-icon" style="background:var(--surface-2);">⚙️</div>
+      <div class="mais-icon" style="background:var(--surface-2);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
       <div>
         <div class="mais-title">Configurações</div>
         <div class="mais-sub">Chave Gemini, metas, preferências</div>
@@ -771,7 +775,7 @@ input,textarea,select{font-family:var(--font);}
       <div class="sec-title">Consultoras da semana</div>
       <div style="margin:0 16px;" id="step2Lista"></div>
       <div style="padding:12px 16px 4px;">
-        <button class="btn-ghost" onclick="abrirModalConsultora()" style="margin-bottom:10px;">➕ Adicionar consultora</button>
+        <button class="btn-ghost" onclick="abrirModalConsultora()" style="margin-bottom:10px;">+ Adicionar consultora</button>
         <button class="btn-primary" onclick="avancarStep3()">Continuar →</button>
       </div>
       <div style="height:80px;"></div>
@@ -816,7 +820,7 @@ input,textarea,select{font-family:var(--font);}
             oninput="document.getElementById('step3Meta').textContent='R$ '+(parseFloat(this.value)||0).toLocaleString('pt-BR')"
             onfocus="this.style.borderColor='var(--rose)'" onblur="this.style.borderColor='var(--border)'">
         </label>
-        <button class="btn-primary" style="font-size:16px;padding:18px;margin-bottom:8px;" onclick="confirmarCriarSemana()">🚀 Iniciar Semana</button>
+        <button class="btn-primary" style="font-size:16px;padding:18px;margin-bottom:8px;" onclick="confirmarCriarSemana()"> Iniciar Semana</button>
         <button class="btn-ghost" onclick="voltarStep2()">← Voltar e ajustar</button>
       </div>
       <div style="height:80px;"></div>
@@ -909,7 +913,7 @@ input,textarea,select{font-family:var(--font);}
     </div>
 
     <button class="ai-photo-btn" onclick="document.getElementById('importFoto').click()">
-      📷 Tirar foto do tablet
+       Tirar foto do tablet
     </button>
     <input type="file" id="importFoto" accept="image/*" style="display:none" onchange="importarDoTablet(this)">
     <div class="ai-loading" id="importLoading"><span class="spinner"></span>Lendo dados da foto...</div>
@@ -1080,12 +1084,12 @@ input,textarea,select{font-family:var(--font);}
     <div class="sec-title" style="padding-left:0;">Ações</div>
     <div class="card" style="margin-bottom:12px;">
       <div class="card-row" style="cursor:pointer;" onclick="abrirModalConsultora()">
-        <span style="font-size:20px;">➕</span>
+        <span style="font-size:20px;">+</span>
         <div style="flex:1;font-size:14px;font-weight:700;color:var(--ink);">Nova consultora</div>
         <span style="color:var(--ink-3);font-size:18px;">›</span>
       </div>
       <div class="card-row" style="cursor:pointer;" onclick="goTo('importacao')">
-        <span style="font-size:20px;">📷</span>
+        <span style="font-size:20px;"></span>
         <div style="flex:1;font-size:14px;font-weight:700;color:var(--ink);">Importar do tablet</div>
         <span style="color:var(--ink-3);font-size:18px;">›</span>
       </div>
@@ -1136,7 +1140,7 @@ input,textarea,select{font-family:var(--font);}
     <div class="modal-title" id="modalConsTitulo">Nova Consultora</div>
 
     <button class="ai-photo-btn" onclick="document.getElementById('consPhotoInput').click()">
-      📷 Preencher com foto do tablet (IA)
+       Preencher com foto do tablet (IA)
     </button>
     <input type="file" id="consPhotoInput" accept="image/*" style="display:none" onchange="extrairFotoConsultora(this)">
     <div class="ai-loading" id="consAiLoading"><span class="spinner"></span>Lendo dados da imagem...</div>
@@ -1358,7 +1362,7 @@ function renderSemana() {
     document.getElementById('semanaNumero').textContent = 'Semana —';
     document.getElementById('semanaRegiao').textContent = 'Nenhuma semana ativa';
     document.getElementById('iaStrip').innerHTML = 'É hora de criar a próxima semana.';
-    document.getElementById('ctaBtn').textContent = '📅 Criar Nova Semana';
+    document.getElementById('ctaBtn').textContent = ' Criar Nova Semana';
     document.getElementById('ctaBtn').onclick = () => goTo('criar-semana');
     document.getElementById('ctaSub').textContent = 'Toque para escolher a região e iniciar';
     document.getElementById('progConsultoras').style.width = '0%';
@@ -1372,7 +1376,7 @@ function renderSemana() {
     document.getElementById('heroPendentes').textContent = '0';
     document.getElementById('listaConsultoras').innerHTML = `
       <div style="text-align:center;padding:40px 20px;">
-        <div style="font-size:48px;margin-bottom:12px;">📅</div>
+        <div style="font-size:48px;margin-bottom:12px;"></div>
         <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:6px;">Nenhuma semana ativa</div>
         <div style="font-size:13px;color:var(--ink-3);margin-bottom:20px;">A semana anterior foi finalizada.<br>Crie uma nova para continuar.</div>
         <button onclick="goTo('criar-semana')" style="background:linear-gradient(135deg,var(--rose-deep),var(--rose));color:white;border:none;border-radius:14px;padding:14px 28px;font-size:15px;font-weight:800;font-family:var(--font);cursor:pointer;">Criar Nova Semana →</button>
@@ -1433,7 +1437,7 @@ function renderSemana() {
     const isNext = proxima && c.id === proxima.id;
     const cls = st === 'concluida' ? 'done' : isNext ? 'next' : c.debito > 0 ? 'alert' : '';
     const avCls = st === 'concluida' ? 'av-done' : c.debito > 0 ? 'av-alert' : 'av-default';
-    const avTxt = st === 'concluida' ? '✓' : c.debito > 0 ? '⚠' : iniciais(c.nome);
+    const avTxt = st === 'concluida' ? '✓' : c.debito > 0 ? '!' : iniciais(c.nome);
     const badge = st === 'concluida' ? '<div class="c-badge b-done">Concluída</div>'
                 : isNext ? '<div class="c-badge b-next">Próxima</div>'
                 : c.debito > 0 ? '<div class="c-badge b-alert">Cobrança</div>'
@@ -1447,7 +1451,7 @@ function renderSemana() {
       + '<div class="c-info"><div class="c-name">' + c.nome + '</div><div class="c-sub">' + sub + '</div></div>'
       + badge + '</div>';
   }).join('')
-  + '<button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-top:4px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">➕ Incluir mais consultoras</button>'
+  + '<button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-top:4px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>'
   + '<div style="height:16px;"></div>';
 }
 
@@ -1464,7 +1468,7 @@ function abrirModalAdicionarConsultora() {
   if (!disponiveis.length) {
     document.getElementById('modalRegConteudo').innerHTML = `
       <div style="text-align:center;padding:20px;color:var(--ink-3);">Todas as consultoras cadastradas já estão nesta semana.</div>
-      <button class="btn-ghost" onclick="fecharModal('modalRegistro');abrirModalConsultora()">➕ Cadastrar nova consultora</button>`;
+      <button class="btn-ghost" onclick="fecharModal('modalRegistro');abrirModalConsultora()">+ Cadastrar nova consultora</button>`;
   } else {
     document.getElementById('modalRegConteudo').innerHTML = `
       <div style="font-size:12px;color:var(--ink-3);font-weight:500;margin-bottom:12px;">Toque para adicionar à Semana ${sem.numero}:</div>
@@ -1480,7 +1484,7 @@ function abrirModalAdicionarConsultora() {
           </div>`).join('')}
       </div>
       <div style="height:12px;"></div>
-      <button class="btn-ghost" onclick="fecharModal('modalRegistro');abrirModalConsultora()" style="margin-top:4px;">➕ Cadastrar nova consultora</button>`;
+      <button class="btn-ghost" onclick="fecharModal('modalRegistro');abrirModalConsultora()" style="margin-top:4px;">+ Cadastrar nova consultora</button>`;
   }
 
   document.getElementById('modalRegistro').classList.add('open');
@@ -1553,7 +1557,7 @@ function abrirAtendimento(consId) {
   const rotaInfo = [cons.diaMelhor, cons.horarioMelhor].filter(Boolean).join(' · ');
   const cidadeEl = document.getElementById('atendCidade');
   cidadeEl.innerHTML = (cons.cidade||'') + (cons.telefone ? ' · ' + cons.telefone : '')
-    + (rotaInfo ? '<br><span style="color:#6EF0B0;font-size:11px;font-weight:600;">⏰ ' + rotaInfo + '</span>' : '');
+    + (rotaInfo ? '<br><span style="color:#6EF0B0;font-size:11px;font-weight:600;"> ' + rotaInfo + '</span>' : '');
   document.getElementById('atendPos').textContent = pos + '/' + total;
   document.getElementById('atendScore').textContent = 'Score ' + calcScore(cons);
   document.getElementById('atendUltimaVenda').textContent = brl(cons.ultimaVenda||0);
@@ -1705,15 +1709,15 @@ function abrirRegistro(tipo) {
         <div style="display:flex;gap:8px;margin-top:2px;">
           <button type="button" id="frmPix" onclick="selecionarForma('pix')"
             style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
-            💳 Pix
+             Pix
           </button>
           <button type="button" id="frmDinheiro" onclick="selecionarForma('dinheiro')"
             style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
-            💵 Dinheiro
+             Dinheiro
           </button>
           <button type="button" id="frmAmbos" onclick="selecionarForma('ambos')"
             style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
-            🔀 Ambos
+             Ambos
           </button>
         </div>
       </label>
@@ -1842,7 +1846,7 @@ function salvarRegistroVenda() {
     document.getElementById('atendScore').textContent       = 'Score ' + calcScore(cons);
 
     // Atualiza botão com resumo
-    const formaLabel = forma === 'pix' ? '💳 Pix' : forma === 'dinheiro' ? '💵 Dinheiro' : forma === 'ambos' ? '💳+💵 Ambos' : '';
+    const formaLabel = forma === 'pix' ? ' Pix' : forma === 'dinheiro' ? ' Dinheiro' : forma === 'ambos' ? '+ Ambos' : '';
     const subTexto = [
       vendido > 0 ? 'Venda: ' + brl(vendido) : '',
       recebido > 0 ? 'Recebido: ' + brl(recebido) + (formaLabel ? ' · ' + formaLabel : '') : '',
@@ -1900,7 +1904,7 @@ function renderRadar() {
     const total = comDebito.reduce((a,c) => a+(c.debito||0), 0);
     html += `<div class="radar-item">
       <div class="radar-item-head" style="background:var(--red-bg);">
-        <span style="font-size:20px;">🔴</span>
+        <span style="font-size:20px;">●</span>
         <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--red);">${comDebito.length} com débito · ${brl(total)}</div><div style="font-size:12px;color:var(--red);opacity:.8;font-weight:500;margin-top:1px;">Prioridade de cobrança</div></div>
       </div>
       <div class="radar-item-body">${comDebito.slice(0,3).map(c => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span style="font-weight:600;color:var(--ink);">${c.nome}</span><span style="font-weight:800;color:var(--red);">${brl(c.debito)}</span></div>`).join('')}${comDebito.length > 3 ? `<div style="color:var(--ink-3);font-size:12px;margin-top:4px;">+ ${comDebito.length-3} outras</div>` : ''}</div>
@@ -1910,7 +1914,7 @@ function renderRadar() {
     const pot = Math.round(semFav.length * 0.5 * (sem.consultoras.reduce((a,c)=>a+(c.ticketMedio||0),0) / (sem.consultoras.length||1)));
     html += `<div class="radar-item">
       <div class="radar-item-head" style="background:var(--amber-bg);">
-        <span style="font-size:20px;">🟡</span>
+        <span style="font-size:20px;">●</span>
         <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--amber);">${semFav.length} sem pedido favorita</div><div style="font-size:12px;color:var(--amber);opacity:.8;font-weight:500;margin-top:1px;">Oportunidade de venda</div></div>
       </div>
       <div class="radar-item-body">Se metade fizer o pedido favorita, você adiciona aproximadamente <strong style="color:var(--ink);">${brl(pot)}</strong> em vendas.</div>
@@ -1918,7 +1922,7 @@ function renderRadar() {
   }
   html += `<div class="radar-item">
     <div class="radar-item-head" style="background:var(--green-bg);">
-      <span style="font-size:20px;">🟢</span>
+      <span style="font-size:20px;">●</span>
       <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--green);">${pendentes.length} consultoras para atender</div></div>
     </div>
     <div class="radar-item-body">Média de <strong style="color:var(--ink);">${Math.ceil(pendentes.length/5)} por dia</strong> para terminar na sexta.</div>
@@ -2111,7 +2115,7 @@ function avancarStep2() {
     // Mostra todas as consultoras com checkbox para selecionar
     lista.innerHTML = `
       <div style="background:var(--amber-bg);border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:13px;color:var(--amber);font-weight:600;">
-        ⚠️ Nenhuma consultora encontrada para ${criarRegiao}. Selecione abaixo quais incluir na semana:
+        ! Nenhuma consultora encontrada para ${criarRegiao}. Selecione abaixo quais incluir na semana:
       </div>
       <div class="card" id="step2CheckLista">
         ${todasAtivas.map(c => `
@@ -2573,16 +2577,16 @@ function renderDomingo() {
     const semFav = pend.filter(c=>!c.pedidoFavoritaUltimo);
     radarEl.innerHTML = `
       <div class="card-row" style="background:var(--red-bg);cursor:pointer;" onclick="goTo('radar')">
-        <span style="font-size:18px;">🔴</span>
+        <span style="font-size:18px;">●</span>
         <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--red);">${comDeb.length} com débito</div><div style="font-size:11px;color:var(--red);opacity:.8;">Semana ${sem.numero} · ${sem.regiao}</div></div>
         <span style="color:var(--red);font-size:16px;">›</span>
       </div>
       <div class="card-row" style="background:var(--amber-bg);">
-        <span style="font-size:18px;">🟡</span>
+        <span style="font-size:18px;">●</span>
         <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--amber);">${semFav.length} sem pedido favorita</div></div>
       </div>
       <div class="card-row" style="border-bottom:none;">
-        <span style="font-size:18px;">🟢</span>
+        <span style="font-size:18px;">●</span>
         <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--green);">${pend.length} consultoras para atender</div></div>
       </div>`;
   }
@@ -2801,8 +2805,8 @@ function renderGerenciar() {
             <div style="font-size:11px;color:var(--ink-3);margin-top:1px;">${c.cidade||''} · Score ${calcScore(c)}</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
-            <button onclick="editarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;">✏️</button>
-            <button onclick="inativarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;">🚫</button>
+            <button onclick="editarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;">✎</button>
+            <button onclick="inativarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;">×</button>
           </div>
         </div>`
       ).join('') + '</div>';
@@ -2946,7 +2950,7 @@ goTo('semana');
 <div class="modal-overlay" id="modalFechamento">
   <div class="modal-box">
     <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-size:48px;margin-bottom:8px;">🎉</div>
+      <div style="font-size:48px;margin-bottom:8px;"></div>
       <div style="font-size:22px;font-weight:800;color:var(--ink);">Semana Concluída!</div>
       <div style="font-size:13px;color:var(--ink-3);font-weight:500;margin-top:4px;" id="fechSemanaLabel">Semana —</div>
     </div>
@@ -2973,7 +2977,7 @@ goTo('semana');
 
     <!-- Registrar débito recebido -->
     <div id="fechDebitoSection" style="display:none;background:var(--amber-bg);border-radius:14px;padding:14px;margin-bottom:16px;border:1px solid rgba(184,110,0,.15);">
-      <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:10px;">💰 Registrar pagamento de débito</div>
+      <div style="font-size:13px;font-weight:700;color:var(--amber);margin-bottom:10px;"> Registrar pagamento de débito</div>
       <div id="fechDebitoLista"></div>
     </div>
 
