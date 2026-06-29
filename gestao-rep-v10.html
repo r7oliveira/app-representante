@@ -1163,6 +1163,46 @@ input,textarea,select{font-family:var(--font);}
       <input id="cFavorita" placeholder="Ex: Perfume Essencial, Hidratante...">
     </label>
 
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <label class="field" style="margin:0;">
+        <span>Melhor dia</span>
+        <select id="cDia">
+          <option value="">— Qualquer —</option>
+          <option>Segunda-feira</option>
+          <option>Terça-feira</option>
+          <option>Quarta-feira</option>
+          <option>Quinta-feira</option>
+          <option>Sexta-feira</option>
+          <option>Sábado</option>
+        </select>
+      </label>
+      <label class="field" style="margin:0;">
+        <span>Melhor horário</span>
+        <select id="cHorario">
+          <option value="">— Qualquer —</option>
+          <option>06:00</option><option>06:30</option>
+          <option>07:00</option><option>07:30</option>
+          <option>08:00</option><option>08:30</option>
+          <option>09:00</option><option>09:30</option>
+          <option>10:00</option><option>10:30</option>
+          <option>11:00</option><option>11:30</option>
+          <option>12:00</option><option>12:30</option>
+          <option>13:00</option><option>13:30</option>
+          <option>14:00</option><option>14:30</option>
+          <option>15:00</option><option>15:30</option>
+          <option>16:00</option><option>16:30</option>
+          <option>17:00</option><option>17:30</option>
+          <option>18:00</option><option>18:30</option>
+          <option>19:00</option><option>19:30</option>
+        </select>
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Observação de rota</span>
+      <input id="cRotaObs" placeholder="Ex: Atende só de tarde, mora perto da praça...">
+    </label>
+
     <div class="btn-row" style="margin-top:18px;">
       <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalConsultora')">Cancelar</button>
       <button class="btn-primary" style="flex:1;" onclick="salvarConsultora()">Salvar</button>
@@ -1397,7 +1437,7 @@ function renderSemana() {
                 : '<div class="c-badge b-pending">Pendente</div>';
     const sub = st === 'concluida'
       ? 'Vendido ' + brl(c.vendido||0) + ' · Recebido ' + brl(c.recebido||0)
-      : c.debito > 0 ? 'Débito ' + brl(c.debito) : (c.cidade || '');
+      : c.debito > 0 ? 'Débito ' + brl(c.debito) : [c.cidade, c.horarioMelhor].filter(Boolean).join(' · ') || '';
 
     return '<div class="cons-card ' + cls + '" onclick="abrirAtendimento(\'' + c.id + '\')">'
       + '<div class="c-av ' + avCls + '">' + avTxt + '</div>'
@@ -1505,6 +1545,12 @@ function abrirAtendimento(consId) {
   document.getElementById('atendAv').textContent = iniciais(cons.nome);
   document.getElementById('atendNome').textContent = cons.nome;
   document.getElementById('atendCidade').textContent = (cons.cidade||'') + (cons.telefone ? ' · ' + cons.telefone : '');
+
+  // Mostra dia/horário preferido se cadastrado
+  const rotaInfo = [cons.diaMelhor, cons.horarioMelhor].filter(Boolean).join(' · ');
+  const cidadeEl = document.getElementById('atendCidade');
+  cidadeEl.innerHTML = (cons.cidade||'') + (cons.telefone ? ' · ' + cons.telefone : '')
+    + (rotaInfo ? '<br><span style="color:#6EF0B0;font-size:11px;font-weight:600;">⏰ ' + rotaInfo + '</span>' : '');
   document.getElementById('atendPos').textContent = pos + '/' + total;
   document.getElementById('atendScore').textContent = 'Score ' + calcScore(cons);
   document.getElementById('atendUltimaVenda').textContent = brl(cons.ultimaVenda||0);
@@ -2127,9 +2173,11 @@ function confirmarCriarSemana() {
    CONSULTORAS
 ════════════════════════════════════════════ */
 function abrirModalConsultora() {
-  ['cNome','cTel','cCpf','cBairro','cCidade','cFavorita'].forEach(id => {
+  ['cNome','cTel','cCpf','cBairro','cCidade','cFavorita','cRotaObs'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
+  document.getElementById('cDia').value = '';
+  document.getElementById('cHorario').value = '';
   document.getElementById('modalConsultora').classList.add('open');
 }
 
@@ -2148,6 +2196,9 @@ function salvarConsultora() {
       c.cidade = document.getElementById('cCidade').value.trim();
       c.regiao = document.getElementById('cRegiao').value;
       c.pedidoFavorita = document.getElementById('cFavorita').value.trim();
+      c.diaMelhor = document.getElementById('cDia').value;
+      c.horarioMelhor = document.getElementById('cHorario').value;
+      c.rotaObs = document.getElementById('cRotaObs').value.trim();
       save(); fecharModal('modalConsultora');
       window._editConsId = null;
       document.getElementById('modalConsTitulo').textContent = 'Nova Consultora';
@@ -2165,6 +2216,9 @@ function salvarConsultora() {
     cidade: document.getElementById('cCidade').value.trim(),
     regiao: document.getElementById('cRegiao').value,
     pedidoFavorita: document.getElementById('cFavorita').value.trim(),
+    diaMelhor: document.getElementById('cDia').value,
+    horarioMelhor: document.getElementById('cHorario').value,
+    rotaObs: document.getElementById('cRotaObs').value.trim(),
     status: 'ativa', score: 0,
     criadoEm: new Date().toISOString()
   };
@@ -2720,6 +2774,9 @@ function editarConsultora(id) {
   document.getElementById('cBairro').value = c.bairro || '';
   document.getElementById('cCidade').value = c.cidade || '';
   document.getElementById('cFavorita').value = c.pedidoFavorita || '';
+  document.getElementById('cDia').value = c.diaMelhor || '';
+  document.getElementById('cHorario').value = c.horarioMelhor || '';
+  document.getElementById('cRotaObs').value = c.rotaObs || '';
   document.getElementById('cRegiao').value = c.regiao || CICLO[0];
   document.getElementById('modalConsTitulo').textContent = 'Editar Consultora';
   // Salvar vai criar nova — idealmente atualizaria. Por agora marca para edição:
