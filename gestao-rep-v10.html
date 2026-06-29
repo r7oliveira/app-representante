@@ -1922,10 +1922,47 @@ function renderRadar() {
   </div>`;
   document.getElementById('radarAlertas').innerHTML = html;
 
-  const prioridade = [...pendentes].sort((a,b) => calcScore(b)-calcScore(a))[0];
-  document.getElementById('radarIA').textContent = prioridade
-    ? 'Comece por ' + prioridade.nome + ' (score ' + calcScore(prioridade) + ')' + (comDebito[0] && comDebito[0].id !== prioridade.id ? ' e depois passe em ' + comDebito[0].nome + ' para cobrar.' : '.')
-    : 'Todas as consultoras foram atendidas!';
+  // Sugestão inteligente: ordena por horário preferido, depois score
+  const agora = new Date();
+  const horaAtual = agora.getHours() * 60 + agora.getMinutes();
+
+  function horarioEmMin(h) {
+    if (!h) return 9999;
+    const [hh, mm] = h.split(':').map(Number);
+    return hh * 60 + mm;
+  }
+
+  const ordenadas = [...pendentes].sort((a, b) => {
+    const hA = horarioEmMin(a.horarioMelhor);
+    const hB = horarioEmMin(b.horarioMelhor);
+    // Prefere horário mais próximo do atual (mas não no passado)
+    const diffA = hA >= horaAtual ? hA - horaAtual : 9999;
+    const diffB = hB >= horaAtual ? hB - horaAtual : 9999;
+    if (diffA !== diffB) return diffA - diffB;
+    // Desempata por score
+    return calcScore(b) - calcScore(a);
+  });
+
+  const sugerida = ordenadas[0];
+  let textoSugestao = '';
+  if (sugerida) {
+    const partes = [];
+    partes.push('Comece por <strong>' + sugerida.nome + '</strong>');
+    if (sugerida.horarioMelhor) partes.push('horário preferido: <strong>' + sugerida.horarioMelhor + '</strong>');
+    if (sugerida.cidade) partes.push('em <strong>' + sugerida.cidade + '</strong>');
+    if (sugerida.diaMelhor) partes.push('(prefere ' + sugerida.diaMelhor + ')');
+    textoSugestao = partes.join(' · ');
+
+    // Segunda sugestão
+    if (ordenadas[1]) {
+      const b = ordenadas[1];
+      textoSugestao += '<br><span style="color:var(--ink-3);font-size:12px;margin-top:4px;display:block;">Depois: ' + b.nome + (b.horarioMelhor ? ' · ' + b.horarioMelhor : '') + (b.cidade ? ' · ' + b.cidade : '') + '</span>';
+    }
+  } else {
+    textoSugestao = 'Todas as consultoras foram atendidas!';
+  }
+
+  document.getElementById('radarIA').innerHTML = textoSugestao;
 }
 
 /* ════════════════════════════════════════════
@@ -2635,10 +2672,35 @@ function gerarIniciativas(sem) {
     });
   }
 
+  // Sugestão de próxima por horário
+  const agora2 = new Date();
+  const horaAtual2 = agora2.getHours() * 60 + agora2.getMinutes();
+  function hMin(h) { if (!h) return 9999; const [hh,mm] = h.split(':').map(Number); return hh*60+mm; }
+
+  const porHorario = [...pendentes].sort((a,b) => {
+    const dA = hMin(a.horarioMelhor) >= horaAtual2 ? hMin(a.horarioMelhor)-horaAtual2 : 9999;
+    const dB = hMin(b.horarioMelhor) >= horaAtual2 ? hMin(b.horarioMelhor)-horaAtual2 : 9999;
+    return dA !== dB ? dA-dB : calcScore(b)-calcScore(a);
+  });
+  const proxSuger = porHorario[0];
+
+  if (proxSuger) {
+    const detalhes = [
+      proxSuger.horarioMelhor ? 'horário: <strong>' + proxSuger.horarioMelhor + '</strong>' : '',
+      proxSuger.cidade ? 'em <strong>' + proxSuger.cidade + '</strong>' : '',
+      proxSuger.diaMelhor ? '(prefere ' + proxSuger.diaMelhor + ')' : '',
+    ].filter(Boolean).join(' · ');
+    iniciativas.push({
+      cor:'var(--purple)', tag:'Próxima sugerida', tempo:'agora',
+      texto: 'Atenda <strong>' + proxSuger.nome + '</strong>' + (detalhes ? ' · ' + detalhes : '') + '.',
+      acao: 'Abrir atendimento', fn: "abrirAtendimento('" + proxSuger.id + "')"
+    });
+  }
+
   if (!iniciativas.length) {
     iniciativas.push({
       cor:'var(--green)', tag:'Ótimo dia', tempo:'agora',
-      texto:`Semana ${sem.numero} em ${sem.regiao} está no caminho certo. ${atendidas} de ${total} consultoras atendidas. Continue assim!`,
+      texto: `Semana ${sem.numero} em ${sem.regiao} no caminho certo. ${atendidas} de ${total} atendidas.`,
       acao: null, fn: null
     });
   }
