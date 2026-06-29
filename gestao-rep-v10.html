@@ -2269,6 +2269,11 @@ function salvarConsultora() {
   DB.consultoras.push(c);
   save();
   fecharModal('modalConsultora');
+
+  // Se estiver no passo 2 do criar semana, atualiza a lista na hora
+  if (document.getElementById('criarStep2').style.display !== 'none') {
+    avancarStep2();
+  }
 }
 
 async function extrairFotoConsultora(input) {
