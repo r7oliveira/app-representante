@@ -1669,7 +1669,7 @@ function finalizarAtendimento() {
   // Abre próxima automaticamente
   const proxima = sem.consultoras.find(c => c.status !== 'concluida');
   if (proxima) {
-    abrirAtendimento(proxima.id);
+    goTo('semana');
   } else {
     goTo('semana');
     setTimeout(() => mostrarFechamentoSemana(), 300);
