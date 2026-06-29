@@ -1317,17 +1317,26 @@ function renderSemana() {
   if (!sem) {
     document.getElementById('semanaNumero').textContent = 'Semana —';
     document.getElementById('semanaRegiao').textContent = 'Nenhuma semana ativa';
-    document.getElementById('iaStrip').innerHTML = 'Crie uma semana para começar.';
-    document.getElementById('ctaBtn').textContent = 'Criar Semana →';
+    document.getElementById('iaStrip').innerHTML = 'É hora de criar a próxima semana.';
+    document.getElementById('ctaBtn').textContent = '📅 Criar Nova Semana';
     document.getElementById('ctaBtn').onclick = () => goTo('criar-semana');
-    document.getElementById('ctaSub').textContent = '';
+    document.getElementById('ctaSub').textContent = 'Toque para escolher a região e iniciar';
     document.getElementById('progConsultoras').style.width = '0%';
     document.getElementById('progMeta').style.width = '0%';
     document.getElementById('progConsultorasVal').textContent = '0/0';
     document.getElementById('progMetaVal').textContent = '0%';
-    ['heroVendido','heroRecebido','heroCobrancas'].forEach(id => document.getElementById(id).textContent = 'R$ 0');
+    document.getElementById('heroVendido').textContent = 'R$ 0';
+    document.getElementById('heroMetaSub').textContent = 'Meta: —';
+    document.getElementById('heroRecebido').textContent = 'R$ 0';
+    document.getElementById('heroCobrancas').textContent = 'R$ 0';
     document.getElementById('heroPendentes').textContent = '0';
-    document.getElementById('listaConsultoras').innerHTML = '<div style="text-align:center;padding:32px;color:var(--ink-3);font-size:14px;">Nenhuma semana ativa.<br><br><button onclick="goTo(\'criar-semana\')" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">Criar semana →</button></div>';
+    document.getElementById('listaConsultoras').innerHTML = `
+      <div style="text-align:center;padding:40px 20px;">
+        <div style="font-size:48px;margin-bottom:12px;">📅</div>
+        <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:6px;">Nenhuma semana ativa</div>
+        <div style="font-size:13px;color:var(--ink-3);margin-bottom:20px;">A semana anterior foi finalizada.<br>Crie uma nova para continuar.</div>
+        <button onclick="goTo('criar-semana')" style="background:linear-gradient(135deg,var(--rose-deep),var(--rose));color:white;border:none;border-radius:14px;padding:14px 28px;font-size:15px;font-weight:800;font-family:var(--font);cursor:pointer;">Criar Nova Semana →</button>
+      </div>`;
     return;
   }
 
