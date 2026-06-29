@@ -1452,6 +1452,8 @@ function adicionarUmaConsultora(id) {
   fecharModal('modalRegistro');
   renderSemana();
 }
+
+function adicionarConsultorasSemana() {
   const sem = getSemanaAtiva();
   if (!sem) return;
   const disponiveis = DB.consultoras.filter(c =>
