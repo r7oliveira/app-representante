@@ -1409,16 +1409,19 @@ function renderSemana() {
 
   if (proxima) {
     document.getElementById('ctaBtn').textContent = 'Continuar Semana →';
+    document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
     document.getElementById('ctaBtn').onclick = () => abrirAtendimento(proxima.id);
     document.getElementById('ctaSub').textContent = 'Próxima: ' + proxima.nome + ' · ' + (atendidas+1) + 'ª de ' + total;
   } else if (total === 0) {
     document.getElementById('ctaBtn').textContent = '+ Adicionar Consultoras';
+    document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
     document.getElementById('ctaBtn').onclick = () => adicionarConsultorasSemana();
     document.getElementById('ctaSub').textContent = 'Nenhuma consultora nesta semana ainda.';
   } else {
-    document.getElementById('ctaBtn').textContent = 'Semana Concluída ✓';
-    document.getElementById('ctaBtn').onclick = null;
-    document.getElementById('ctaSub').textContent = 'Todas as consultoras foram atendidas!';
+    document.getElementById('ctaBtn').textContent = '✓ Finalizar Semana';
+    document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,#0A5C3A,#0D9E6E)';
+    document.getElementById('ctaBtn').onclick = () => mostrarFechamentoSemana();
+    document.getElementById('ctaSub').textContent = 'Todas as ' + total + ' consultoras foram atendidas!';
   }
 
   // Lista
@@ -2924,7 +2927,7 @@ function finalizarSemana() {
   DB.semanaAtiva = null;
   save();
   fecharModal('modalFechamento');
-  renderSemana();
+  goTo('semana'); // volta para tela inicial — mostra "Criar Nova Semana"
 }
 
 /* ════════════════════════════════════════════
