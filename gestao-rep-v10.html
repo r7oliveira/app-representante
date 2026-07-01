@@ -373,9 +373,23 @@ input,textarea,select{font-family:var(--font);}
           <div class="hero-box-sub">Pendentes</div>
         </div>
       </div>
-    </div>
 
-    <!-- IA Strip -->
+      <!-- Contadores de status -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px;">
+        <div style="background:rgba(10,143,92,.2);border-radius:12px;padding:8px 10px;text-align:center;border:1px solid rgba(10,143,92,.25);">
+          <div style="color:rgba(255,255,255,.6);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Atendidas</div>
+          <div style="color:#6EF0B0;font-size:18px;font-weight:800;" id="cntAtendidas">0</div>
+        </div>
+        <div style="background:rgba(184,110,0,.2);border-radius:12px;padding:8px 10px;text-align:center;border:1px solid rgba(184,110,0,.25);">
+          <div style="color:rgba(255,255,255,.6);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Rem. Semana</div>
+          <div style="color:#FFD060;font-size:18px;font-weight:800;" id="cntRemSemana">0</div>
+        </div>
+        <div style="background:rgba(201,38,30,.2);border-radius:12px;padding:8px 10px;text-align:center;border:1px solid rgba(201,38,30,.25);">
+          <div style="color:rgba(255,255,255,.6);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Rem. Mês</div>
+          <div style="color:#FF8080;font-size:18px;font-weight:800;" id="cntRemMes">0</div>
+        </div>
+      </div>
+    </div>
     <div class="ia-strip">
       <div class="ia-orb">✦</div>
       <div class="ia-txt" id="iaStrip">Carregando análise do dia...</div>
@@ -1448,6 +1462,14 @@ function renderSemana() {
   document.getElementById('heroRecebido').textContent = brl(recebido);
   document.getElementById('heroCobrancas').textContent = brl(cobrancas);
   document.getElementById('heroPendentes').textContent = total - atendidas;
+
+  // Contadores de status
+  const nAtendidas  = sem.consultoras.filter(c => c.status === 'concluida').length;
+  const nRemSemana  = sem.consultoras.filter(c => c.remarcarSemana).length;
+  const nRemMes     = sem.consultoras.filter(c => c.remarcarMes).length;
+  document.getElementById('cntAtendidas').textContent = nAtendidas;
+  document.getElementById('cntRemSemana').textContent = nRemSemana;
+  document.getElementById('cntRemMes').textContent    = nRemMes;
 
   document.getElementById('iaStrip').innerHTML =
     (faltaMeta > 0 ? '<strong>Faltam ' + brl(faltaMeta) + ' para a meta.</strong> ' : '<strong>Meta atingida! ✓</strong> ') +
