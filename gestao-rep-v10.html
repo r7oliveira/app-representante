@@ -1720,7 +1720,7 @@ function abrirRegistro(tipo) {
       </label>
 
       <label class="field">
-        <span>Valor a pagar <span style="color:var(--ink-3);font-weight:500;">(vendido − 10% comissão)</span></span>
+        <span>Valor a pagar <span style="color:var(--ink-3);font-weight:500;">(vendido − 30% comissão consultora)</span></span>
         <input id="regAPagar" type="number" inputmode="decimal" placeholder="0,00"
           style="background:var(--surface);">
         <span style="font-size:11px;color:var(--ink-3);margin-top:2px;">Calculado automaticamente · você pode ajustar</span>
@@ -1788,7 +1788,7 @@ function abrirRegistro(tipo) {
 
 function calcValorPagar() {
   const v = parseFloat(document.getElementById('regVenda').value) || 0;
-  const aPagar = Math.round(v * 0.9 * 100) / 100;
+  const aPagar = Math.round(v * 0.70 * 100) / 100;
   document.getElementById('regAPagar').value = aPagar > 0 ? aPagar : '';
   atualizarResumo();
 }
