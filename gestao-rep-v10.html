@@ -1955,41 +1955,31 @@ function renderRadar() {
   </div>`;
   document.getElementById('radarAlertas').innerHTML = html;
 
-  // Sugestão inteligente: ordena por horário preferido, depois score
-  const agora = new Date();
-  const horaAtual = agora.getHours() * 60 + agora.getMinutes();
+  // Sugestão: mesma ordenação da lista (dia da semana + horário)
+  const diasOrdR = {'Segunda-feira':1,'Terça-feira':2,'Quarta-feira':3,'Quinta-feira':4,'Sexta-feira':5,'Sábado':6};
+  function hMinR2(h) { if (!h) return 9999; const [hh,mm] = h.split(':').map(Number); return hh*60+mm; }
 
-  function horarioEmMin(h) {
-    if (!h) return 9999;
-    const [hh, mm] = h.split(':').map(Number);
-    return hh * 60 + mm;
-  }
-
-  const ordenadas = [...pendentes].sort((a, b) => {
-    const hA = horarioEmMin(a.horarioMelhor);
-    const hB = horarioEmMin(b.horarioMelhor);
-    // Prefere horário mais próximo do atual (mas não no passado)
-    const diffA = hA >= horaAtual ? hA - horaAtual : 9999;
-    const diffB = hB >= horaAtual ? hB - horaAtual : 9999;
-    if (diffA !== diffB) return diffA - diffB;
-    // Desempata por score
-    return calcScore(b) - calcScore(a);
+  const pendentesOrdenados = [...pendentes].sort((a, b) => {
+    const dA = diasOrdR[a.diaMelhor] ?? 7;
+    const dB = diasOrdR[b.diaMelhor] ?? 7;
+    if (dA !== dB) return dA - dB;
+    return hMinR2(a.horarioMelhor) - hMinR2(b.horarioMelhor);
   });
 
-  const sugerida = ordenadas[0];
+  const sugerida = pendentesOrdenados[0];
+  const segunda  = pendentesOrdenados[1];
+
   let textoSugestao = '';
   if (sugerida) {
-    const partes = [];
-    partes.push('Comece por <strong>' + sugerida.nome + '</strong>');
-    if (sugerida.horarioMelhor) partes.push('horário preferido: <strong>' + sugerida.horarioMelhor + '</strong>');
-    if (sugerida.cidade) partes.push('em <strong>' + sugerida.cidade + '</strong>');
-    if (sugerida.diaMelhor) partes.push('(prefere ' + sugerida.diaMelhor + ')');
+    const partes = ['Comece por <strong>' + sugerida.nome + '</strong>'];
+    if (sugerida.diaMelhor)    partes.push(sugerida.diaMelhor.replace('-feira',''));
+    if (sugerida.horarioMelhor) partes.push(sugerida.horarioMelhor);
+    if (sugerida.cidade)        partes.push(sugerida.cidade);
     textoSugestao = partes.join(' · ');
-
-    // Segunda sugestão
-    if (ordenadas[1]) {
-      const b = ordenadas[1];
-      textoSugestao += '<br><span style="color:var(--ink-3);font-size:12px;margin-top:4px;display:block;">Depois: ' + b.nome + (b.horarioMelhor ? ' · ' + b.horarioMelhor : '') + (b.cidade ? ' · ' + b.cidade : '') + '</span>';
+    if (segunda) {
+      textoSugestao += '<br><span style="color:var(--ink-3);font-size:12px;margin-top:4px;display:block;">Depois: '
+        + [segunda.nome, segunda.diaMelhor?.replace('-feira',''), segunda.horarioMelhor, segunda.cidade].filter(Boolean).join(' · ')
+        + '</span>';
     }
   } else {
     textoSugestao = 'Todas as consultoras foram atendidas!';
@@ -2712,17 +2702,14 @@ function gerarIniciativas(sem) {
     });
   }
 
-  // Sugestão de próxima por horário
-  const agora2 = new Date();
-  const horaAtual2 = agora2.getHours() * 60 + agora2.getMinutes();
-  function hMin(h) { if (!h) return 9999; const [hh,mm] = h.split(':').map(Number); return hh*60+mm; }
+  // Sugestão de próxima: mesma ordem da lista (dia + horário)
+  const diasOrdA = {'Segunda-feira':1,'Terça-feira':2,'Quarta-feira':3,'Quinta-feira':4,'Sexta-feira':5,'Sábado':6};
+  function hA(h) { if (!h) return 9999; const [hh,mm] = h.split(':').map(Number); return hh*60+mm; }
 
-  const porHorario = [...pendentes].sort((a,b) => {
-    const dA = hMin(a.horarioMelhor) >= horaAtual2 ? hMin(a.horarioMelhor)-horaAtual2 : 9999;
-    const dB = hMin(b.horarioMelhor) >= horaAtual2 ? hMin(b.horarioMelhor)-horaAtual2 : 9999;
-    return dA !== dB ? dA-dB : calcScore(b)-calcScore(a);
-  });
-  const proxSuger = porHorario[0];
+  const proxSuger = [...pendentes].sort((a,b) => {
+    const dA = diasOrdA[a.diaMelhor]??7, dB = diasOrdA[b.diaMelhor]??7;
+    return dA!==dB ? dA-dB : hA(a.horarioMelhor)-hA(b.horarioMelhor);
+  })[0];
 
   if (proxSuger) {
     const detalhes = [
