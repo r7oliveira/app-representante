@@ -12,16 +12,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --rose:#C8185A; --rose-deep:#8A0038; --rose-light:#FFF0F5; --rose-mid:#E8A0BE;
+  --rose:#C8185A; --rose-deep:#6B0030; --rose-light:#FFF0F5; --rose-mid:#E8A0BE;
   --ink:#0F0A14; --ink-2:#3D3447; --ink-3:#6B6478;
-  --surface:#F7F6F4; --surface-2:#EFEFED; --white:#FFFFFF;
+  --surface:#F5F4F2; --surface-2:#EEECEA; --white:#FFFFFF;
   --green:#0A8F5C; --green-bg:#E8F7F1;
   --amber:#B86E00; --amber-bg:#FFF5E0;
   --red:#C9261E; --red-bg:#FEF0EE;
   --purple:#7C3AED; --purple-bg:#F3EFFE;
-  --border:rgba(0,0,0,.08);
+  --border:rgba(0,0,0,.07);
   --r:18px; --r-sm:12px;
   --font:'Plus Jakarta Sans',sans-serif;
+  --gold:#C9A84C;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;width:100%;}
@@ -42,13 +43,13 @@ input,textarea,select{font-family:var(--font);}
 /* ── BOTTOM NAV ── */
 .bottom-nav{
   position:absolute;bottom:0;left:0;right:0;
-  background:rgba(255,255,255,.97);
+  background:rgba(15,10,20,.97);
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-top:1px solid var(--border);display:flex;
+  border-top:1px solid rgba(255,255,255,.06);display:flex;
   padding-bottom:env(safe-area-inset-bottom,4px);
   z-index:100;height:56px;
 }
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 6px;gap:3px;font-size:10px;font-weight:700;color:var(--ink-3);transition:color .15s;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 6px;gap:3px;font-size:10px;font-weight:700;color:rgba(255,255,255,.3);transition:color .15s;}
 .nav-item.active{color:var(--rose);}
 .nav-icon{font-size:22px;line-height:1;}
 
@@ -82,11 +83,25 @@ input,textarea,select{font-family:var(--font);}
 .btn-row{display:flex;gap:10px;}
 
 /* ── HERO GRADIENT ── */
-.hero-grad{background:linear-gradient(160deg,#6B0030 0%,var(--rose-deep) 45%,var(--rose) 100%);position:relative;overflow:hidden;}
-.hero-grad::before{content:'';position:absolute;top:-70px;right:-50px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none;}
+.hero-grad{background:linear-gradient(150deg,#1A0010 0%,#4A0025 40%,#8A0038 75%,#C8185A 100%);position:relative;overflow:hidden;}
+.hero-grad::before{content:'';position:absolute;top:-80px;right:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(200,24,90,.25) 0%,transparent 70%);pointer-events:none;}
+.hero-grad::after{content:'';position:absolute;bottom:-40px;left:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.08) 0%,transparent 70%);pointer-events:none;}
+
+.hero-week-label{color:rgba(255,255,255,.5);font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:4px;}
+.hero-region{color:white;font-size:28px;font-weight:800;margin-bottom:20px;line-height:1.1;letter-spacing:-.5px;}
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.prog-label{color:rgba(255,255,255,.55);font-size:11px;font-weight:600;flex-shrink:0;width:86px;}
+.prog-track{flex:1;height:3px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,rgba(255,255,255,.6),white);border-radius:99px;transition:width .6s ease;}
+.prog-val{color:rgba(255,255,255,.8);font-size:11px;font-weight:700;flex-shrink:0;width:36px;text-align:right;}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;}
+.hero-box{background:rgba(255,255,255,.07);border-radius:14px;padding:12px 14px;border:1px solid rgba(255,255,255,.08);}
+.hero-box-label{color:rgba(255,255,255,.45);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
+.hero-box-val{color:white;font-size:18px;font-weight:800;letter-spacing:-.3px;}
+.hero-box-sub{color:rgba(255,255,255,.4);font-size:10px;font-weight:500;margin-top:3px;}
 
 /* ── IA ORB ── */
-.ia-orb{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#9B30FF,#C8185A);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;flex-shrink:0;}
+.ia-orb{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#7C3AED,#C8185A);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;flex-shrink:0;box-shadow:0 2px 8px rgba(124,58,237,.3);}
 
 /* ── MODAL ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;}
@@ -124,7 +139,7 @@ input,textarea,select{font-family:var(--font);}
 .ia-txt strong{color:var(--ink);font-weight:700;}
 
 .cta-wrap{padding:12px 16px 4px;background:white;flex-shrink:0;}
-.cta-btn{width:100%;background:linear-gradient(135deg,var(--rose-deep),var(--rose));color:white;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 24px rgba(138,0,56,.3);}
+.cta-btn{width:100%;background:linear-gradient(135deg,#6B0030,#C8185A);color:white;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 28px rgba(107,0,48,.4),0 2px 8px rgba(200,24,90,.2);letter-spacing:.2px;}
 .cta-sub{text-align:center;font-size:11px;color:var(--ink-3);margin-top:7px;font-weight:500;}
 
 .cons-card{background:white;border-radius:16px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border:1.5px solid transparent;cursor:pointer;}
@@ -376,17 +391,17 @@ input,textarea,select{font-family:var(--font);}
 
       <!-- Contadores de status -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px;">
-        <div style="background:rgba(10,143,92,.2);border-radius:12px;padding:8px 10px;text-align:center;border:1px solid rgba(10,143,92,.25);">
-          <div style="color:rgba(255,255,255,.6);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Atendidas</div>
-          <div style="color:#6EF0B0;font-size:18px;font-weight:800;" id="cntAtendidas">0</div>
+        <div style="background:rgba(10,143,92,.15);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(110,240,176,.12);">
+          <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Atendidas</div>
+          <div style="color:#6EF0B0;font-size:20px;font-weight:800;letter-spacing:-.5px;" id="cntAtendidas">0</div>
         </div>
-        <div style="background:rgba(184,110,0,.2);border-radius:12px;padding:8px 10px;text-align:center;border:1px solid rgba(184,110,0,.25);">
-          <div style="color:rgba(255,255,255,.6);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Rem. Semana</div>
-          <div style="color:#FFD060;font-size:18px;font-weight:800;" id="cntRemSemana">0</div>
+        <div style="background:rgba(201,168,76,.12);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(201,168,76,.12);">
+          <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Rem. Semana</div>
+          <div style="color:#E8C96A;font-size:20px;font-weight:800;letter-spacing:-.5px;" id="cntRemSemana">0</div>
         </div>
-        <div style="background:rgba(201,38,30,.2);border-radius:12px;padding:8px 10px;text-align:center;border:1px solid rgba(201,38,30,.25);">
-          <div style="color:rgba(255,255,255,.6);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Rem. Mês</div>
-          <div style="color:#FF8080;font-size:18px;font-weight:800;" id="cntRemMes">0</div>
+        <div style="background:rgba(201,38,30,.12);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(201,38,30,.1);">
+          <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Rem. Mês</div>
+          <div style="color:#FF9090;font-size:20px;font-weight:800;letter-spacing:-.5px;" id="cntRemMes">0</div>
         </div>
       </div>
     </div>
