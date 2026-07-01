@@ -1856,7 +1856,13 @@ function salvarRegistroVenda() {
       cons.recebido = (cons.recebido||0) + recebido;
       cons.ultimoPgto = recebido;
     }
-    if (aPagar > 0) cons.aPagar = aPagar;
+    if (aPagar > 0) {
+      // Débito = valor a pagar menos o que já recebeu agora
+      const debitoAnterior = cons.debito || 0;
+      const saldoDevedor = Math.max(0, aPagar - recebido);
+      cons.debito = debitoAnterior + saldoDevedor;
+      cons.aPagar = aPagar;
+    }
     if (forma) cons.formaPgto = forma;
 
     save();
@@ -1864,7 +1870,7 @@ function salvarRegistroVenda() {
     // Atualiza tela atendimento
     document.getElementById('atendUltimaVenda').textContent = brl(cons.ultimaVenda||0);
     document.getElementById('atendUltimoPgto').textContent  = brl(cons.ultimoPgto||0);
-    document.getElementById('atendDebito').textContent      = brl(cons.aPagar||0);
+    document.getElementById('atendDebito').textContent      = cons.debito > 0 ? brl(cons.debito) : 'R$ 0';
     document.getElementById('atendScore').textContent       = 'Score ' + calcScore(cons);
 
     // Atualiza botão com resumo
