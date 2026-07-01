@@ -1392,6 +1392,17 @@ function renderSemana() {
   const cobrancas = sem.consultoras.reduce((a,c) => a + (c.debito||0), 0);
   const meta = sem.meta || DB.config.metaPadrao || 15000;
   const pctM = Math.min(100, Math.round(vendido/meta*100));
+
+  // Ordena por dia + horário antes de definir próxima
+  const diasOrd = {'Segunda-feira':1,'Terça-feira':2,'Quarta-feira':3,'Quinta-feira':4,'Sexta-feira':5,'Sábado':6};
+  function hM(h) { if (!h) return 9999; const [hh,mm] = h.split(':').map(Number); return hh*60+mm; }
+  sem.consultoras.sort((a,b) => {
+    if (a.status==='concluida' && b.status!=='concluida') return 1;
+    if (b.status==='concluida' && a.status!=='concluida') return -1;
+    const dA = diasOrd[a.diaMelhor]??7, dB = diasOrd[b.diaMelhor]??7;
+    return dA!==dB ? dA-dB : hM(a.horarioMelhor)-hM(b.horarioMelhor);
+  });
+
   const proxima = sem.consultoras.find(c => c.status !== 'concluida');
   const faltaMeta = Math.max(0, meta - vendido);
 
@@ -1432,23 +1443,7 @@ function renderSemana() {
   const lista = document.getElementById('listaConsultoras');
   if (!sem.consultoras.length) { lista.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);">Nenhuma consultora nesta semana.</div>'; return; }
 
-  // Ordena: concluídas no final, pendentes por dia da semana + horário
-  const diasOrdem = {'Segunda-feira':1,'Terça-feira':2,'Quarta-feira':3,'Quinta-feira':4,'Sexta-feira':5,'Sábado':6,'':7};
-  function hMin(h) { if (!h) return 9999; const [hh,mm] = h.split(':').map(Number); return hh*60+mm; }
-
-  const ordenadas = [...sem.consultoras].sort((a, b) => {
-    if (a.status === 'concluida' && b.status !== 'concluida') return 1;
-    if (b.status === 'concluida' && a.status !== 'concluida') return -1;
-    const diaA = diasOrdem[a.diaMelhor] ?? 7;
-    const diaB = diasOrdem[b.diaMelhor] ?? 7;
-    if (diaA !== diaB) return diaA - diaB;
-    return hMin(a.horarioMelhor) - hMin(b.horarioMelhor);
-  });
-
-  // Atualiza a ordem na semana para refletir na próxima sugestão
-  sem.consultoras = ordenadas;
-
-  lista.innerHTML = ordenadas.map(c => {
+  lista.innerHTML = sem.consultoras.map(c => {
     const st = c.status || 'pendente';
     const isNext = proxima && c.id === proxima.id;
     const cls = st === 'concluida' ? 'done' : isNext ? 'next' : c.debito > 0 ? 'alert' : '';
