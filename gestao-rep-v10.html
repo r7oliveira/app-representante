@@ -1942,7 +1942,7 @@ function renderRadar() {
         <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--amber);">${semFav.length} sem pedido favorita</div><div style="font-size:12px;color:var(--amber);opacity:.8;font-weight:500;margin-top:1px;">Oportunidade de venda</div></div>
       </div>
       <div class="radar-item-body">
-        Pedido mínimo R$ 400 × ${semFav.length} = <strong style="color:var(--ink);">${brl(potVendas)}</strong> em vendas · Seu lucro (18% sobre 70%): <strong style="color:var(--green);">${brl(potLucro)}</strong>
+        Pedido mínimo R$ 400 × ${semFav.length} = <strong style="color:var(--ink);">${brl(potVendas)}</strong> em vendas · Seu lucro de 18%: <strong style="color:var(--green);">${brl(potLucro)}</strong>
       </div>
     </div>`;
   }
@@ -2688,7 +2688,7 @@ function gerarIniciativas(sem) {
     const potLucro  = Math.round(semFav.length * pedidoMin * 0.70 * 0.18 * 100) / 100;
     iniciativas.push({
       cor:'var(--amber)', tag:'Oportunidade', tempo:'esta semana',
-      texto:`<strong>${semFav.length} consultoras</strong> sem pedido favorita. R$ 400 × ${semFav.length} = <strong>${brl(potVendas)}</strong> em vendas · Seu lucro: <strong style="color:var(--green)">${brl(potLucro)}</strong>`,
+      texto:`<strong>${semFav.length} consultoras</strong> sem pedido favorita. Pedido mínimo R$ 400 × ${semFav.length} = <strong>${brl(potVendas)}</strong> em vendas · Seu lucro de 18%: <strong style="color:var(--green)">${brl(potLucro)}</strong>`,
       acao: null, fn: null
     });
   }
