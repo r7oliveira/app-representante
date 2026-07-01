@@ -353,9 +353,9 @@ input,textarea,select{font-family:var(--font);}
       </div>
       <div class="hero-grid">
         <div class="hero-box">
-          <div class="hero-box-label">Vendido</div>
+          <div class="hero-box-label">A Pagar</div>
           <div class="hero-box-val" id="heroVendido">R$ 0</div>
-          <div class="hero-box-sub" id="heroMetaSub">Meta: —</div>
+          <div class="hero-box-sub" id="heroMetaSub">Vendido: —</div>
         </div>
         <div class="hero-box">
           <div class="hero-box-label">Recebido</div>
@@ -1457,8 +1457,10 @@ function renderSemana() {
   document.getElementById('progMeta').style.width = pctM + '%';
   document.getElementById('progConsultorasVal').textContent = atendidas + '/' + total;
   document.getElementById('progMetaVal').textContent = pctM + '%';
-  document.getElementById('heroVendido').textContent = brl(vendido);
-  document.getElementById('heroMetaSub').textContent = 'Meta: ' + brl(meta);
+  const aPagarTotal = Math.round(vendido * 0.70 * 100) / 100;
+
+  document.getElementById('heroVendido').textContent = brl(aPagarTotal);
+  document.getElementById('heroMetaSub').textContent = 'Vendido: ' + brl(vendido);
   document.getElementById('heroRecebido').textContent = brl(recebido);
   document.getElementById('heroCobrancas').textContent = brl(cobrancas);
   document.getElementById('heroPendentes').textContent = total - atendidas;
