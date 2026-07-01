@@ -2367,6 +2367,22 @@ function salvarConsultora() {
       c.diaMelhor = document.getElementById('cDia').value;
       c.horarioMelhor = document.getElementById('cHorario').value;
       c.rotaObs = document.getElementById('cRotaObs').value.trim();
+
+      // Sincroniza com a semana ativa se a consultora estiver lá
+      const sem = getSemanaAtiva();
+      if (sem) {
+        const cSem = sem.consultoras.find(x => x.id === c.id);
+        if (cSem) {
+          cSem.nome = c.nome;
+          cSem.telefone = c.telefone;
+          cSem.cidade = c.cidade;
+          cSem.bairro = c.bairro;
+          cSem.diaMelhor = c.diaMelhor;
+          cSem.horarioMelhor = c.horarioMelhor;
+          cSem.pedidoFavorita = c.pedidoFavorita;
+          cSem.rotaObs = c.rotaObs;
+        }
+      }
       save(); fecharModal('modalConsultora');
       window._editConsId = null;
       document.getElementById('modalConsTitulo').textContent = 'Nova Consultora';
