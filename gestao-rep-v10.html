@@ -93,7 +93,7 @@ input,textarea,select{font-family:var(--font);}
 .prog-label{color:rgba(255,255,255,.55);font-size:11px;font-weight:600;flex-shrink:0;width:86px;}
 .prog-track{flex:1;height:3px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden;}
 .prog-fill{height:100%;background:linear-gradient(90deg,rgba(255,255,255,.6),white);border-radius:99px;transition:width .6s ease;}
-.prog-val{color:rgba(255,255,255,.8);font-size:11px;font-weight:700;flex-shrink:0;width:36px;text-align:right;}
+.prog-val{color:rgba(255,255,255,.8);font-size:10px;font-weight:700;flex-shrink:0;width:110px;text-align:right;}
 .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;}
 .hero-box{background:rgba(255,255,255,.07);border-radius:14px;padding:12px 14px;border:1px solid rgba(255,255,255,.08);}
 .hero-box-label{color:rgba(255,255,255,.45);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
@@ -1460,8 +1460,9 @@ function renderSemana() {
     const aPagarC = Math.round((c.vendido||0) * 0.70 * 100) / 100;
     return a + Math.max(0, aPagarC - (c.recebido||0));
   }, 0);
-  const meta = sem.meta || DB.config.metaPadrao || 15000;
-  const pctM = Math.min(100, Math.round(vendido/meta*100));
+  const aPagarTotal = Math.round(vendido * 0.70 * 100) / 100;
+  const pctM = Math.min(100, Math.round(aPagarTotal/meta*100));
+  const faltaMeta = Math.max(0, meta - aPagarTotal);
 
   // Ordena por dia + horário antes de definir próxima
   const diasOrd = {'Segunda-feira':1,'Terça-feira':2,'Quarta-feira':3,'Quinta-feira':4,'Sexta-feira':5,'Sábado':6};
@@ -1474,15 +1475,13 @@ function renderSemana() {
   });
 
   const proxima = sem.consultoras.find(c => c.status !== 'concluida');
-  const faltaMeta = Math.max(0, meta - vendido);
 
   document.getElementById('semanaNumero').textContent = 'Semana ' + sem.numero;
   document.getElementById('semanaRegiao').textContent = sem.regiao;
   document.getElementById('progConsultoras').style.width = pctC + '%';
   document.getElementById('progMeta').style.width = pctM + '%';
   document.getElementById('progConsultorasVal').textContent = atendidas + '/' + total;
-  document.getElementById('progMetaVal').textContent = pctM + '%';
-  const aPagarTotal = Math.round(vendido * 0.70 * 100) / 100;
+  document.getElementById('progMetaVal').textContent = pctM + '% · ' + brl(meta);
 
   document.getElementById('heroVendido').textContent = brl(aPagarTotal);
   document.getElementById('heroMetaSub').textContent = 'Vendido: ' + brl(vendido);
@@ -1499,7 +1498,7 @@ function renderSemana() {
   document.getElementById('cntRemMes').textContent    = nRemMes;
 
   document.getElementById('iaStrip').innerHTML =
-    (faltaMeta > 0 ? '<strong>Faltam ' + brl(faltaMeta) + ' para a meta.</strong> ' : '<strong>Meta atingida! ✓</strong> ') +
+    (faltaMeta > 0 ? '<strong>Faltam ' + brl(faltaMeta) + ' para a meta (a pagar).</strong> ' : '<strong>Meta atingida! ✓</strong> ') +
     (proxima ? 'Próxima: ' + proxima.nome + '.' : 'Todas atendidas!');
   if (proxima) {
     document.getElementById('ctaBtn').textContent = 'Continuar Semana →';
