@@ -1845,6 +1845,9 @@ function salvarRegistroVenda() {
       return;
     }
 
+    // Se não preencheu valor a pagar, calcula automaticamente (70% do vendido)
+    const aPagarFinal = aPagar > 0 ? aPagar : (vendido > 0 ? Math.round(vendido * 0.70 * 100) / 100 : 0);
+
     if (vendido > 0) {
       cons.vendido = (cons.vendido||0) + vendido;
       cons.ultimaVenda = vendido;
@@ -1856,12 +1859,10 @@ function salvarRegistroVenda() {
       cons.recebido = (cons.recebido||0) + recebido;
       cons.ultimoPgto = recebido;
     }
-    if (aPagar > 0) {
-      // Débito = valor a pagar menos o que já recebeu agora
-      const debitoAnterior = cons.debito || 0;
-      const saldoDevedor = Math.max(0, aPagar - recebido);
-      cons.debito = debitoAnterior + saldoDevedor;
-      cons.aPagar = aPagar;
+    if (aPagarFinal > 0) {
+      const saldoDevedor = Math.max(0, aPagarFinal - recebido);
+      cons.debito = (cons.debito||0) + saldoDevedor;
+      cons.aPagar = aPagarFinal;
     }
     if (forma) cons.formaPgto = forma;
 
