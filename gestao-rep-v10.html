@@ -3085,7 +3085,12 @@ function renderRelatorio() {
   const pendentes  = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido    = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
   const recebido   = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
-  const debitos    = sem.consultoras.reduce((a,c) => a+(c.debito||0), 0);
+  const debitos    = sem.consultoras.reduce((a,c) => {
+    if (c.status !== 'concluida') return a;
+    if ((c.debito||0) > 0) return a + c.debito;
+    const aPagarC = Math.round((c.vendido||0) * 0.70 * 100) / 100;
+    return a + Math.max(0, aPagarC - (c.recebido||0));
+  }, 0);
   const lucro      = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
   const meta       = sem.meta || 15000;
   const pct        = Math.min(100, Math.round(vendido/meta*100));
@@ -3180,7 +3185,12 @@ async function gerarRelatorioIA() {
   const atendidas = sem.consultoras.filter(c => c.status === 'concluida');
   const vendido   = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
   const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
-  const debitos   = sem.consultoras.reduce((a,c) => a+(c.debito||0), 0);
+  const debitos   = sem.consultoras.reduce((a,c) => {
+    if (c.status !== 'concluida') return a;
+    if ((c.debito||0) > 0) return a + c.debito;
+    const ap = Math.round((c.vendido||0) * 0.70 * 100) / 100;
+    return a + Math.max(0, ap - (c.recebido||0));
+  }, 0);
   const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
   const meta      = sem.meta || 15000;
   const pct       = Math.min(100, Math.round(vendido/meta*100));
@@ -3235,7 +3245,12 @@ function compartilharRelatorio() {
   const atendidas = sem.consultoras.filter(c => c.status === 'concluida');
   const vendido   = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
   const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
-  const debitos   = sem.consultoras.reduce((a,c) => a+(c.debito||0), 0);
+  const debitos   = sem.consultoras.reduce((a,c) => {
+    if (c.status !== 'concluida') return a;
+    if ((c.debito||0) > 0) return a + c.debito;
+    const ap = Math.round((c.vendido||0) * 0.70 * 100) / 100;
+    return a + Math.max(0, ap - (c.recebido||0));
+  }, 0);
   const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
 
   let txt = `RELATÓRIO — Semana ${sem.numero} · ${sem.regiao}\n`;
