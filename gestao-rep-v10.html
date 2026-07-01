@@ -1137,7 +1137,10 @@ input,textarea,select{font-family:var(--font);}
       <div class="ph-title">Relatório</div>
       <div class="ph-sub" id="relSubtitulo">Semana —</div>
     </div>
-    <button onclick="gerarRelatorioIA()" style="background:linear-gradient(135deg,#7C3AED,#C8185A);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">✦ Gerar com IA</button>
+    <div style="display:flex;gap:8px;">
+      <button onclick="gerarRelatorioIA()" style="background:linear-gradient(135deg,#7C3AED,#C8185A);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">✦ Gerar com IA</button>
+      <button onclick="gerarPDF()" style="background:var(--rose);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">PDF</button>
+    </div>
   </div>
 
   <!-- Seletor de semana -->
@@ -3269,6 +3272,152 @@ function compartilharRelatorio() {
   });
 
   navigator.clipboard?.writeText(txt).then(() => alert('Relatório copiado!')).catch(() => alert(txt));
+}
+
+/* ════════════════════════════════════════════
+   GERAR PDF
+════════════════════════════════════════════ */
+async function gerarPDF() {
+  const sel = document.getElementById('relSemanaSelect');
+  const sem = DB.semanas.find(s => s.id === sel?.value);
+  if (!sem) { alert('Selecione uma semana.'); return; }
+
+  // Carrega jsPDF
+  if (!window.jspdf) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W = 210, M = 16;
+  let y = 0;
+
+  const brlP = v => 'R$ ' + (v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fill = (x,yr,w,h,r,g,b) => { doc.setFillColor(r,g,b); doc.rect(x,yr,w,h,'F'); };
+  const chk = (n) => { if(y+n>272){doc.addPage();y=16;} };
+
+  // ── CAPA
+  fill(0,0,W,55,138,0,56);
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold'); doc.setFontSize(20);
+  doc.text('RELATÓRIO SEMANAL', M, 20);
+  doc.setFontSize(13);
+  doc.text('Semana '+sem.numero+' · '+sem.regiao, M, 30);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  doc.text(new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}), M, 39);
+  doc.setDrawColor(200,24,90); doc.setLineWidth(0.5);
+  doc.line(M,47,W-M,47);
+  y = 62;
+
+  // ── Cálculos
+  const atend   = sem.consultoras.filter(c=>c.status==='concluida');
+  const pend    = sem.consultoras.filter(c=>c.status!=='concluida');
+  const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
+  const recebido= sem.consultoras.reduce((a,c)=>a+(c.recebido||0),0);
+  const aPagar  = Math.round(vendido*0.70*100)/100;
+  const lucro   = Math.round(vendido*0.70*0.18*100)/100;
+  const debitos = sem.consultoras.reduce((a,c)=>{
+    if(c.status!=='concluida') return a;
+    if((c.debito||0)>0) return a+c.debito;
+    return a+Math.max(0,Math.round((c.vendido||0)*0.70*100)/100-(c.recebido||0));
+  },0);
+  const meta = sem.meta||15000;
+  const pct  = Math.min(100,Math.round(vendido/meta*100));
+  const nRSem= sem.consultoras.filter(c=>c.remarcarSemana).length;
+  const nRMes= sem.consultoras.filter(c=>c.remarcarMes).length;
+
+  // ── RESUMO
+  doc.setTextColor(15,10,20); doc.setFont('helvetica','bold'); doc.setFontSize(11);
+  doc.text('RESUMO GERAL', M, y); y+=5;
+  const cW=(W-M*2-4)/2;
+  [[brlP(aPagar),'A PAGAR (70%)',brlP(vendido),[248,240,245]],[brlP(recebido),'RECEBIDO','Esta semana',[232,247,241]],
+   [brlP(lucro),'SEU LUCRO (18%)','Sobre valor líquido',[232,247,241]],[brlP(debitos),'A RECEBER','Pendentes',[254,240,238]]]
+  .forEach(([val,lbl,sub,bg],i)=>{
+    const cx=M+(i%2)*(cW+4), cy=y+Math.floor(i/2)*22;
+    fill(cx,cy,cW,19,...bg);
+    doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(100,100,110); doc.text(lbl,cx+3,cy+6);
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(15,10,20); doc.text(val,cx+3,cy+13);
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(107,100,120); doc.text(sub,cx+3,cy+18);
+  });
+  y+=48;
+
+  // ── INDICADORES
+  chk(24);
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,10,20);
+  doc.text('INDICADORES', M, y); y+=5;
+  fill(M,y,W-M*2,18,247,246,244);
+  [['Atendidas',atend.length+'/'+sem.consultoras.length],['Meta',pct+'%'],['Rem. Semana',String(nRSem)],['Rem. Mês',String(nRMes)]]
+  .forEach(([lbl,val],i)=>{
+    const ix=M+(i*(W-M*2)/4)+3;
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(100,100,110); doc.text(lbl,ix,y+6);
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(200,24,90); doc.text(val,ix,y+14);
+  });
+  y+=22;
+
+  // Barra meta
+  chk(12);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(15,10,20);
+  doc.text('Meta: '+brlP(meta)+' · '+pct+'% atingido', M, y); y+=3;
+  fill(M,y,W-M*2,4,220,215,230);
+  fill(M,y,Math.max(1,(W-M*2)*(pct/100)),4,200,24,90);
+  y+=10;
+
+  // ── CONSULTORAS
+  chk(16);
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,10,20);
+  doc.text('CONSULTORAS ATENDIDAS ('+atend.length+')', M, y); y+=5;
+
+  atend.forEach((c,i)=>{
+    chk(26);
+    const ap=Math.round((c.vendido||0)*0.70*100)/100;
+    const lc=Math.round((c.vendido||0)*0.70*0.18*100)/100;
+    const db=(c.debito||0)>0?c.debito:Math.max(0,ap-(c.recebido||0));
+    fill(M,y,W-M*2,22,...(i%2===0?[252,251,250]:[255,255,255]));
+    doc.setDrawColor(220,215,225);doc.setLineWidth(0.2);doc.rect(M,y,W-M*2,22);
+    doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(15,10,20);
+    doc.text((i+1)+'. '+c.nome, M+3, y+6);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(10,143,92);
+    doc.text('Score '+calcScore(c), W-M-18, y+6);
+    const info=[c.cidade,c.diaMelhor?.replace('-feira',''),c.horarioMelhor].filter(Boolean).join(' · ');
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(107,100,120);
+    doc.text(info,M+3,y+11);
+    [[ap,'A Pagar',[15,10,20]],[c.recebido||0,'Recebido',[10,143,92]],[db,'Débito',db>0?[201,38,30]:[150,150,160]],[lc,'Lucro',[10,143,92]]]
+    .forEach(([v,lbl,clr],vi)=>{
+      const vx=M+3+vi*((W-M*2-6)/4);
+      doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(150,150,160); doc.text(lbl,vx,y+16);
+      doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...clr); doc.text(brlP(v),vx,y+21);
+    });
+    y+=24;
+  });
+
+  // ── PENDENTES
+  if(pend.length){
+    chk(14);
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,10,20);
+    doc.text('NÃO ATENDIDAS ('+pend.length+')', M, y); y+=5;
+    pend.forEach(c=>{
+      chk(7);
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(107,100,120);
+      doc.text('• '+c.nome+(c.cidade?' · '+c.cidade:''), M+3, y); y+=6;
+    });
+  }
+
+  // ── RODAPÉ
+  const pages=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    doc.setDrawColor(200,24,90);doc.setLineWidth(0.3);doc.line(M,285,W-M,285);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(150,150,160);
+    doc.text('Gestão Representante · Semana '+sem.numero+' · '+sem.regiao, M, 289);
+    doc.text('Página '+i+' de '+pages, W-M-18, 289);
+  }
+
+  doc.save('relatorio-semana-'+sem.numero+'.pdf');
 }
 
 /* ════════════════════════════════════════════
