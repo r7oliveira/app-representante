@@ -1123,7 +1123,7 @@ input,textarea,select{font-family:var(--font);}
       <div class="ph-title">Relatório</div>
       <div class="ph-sub" id="relSubtitulo">Semana —</div>
     </div>
-    <button onclick="compartilharRelatorio()" style="background:var(--rose-light);color:var(--rose);border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">Copiar</button>
+    <button onclick="gerarRelatorioIA()" style="background:linear-gradient(135deg,#7C3AED,#C8185A);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">✦ Gerar com IA</button>
   </div>
 
   <!-- Seletor de semana -->
@@ -3099,6 +3099,64 @@ function renderRelatorio() {
   document.getElementById('relConteudo').innerHTML = html;
 }
 
+async function gerarRelatorioIA() {
+  const key = DB.config.geminiKey || '';
+  if (!key) { alert('Configure a chave Gemini em Mais → Configurações.'); return; }
+
+  const sel = document.getElementById('relSemanaSelect');
+  const sem = DB.semanas.find(s => s.id === sel?.value);
+  if (!sem) return;
+
+  const atendidas = sem.consultoras.filter(c => c.status === 'concluida');
+  const vendido   = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
+  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
+  const debitos   = sem.consultoras.reduce((a,c) => a+(c.debito||0), 0);
+  const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
+  const meta      = sem.meta || 15000;
+  const pct       = Math.min(100, Math.round(vendido/meta*100));
+
+  const detalhes = atendidas.map(c =>
+    `- ${c.nome} (${c.cidade||''}): Vendido ${brl(c.vendido||0)}, Recebido ${brl(c.recebido||0)}, Débito ${brl(c.debito||0)}, Score ${calcScore(c)}`
+  ).join('\n');
+
+  const prompt = `Você é o Assistente Comercial de Rogério, representante de cosméticos Romance. Gere um relatório semanal detalhado, direto e profissional em português, com análise de desempenho.
+
+Dados da Semana ${sem.numero} — ${sem.regiao}:
+- Meta: ${brl(meta)}
+- Vendido: ${brl(vendido)} (${pct}% da meta)
+- Recebido: ${brl(recebido)}
+- A receber (débitos): ${brl(debitos)}
+- Seu lucro estimado (18% sobre 70%): ${brl(lucro)}
+- Consultoras atendidas: ${atendidas.length} de ${sem.consultoras.length}
+
+Consultoras atendidas:
+${detalhes}
+
+Gere um relatório com: resumo geral, destaques positivos, pontos de atenção (débitos, não atendidas), e 2-3 recomendações para a próxima semana. Use linguagem direta e profissional.`;
+
+  const el = document.getElementById('modalRelatorioIAConteudo');
+  el.textContent = 'Gerando relatório...';
+  document.getElementById('modalRelatorioIA').classList.add('open');
+
+  try {
+    const resp = await geminiCall(key, {
+      contents: [{ role: 'user', parts: [{ text: prompt }] }]
+    });
+    const texto = resp.candidates[0].content.parts[0].text;
+    el.textContent = texto;
+    window._relatorioIATexto = texto;
+  } catch(e) {
+    el.textContent = 'Erro ao gerar relatório: ' + e.message;
+  }
+}
+
+function copiarRelatorioIA() {
+  const txt = window._relatorioIATexto || '';
+  navigator.clipboard?.writeText(txt)
+    .then(() => alert('Relatório copiado!'))
+    .catch(() => alert(txt));
+}
+
 function compartilharRelatorio() {
   const sel = document.getElementById('relSemanaSelect');
   const sem = DB.semanas.find(s => s.id === sel?.value);
@@ -3173,6 +3231,24 @@ goTo('semana');
     <div style="display:flex;flex-direction:column;gap:8px;">
       <button class="btn-primary" onclick="finalizarSemana()">✓ Finalizar Semana</button>
       <button class="btn-ghost" onclick="fecharModal('modalFechamento')">Continuar editando</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: RELATÓRIO IA
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalRelatorioIA">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalRelatorioIA')">✕</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <div class="ia-orb" style="width:32px;height:32px;border-radius:10px;font-size:14px;">✦</div>
+      <div class="modal-title" style="margin:0;">Relatório gerado pela IA</div>
+    </div>
+    <div id="modalRelatorioIAConteudo" style="font-size:14px;color:var(--ink-2);line-height:1.7;white-space:pre-wrap;"></div>
+    <div style="margin-top:16px;display:flex;gap:8px;">
+      <button class="btn-ghost" style="flex:1;" onclick="copiarRelatorioIA()">Copiar texto</button>
+      <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRelatorioIA')">Fechar</button>
     </div>
   </div>
 </div>
