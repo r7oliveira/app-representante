@@ -1656,6 +1656,42 @@ function toggleCrit(campo) {
   const cons = sem && atendConsId ? sem.consultoras.find(c => c.id === atendConsId) : null;
   if (!cons) return;
   cons[campo] = !cons[campo];
+
+  // Quando remarcar próxima semana → muda região para a próxima no ciclo
+  if (campo === 'remarcarSemana' && cons[campo]) {
+    const idxAtual = CICLO.indexOf(sem.regiao);
+    const proximaRegiao = CICLO[(idxAtual + 1) % CICLO.length];
+    // Atualiza no Cadastro Mestre
+    const mestre = DB.consultoras.find(c => c.id === cons.id);
+    if (mestre) {
+      mestre.regiao = proximaRegiao;
+    }
+    cons.regiao = proximaRegiao;
+    cons.remarcarPara = proximaRegiao;
+    // Mostra confirmação
+    setTimeout(() => {
+      const chk = document.getElementById('chk-remarcarSemana');
+      if (chk) {
+        chk.title = 'Remarcada para ' + proximaRegiao;
+      }
+      // Atualiza sub do header
+      const cidadeEl = document.getElementById('atendCidade');
+      if (cidadeEl) {
+        cidadeEl.innerHTML = cidadeEl.innerHTML +
+          '<br><span style="color:#FFD060;font-size:11px;font-weight:700;">→ Remarcada para ' + proximaRegiao + '</span>';
+      }
+    }, 100);
+  }
+  // Se desmarcar remarcar, volta à região original da semana
+  if (campo === 'remarcarSemana' && !cons[campo]) {
+    const mestre = DB.consultoras.find(c => c.id === cons.id);
+    if (mestre && cons.remarcarPara) {
+      mestre.regiao = sem.regiao;
+      cons.regiao = sem.regiao;
+      delete cons.remarcarPara;
+    }
+  }
+
   save();
   atualizarScoreAtend(cons);
 }
