@@ -1256,7 +1256,7 @@ function uid() { return 'id' + (DB.seq++) + Date.now().toString(36); }
 /* ════════════════════════════════════════════
    UTILS
 ════════════════════════════════════════════ */
-const brl = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0});
+const brl = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
 function fmtTelefone(tel) {
   const d = String(tel||'').replace(/\D/g,'');
   const n = d.slice(-11);
