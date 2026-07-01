@@ -1434,7 +1434,14 @@ function renderSemana() {
   const pctC = total > 0 ? Math.round(atendidas/total*100) : 0;
   const vendido = sem.consultoras.reduce((a,c) => a + (c.vendido||0), 0);
   const recebido = sem.consultoras.reduce((a,c) => a + (c.recebido||0), 0);
-  const cobrancas = sem.consultoras.reduce((a,c) => a + (c.debito||0), 0);
+  const cobrancas = sem.consultoras.reduce((a,c) => {
+    if (c.status !== 'concluida') return a;
+    // Se tem débito registrado, usa ele
+    if ((c.debito||0) > 0) return a + c.debito;
+    // Senão calcula: 70% do vendido menos o que já recebeu
+    const aPagarC = Math.round((c.vendido||0) * 0.70 * 100) / 100;
+    return a + Math.max(0, aPagarC - (c.recebido||0));
+  }, 0);
   const meta = sem.meta || DB.config.metaPadrao || 15000;
   const pctM = Math.min(100, Math.round(vendido/meta*100));
 
@@ -1476,7 +1483,6 @@ function renderSemana() {
   document.getElementById('iaStrip').innerHTML =
     (faltaMeta > 0 ? '<strong>Faltam ' + brl(faltaMeta) + ' para a meta.</strong> ' : '<strong>Meta atingida! ✓</strong> ') +
     (proxima ? 'Próxima: ' + proxima.nome + '.' : 'Todas atendidas!');
-
   if (proxima) {
     document.getElementById('ctaBtn').textContent = 'Continuar Semana →';
     document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
