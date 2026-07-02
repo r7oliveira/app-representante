@@ -13,6 +13,9 @@
 <meta http-equiv="Expires" content="0">
 <title>Gestão · Representante</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase via CDN compatível com Safari -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 :root {
   --rose:#C8185A; --rose-deep:#6B0030; --rose-light:#FFF0F5; --rose-mid:#E8A0BE;
@@ -49,8 +52,11 @@ input,textarea,select{font-family:var(--font);}
   background:rgba(15,10,20,.97);
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   border-top:1px solid rgba(255,255,255,.06);display:flex;
-  padding-bottom:env(safe-area-inset-bottom,4px);
-  z-index:100;height:56px;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  z-index:100;
+  height:calc(56px + env(safe-area-inset-bottom,0px));
+  align-items:flex-start;
+  padding-top:0;
 }
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 6px;gap:3px;font-size:10px;font-weight:700;color:rgba(255,255,255,.3);transition:color .15s;}
 .nav-item.active{color:var(--rose);}
@@ -1195,8 +1201,9 @@ input,textarea,select{font-family:var(--font);}
         </label>
       </div>
     </div>
-    <button class="btn-ghost" onclick="exportarDados()" style="margin-bottom:10px;">📤 Exportar dados</button>
-    <button class="btn-ghost" style="color:var(--red);" onclick="if(confirm('Apagar todos os dados?')){limparTudo();}">🗑️ Limpar todos os dados</button>
+    <button class="btn-ghost" onclick="exportarDados()" style="margin-bottom:10px;">Exportar dados</button>
+    <button class="btn-ghost" onclick="testarSync()" style="margin-bottom:10px;">Testar sincronização Firebase</button>
+    <button class="btn-ghost" style="color:var(--red);" onclick="if(confirm('Apagar todos os dados?')){limparTudo();}">Limpar todos os dados</button>
   </div>
 </div>
 
@@ -1353,39 +1360,39 @@ let _syncTimeout = null;
 
 async function initFirebase() {
   try {
-    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
-    const { getFirestore, doc, setDoc, getDoc, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-
-    const app = initializeApp(firebaseConfig);
-    _db = getFirestore(app);
-    _docRef = doc(_db, 'representantes', USER_ID);
+    if (typeof firebase === 'undefined') {
+      throw new Error('Firebase SDK não carregou');
+    }
+    // Evita inicializar duas vezes
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    _db = firebase.firestore();
+    _docRef = _db.collection('representantes').doc(USER_ID);
 
     // Carrega dados do Firestore
-    const snap = await getDoc(_docRef);
-    if (snap.exists()) {
+    const snap = await _docRef.get();
+    if (snap.exists) {
       const remoto = snap.data();
-      // Usa dados remotos se forem mais recentes
-      if (remoto && remoto.seq >= DB.seq) {
+      if (remoto && (remoto.seq || 0) >= DB.seq) {
         DB = remoto;
         localStorage.setItem(KEY, JSON.stringify(DB));
         renderSemana();
         console.log('Dados carregados do Firebase');
       } else {
-        // Dados locais são mais recentes — sobe para o Firebase
-        await setDoc(_docRef, DB);
+        await _docRef.set(DB);
         console.log('Dados locais enviados ao Firebase');
       }
     } else {
-      // Primeira vez — sobe dados locais
-      await setDoc(_docRef, DB);
+      await _docRef.set(DB);
       console.log('Dados iniciais enviados ao Firebase');
     }
 
     // Listener em tempo real
-    onSnapshot(_docRef, (snap) => {
-      if (snap.exists()) {
+    _docRef.onSnapshot((snap) => {
+      if (snap.exists) {
         const remoto = snap.data();
-        if (remoto && remoto.seq > DB.seq) {
+        if (remoto && (remoto.seq || 0) > DB.seq) {
           DB = remoto;
           localStorage.setItem(KEY, JSON.stringify(DB));
           renderSemana();
@@ -1403,15 +1410,12 @@ async function initFirebase() {
 }
 
 function save() {
-  // Salva local imediatamente
   try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e) {}
-  // Sobe para Firebase com debounce (evita muitas escritas)
   if (_docRef) {
     clearTimeout(_syncTimeout);
     _syncTimeout = setTimeout(async () => {
       try {
-        const { setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
-        await setDoc(_docRef, DB);
+        await _docRef.set(DB);
         document.getElementById('syncStatus').textContent = '● Sincronizado';
         document.getElementById('syncStatus').style.color = '#6EF0B0';
       } catch(e) {
@@ -2721,6 +2725,15 @@ function salvarConfig() {
   DB.config.geminiKey = document.getElementById('cfgGemini').value.trim();
   DB.config.metaPadrao = parseNum(document.getElementById('cfgMeta').value) || 15000;
   save();
+}
+
+function testarSync() {
+  const status = document.getElementById('syncStatus')?.textContent || 'não encontrado';
+  const firebase_ok = typeof firebase !== 'undefined' ? 'SDK carregada' : 'SDK NÃO carregada';
+  const db_ok = _db ? 'Firestore conectado' : 'Firestore NÃO conectado';
+  const ref_ok = _docRef ? 'Referência OK' : 'Referência NÃO criada';
+  const user = USER_ID || 'não definido';
+  alert(`Status: ${status}\n${firebase_ok}\n${db_ok}\n${ref_ok}\nUser ID: ${user}\nDados locais: ${DB.semanas.length} semanas, ${DB.consultoras.length} consultoras`);
 }
 
 function exportarDados() {
