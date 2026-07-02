@@ -6,8 +6,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Gestão Representante">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#8A0038">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#6B0030">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Gestão · Representante</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -31,10 +34,10 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 input,textarea,select{font-family:var(--font);}
 
 /* ── APP SHELL ── */
-#app{display:flex;flex-direction:column;height:100%;height:100dvh;max-width:480px;margin:0 auto;position:relative;background:var(--surface);}
+#app{display:flex;flex-direction:column;height:100%;height:100dvh;max-width:480px;margin:0 auto;position:relative;background:var(--surface);padding-top:env(safe-area-inset-top,0px);}
 
 /* ── VIEWS ── */
-.view{display:none;flex-direction:column;overflow:hidden;position:absolute;top:0;left:0;right:0;bottom:56px;background:var(--surface);}
+.view{display:none;flex-direction:column;overflow:hidden;position:absolute;top:0;left:0;right:0;bottom:calc(56px + env(safe-area-inset-bottom,0px));background:var(--surface);}
 .view.active{display:flex;}
 #view-atendimento, #view-assist-new, #view-iniciativas {bottom:0;}
 .scroll-body{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;}
@@ -354,7 +357,10 @@ input,textarea,select{font-family:var(--font);}
 
     <!-- Hero -->
     <div class="hero-grad" style="padding:16px 20px 22px;" id="semanaHero">
-      <div class="hero-week-label" id="semanaNumero">Semana —</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+        <div class="hero-week-label" id="semanaNumero">Semana —</div>
+        <div id="syncStatus" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);">● Carregando</div>
+      </div>
       <div class="hero-region" id="semanaRegiao">Carregando...</div>
       <div class="prog-row">
         <div class="prog-label">Consultoras</div>
@@ -1297,23 +1303,125 @@ input,textarea,select{font-family:var(--font);}
 
 <script>
 /* ════════════════════════════════════════════
-   STORAGE
+   FIREBASE CONFIG
 ════════════════════════════════════════════ */
-const KEY = 'gestao_rep_v2';
-let DB = (() => {
-  try { const r = localStorage.getItem(KEY); if (r) return JSON.parse(r); } catch(e){}
-  return {
-    consultoras: [],   // Cadastro Mestre
-    semanas: [],       // Histórico de semanas
-    semanaAtiva: null, // ID da semana em andamento
-    config: { geminiKey: '', metaPadrao: 15000 },
-    seq: 1
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyD7FjlCtIZNL7YT6DU7P5FBM2AI7Qx2z1o",
+  authDomain: "romance-indicacoes.firebaseapp.com",
+  projectId: "romance-indicacoes",
+  storageBucket: "romance-indicacoes.firebasestorage.app",
+  messagingSenderId: "1000995187899",
+  appId: "1:1000995187899:web:af4c97957e8f10bb42cd9e"
+};
+
+// ID único do dispositivo — garante que cada usuário tem seus próprios dados
+const USER_ID = (() => {
+  let id = localStorage.getItem('rep_user_id');
+  if (!id) { id = 'rogerio_' + Date.now().toString(36); localStorage.setItem('rep_user_id', id); }
+  return id;
 })();
 
-function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e){ alert('Erro ao salvar: ' + e.message); }
+const KEY = 'gestao_rep_v2'; // ainda usado como cache local
+let DB = (() => {
+  try {
+    const r = localStorage.getItem(KEY);
+    if (r) return JSON.parse(r);
+    const keysOld = ['gestao_rep_v1', 'gestao_rep', 'rep_data'];
+    for (const k of keysOld) {
+      const old = localStorage.getItem(k);
+      if (old) {
+        const parsed = JSON.parse(old);
+        if (parsed.semanas || parsed.consultoras) {
+          return {
+            consultoras: parsed.consultoras || [],
+            semanas: parsed.semanas || [],
+            semanaAtiva: parsed.semanaAtiva || null,
+            config: parsed.config || { geminiKey: '', metaPadrao: 15000 },
+            seq: parsed.seq || 1
+          };
+        }
+      }
+    }
+  } catch(e) {}
+  return { consultoras:[], semanas:[], semanaAtiva:null, config:{geminiKey:'',metaPadrao:15000}, seq:1 };
+})();
+
+// Firebase refs
+let _db = null;
+let _docRef = null;
+let _syncTimeout = null;
+
+async function initFirebase() {
+  try {
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getFirestore, doc, setDoc, getDoc, onSnapshot } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+    const app = initializeApp(firebaseConfig);
+    _db = getFirestore(app);
+    _docRef = doc(_db, 'representantes', USER_ID);
+
+    // Carrega dados do Firestore
+    const snap = await getDoc(_docRef);
+    if (snap.exists()) {
+      const remoto = snap.data();
+      // Usa dados remotos se forem mais recentes
+      if (remoto && remoto.seq >= DB.seq) {
+        DB = remoto;
+        localStorage.setItem(KEY, JSON.stringify(DB));
+        renderSemana();
+        console.log('Dados carregados do Firebase');
+      } else {
+        // Dados locais são mais recentes — sobe para o Firebase
+        await setDoc(_docRef, DB);
+        console.log('Dados locais enviados ao Firebase');
+      }
+    } else {
+      // Primeira vez — sobe dados locais
+      await setDoc(_docRef, DB);
+      console.log('Dados iniciais enviados ao Firebase');
+    }
+
+    // Listener em tempo real
+    onSnapshot(_docRef, (snap) => {
+      if (snap.exists()) {
+        const remoto = snap.data();
+        if (remoto && remoto.seq > DB.seq) {
+          DB = remoto;
+          localStorage.setItem(KEY, JSON.stringify(DB));
+          renderSemana();
+        }
+      }
+    });
+
+    document.getElementById('syncStatus').textContent = '● Sincronizado';
+    document.getElementById('syncStatus').style.color = '#6EF0B0';
+  } catch(e) {
+    console.error('Firebase erro:', e);
+    document.getElementById('syncStatus').textContent = '● Local';
+    document.getElementById('syncStatus').style.color = '#FFD060';
+  }
 }
+
+function save() {
+  // Salva local imediatamente
+  try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e) {}
+  // Sobe para Firebase com debounce (evita muitas escritas)
+  if (_docRef) {
+    clearTimeout(_syncTimeout);
+    _syncTimeout = setTimeout(async () => {
+      try {
+        const { setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+        await setDoc(_docRef, DB);
+        document.getElementById('syncStatus').textContent = '● Sincronizado';
+        document.getElementById('syncStatus').style.color = '#6EF0B0';
+      } catch(e) {
+        document.getElementById('syncStatus').textContent = '● Erro sync';
+        document.getElementById('syncStatus').style.color = '#FF9090';
+      }
+    }, 1000);
+  }
+}
+
 function uid() { return 'id' + (DB.seq++) + Date.now().toString(36); }
 
 /* ════════════════════════════════════════════
@@ -3454,6 +3562,7 @@ async function gerarPDF() {
    INIT
 ════════════════════════════════════════════ */
 goTo('semana');
+initFirebase();
 </script>
 <!-- ══════════════════════════════════════════
      MODAL: FECHAMENTO DA SEMANA
