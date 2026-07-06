@@ -359,7 +359,7 @@ input,textarea,select{font-family:var(--font);}
   <div class="scroll-body">
 
     <!-- Hero -->
-    <div class="hero-grad" style="padding:16px 20px 22px;" id="semanaHero">
+    <div class="hero-grad" style="padding:calc(16px + env(safe-area-inset-top)) 20px 22px;" id="semanaHero">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
         <div class="hero-week-label" id="semanaNumero">Semana —</div>
         <div id="syncStatus" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);">● Carregando</div>
@@ -547,10 +547,17 @@ input,textarea,select{font-family:var(--font);}
       </div>
 
       <!-- Critério: Remarcar mês -->
-      <div class="crit-row-atend" onclick="toggleCrit('remarcarMes')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;cursor:pointer;">
+      <div class="crit-row-atend" onclick="toggleCrit('remarcarMes')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
         <div class="crit-chk" id="chk-remarcarMes" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
         <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-remarcarMes">Remarcar próximo mês</div>
         <div style="font-size:11px;font-weight:700;color:var(--red);">−25</div>
+      </div>
+
+      <!-- Critério: Parou de vender (inativa) -->
+      <div class="crit-row-atend" onclick="toggleCrit('parouDeVender')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;cursor:pointer;">
+        <div class="crit-chk" id="chk-parouDeVender" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
+        <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-parouDeVender">Parou de vender (colocar como inativa)</div>
+        <div style="font-size:11px;font-weight:700;color:var(--red);">Zera pts</div>
       </div>
     </div>
 
@@ -878,7 +885,7 @@ input,textarea,select{font-family:var(--font);}
      TELA 7: MOTOR DE PRIORIDADE
 ══════════════════════════════════════════ -->
 <div class="view" id="view-motor">
-  <div class="hero-grad" style="padding:20px 20px 24px;">
+  <div class="hero-grad" style="padding:calc(20px + env(safe-area-inset-top)) 20px 24px;">
     <div style="color:rgba(255,255,255,.65);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;" id="motorSemana">Semana —</div>
     <div style="color:white;font-size:22px;font-weight:800;margin-bottom:16px;">Ranking de prioridade</div>
     <div class="next-card">
@@ -1450,6 +1457,7 @@ function iniciais(nome) {
 function hora() { return new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
 function dataFmt(d) { return new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}); }
 function calcScore(c) {
+  if (c.parouDeVender) return 0;
   let s = 0;
   if (c.atendimentoEmDia) s += 30;
   if (c.pagamentoNaSemana) s += 30;
@@ -1850,6 +1858,22 @@ function toggleCrit(campo) {
     }
   }
 
+  // Parou de vender → zera todos os pontos e marca como inativa no cadastro mestre
+  if (campo === 'parouDeVender') {
+    const mestre = DB.consultoras.find(c => c.id === cons.id);
+    if (cons.parouDeVender) {
+      cons.atendimentoEmDia = false;
+      cons.pagamentoNaSemana = false;
+      cons.pedidoFavoritaFeito = false;
+      cons.assinaturaDigital = false;
+      cons.remarcarSemana = false;
+      cons.remarcarMes = false;
+      if (mestre) mestre.status = 'inativa';
+    } else {
+      if (mestre) mestre.status = 'ativa';
+    }
+  }
+
   save();
   atualizarScoreAtend(cons);
 }
@@ -1872,6 +1896,7 @@ function atualizarScoreAtend(cons) {
     { id:'assinaturaDigital',   pts:'+15', neg:false },
     { id:'remarcarSemana',      pts:'−15', neg:true  },
     { id:'remarcarMes',         pts:'−25', neg:true  },
+    { id:'parouDeVender',       pts:'0',   neg:true  },
   ];
 
   crits.forEach(({ id, neg }) => {
