@@ -3169,8 +3169,8 @@ function mostrarFechamentoSemana() {
   const recebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
   const meta     = sem.meta || 15000;
   const pct      = Math.min(100, Math.round(vendido/meta*100));
-  const comDebito = sem.consultoras.filter(c => (c.debito||0) > 0 || (c.aPagar||0) > 0);
-  const totalDeb  = comDebito.reduce((a,c) => a+(c.debito||0)+(c.aPagar||0), 0);
+  const comDebito = sem.consultoras.filter(c => (c.debito||0) > 0);
+  const totalDeb  = comDebito.reduce((a,c) => a+(c.debito||0), 0);
 
   document.getElementById('fechSemanaLabel').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
   document.getElementById('fechVendido').textContent  = brl(vendido);
@@ -3186,7 +3186,7 @@ function mostrarFechamentoSemana() {
       <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(184,110,0,.1);">
         <div style="flex:1;">
           <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome}</div>
-          <div style="font-size:11px;color:var(--amber);">Débito: ${brl((c.debito||0)+(c.aPagar||0))}</div>
+          <div style="font-size:11px;color:var(--amber);">Débito: ${brl(c.debito||0)}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;">
           <input type="number" inputmode="decimal" placeholder="Valor" id="deb-${c.id}"
@@ -3210,7 +3210,7 @@ function registrarPgtoDebito(consId) {
   if (!val) return;
   cons.recebido = (cons.recebido||0) + val;
   cons.ultimoPgto = val;
-  const debAnt = (cons.debito||0) + (cons.aPagar||0);
+  const debAnt = (cons.debito||0);
   const restante = Math.max(0, debAnt - val);
   cons.debito = restante;
   cons.aPagar = 0;
