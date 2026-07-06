@@ -1961,6 +1961,8 @@ function abrirRegistro(tipo) {
   document.getElementById('modalRegTitulo').textContent = tipo === 'venda' ? 'Venda e Pagamento' : 'Observação';
 
   if (tipo === 'venda') {
+    const comissaoPct = cons && cons.pedidoFavoritaFeito ? 40 : 30;
+    window._payoutPct = (100 - comissaoPct) / 100;
     document.getElementById('modalRegConteudo').innerHTML = `
       <label class="field">
         <span>Valor vendido (R$)</span>
@@ -1969,7 +1971,7 @@ function abrirRegistro(tipo) {
       </label>
 
       <label class="field">
-        <span>Valor a pagar <span style="color:var(--ink-3);font-weight:500;">(vendido − 30% comissão consultora)</span></span>
+        <span>Valor a pagar <span style="color:var(--ink-3);font-weight:500;">(vendido − ${comissaoPct}% comissão consultora${comissaoPct===40?' · favorita':''})</span></span>
         <input id="regAPagar" type="number" inputmode="decimal" placeholder="0,00"
           style="background:var(--surface);">
         <span style="font-size:11px;color:var(--ink-3);margin-top:2px;">Calculado automaticamente · você pode ajustar</span>
@@ -2037,7 +2039,8 @@ function abrirRegistro(tipo) {
 
 function calcValorPagar() {
   const v = parseFloat(document.getElementById('regVenda').value) || 0;
-  const aPagar = Math.round(v * 0.70 * 100) / 100;
+  const pct = (typeof window._payoutPct === 'number') ? window._payoutPct : 0.70;
+  const aPagar = Math.round(v * pct * 100) / 100;
   document.getElementById('regAPagar').value = aPagar > 0 ? aPagar : '';
   atualizarResumo();
 }
@@ -2094,8 +2097,9 @@ function salvarRegistroVenda() {
       return;
     }
 
-    // Se não preencheu valor a pagar, calcula automaticamente (70% do vendido)
-    const aPagarFinal = aPagar > 0 ? aPagar : (vendido > 0 ? Math.round(vendido * 0.70 * 100) / 100 : 0);
+    // Se não preencheu valor a pagar, calcula automaticamente (70% do vendido, ou 60% se pedido favorita feito)
+    const pctFallback = (typeof window._payoutPct === 'number') ? window._payoutPct : 0.70;
+    const aPagarFinal = aPagar > 0 ? aPagar : (vendido > 0 ? Math.round(vendido * pctFallback * 100) / 100 : 0);
 
     if (vendido > 0) {
       cons.vendido = (cons.vendido||0) + vendido;
