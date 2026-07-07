@@ -1306,6 +1306,47 @@ input,textarea,select{font-family:var(--font);}
 
       <div style="font-size:13px;font-weight:700;color:var(--ink);margin:16px 0 8px;">Por tablet</div>
       <div id="fgPorTablet"></div>
+      <button class="btn-ghost" onclick="abrirModalFechManual()" style="margin-top:4px;">+ Adicionar tablet manualmente</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: TABLET MANUAL (Fechamento Geral)
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalFechManual">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalFechManual')">✕</button>
+    <div class="modal-title" id="fmTitulo">Adicionar tablet manualmente</div>
+
+    <input type="hidden" id="fmId">
+    <label class="field"><span>Nome do tablet / responsável *</span><input id="fmNome" placeholder="Ex: Tablet 2"></label>
+
+    <div class="two-col">
+      <label class="field" style="margin:0;"><span>Vendido (R$)</span><input id="fmVendido" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+      <label class="field" style="margin:0;"><span>Débito (R$)</span><input id="fmDebito" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+    </div>
+    <div class="two-col" style="margin-top:12px;">
+      <label class="field" style="margin:0;"><span>Recebido Pix (R$)</span><input id="fmPix" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+      <label class="field" style="margin:0;"><span>Recebido Dinheiro (R$)</span><input id="fmDinheiro" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+    </div>
+    <div class="two-col" style="margin-top:12px;">
+      <label class="field" style="margin:0;"><span>Remarc. semana</span><input id="fmRemSemana" type="number" inputmode="numeric" placeholder="0"></label>
+      <label class="field" style="margin:0;"><span>Remarc. mês</span><input id="fmRemMes" type="number" inputmode="numeric" placeholder="0"></label>
+    </div>
+    <div class="two-col" style="margin-top:12px;">
+      <label class="field" style="margin:0;"><span>Parou de vender</span><input id="fmParouVender" type="number" inputmode="numeric" placeholder="0"></label>
+      <label class="field" style="margin:0;"><span>Nº de vendas (p/ ticket médio)</span><input id="fmNumVendas" type="number" inputmode="numeric" placeholder="0"></label>
+    </div>
+    <div class="two-col" style="margin-top:12px;">
+      <label class="field" style="margin:0;"><span>Consultoras ativas</span><input id="fmAtivas" type="number" inputmode="numeric" placeholder="0"></label>
+      <label class="field" style="margin:0;"><span>Consultoras inativas</span><input id="fmInativas" type="number" inputmode="numeric" placeholder="0"></label>
+    </div>
+    <label class="field" style="margin-top:12px;"><span>Clientes novas</span><input id="fmNovas" type="number" inputmode="numeric" placeholder="0"></label>
+
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn-ghost" style="flex:1;" id="fmBtnExcluir" onclick="excluirFechManual()">Excluir</button>
+      <button class="btn-primary" style="flex:1;" onclick="salvarFechManual()">Salvar</button>
     </div>
   </div>
 </div>
@@ -2942,9 +2983,6 @@ async function buscarFechamentoGeral() {
   try {
     const snap = await _db.collection('representantes').get();
     const tablets = [];
-    let totVendido = 0, totAPagar = 0, totPix = 0, totDin = 0, totDebito = 0;
-    let totRemSemana = 0, totRemMes = 0, totParouVender = 0, totVendasCount = 0;
-    let totAtivas = 0, totInativas = 0, totClienteNova = 0;
 
     snap.forEach(doc => {
       const data = doc.data() || {};
@@ -2980,48 +3018,17 @@ async function buscarFechamentoGeral() {
         ? cadastro.filter(c => c.criadoEm && c.criadoEm >= sem.dataInicio).length
         : 0;
 
-      totVendido += tVendido; totAPagar += tAPagar; totPix += tPix; totDin += tDin; totDebito += tDebito;
-      totRemSemana += tRemSemana; totRemMes += tRemMes; totParouVender += tParouVender;
-      totVendasCount += tVendasCount;
-      totAtivas += ativasTablet; totInativas += inativasTablet; totClienteNova += novaTablet;
-
       tablets.push({
-        nome: nomeTablet, temSemana: !!sem,
-        vendido: tVendido, aPagar: tAPagar, recebido: tPix + tDin, debito: tDebito,
-        remSemana: tRemSemana, remMes: tRemMes, parouVender: tParouVender,
+        origem: 'auto', nome: nomeTablet, temSemana: !!sem,
+        vendido: tVendido, aPagar: tAPagar, pix: tPix, dinheiro: tDin, debito: tDebito,
+        remSemana: tRemSemana, remMes: tRemMes, parouVender: tParouVender, numVendas: tVendasCount,
         ativas: ativasTablet, inativas: inativasTablet, novas: novaTablet,
       });
     });
 
-    const ticketMedio = totVendasCount > 0 ? totVendido / totVendasCount : 0;
-
-    document.getElementById('fgVendido').textContent = brl(totVendido);
-    document.getElementById('fgAPagar').textContent = brl(totAPagar);
-    document.getElementById('fgPix').textContent = brl(totPix);
-    document.getElementById('fgDinheiro').textContent = brl(totDin);
-    document.getElementById('fgRecebidoTotal').textContent = brl(totPix + totDin);
-    document.getElementById('fgDebito').textContent = brl(totDebito);
-    document.getElementById('fgRemSemana').textContent = totRemSemana;
-    document.getElementById('fgRemMes').textContent = totRemMes;
-    document.getElementById('fgParouVender').textContent = totParouVender;
-    document.getElementById('fgTicket').textContent = brl(ticketMedio);
-    document.getElementById('fgAtivas').textContent = totAtivas;
-    document.getElementById('fgInativas').textContent = totInativas;
-    document.getElementById('fgClienteNova').textContent = totClienteNova;
-
-    document.getElementById('fgPorTablet').innerHTML = tablets.map(t => `
-      <div class="card" style="padding:12px 14px;margin-bottom:8px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <div style="font-size:13px;font-weight:800;color:var(--ink);">${t.nome}</div>
-          ${!t.temSemana ? '<span style="font-size:11px;color:var(--ink-3);">Sem dados na semana ' + numero + '</span>' : ''}
-        </div>
-        ${t.temSemana ? `
-        <div style="font-size:12px;color:var(--ink-2);line-height:1.7;">
-          Vendido: <strong>${brl(t.vendido)}</strong> · Recebido: <strong>${brl(t.recebido)}</strong> · Débito: <strong>${brl(t.debito)}</strong><br>
-          Remarc. semana: <strong>${t.remSemana}</strong> · Remarc. mês: <strong>${t.remMes}</strong> · Parou de vender: <strong>${t.parouVender}</strong><br>
-          Ativas: <strong>${t.ativas}</strong> · Inativas: <strong>${t.inativas}</strong> · Novas: <strong>${t.novas}</strong>
-        </div>` : ''}
-      </div>`).join('');
+    window._fgTabletsAuto = tablets;
+    window._fgNumeroAtual = numero;
+    recomputeFechamentoGeral();
 
     statusEl.style.display = 'none';
     document.getElementById('fgConteudo').style.display = '';
@@ -3031,6 +3038,133 @@ async function buscarFechamentoGeral() {
     statusEl.textContent = 'Erro ao buscar dados dos tablets: ' + e.message + '. Verifique sua conexão e as regras de leitura do Firestore.';
     document.getElementById('fgConteudo').style.display = 'none';
   }
+}
+
+function recomputeFechamentoGeral() {
+  const numero = window._fgNumeroAtual;
+  if (!numero) return;
+  const auto = window._fgTabletsAuto || [];
+  const manuais = (DB.config.manuaisFechamento && DB.config.manuaisFechamento[numero]) || [];
+  const tablets = [...auto, ...manuais.map(m => ({ ...m, origem: 'manual', temSemana: true }))];
+
+  let totVendido = 0, totAPagar = 0, totPix = 0, totDin = 0, totDebito = 0;
+  let totRemSemana = 0, totRemMes = 0, totParouVender = 0, totVendasCount = 0;
+  let totAtivas = 0, totInativas = 0, totClienteNova = 0;
+
+  tablets.forEach(t => {
+    totVendido += (t.vendido||0); totAPagar += (t.aPagar||0);
+    totPix += (t.pix||0); totDin += (t.dinheiro||0); totDebito += (t.debito||0);
+    totRemSemana += (t.remSemana||0); totRemMes += (t.remMes||0); totParouVender += (t.parouVender||0);
+    totVendasCount += (t.numVendas||0);
+    totAtivas += (t.ativas||0); totInativas += (t.inativas||0); totClienteNova += (t.novas||0);
+  });
+
+  const ticketMedio = totVendasCount > 0 ? totVendido / totVendasCount : 0;
+
+  document.getElementById('fgVendido').textContent = brl(totVendido);
+  document.getElementById('fgAPagar').textContent = brl(totAPagar);
+  document.getElementById('fgPix').textContent = brl(totPix);
+  document.getElementById('fgDinheiro').textContent = brl(totDin);
+  document.getElementById('fgRecebidoTotal').textContent = brl(totPix + totDin);
+  document.getElementById('fgDebito').textContent = brl(totDebito);
+  document.getElementById('fgRemSemana').textContent = totRemSemana;
+  document.getElementById('fgRemMes').textContent = totRemMes;
+  document.getElementById('fgParouVender').textContent = totParouVender;
+  document.getElementById('fgTicket').textContent = brl(ticketMedio);
+  document.getElementById('fgAtivas').textContent = totAtivas;
+  document.getElementById('fgInativas').textContent = totInativas;
+  document.getElementById('fgClienteNova').textContent = totClienteNova;
+
+  document.getElementById('fgPorTablet').innerHTML = tablets.map((t, i) => `
+    <div class="card" style="padding:12px 14px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="font-size:13px;font-weight:800;color:var(--ink);">${t.nome}${t.origem==='manual' ? ' <span style="font-size:10px;font-weight:700;color:var(--rose);">· manual</span>' : ''}</div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          ${!t.temSemana ? '<span style="font-size:11px;color:var(--ink-3);">Sem dados na semana ' + numero + '</span>' : ''}
+          ${t.origem==='manual' ? `<button onclick="abrirModalFechManual('${t.id}')" style="background:none;border:none;color:var(--rose);font-size:12px;font-weight:700;cursor:pointer;">Editar</button>` : ''}
+        </div>
+      </div>
+      ${t.temSemana ? `
+      <div style="font-size:12px;color:var(--ink-2);line-height:1.7;">
+        Vendido: <strong>${brl(t.vendido)}</strong> · Recebido: <strong>${brl((t.pix||0)+(t.dinheiro||0))}</strong> · Débito: <strong>${brl(t.debito)}</strong><br>
+        Remarc. semana: <strong>${t.remSemana||0}</strong> · Remarc. mês: <strong>${t.remMes||0}</strong> · Parou de vender: <strong>${t.parouVender||0}</strong><br>
+        Ativas: <strong>${t.ativas||0}</strong> · Inativas: <strong>${t.inativas||0}</strong> · Novas: <strong>${t.novas||0}</strong>
+      </div>` : ''}
+    </div>`).join('');
+}
+
+/* ── Tablets manuais no Fechamento Geral ── */
+function abrirModalFechManual(id) {
+  const numero = window._fgNumeroAtual;
+  if (!numero) { alert('Busque uma semana primeiro.'); return; }
+
+  const manuais = (DB.config.manuaisFechamento && DB.config.manuaisFechamento[numero]) || [];
+  const m = id ? manuais.find(x => x.id === id) : null;
+
+  document.getElementById('fmTitulo').textContent = m ? 'Editar tablet manual' : 'Adicionar tablet manualmente';
+  document.getElementById('fmId').value = m ? m.id : '';
+  document.getElementById('fmNome').value = m ? m.nome : '';
+  document.getElementById('fmVendido').value = brlInput(m?.vendido);
+  document.getElementById('fmDebito').value = brlInput(m?.debito);
+  document.getElementById('fmPix').value = brlInput(m?.pix);
+  document.getElementById('fmDinheiro').value = brlInput(m?.dinheiro);
+  document.getElementById('fmRemSemana').value = m?.remSemana || '';
+  document.getElementById('fmRemMes').value = m?.remMes || '';
+  document.getElementById('fmParouVender').value = m?.parouVender || '';
+  document.getElementById('fmNumVendas').value = m?.numVendas || '';
+  document.getElementById('fmAtivas').value = m?.ativas || '';
+  document.getElementById('fmInativas').value = m?.inativas || '';
+  document.getElementById('fmNovas').value = m?.novas || '';
+  document.getElementById('fmBtnExcluir').style.display = m ? '' : 'none';
+
+  document.getElementById('modalFechManual').classList.add('open');
+}
+
+function salvarFechManual() {
+  const numero = window._fgNumeroAtual;
+  if (!numero) return;
+  const nome = document.getElementById('fmNome').value.trim();
+  if (!nome) { alert('Digite o nome do tablet.'); return; }
+
+  const entry = {
+    id: document.getElementById('fmId').value || uid(),
+    nome,
+    vendido: parseNum(document.getElementById('fmVendido').value),
+    debito: parseNum(document.getElementById('fmDebito').value),
+    pix: parseNum(document.getElementById('fmPix').value),
+    dinheiro: parseNum(document.getElementById('fmDinheiro').value),
+    remSemana: parseInt(document.getElementById('fmRemSemana').value) || 0,
+    remMes: parseInt(document.getElementById('fmRemMes').value) || 0,
+    parouVender: parseInt(document.getElementById('fmParouVender').value) || 0,
+    numVendas: parseInt(document.getElementById('fmNumVendas').value) || 0,
+    ativas: parseInt(document.getElementById('fmAtivas').value) || 0,
+    inativas: parseInt(document.getElementById('fmInativas').value) || 0,
+    novas: parseInt(document.getElementById('fmNovas').value) || 0,
+  };
+
+  DB.config.manuaisFechamento = DB.config.manuaisFechamento || {};
+  const lista = DB.config.manuaisFechamento[numero] || [];
+  const idx = lista.findIndex(x => x.id === entry.id);
+  if (idx >= 0) lista[idx] = entry; else lista.push(entry);
+  DB.config.manuaisFechamento[numero] = lista;
+  save();
+
+  fecharModal('modalFechManual');
+  recomputeFechamentoGeral();
+}
+
+function excluirFechManual() {
+  const numero = window._fgNumeroAtual;
+  const id = document.getElementById('fmId').value;
+  if (!numero || !id) return;
+  if (!confirm('Remover este tablet manual?')) return;
+
+  const lista = (DB.config.manuaisFechamento && DB.config.manuaisFechamento[numero]) || [];
+  DB.config.manuaisFechamento[numero] = lista.filter(x => x.id !== id);
+  save();
+
+  fecharModal('modalFechManual');
+  recomputeFechamentoGeral();
 }
 
 function testarSync() {
