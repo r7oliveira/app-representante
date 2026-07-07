@@ -3235,10 +3235,31 @@ function abrirDetalheRecebido() {
   const sem = getSemanaAtiva();
   if (!sem) return;
 
+  // Para registros antigos (antes de existir o rastreio separado), infere
+  // a divisão Pix/Dinheiro a partir da "forma de pagamento" já salva.
+  function splitRecebido(c) {
+    let pix = c.recebidoPix || 0;
+    let din = c.recebidoDinheiro || 0;
+    let outros = c.recebidoOutros || 0;
+    const naoClassificado = Math.max(0, (c.recebido||0) - (pix + din + outros));
+    if (naoClassificado > 0) {
+      if (c.formaPgto === 'pix') pix += naoClassificado;
+      else if (c.formaPgto === 'dinheiro') din += naoClassificado;
+      else outros += naoClassificado; // 'ambos' ou não informado: não dá pra saber a divisão exata
+    }
+    return { pix, din, outros };
+  }
+
   const comRecebido = sem.consultoras.filter(c => (c.recebido||0) > 0);
-  const totalPix    = comRecebido.reduce((a,c) => a+(c.recebidoPix||0), 0);
-  const totalDin    = comRecebido.reduce((a,c) => a+(c.recebidoDinheiro||0), 0);
-  const totalOutros = comRecebido.reduce((a,c) => a+(c.recebidoOutros||0), 0);
+  let totalPix = 0, totalDin = 0, totalOutros = 0;
+  const splits = new Map();
+  comRecebido.forEach(c => {
+    const s = splitRecebido(c);
+    splits.set(c.id, s);
+    totalPix += s.pix;
+    totalDin += s.din;
+    totalOutros += s.outros;
+  });
   const totalGeral  = comRecebido.reduce((a,c) => a+(c.recebido||0), 0);
 
   document.getElementById('recebSemanaLabel').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
@@ -3259,10 +3280,11 @@ function abrirDetalheRecebido() {
   } else {
     const ordenada = [...comRecebido].sort((a,b) => (b.recebido||0) - (a.recebido||0));
     lista.innerHTML = ordenada.map(c => {
+      const s = splits.get(c.id);
       const partes = [];
-      if (c.recebidoPix)      partes.push('Pix: ' + brl(c.recebidoPix));
-      if (c.recebidoDinheiro) partes.push('Dinheiro: ' + brl(c.recebidoDinheiro));
-      if (c.recebidoOutros)   partes.push('Outros: ' + brl(c.recebidoOutros));
+      if (s.pix)    partes.push('Pix: ' + brl(s.pix));
+      if (s.din)    partes.push('Dinheiro: ' + brl(s.din));
+      if (s.outros) partes.push('Outros: ' + brl(s.outros));
       return `
         <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
           <div style="flex:1;">
