@@ -381,7 +381,7 @@ input,textarea,select{font-family:var(--font);}
           <div class="hero-box-val" id="heroVendido">R$ 0</div>
           <div class="hero-box-sub" id="heroMetaSub">Vendido: —</div>
         </div>
-        <div class="hero-box">
+        <div class="hero-box" onclick="abrirDetalheRecebido()" style="cursor:pointer;">
           <div class="hero-box-label">Recebido</div>
           <div class="hero-box-val" id="heroRecebido">R$ 0</div>
           <div class="hero-box-sub">Esta semana</div>
@@ -2111,6 +2111,8 @@ function salvarRegistroVenda() {
     if (recebido > 0) {
       cons.recebido = (cons.recebido||0) + recebido;
       cons.ultimoPgto = recebido;
+      if (pix > 0) cons.recebidoPix = (cons.recebidoPix||0) + pix;
+      if (din > 0) cons.recebidoDinheiro = (cons.recebidoDinheiro||0) + din;
     }
     if (aPagarFinal > 0) {
       const saldoDevedor = Math.max(0, aPagarFinal - recebido);
@@ -3210,6 +3212,7 @@ function registrarPgtoDebito(consId) {
   if (!val) return;
   cons.recebido = (cons.recebido||0) + val;
   cons.ultimoPgto = val;
+  cons.recebidoOutros = (cons.recebidoOutros||0) + val;
   const debAnt = (cons.debito||0);
   const restante = Math.max(0, debAnt - val);
   cons.debito = restante;
@@ -3226,6 +3229,52 @@ function registrarPgtoDebito(consId) {
   // Atualiza total
   const novoRecebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
   document.getElementById('fechRecebido').textContent = brl(novoRecebido);
+}
+
+function abrirDetalheRecebido() {
+  const sem = getSemanaAtiva();
+  if (!sem) return;
+
+  const comRecebido = sem.consultoras.filter(c => (c.recebido||0) > 0);
+  const totalPix    = comRecebido.reduce((a,c) => a+(c.recebidoPix||0), 0);
+  const totalDin    = comRecebido.reduce((a,c) => a+(c.recebidoDinheiro||0), 0);
+  const totalOutros = comRecebido.reduce((a,c) => a+(c.recebidoOutros||0), 0);
+  const totalGeral  = comRecebido.reduce((a,c) => a+(c.recebido||0), 0);
+
+  document.getElementById('recebSemanaLabel').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
+  document.getElementById('recebTotalPix').textContent = brl(totalPix);
+  document.getElementById('recebTotalDin').textContent = brl(totalDin);
+  document.getElementById('recebTotalGeral').textContent = brl(totalGeral);
+
+  const outrosBox = document.getElementById('recebOutrosBox');
+  if (outrosBox) {
+    outrosBox.style.display = totalOutros > 0 ? '' : 'none';
+    const outrosVal = document.getElementById('recebTotalOutros');
+    if (outrosVal) outrosVal.textContent = brl(totalOutros);
+  }
+
+  const lista = document.getElementById('recebLista');
+  if (comRecebido.length === 0) {
+    lista.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Nenhum recebimento registrado ainda.</div>';
+  } else {
+    const ordenada = [...comRecebido].sort((a,b) => (b.recebido||0) - (a.recebido||0));
+    lista.innerHTML = ordenada.map(c => {
+      const partes = [];
+      if (c.recebidoPix)      partes.push('Pix: ' + brl(c.recebidoPix));
+      if (c.recebidoDinheiro) partes.push('Dinheiro: ' + brl(c.recebidoDinheiro));
+      if (c.recebidoOutros)   partes.push('Outros: ' + brl(c.recebidoOutros));
+      return `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome}</div>
+            <div style="font-size:11px;color:var(--ink-3);">${partes.join(' · ')}</div>
+          </div>
+          <div style="font-size:14px;font-weight:800;color:var(--green);">${brl(c.recebido||0)}</div>
+        </div>`;
+    }).join('');
+  }
+
+  document.getElementById('modalRecebido').classList.add('open');
 }
 
 function finalizarSemana() {
@@ -3603,6 +3652,41 @@ async function gerarPDF() {
 goTo('semana');
 initFirebase();
 </script>
+<!-- ══════════════════════════════════════════
+     MODAL: DETALHE DO RECEBIDO
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalRecebido">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalRecebido')">✕</button>
+    <div class="modal-title" style="margin-bottom:2px;">Recebido</div>
+    <div style="font-size:13px;color:var(--ink-3);font-weight:500;margin-bottom:18px;" id="recebSemanaLabel">Semana —</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div style="background:var(--green-bg);border-radius:14px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Pix</div>
+        <div style="font-size:17px;font-weight:800;color:var(--green);" id="recebTotalPix">R$ 0</div>
+      </div>
+      <div style="background:var(--green-bg);border-radius:14px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Dinheiro</div>
+        <div style="font-size:17px;font-weight:800;color:var(--green);" id="recebTotalDin">R$ 0</div>
+      </div>
+    </div>
+    <div id="recebOutrosBox" style="display:none;background:var(--surface);border-radius:14px;padding:12px;text-align:center;margin-bottom:12px;">
+      <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Outros (débitos quitados)</div>
+      <div style="font-size:17px;font-weight:800;color:var(--ink);" id="recebTotalOutros">R$ 0</div>
+    </div>
+    <div style="background:var(--surface);border-radius:14px;padding:12px;text-align:center;margin-bottom:20px;">
+      <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total Geral</div>
+      <div style="font-size:20px;font-weight:800;color:var(--ink);" id="recebTotalGeral">R$ 0</div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px;">Por consultora</div>
+    <div id="recebLista"></div>
+
+    <button class="btn-ghost" style="width:100%;margin-top:18px;" onclick="fecharModal('modalRecebido')">Fechar</button>
+  </div>
+</div>
+
 <!-- ══════════════════════════════════════════
      MODAL: FECHAMENTO DA SEMANA
 ══════════════════════════════════════════ -->
