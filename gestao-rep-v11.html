@@ -353,6 +353,10 @@ input,textarea,select{font-family:var(--font);}
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
     Mais
   </button>
+  <button class="nav-item" onclick="goTo('fechamento-geral')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+    Fechamento
+  </button>
 </nav>
 
 <!-- ══════════════════════════════════════════
@@ -1199,6 +1203,15 @@ input,textarea,select{font-family:var(--font);}
     <div class="card" style="margin-bottom:16px;">
       <div style="padding:14px 16px;">
         <label class="field">
+          <span>Nome deste tablet / responsável</span>
+          <input type="text" id="cfgNomeTablet" placeholder="Ex: Rogério, Tablet 2..." oninput="salvarConfig()">
+        </label>
+        <span style="font-size:11px;color:var(--ink-3);">Usado para identificar este tablet na tela de Fechamento (consolidado dos 4 tablets)</span>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="padding:14px 16px;">
+        <label class="field">
           <span>Chave da IA (Gemini)</span>
           <input type="password" id="cfgGemini" placeholder="AIza..." oninput="salvarConfig()">
         </label>
@@ -1211,6 +1224,89 @@ input,textarea,select{font-family:var(--font);}
     <button class="btn-ghost" onclick="exportarDados()" style="margin-bottom:10px;">Exportar dados</button>
     <button class="btn-ghost" onclick="testarSync()" style="margin-bottom:10px;">Testar sincronização Firebase</button>
     <button class="btn-ghost" style="color:var(--red);" onclick="if(confirm('Apagar todos os dados?')){limparTudo();}">Limpar todos os dados</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA 13: FECHAMENTO GERAL (consolidado dos tablets)
+══════════════════════════════════════════ -->
+<div class="view" id="view-fechamento-geral">
+  <div style="background:linear-gradient(160deg,#0A0A1E,#1A1040);padding:calc(20px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
+    <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Consolidado</div>
+    <div style="color:white;font-size:24px;font-weight:800;margin-bottom:3px;">Fechamento Geral</div>
+    <div style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500;margin-bottom:14px;">Soma os dados dos tablets da equipe.</div>
+    <div style="display:flex;gap:8px;align-items:flex-end;">
+      <label class="field" style="margin:0;flex:1;">
+        <span style="color:rgba(255,255,255,.6);">Nº da semana</span>
+        <input type="number" id="fgNumSemana" inputmode="numeric" placeholder="26"
+          style="background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);color:white;">
+      </label>
+      <button class="btn-primary" style="width:auto;padding:11px 18px;white-space:nowrap;" onclick="buscarFechamentoGeral()">Buscar</button>
+    </div>
+  </div>
+
+  <div class="scroll-body" style="padding:16px 16px 80px;">
+    <div id="fgStatus" style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Escolha o número da semana e toque em Buscar.</div>
+    <div id="fgConteudo" style="display:none;">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total vendido</div>
+          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgVendido">R$ 0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total a pagar</div>
+          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgAPagar">R$ 0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Recebido (Pix)</div>
+          <div style="font-size:18px;font-weight:800;color:var(--green);" id="fgPix">R$ 0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Recebido (Dinheiro)</div>
+          <div style="font-size:18px;font-weight:800;color:var(--green);" id="fgDinheiro">R$ 0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;grid-column:span 2;background:var(--green-bg);border-color:transparent;">
+          <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total recebido (Pix + Dinheiro)</div>
+          <div style="font-size:22px;font-weight:800;color:var(--green);" id="fgRecebidoTotal">R$ 0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;grid-column:span 2;background:var(--amber-bg);border-color:transparent;">
+          <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total débito</div>
+          <div style="font-size:22px;font-weight:800;color:var(--amber);" id="fgDebito">R$ 0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Remarcadas · semana</div>
+          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgRemSemana">0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Remarcadas · mês</div>
+          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgRemMes">0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Parou de vender</div>
+          <div style="font-size:18px;font-weight:800;color:var(--red);" id="fgParouVender">0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ticket médio</div>
+          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgTicket">R$ 0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Consultoras ativas</div>
+          <div style="font-size:18px;font-weight:800;color:var(--green);" id="fgAtivas">0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Consultoras inativas</div>
+          <div style="font-size:18px;font-weight:800;color:var(--red);" id="fgInativas">0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;grid-column:span 2;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Clientes novas (cadastradas nesta semana)</div>
+          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgClienteNova">0</div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;font-weight:700;color:var(--ink);margin:16px 0 8px;">Por tablet</div>
+      <div id="fgPorTablet"></div>
+    </div>
   </div>
 </div>
 
@@ -1512,7 +1608,7 @@ function goTo(v) {
   // Marca aba ativa
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const navItems = document.querySelectorAll('.nav-item');
-  const navIdx = { semana:0, radar:1, 'assist-new':2, mais:3 };
+  const navIdx = { semana:0, radar:1, 'assist-new':2, mais:3, 'fechamento-geral':4 };
   if (navIdx[v] !== undefined) navItems[navIdx[v]]?.classList.add('active');
 
   viewHistory.push(v);
@@ -1526,6 +1622,7 @@ function goTo(v) {
   if (v === 'domingo')      renderDomingo();
   if (v === 'iniciativas')  renderIniciativas();
   if (v === 'relatorio')    renderRelatorio();
+  if (v === 'fechamento-geral') renderFechamentoGeral();
 }
 
 function goBack() {
@@ -2810,12 +2907,130 @@ async function enviarAssistNew() {
 function renderConfig() {
   document.getElementById('cfgGemini').value = DB.config.geminiKey || '';
   document.getElementById('cfgMeta').value = DB.config.metaPadrao || 15000;
+  document.getElementById('cfgNomeTablet').value = DB.config.nomeTablet || '';
 }
 
 function salvarConfig() {
   DB.config.geminiKey = document.getElementById('cfgGemini').value.trim();
   DB.config.metaPadrao = parseNum(document.getElementById('cfgMeta').value) || 15000;
+  DB.config.nomeTablet = document.getElementById('cfgNomeTablet').value.trim();
   save();
+}
+
+/* ════════════════════════════════════════════
+   FECHAMENTO GERAL (consolidado de todos os tablets)
+════════════════════════════════════════════ */
+function renderFechamentoGeral() {
+  const sem = getSemanaAtiva();
+  const ultimaSemana = DB.semanas.length ? DB.semanas[DB.semanas.length-1].numero : '';
+  document.getElementById('fgNumSemana').value = sem ? sem.numero : ultimaSemana;
+  document.getElementById('fgStatus').style.display = '';
+  document.getElementById('fgStatus').textContent = 'Escolha o número da semana e toque em Buscar.';
+  document.getElementById('fgConteudo').style.display = 'none';
+}
+
+async function buscarFechamentoGeral() {
+  const numero = parseInt(document.getElementById('fgNumSemana').value) || null;
+  if (!numero) { alert('Informe o número da semana.'); return; }
+  if (!_db) { alert('Firebase não conectado. Verifique sua internet e tente novamente.'); return; }
+
+  const statusEl = document.getElementById('fgStatus');
+  statusEl.style.display = '';
+  statusEl.textContent = 'Buscando dados dos tablets...';
+  document.getElementById('fgConteudo').style.display = 'none';
+
+  try {
+    const snap = await _db.collection('representantes').get();
+    const tablets = [];
+    let totVendido = 0, totAPagar = 0, totPix = 0, totDin = 0, totDebito = 0;
+    let totRemSemana = 0, totRemMes = 0, totParouVender = 0, totVendasCount = 0;
+    let totAtivas = 0, totInativas = 0, totClienteNova = 0;
+
+    snap.forEach(doc => {
+      const data = doc.data() || {};
+      const semanas = data.semanas || [];
+      const sem = semanas.find(s => s.numero === numero);
+      const nomeTablet = (data.config && data.config.nomeTablet) || ('Tablet ' + doc.id.slice(-5));
+
+      let tVendido = 0, tAPagar = 0, tPix = 0, tDin = 0, tDebito = 0;
+      let tRemSemana = 0, tRemMes = 0, tParouVender = 0, tVendasCount = 0;
+
+      if (sem) {
+        (sem.consultoras || []).forEach(c => {
+          tVendido += (c.vendido || 0);
+          tAPagar  += (c.aPagar || 0);
+          // Mesmo critério de rateio Pix/Dinheiro usado na tela "Recebido"
+          let pix = c.recebidoPix || 0;
+          let din = (c.recebidoDinheiro || 0) + (c.recebidoOutros || 0);
+          const naoClass = Math.max(0, (c.recebido || 0) - (pix + din));
+          if (naoClass > 0) { if (c.formaPgto === 'pix') pix += naoClass; else din += naoClass; }
+          tPix += pix; tDin += din;
+          tDebito += (c.debito || 0);
+          if (c.remarcarSemana) tRemSemana++;
+          if (c.remarcarMes) tRemMes++;
+          if (c.parouDeVender) tParouVender++;
+          if ((c.vendido || 0) > 0) tVendasCount++;
+        });
+      }
+
+      const cadastro = data.consultoras || [];
+      const ativasTablet   = cadastro.filter(c => c.status !== 'inativa').length;
+      const inativasTablet = cadastro.filter(c => c.status === 'inativa').length;
+      const novaTablet = (sem && sem.dataInicio)
+        ? cadastro.filter(c => c.criadoEm && c.criadoEm >= sem.dataInicio).length
+        : 0;
+
+      totVendido += tVendido; totAPagar += tAPagar; totPix += tPix; totDin += tDin; totDebito += tDebito;
+      totRemSemana += tRemSemana; totRemMes += tRemMes; totParouVender += tParouVender;
+      totVendasCount += tVendasCount;
+      totAtivas += ativasTablet; totInativas += inativasTablet; totClienteNova += novaTablet;
+
+      tablets.push({
+        nome: nomeTablet, temSemana: !!sem,
+        vendido: tVendido, aPagar: tAPagar, recebido: tPix + tDin, debito: tDebito,
+        remSemana: tRemSemana, remMes: tRemMes, parouVender: tParouVender,
+        ativas: ativasTablet, inativas: inativasTablet, novas: novaTablet,
+      });
+    });
+
+    const ticketMedio = totVendasCount > 0 ? totVendido / totVendasCount : 0;
+
+    document.getElementById('fgVendido').textContent = brl(totVendido);
+    document.getElementById('fgAPagar').textContent = brl(totAPagar);
+    document.getElementById('fgPix').textContent = brl(totPix);
+    document.getElementById('fgDinheiro').textContent = brl(totDin);
+    document.getElementById('fgRecebidoTotal').textContent = brl(totPix + totDin);
+    document.getElementById('fgDebito').textContent = brl(totDebito);
+    document.getElementById('fgRemSemana').textContent = totRemSemana;
+    document.getElementById('fgRemMes').textContent = totRemMes;
+    document.getElementById('fgParouVender').textContent = totParouVender;
+    document.getElementById('fgTicket').textContent = brl(ticketMedio);
+    document.getElementById('fgAtivas').textContent = totAtivas;
+    document.getElementById('fgInativas').textContent = totInativas;
+    document.getElementById('fgClienteNova').textContent = totClienteNova;
+
+    document.getElementById('fgPorTablet').innerHTML = tablets.map(t => `
+      <div class="card" style="padding:12px 14px;margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-size:13px;font-weight:800;color:var(--ink);">${t.nome}</div>
+          ${!t.temSemana ? '<span style="font-size:11px;color:var(--ink-3);">Sem dados na semana ' + numero + '</span>' : ''}
+        </div>
+        ${t.temSemana ? `
+        <div style="font-size:12px;color:var(--ink-2);line-height:1.7;">
+          Vendido: <strong>${brl(t.vendido)}</strong> · Recebido: <strong>${brl(t.recebido)}</strong> · Débito: <strong>${brl(t.debito)}</strong><br>
+          Remarc. semana: <strong>${t.remSemana}</strong> · Remarc. mês: <strong>${t.remMes}</strong> · Parou de vender: <strong>${t.parouVender}</strong><br>
+          Ativas: <strong>${t.ativas}</strong> · Inativas: <strong>${t.inativas}</strong> · Novas: <strong>${t.novas}</strong>
+        </div>` : ''}
+      </div>`).join('');
+
+    statusEl.style.display = 'none';
+    document.getElementById('fgConteudo').style.display = '';
+  } catch(e) {
+    console.error('Erro fechamento geral:', e);
+    statusEl.style.display = '';
+    statusEl.textContent = 'Erro ao buscar dados dos tablets: ' + e.message + '. Verifique sua conexão e as regras de leitura do Firestore.';
+    document.getElementById('fgConteudo').style.display = 'none';
+  }
 }
 
 function testarSync() {
