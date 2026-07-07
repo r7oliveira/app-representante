@@ -1798,14 +1798,27 @@ function abrirAtendimento(consId) {
   // Inicializa critérios do score
   inicializarCriterios(cons);
 
-  // Reset botão venda
+  // Botão venda: mostra dados já registrados, se houver
   const btnV = document.getElementById('btnVendaPagamento');
   if (btnV) {
-    btnV.querySelector('.action-title').textContent = 'Adicionar Venda e Pagamento';
-    btnV.querySelector('.action-title').style.color = 'var(--ink)';
-    btnV.querySelector('.action-sub').textContent = 'Registro manual de valores';
-    btnV.querySelector('.action-sub').style.color = 'var(--ink-3)';
-    btnV.style.borderColor = '';
+    if ((cons.vendido||0) > 0 || (cons.recebido||0) > 0) {
+      const formaLabel = cons.formaPgto === 'pix' ? ' Pix' : cons.formaPgto === 'dinheiro' ? ' Dinheiro' : cons.formaPgto === 'ambos' ? '+ Ambos' : '';
+      const subTexto = [
+        cons.vendido > 0 ? 'Venda: ' + brl(cons.vendido) : '',
+        cons.recebido > 0 ? 'Recebido: ' + brl(cons.recebido) + (formaLabel ? ' · ' + formaLabel : '') : '',
+      ].filter(Boolean).join(' · ');
+      btnV.querySelector('.action-title').textContent = 'Editar Venda e Pagamento';
+      btnV.querySelector('.action-title').style.color = 'var(--green)';
+      btnV.querySelector('.action-sub').textContent = subTexto;
+      btnV.querySelector('.action-sub').style.color = 'var(--green)';
+      btnV.style.borderColor = 'var(--green)';
+    } else {
+      btnV.querySelector('.action-title').textContent = 'Adicionar Venda e Pagamento';
+      btnV.querySelector('.action-title').style.color = 'var(--ink)';
+      btnV.querySelector('.action-sub').textContent = 'Registro manual de valores';
+      btnV.querySelector('.action-sub').style.color = 'var(--ink-3)';
+      btnV.style.borderColor = '';
+    }
   }
 
   goTo('atendimento');
@@ -1958,7 +1971,9 @@ function abrirRegistro(tipo) {
   if (!sem || !atendConsId) return;
   const cons = sem.consultoras.find(c => c.id === atendConsId);
 
-  document.getElementById('modalRegTitulo').textContent = tipo === 'venda' ? 'Venda e Pagamento' : 'Observação';
+  document.getElementById('modalRegTitulo').textContent = tipo === 'venda'
+    ? ((cons && cons.vendido > 0) ? 'Editar Venda e Pagamento' : 'Venda e Pagamento')
+    : 'Observação';
 
   if (tipo === 'venda') {
     const comissaoPct = cons && cons.pedidoFavoritaFeito ? 40 : 30;
@@ -1966,13 +1981,13 @@ function abrirRegistro(tipo) {
     document.getElementById('modalRegConteudo').innerHTML = `
       <label class="field">
         <span>Valor vendido (R$)</span>
-        <input id="regVenda" type="number" inputmode="decimal" placeholder="0,00"
+        <input id="regVenda" type="number" inputmode="decimal" placeholder="0,00" value="${cons && cons.vendido ? cons.vendido : ''}"
           oninput="calcValorPagar()">
       </label>
 
       <label class="field">
         <span>Valor a pagar <span style="color:var(--ink-3);font-weight:500;">(vendido − ${comissaoPct}% comissão consultora${comissaoPct===40?' · favorita':''})</span></span>
-        <input id="regAPagar" type="number" inputmode="decimal" placeholder="0,00"
+        <input id="regAPagar" type="number" inputmode="decimal" placeholder="0,00" value="${cons && cons.aPagar ? cons.aPagar : ''}"
           style="background:var(--surface);">
         <span style="font-size:11px;color:var(--ink-3);margin-top:2px;">Calculado automaticamente · você pode ajustar</span>
       </label>
@@ -1998,14 +2013,14 @@ function abrirRegistro(tipo) {
       <div id="camposPix" style="display:none;">
         <label class="field">
           <span>Valor recebido via Pix (R$)</span>
-          <input id="regPix" type="number" inputmode="decimal" placeholder="0,00" oninput="atualizarResumo()">
+          <input id="regPix" type="number" inputmode="decimal" placeholder="0,00" value="${cons && cons.recebidoPix ? cons.recebidoPix : ''}" oninput="atualizarResumo()">
         </label>
       </div>
 
       <div id="camposDinheiro" style="display:none;">
         <label class="field">
           <span>Valor recebido em dinheiro (R$)</span>
-          <input id="regDinheiro" type="number" inputmode="decimal" placeholder="0,00" oninput="atualizarResumo()">
+          <input id="regDinheiro" type="number" inputmode="decimal" placeholder="0,00" value="${cons && cons.recebidoDinheiro ? cons.recebidoDinheiro : ''}" oninput="atualizarResumo()">
         </label>
       </div>
 
@@ -2019,7 +2034,15 @@ function abrirRegistro(tipo) {
         <button class="btn-primary" style="flex:1;" onclick="salvarRegistroVenda()">Salvar</button>
       </div>`;
 
-    window._formaRecebimento = null;
+    window._formaRecebimento = (cons && cons.formaPgto) || null;
+    if (cons && cons.formaPgto) {
+      selecionarForma(cons.formaPgto);
+    } else if (cons && cons.recebido > 0) {
+      // Recebido antigo sem forma registrada: assume dinheiro por padrão
+      selecionarForma('dinheiro');
+      document.getElementById('regDinheiro').value = cons.recebido;
+    }
+    atualizarResumo();
   } else {
     document.getElementById('modalRegConteudo').innerHTML = `
       <label class="field">
@@ -2101,24 +2124,18 @@ function salvarRegistroVenda() {
     const pctFallback = (typeof window._payoutPct === 'number') ? window._payoutPct : 0.70;
     const aPagarFinal = aPagar > 0 ? aPagar : (vendido > 0 ? Math.round(vendido * pctFallback * 100) / 100 : 0);
 
+    // Substitui os valores (edição), em vez de somar aos anteriores
+    cons.vendido = vendido;
     if (vendido > 0) {
-      cons.vendido = (cons.vendido||0) + vendido;
       cons.ultimaVenda = vendido;
-      cons.ticketMedio = cons.ticketMedio
-        ? Math.round((cons.ticketMedio + vendido) / 2)
-        : vendido;
+      cons.ticketMedio = vendido;
     }
-    if (recebido > 0) {
-      cons.recebido = (cons.recebido||0) + recebido;
-      cons.ultimoPgto = recebido;
-      if (pix > 0) cons.recebidoPix = (cons.recebidoPix||0) + pix;
-      if (din > 0) cons.recebidoDinheiro = (cons.recebidoDinheiro||0) + din;
-    }
-    if (aPagarFinal > 0) {
-      const saldoDevedor = Math.max(0, aPagarFinal - recebido);
-      cons.debito = (cons.debito||0) + saldoDevedor;
-      cons.aPagar = aPagarFinal;
-    }
+    cons.recebido = recebido;
+    if (recebido > 0) cons.ultimoPgto = recebido;
+    cons.recebidoPix = pix;
+    cons.recebidoDinheiro = din;
+    cons.debito = aPagarFinal > 0 ? Math.max(0, aPagarFinal - recebido) : 0;
+    cons.aPagar = aPagarFinal;
     if (forma) cons.formaPgto = forma;
 
     save();
@@ -2137,7 +2154,7 @@ function salvarRegistroVenda() {
     ].filter(Boolean).join(' · ');
     const btnVenda = document.getElementById('btnVendaPagamento');
     if (btnVenda && subTexto) {
-      btnVenda.querySelector('.action-title').textContent = 'Venda e Pagamento ✓';
+      btnVenda.querySelector('.action-title').textContent = 'Editar Venda e Pagamento';
       btnVenda.querySelector('.action-title').style.color = 'var(--green)';
       btnVenda.querySelector('.action-sub').textContent = subTexto;
       btnVenda.querySelector('.action-sub').style.color = 'var(--green)';
@@ -3185,23 +3202,45 @@ function mostrarFechamentoSemana() {
   if (comDebito.length > 0) {
     secDebito.style.display = '';
     document.getElementById('fechDebitoLista').innerHTML = comDebito.map(c => `
-      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(184,110,0,.1);">
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome}</div>
-          <div style="font-size:11px;color:var(--amber);">Débito: ${brl(c.debito||0)}</div>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;">
+      <div style="padding:10px 0;border-bottom:1px solid rgba(184,110,0,.1);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome}</div>
+            <div style="font-size:11px;color:var(--amber);">Débito: ${brl(c.debito||0)}</div>
+          </div>
           <input type="number" inputmode="decimal" placeholder="Valor" id="deb-${c.id}"
             style="width:90px;padding:7px 10px;border:1.5px solid rgba(184,110,0,.3);border-radius:10px;font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink);outline:none;">
           <button onclick="registrarPgtoDebito('${c.id}')"
             style="background:var(--amber);color:white;border:none;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">OK</button>
         </div>
+        <div style="display:flex;gap:6px;">
+          <button type="button" id="debFrmPix-${c.id}" onclick="selecionarFormaDebito('${c.id}','pix')"
+            style="flex:1;padding:6px;border-radius:8px;border:1.5px solid var(--border);font-size:11px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">Pix</button>
+          <button type="button" id="debFrmDinheiro-${c.id}" onclick="selecionarFormaDebito('${c.id}','dinheiro')"
+            style="flex:1;padding:6px;border-radius:8px;border:1.5px solid var(--rose);font-size:11px;font-weight:700;font-family:var(--font);background:var(--rose);color:white;cursor:pointer;">Dinheiro</button>
+        </div>
       </div>`).join('');
+    window._debFormas = {};
+    comDebito.forEach(c => { window._debFormas[c.id] = 'dinheiro'; });
   } else {
     secDebito.style.display = 'none';
   }
 
   document.getElementById('modalFechamento').classList.add('open');
+}
+
+function selecionarFormaDebito(consId, forma) {
+  window._debFormas = window._debFormas || {};
+  window._debFormas[consId] = forma;
+  const btnPix = document.getElementById('debFrmPix-' + consId);
+  const btnDin = document.getElementById('debFrmDinheiro-' + consId);
+  if (btnPix && btnDin) {
+    const ativo = { background:'var(--rose)', color:'white', borderColor:'var(--rose)' };
+    const inativo = { background:'white', color:'var(--ink-3)', borderColor:'var(--border)' };
+    const setEstilo = (btn, s) => { btn.style.background=s.background; btn.style.color=s.color; btn.style.borderColor=s.borderColor; };
+    setEstilo(btnPix, forma === 'pix' ? ativo : inativo);
+    setEstilo(btnDin, forma === 'dinheiro' ? ativo : inativo);
+  }
 }
 
 function registrarPgtoDebito(consId) {
@@ -3210,9 +3249,11 @@ function registrarPgtoDebito(consId) {
   if (!cons) return;
   const val = parseNum(document.getElementById('deb-' + consId)?.value || '0');
   if (!val) return;
+  const forma = (window._debFormas && window._debFormas[consId]) || 'dinheiro';
   cons.recebido = (cons.recebido||0) + val;
   cons.ultimoPgto = val;
-  cons.recebidoOutros = (cons.recebidoOutros||0) + val;
+  if (forma === 'pix') cons.recebidoPix = (cons.recebidoPix||0) + val;
+  else cons.recebidoDinheiro = (cons.recebidoDinheiro||0) + val;
   const debAnt = (cons.debito||0);
   const restante = Math.max(0, debAnt - val);
   cons.debito = restante;
@@ -3237,28 +3278,26 @@ function abrirDetalheRecebido() {
 
   // Para registros antigos (antes de existir o rastreio separado), infere
   // a divisão Pix/Dinheiro a partir da "forma de pagamento" já salva.
+  // Sempre classifica como Pix ou Dinheiro (sem categoria "outros").
   function splitRecebido(c) {
     let pix = c.recebidoPix || 0;
-    let din = c.recebidoDinheiro || 0;
-    let outros = c.recebidoOutros || 0;
-    const naoClassificado = Math.max(0, (c.recebido||0) - (pix + din + outros));
+    let din = (c.recebidoDinheiro || 0) + (c.recebidoOutros || 0);
+    const naoClassificado = Math.max(0, (c.recebido||0) - (pix + din));
     if (naoClassificado > 0) {
       if (c.formaPgto === 'pix') pix += naoClassificado;
-      else if (c.formaPgto === 'dinheiro') din += naoClassificado;
-      else outros += naoClassificado; // 'ambos' ou não informado: não dá pra saber a divisão exata
+      else din += naoClassificado; // 'dinheiro', 'ambos' ou não informado: entra como Dinheiro
     }
-    return { pix, din, outros };
+    return { pix, din };
   }
 
   const comRecebido = sem.consultoras.filter(c => (c.recebido||0) > 0);
-  let totalPix = 0, totalDin = 0, totalOutros = 0;
+  let totalPix = 0, totalDin = 0;
   const splits = new Map();
   comRecebido.forEach(c => {
     const s = splitRecebido(c);
     splits.set(c.id, s);
     totalPix += s.pix;
     totalDin += s.din;
-    totalOutros += s.outros;
   });
   const totalGeral  = comRecebido.reduce((a,c) => a+(c.recebido||0), 0);
 
@@ -3266,13 +3305,6 @@ function abrirDetalheRecebido() {
   document.getElementById('recebTotalPix').textContent = brl(totalPix);
   document.getElementById('recebTotalDin').textContent = brl(totalDin);
   document.getElementById('recebTotalGeral').textContent = brl(totalGeral);
-
-  const outrosBox = document.getElementById('recebOutrosBox');
-  if (outrosBox) {
-    outrosBox.style.display = totalOutros > 0 ? '' : 'none';
-    const outrosVal = document.getElementById('recebTotalOutros');
-    if (outrosVal) outrosVal.textContent = brl(totalOutros);
-  }
 
   const lista = document.getElementById('recebLista');
   if (comRecebido.length === 0) {
@@ -3282,9 +3314,8 @@ function abrirDetalheRecebido() {
     lista.innerHTML = ordenada.map(c => {
       const s = splits.get(c.id);
       const partes = [];
-      if (s.pix)    partes.push('Pix: ' + brl(s.pix));
-      if (s.din)    partes.push('Dinheiro: ' + brl(s.din));
-      if (s.outros) partes.push('Outros: ' + brl(s.outros));
+      if (s.pix) partes.push('Pix: ' + brl(s.pix));
+      if (s.din) partes.push('Dinheiro: ' + brl(s.din));
       return `
         <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
           <div style="flex:1;">
@@ -3692,10 +3723,6 @@ initFirebase();
         <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Dinheiro</div>
         <div style="font-size:17px;font-weight:800;color:var(--green);" id="recebTotalDin">R$ 0</div>
       </div>
-    </div>
-    <div id="recebOutrosBox" style="display:none;background:var(--surface);border-radius:14px;padding:12px;text-align:center;margin-bottom:12px;">
-      <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Outros (débitos quitados)</div>
-      <div style="font-size:17px;font-weight:800;color:var(--ink);" id="recebTotalOutros">R$ 0</div>
     </div>
     <div style="background:var(--surface);border-radius:14px;padding:12px;text-align:center;margin-bottom:20px;">
       <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total Geral</div>
