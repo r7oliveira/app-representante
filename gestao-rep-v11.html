@@ -152,10 +152,12 @@ input,textarea,select{font-family:var(--font);}
 .cons-card.done{opacity:.5;}
 .cons-card.next{border-color:var(--rose);box-shadow:0 0 0 4px rgba(200,24,90,.07);}
 .cons-card.alert{border-color:#E8A000;}
+.cons-card.inativa{border-color:var(--red);}
 .c-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;}
 .av-default{background:var(--rose-light);color:var(--rose);}
 .av-done{background:var(--green-bg);color:var(--green);}
 .av-alert{background:var(--amber-bg);color:var(--amber);}
+.av-inativa{background:var(--red-bg);color:var(--red);}
 .c-info{flex:1;min-width:0;}
 .c-name{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .c-sub{font-size:12px;color:var(--ink-3);margin-top:2px;font-weight:500;}
@@ -164,6 +166,7 @@ input,textarea,select{font-family:var(--font);}
 .b-done{background:var(--green-bg);color:var(--green);}
 .b-pending{background:var(--surface);color:var(--ink-3);border:1px solid var(--border);}
 .b-alert{background:var(--amber-bg);color:var(--amber);}
+.b-inativa{background:var(--red-bg);color:var(--red);}
 
 /* ════════════════════════════════════════
    TELA: MODO ATENDIMENTO
@@ -1641,17 +1644,28 @@ function renderSemana() {
   lista.innerHTML = sem.consultoras.map(c => {
     const st = c.status || 'pendente';
     const isNext = proxima && c.id === proxima.id;
-    const cls = st === 'concluida' ? 'done' : isNext ? 'next' : c.debito > 0 ? 'alert' : '';
-    const avCls = st === 'concluida' ? 'av-done' : c.debito > 0 ? 'av-alert' : 'av-default';
-    const avTxt = st === 'concluida' ? '✓' : c.debito > 0 ? '!' : iniciais(c.nome);
-    const badge = st === 'concluida' ? '<div class="c-badge b-done">Concluída</div>'
+    const especial = c.parouDeVender ? 'inativa' : c.remarcarMes ? 'mes' : c.remarcarSemana ? 'semana' : null;
+
+    const cls = especial === 'inativa' ? 'inativa' : especial ? 'alert' : st === 'concluida' ? 'done' : isNext ? 'next' : c.debito > 0 ? 'alert' : '';
+    const avCls = especial === 'inativa' ? 'av-inativa' : especial ? 'av-alert' : st === 'concluida' ? 'av-done' : c.debito > 0 ? 'av-alert' : 'av-default';
+    const avTxt = especial === 'inativa' ? '✕' : especial ? '↻' : st === 'concluida' ? '✓' : c.debito > 0 ? '!' : iniciais(c.nome);
+    const badge = especial === 'inativa' ? '<div class="c-badge b-inativa">Inativa</div>'
+                : especial === 'mes' ? '<div class="c-badge b-alert">Remarcada · mês</div>'
+                : especial === 'semana' ? '<div class="c-badge b-alert">Remarcada · semana</div>'
+                : st === 'concluida' ? '<div class="c-badge b-done">Concluída</div>'
                 : isNext ? '<div class="c-badge b-next">Próxima</div>'
                 : c.debito > 0 ? '<div class="c-badge b-alert">Cobrança</div>'
                 : '<div class="c-badge b-pending">Pendente</div>';
 
     // Sub: dia + horário para pendentes
     let sub = '';
-    if (st === 'concluida') {
+    if (especial === 'inativa') {
+      sub = 'Parou de vender · marcada como inativa';
+    } else if (especial === 'mes') {
+      sub = 'Remarcada para o próximo mês';
+    } else if (especial === 'semana') {
+      sub = 'Remarcada para a próxima semana';
+    } else if (st === 'concluida') {
       const aPagarC = Math.round((c.vendido||0) * 0.70 * 100) / 100;
       sub = 'A pagar ' + brl(aPagarC) + ' · Recebido ' + brl(c.recebido||0);
     } else if (c.debito > 0) {
