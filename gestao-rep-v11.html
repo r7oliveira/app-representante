@@ -60,7 +60,7 @@ input,textarea,select{font-family:var(--font);}
 .nav-item.active{color:var(--rose);}
 
 /* ── SHARED COMPONENTS ── */
-.page-header{background:white;padding:16px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.page-header{background:white;padding:calc(16px + env(safe-area-inset-top)) 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
 .ph-title{font-size:20px;font-weight:800;color:var(--ink);}
 .ph-sub{font-size:12px;color:var(--ink-3);font-weight:500;margin-top:2px;}
 
@@ -169,7 +169,7 @@ input,textarea,select{font-family:var(--font);}
    TELA: MODO ATENDIMENTO
 ════════════════════════════════════════ */
 #view-atendimento{z-index:100;background:var(--surface);}
-.atend-header{background:#0A2E1A;padding:14px 20px 16px;flex-shrink:0;}
+.atend-header{background:#0A2E1A;padding:calc(14px + env(safe-area-inset-top)) 20px 16px;flex-shrink:0;}
 .atend-back{color:rgba(255,255,255,.55);font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;}
 .atend-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
 .atend-av{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:white;flex-shrink:0;}
@@ -241,7 +241,7 @@ input,textarea,select{font-family:var(--font);}
 /* ════════════════════════════════════════
    TELA: RADAR DA SEMANA
 ════════════════════════════════════════ */
-.radar-header{background:linear-gradient(160deg,#0A0A1E,#1A1040);padding:20px 20px 24px;flex-shrink:0;}
+.radar-header{background:linear-gradient(160deg,#0A0A1E,#1A1040);padding:calc(20px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;}
 .radar-nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px;}
 .radar-num-box{background:rgba(255,255,255,.08);border-radius:12px;padding:10px;text-align:center;border:1px solid rgba(255,255,255,.08);}
 .radar-num-label{color:rgba(255,255,255,.5);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
@@ -255,7 +255,7 @@ input,textarea,select{font-family:var(--font);}
    TELA: ASSISTENTE COMERCIAL
 ════════════════════════════════════════ */
 #view-assist-new.active{display:flex;flex-direction:column;position:fixed;top:0;left:0;right:0;height:100%;height:100dvh;z-index:50;max-width:480px;margin:0 auto;}
-.assist-header-new{background:var(--rose-deep);padding:52px 16px 16px;flex-shrink:0;}
+.assist-header-new{background:var(--rose-deep);padding:calc(52px + env(safe-area-inset-top)) 16px 16px;flex-shrink:0;}
 .assist-header-inner{display:flex;align-items:center;gap:12px;}
 .assist-avatar{width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0;}
 .assist-name-text{font-size:16px;font-weight:700;color:white;}
@@ -627,7 +627,7 @@ input,textarea,select{font-family:var(--font);}
       <div style="font-size:13.5px;color:var(--ink-2);font-weight:500;line-height:1.55;" id="radarIA">Carregando análise...</div>
     </div>
 
-    <button class="btn-primary" onclick="abrirAtendimento()">Iniciar Semana →</button>
+    <button class="btn-primary" id="radarCtaBtn" onclick="abrirAtendimento()">Iniciar Semana →</button>
   </div>
 </div>
 
@@ -1005,7 +1005,7 @@ input,textarea,select{font-family:var(--font);}
 <div class="view" id="view-domingo">
   <div class="scroll-body">
     <!-- Header escuro -->
-    <div style="background:linear-gradient(160deg,#0A0A1E,#1A1040);padding:20px 20px 24px;position:relative;overflow:hidden;flex-shrink:0;">
+    <div style="background:linear-gradient(160deg,#0A0A1E,#1A1040);padding:calc(20px + env(safe-area-inset-top)) 20px 24px;position:relative;overflow:hidden;flex-shrink:0;">
       <div style="position:absolute;top:-50px;right:-30px;width:200px;height:200px;border-radius:50%;background:rgba(124,58,237,.15);"></div>
       <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;" id="domingoData">Domingo</div>
       <div style="color:white;font-size:24px;font-weight:800;margin-bottom:3px;">Bom dia, Rogério.</div>
@@ -1078,7 +1078,7 @@ input,textarea,select{font-family:var(--font);}
      TELA 10: ASSISTENTE COMERCIAL PROATIVO
 ══════════════════════════════════════════ -->
 <div class="view" id="view-iniciativas" style="background:var(--surface);">
-  <div style="background:linear-gradient(160deg,#1A0A2E,#2D1060);padding:52px 20px 20px;flex-shrink:0;">
+  <div style="background:linear-gradient(160deg,#1A0A2E,#2D1060);padding:calc(52px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
       <button onclick="fecharIniciativas()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:white;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M15 18l-6-6 6-6"/></svg>
@@ -1112,7 +1112,7 @@ input,textarea,select{font-family:var(--font);}
      TELA 11: GERENCIAR REGIÃO
 ══════════════════════════════════════════ -->
 <div class="view" id="view-gerenciar">
-  <div style="background:#0F0A14;padding:16px 20px 20px;flex-shrink:0;">
+  <div style="background:#0F0A14;padding:calc(16px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
     <button onclick="goBack()" style="color:rgba(255,255,255,.55);font-size:12px;font-weight:600;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Configuração</div>
     <div style="color:white;font-size:24px;font-weight:800;margin-bottom:12px;" id="gerenciarTitulo">Gramado 3</div>
@@ -1598,7 +1598,7 @@ function renderSemana() {
   document.getElementById('progConsultoras').style.width = pctC + '%';
   document.getElementById('progMeta').style.width = pctM + '%';
   document.getElementById('progConsultorasVal').textContent = atendidas + '/' + total;
-  document.getElementById('progMetaVal').textContent = pctM + '% · ' + brl(meta);
+  document.getElementById('progMetaVal').textContent = pctM + '% · ' + brl(meta).replace(' ', '\u00A0');
 
   document.getElementById('heroVendido').textContent = brl(aPagarTotal);
   document.getElementById('heroMetaSub').textContent = 'Vendido: ' + brl(vendido);
@@ -1981,14 +1981,14 @@ function abrirRegistro(tipo) {
     document.getElementById('modalRegConteudo').innerHTML = `
       <label class="field">
         <span>Valor vendido (R$)</span>
-        <input id="regVenda" type="number" inputmode="decimal" placeholder="0,00" value="${cons && cons.vendido ? cons.vendido : ''}"
-          oninput="calcValorPagar()">
+        <input id="regVenda" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.vendido)}"
+          oninput="maskMoeda(this);calcValorPagar()">
       </label>
 
       <label class="field">
         <span>Valor a pagar <span style="color:var(--ink-3);font-weight:500;">(vendido − ${comissaoPct}% comissão consultora${comissaoPct===40?' · favorita':''})</span></span>
-        <input id="regAPagar" type="number" inputmode="decimal" placeholder="0,00" value="${cons && cons.aPagar ? cons.aPagar : ''}"
-          style="background:var(--surface);">
+        <input id="regAPagar" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.aPagar)}"
+          oninput="maskMoeda(this)" style="background:var(--surface);">
         <span style="font-size:11px;color:var(--ink-3);margin-top:2px;">Calculado automaticamente · você pode ajustar</span>
       </label>
 
@@ -2013,14 +2013,14 @@ function abrirRegistro(tipo) {
       <div id="camposPix" style="display:none;">
         <label class="field">
           <span>Valor recebido via Pix (R$)</span>
-          <input id="regPix" type="number" inputmode="decimal" placeholder="0,00" value="${cons && cons.recebidoPix ? cons.recebidoPix : ''}" oninput="atualizarResumo()">
+          <input id="regPix" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.recebidoPix)}" oninput="maskMoeda(this);atualizarResumo()">
         </label>
       </div>
 
       <div id="camposDinheiro" style="display:none;">
         <label class="field">
           <span>Valor recebido em dinheiro (R$)</span>
-          <input id="regDinheiro" type="number" inputmode="decimal" placeholder="0,00" value="${cons && cons.recebidoDinheiro ? cons.recebidoDinheiro : ''}" oninput="atualizarResumo()">
+          <input id="regDinheiro" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.recebidoDinheiro)}" oninput="maskMoeda(this);atualizarResumo()">
         </label>
       </div>
 
@@ -2040,7 +2040,7 @@ function abrirRegistro(tipo) {
     } else if (cons && cons.recebido > 0) {
       // Recebido antigo sem forma registrada: assume dinheiro por padrão
       selecionarForma('dinheiro');
-      document.getElementById('regDinheiro').value = cons.recebido;
+      document.getElementById('regDinheiro').value = brlInput(cons.recebido);
     }
     atualizarResumo();
   } else {
@@ -2060,11 +2060,26 @@ function abrirRegistro(tipo) {
   document.getElementById('modalRegistro').classList.add('open');
 }
 
+function brlInput(v) {
+  if (!v) return '';
+  return 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function maskMoeda(el) {
+  let digits = el.value.replace(/\D/g, '');
+  if (!digits) { el.value = ''; return; }
+  digits = digits.replace(/^0+(?=\d)/, '');
+  while (digits.length < 3) digits = '0' + digits;
+  const cents = digits.slice(-2);
+  let intPart = digits.slice(0, -2).replace(/^0+(?=\d)/, '');
+  intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  el.value = 'R$ ' + intPart + ',' + cents;
+}
+
 function calcValorPagar() {
-  const v = parseFloat(document.getElementById('regVenda').value) || 0;
+  const v = parseNum(document.getElementById('regVenda').value);
   const pct = (typeof window._payoutPct === 'number') ? window._payoutPct : 0.70;
   const aPagar = Math.round(v * pct * 100) / 100;
-  document.getElementById('regAPagar').value = aPagar > 0 ? aPagar : '';
+  document.getElementById('regAPagar').value = aPagar > 0 ? brlInput(aPagar) : '';
   atualizarResumo();
 }
 
@@ -2084,8 +2099,8 @@ function selecionarForma(forma) {
 }
 
 function atualizarResumo() {
-  const pix = parseFloat(document.getElementById('regPix')?.value) || 0;
-  const din = parseFloat(document.getElementById('regDinheiro')?.value) || 0;
+  const pix = parseNum(document.getElementById('regPix')?.value);
+  const din = parseNum(document.getElementById('regDinheiro')?.value);
   const total = pix + din;
   const resumo = document.getElementById('resumoRecebido');
   if (resumo) {
@@ -2189,6 +2204,11 @@ function renderRadar() {
     document.getElementById('radarSemFav').textContent = '0';
     document.getElementById('radarAlertas').innerHTML = '';
     document.getElementById('radarIA').textContent = 'Nenhuma semana ativa.';
+    const ctaBtnVazio = document.getElementById('radarCtaBtn');
+    if (ctaBtnVazio) {
+      ctaBtnVazio.textContent = 'Iniciar Semana →';
+      ctaBtnVazio.onclick = () => goTo('criar-semana');
+    }
     return;
   }
 
@@ -2265,6 +2285,18 @@ function renderRadar() {
   }
 
   document.getElementById('radarIA').innerHTML = textoSugestao;
+
+  // Botão de ação: reflete o estado real da semana (igual à tela Semana)
+  const ctaBtn = document.getElementById('radarCtaBtn');
+  if (ctaBtn) {
+    if (sugerida) {
+      ctaBtn.textContent = 'Continuar Semana →';
+      ctaBtn.onclick = () => abrirAtendimento(sugerida.id);
+    } else {
+      ctaBtn.textContent = '✓ Finalizar Semana';
+      ctaBtn.onclick = () => mostrarFechamentoSemana();
+    }
+  }
 }
 
 /* ════════════════════════════════════════════
