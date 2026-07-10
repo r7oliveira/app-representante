@@ -120,6 +120,15 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 .consul-nome{font-size:14px;font-weight:700;margin-bottom:1px;color:white;}
 .consul-det{font-size:11px;color:rgba(255,255,255,0.85);margin-bottom:0;}
 .consul-card-body{padding:8px 14px 10px;border-top:1px solid #f5f5f5;}
+.dados-copy-list{display:flex;flex-direction:column;gap:0;margin-bottom:4px;}
+.dado-copy-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #f9f9f9;}
+.dado-copy-row:last-child{border-bottom:1px solid #f5f5f5;margin-bottom:4px;}
+.dado-copy-info{min-width:0;}
+.dado-copy-info .dado-val{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-copy{flex:none;display:inline-flex;align-items:center;gap:5px;background:#f5f5f7;color:#666;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:background .15s,color .15s;}
+.btn-copy:active{transform:scale(0.96);}
+.btn-copy.copiado{background:#dcfce7;color:#16a34a;}
+.btn-copy:disabled{opacity:.4;cursor:not-allowed;}
 .dados-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
 .dado-row{display:flex;flex-direction:column;padding:5px 0;border-bottom:1px solid #f9f9f9;}
 .dado-row:nth-child(odd){padding-right:10px;}
@@ -1252,6 +1261,7 @@ document.body.addEventListener('click', async function(e) {
   const btnRep = e.target.closest('.btn-reprovar');
   const btnConf = e.target.closest('.btn-confirmar');
   const btnWh = e.target.closest('.btn-whats');
+  const btnCopy = e.target.closest('.btn-copy');
 
   if (btnAp) {
     const id = btnAp.dataset.id;
@@ -1302,7 +1312,45 @@ document.body.addEventListener('click', async function(e) {
     const msg = encodeURIComponent('Oi ' + nome + '! Sou a representante Romance. Posso te ajudar?');
     window.open('https://wa.me/55' + num + '?text=' + msg, '_blank');
   }
+
+  if (btnCopy && !btnCopy.disabled) {
+    const valor = btnCopy.dataset.copy || '';
+    copiarParaAreaTransferencia(valor).then(ok => {
+      const original = btnCopy.innerHTML;
+      if (ok) {
+        btnCopy.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13L9 17L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Copiado!';
+        btnCopy.classList.add('copiado');
+      } else {
+        btnCopy.innerHTML = 'Erro ao copiar';
+      }
+      setTimeout(() => {
+        btnCopy.innerHTML = original;
+        btnCopy.classList.remove('copiado');
+      }, 1400);
+    });
+  }
 });
+
+// ===== COPIAR PARA ÁREA DE TRANSFERÊNCIA =====
+async function copiarParaAreaTransferencia(texto) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(texto);
+      return true;
+    }
+    const ta = document.createElement('textarea');
+    ta.value = texto;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch (e) {
+    return false;
+  }
+}
 
 // ===== EXPORTAR CONSULTORAS =====
 function exportarConsultoras() {
@@ -1363,9 +1411,39 @@ function renderConsultoras(lista) {
         <span class="badge badge-pts">${c.pontos||0} pts</span>
       </div>
       <div class="consul-card-body">
+        <div class="dados-copy-list">
+          <div class="dado-copy-row">
+            <div class="dado-copy-info">
+              <div class="dado-label">CPF</div>
+              <div class="dado-val">${c.cpf||'—'}</div>
+            </div>
+            <button class="btn-copy" data-copy="${c.cpf||''}" ${!c.cpf?'disabled':''}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2"/></svg>
+              Copiar
+            </button>
+          </div>
+          <div class="dado-copy-row">
+            <div class="dado-copy-info">
+              <div class="dado-label">Data de nascimento</div>
+              <div class="dado-val">${c.nascimento||'—'}</div>
+            </div>
+            <button class="btn-copy" data-copy="${c.nascimento||''}" ${!c.nascimento?'disabled':''}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2"/></svg>
+              Copiar
+            </button>
+          </div>
+          <div class="dado-copy-row">
+            <div class="dado-copy-info">
+              <div class="dado-label">Telefone</div>
+              <div class="dado-val">${c.tel||'—'}</div>
+            </div>
+            <button class="btn-copy" data-copy="${c.tel||''}" ${!c.tel?'disabled':''}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2"/></svg>
+              Copiar
+            </button>
+          </div>
+        </div>
         <div class="dados-grid">
-          <div class="dado-row"><span class="dado-label">CPF</span><span class="dado-val">${c.cpf||'—'}</span></div>
-          <div class="dado-row"><span class="dado-label">Nascimento</span><span class="dado-val">${c.nascimento||'—'}</span></div>
           <div class="dado-row"><span class="dado-label">Indicações</span><span class="dado-val">${c.indicacoes||0}</span></div>
           <div class="dado-row"><span class="dado-label">Cadastro</span><span class="dado-val">${data}</span></div>
         </div>
