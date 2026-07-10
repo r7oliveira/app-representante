@@ -459,9 +459,8 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
     <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Consultoras</div>
     <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Todas as consultoras cadastradas.</p>
     <div class="filter-tabs" id="filtro-app-tabs">
-      <div class="ftab-app ativo" data-app="todas" onclick="filtrarApp(this,'todas')">Todas</div>
       <div class="ftab-app" data-app="sim" onclick="filtrarApp(this,'sim')">✅ Consultoras ativas</div>
-      <div class="ftab-app" data-app="nao" onclick="filtrarApp(this,'nao')">👥 Indicações</div>
+      <div class="ftab-app ativo" data-app="nao" onclick="filtrarApp(this,'nao')">👥 Indicações</div>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;">
       <div class="search-box" style="flex:1;margin-bottom:0;">
@@ -1375,7 +1374,7 @@ function exportarConsultoras() {
 }
 
 // ===== FILTRO APP =====
-let filtroApp = 'todas';
+let filtroApp = 'nao';
 window.filtrarApp = function(el, filtro) {
   filtroApp = filtro;
   document.querySelectorAll('.ftab-app').forEach(t => t.classList.remove('ativo'));
@@ -1406,7 +1405,7 @@ function renderConsultoras(lista) {
         <div class="consul-av">${ini}</div>
         <div style="flex:1;min-width:0;">
           <div class="consul-nome">${c.nome||'—'}${badgeApp}</div>
-          <div class="consul-det">${c.tel||'—'} · ${c.cidade||'—'}</div>
+          <div class="consul-det">${c.cidade||'—'}</div>
         </div>
         <span class="badge badge-pts">${c.pontos||0} pts</span>
       </div>
@@ -1449,15 +1448,9 @@ function renderConsultoras(lista) {
         </div>
       </div>
       <div class="consul-footer" style="display:flex;gap:8px;align-items:center;">
-        <button class="btn-whats" data-tel="${c.tel||''}" data-nome="${c.nome||''}">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.16 1.6 5.97L0 24l6.18-1.62A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.21-1.25-6.22-3.48-8.52z" fill="#25D366"/></svg>
+        <button class="btn-whats" data-tel="${c.tel||''}" data-nome="${c.nome||''}" style="flex:1;justify-content:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.16 1.6 5.97L0 24l6.18-1.62A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.21-1.25-6.22-3.48-8.52z" fill="#25D366"/></svg>
           WhatsApp
-        </button>
-        <button onclick="abrirAcerto('${c.id}','${c.nome||''}')" style="flex:1;background:var(--pink);color:white;border:none;border-radius:7px;padding:7px 13px;font-size:12px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:5px;">
-          💰 Registrar Acerto
-        </button>
-        <button onclick="verHistoricoAcertos('${c.id}','${c.nome||''}')" style="background:#f5f5f5;color:#333;border:none;border-radius:7px;padding:7px 10px;font-size:12px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;">
-          📋
         </button>
       </div>
     </div>`;
