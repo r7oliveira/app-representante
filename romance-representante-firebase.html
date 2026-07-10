@@ -387,7 +387,7 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
       </div>
       <div class="hero-card-bottom">
         <span class="hero-card-hint">Atualizado agora</span>
-        <span class="hero-card-link" onclick="navTo('indicacoes')">Ver indicações →</span>
+        <span class="hero-card-link" onclick="abrirIndicacoesPendentes()">Ver indicações →</span>
       </div>
     </div>
 
@@ -429,6 +429,20 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
         <button onclick="copiarMeuLink()" style="flex:1;background:var(--black);color:white;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;">📋 Copiar</button>
         <button onclick="compartilharMeuLink()" style="flex:1;background:#25D366;color:white;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;">WhatsApp</button>
       </div>
+    </div>
+
+    <!-- NOTIFICAÇÃO PUSH -->
+    <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:var(--radius);padding:18px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">📣 Enviar Notificação Push</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:14px;">Avise todas as consultoras que aceitaram notificações</div>
+      <select id="notif-tipo" style="width:100%;padding:10px;border-radius:10px;border:none;font-size:13px;margin-bottom:10px;background:#fff;">
+        <option value="nova-aula">📚 Nova aula disponível 🎓</option>
+        <option value="novo-premio">🎁 Novo prêmio disponível!</option>
+        <option value="desafio">⚡ Desafio relâmpago ativo!</option>
+        <option value="custom">✏️ Mensagem personalizada</option>
+      </select>
+      <input id="notif-custom" placeholder="Digite sua mensagem..." style="width:100%;padding:10px;border-radius:10px;border:none;font-size:13px;margin-bottom:10px;display:none;box-sizing:border-box;">
+      <button onclick="enviarNotificacaoPush()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--pink);color:white;font-size:14px;font-weight:700;cursor:pointer;">Enviar para todas 🚀</button>
     </div>
 
     <!-- GRÁFICO CRESCIMENTO -->
@@ -479,13 +493,6 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
     <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Resgates</div>
     <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Pedidos de troca de pontos por prêmios.</p>
     <div id="lista-resgates"><div class="empty-state">Carregando...</div></div>
-  </div>
-
-  <!-- RANKING -->
-  <div class="page" id="pg-ranking">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Ranking</div>
-    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Consultoras com maior valor vendido no último acerto.</p>
-    <div class="card" id="lista-ranking"><div class="empty-state">Carregando...</div></div>
   </div>
 
   <!-- ADMIN (só para master) -->
@@ -545,36 +552,10 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
   </div>
 
 
-  <!-- FEED -->
-  <div class="page" id="pg-feed">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:4px;">Feed</div>
-    <p style="font-size:14px;color:var(--gray);margin-bottom:16px;">Publique novidades, dicas e conquistas para suas consultoras.</p>
-
-    <!-- BOTÃO NOTIFICAÇÃO -->
-    <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;padding:18px;margin-bottom:20px;">
-      <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">📣 Enviar Notificação Push</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.6);margin-bottom:14px;">Avise todas as consultoras que aceitaram notificações</div>
-      <select id="notif-tipo" style="width:100%;padding:10px;border-radius:10px;border:none;font-size:13px;margin-bottom:10px;background:#fff;">
-        <option value="nova-aula">📚 Nova aula disponível 🎓</option>
-        <option value="novo-premio">🎁 Novo prêmio disponível!</option>
-        <option value="desafio">⚡ Desafio relâmpago ativo!</option>
-        <option value="custom">✏️ Mensagem personalizada</option>
-      </select>
-      <input id="notif-custom" placeholder="Digite sua mensagem..." style="width:100%;padding:10px;border-radius:10px;border:none;font-size:13px;margin-bottom:10px;display:none;box-sizing:border-box;">
-      <button onclick="enviarNotificacaoPush()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--pink);color:white;font-size:14px;font-weight:700;cursor:pointer;">Enviar para todas 🚀</button>
-    </div>
-
-    <div id="lista-feed-rep"><div class="empty-state">Carregando...</div></div>
-  </div>
-
   <nav class="bnav">
     <div class="bnav-item ativo" data-pg="pg-home">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 12L12 3L21 12V20C21 20.5523 20.5523 21 20 21H15V16H9V21H4C3.44772 21 3 20.5523 3 20V12Z" fill="#D91A7A" id="ico-home"/></svg>
       <span class="bnav-lbl">Início</span>
-    </div>
-    <div class="bnav-item" data-pg="pg-indicacoes">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" fill="#bbb" id="ico-ind"/></svg>
-      <span class="bnav-lbl">Indicações</span>
     </div>
     <div class="bnav-item" data-pg="pg-consultoras">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M17 21V19C17 16.7909 15.2091 15 13 15H5C2.79086 15 1 16.7909 1 19V21M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7Z" stroke="#bbb" stroke-width="2" stroke-linecap="round" id="ico-consul" fill="none"/></svg>
@@ -583,14 +564,6 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
     <div class="bnav-item" data-pg="pg-resgates">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 12V22H4V12M22 7H2V12H22V7ZM12 22V7M12 7H7.5C6.119 7 5 5.881 5 4.5C5 3.119 6.119 2 7.5 2C10 2 12 7 12 7ZM12 7H16.5C17.881 7 19 5.881 19 4.5C19 3.119 17.881 2 16.5 2C14 2 12 7 12 7Z" stroke="#bbb" stroke-width="2" stroke-linecap="round" id="ico-resg" fill="none"/></svg>
       <span class="bnav-lbl">Resgates</span>
-    </div>
-    <div class="bnav-item" data-pg="pg-ranking">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="14" width="5" height="7" rx="1" fill="#bbb" id="ico-rk1"/><rect x="9.5" y="9" width="5" height="12" rx="1" fill="#bbb" id="ico-rk2"/><rect x="17" y="4" width="5" height="17" rx="1" fill="#bbb" id="ico-rk3"/></svg>
-      <span class="bnav-lbl">Ranking</span>
-    </div>
-    <div class="bnav-item" data-pg="pg-feed">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" fill="#bbb" id="ico-feed"/></svg>
-      <span class="bnav-lbl">Feed</span>
     </div>
     <div class="bnav-item" data-pg="pg-admin" id="nav-admin" style="display:none;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="#bbb" id="ico-adm"/><path d="M4 20C4 17.7909 7.58172 16 12 16C16.4183 16 20 17.7909 20 20" stroke="#bbb" stroke-width="2" stroke-linecap="round" id="ico-adm2"/></svg>
@@ -656,32 +629,6 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
   </div>
 </div>
 
-<!-- FAB FEED -->
-<button class="feed-fab-rep" id="feed-fab-rep" onclick="abrirNovoPostRep()">
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
-</button>
-
-<!-- MODAL NOVO POST REP -->
-<div class="post-overlay-r" id="m-novo-post-rep">
-  <div class="post-modal-r">
-    <div class="post-modal-h-r">Nova publicação</div>
-    <textarea class="post-textarea-r" id="post-texto-rep" placeholder="Compartilhe algo com suas consultoras..."></textarea>
-    <img id="post-img-preview-rep" style="width:100%;border-radius:12px;margin-top:10px;max-height:200px;object-fit:cover;display:none;" />
-    <video id="post-vid-preview-rep" style="width:100%;border-radius:12px;margin-top:10px;max-height:200px;display:none;" controls></video>
-    <input type="file" id="post-file-rep" accept="image/*,video/*" style="display:none" onchange="previewMidiaRep(this)"/>
-    <div class="post-midia-btns-r">
-      <button class="post-midia-btn-r" onclick="document.getElementById('post-file-rep').click()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="#555" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="#555"/><path d="M21 15L16 10L5 21" stroke="#555" stroke-width="2" stroke-linecap="round"/></svg>
-        Foto / Vídeo
-      </button>
-      <button class="post-midia-btn-r" style="background:var(--pink);color:white;" onclick="publicarRep()">
-        Publicar
-      </button>
-    </div>
-    <button style="width:100%;margin-top:10px;background:none;border:1.5px solid #e5e5e5;border-radius:12px;padding:13px;font-size:14px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;" onclick="document.getElementById('m-novo-post-rep').classList.remove('show')">Cancelar</button>
-  </div>
-</div>
-
 <!-- MODAL EDITAR REPRESENTANTE -->
 <div class="overlay" id="m-editar-rep">
   <div class="modal">
@@ -734,7 +681,7 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
     <div class="modal-circle" style="background:#fff3cd;font-size:28px;">🔔</div>
     <div class="modal-h">Indicações pendentes!</div>
     <p class="modal-p" id="m-notif-pendentes-txt">Você tem indicações aguardando aprovação.</p>
-    <button class="btn-main" id="m-notif-pendentes-btn" onclick="document.getElementById('m-notif-pendentes').classList.remove('show');navTo('indicacoes')">Ver agora</button>
+    <button class="btn-main" id="m-notif-pendentes-btn" onclick="document.getElementById('m-notif-pendentes').classList.remove('show');abrirIndicacoesPendentes()">Ver agora</button>
     <button class="btn-outline" onclick="document.getElementById('m-notif-pendentes').classList.remove('show')" style="margin-top:8px;">Depois</button>
   </div>
 </div>
@@ -907,7 +854,6 @@ function entrarNoApp() {
   document.getElementById('tela-app').style.display = 'block';
   window.scrollTo(0, 0);
   iniciar();
-  ouvirFeedRep();
   atualizarExibicaoLink();
   load(false);
 
@@ -919,7 +865,7 @@ function entrarNoApp() {
       document.getElementById('m-notif-pendentes-btn').textContent = 'Ver agora';
       document.getElementById('m-notif-pendentes-btn').onclick = () => {
         document.getElementById('m-notif-pendentes').classList.remove('show');
-        navTo('indicacoes');
+        abrirIndicacoesPendentes();
       };
       document.getElementById('m-notif-pendentes').classList.add('show');
       tocarSom('nova');
@@ -1180,7 +1126,6 @@ function iniciar() {
 
     // Re-renderiza consultoras respeitando filtro ativo
     aplicarFiltroConsultoras(document.getElementById('busca')?.value?.toLowerCase() || '');
-    renderRanking();
   });
 
   // Resgates — busca tudo e filtra no JS
@@ -1707,12 +1652,18 @@ function renderGraficoCrescimento() {
 
 // ===== NAVEGAÇÃO =====
 function navTo(tab) {
-  const pgMap = {inicio:'pg-home', indicacoes:'pg-indicacoes', consultoras:'pg-consultoras', resgates:'pg-resgates', ranking:'pg-ranking', feed:'pg-feed'};
+  const pgMap = {inicio:'pg-home', consultoras:'pg-consultoras', resgates:'pg-resgates'};
   const dataPg = pgMap[tab];
   if (!dataPg) return;
   // Simulate click on the nav button
   const btn = document.querySelector(`.bnav-item[data-pg="${dataPg}"]`);
   if (btn) btn.click();
+}
+
+function abrirIndicacoesPendentes() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('ativo'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('ativo'));
+  document.getElementById('pg-indicacoes').classList.add('ativo');
 }
 
 document.querySelectorAll('.bnav-item').forEach(item => {
@@ -1722,27 +1673,14 @@ document.querySelectorAll('.bnav-item').forEach(item => {
     document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('ativo'));
     document.getElementById(pg).classList.add('ativo');
     this.classList.add('ativo');
-    // Mostrar FAB só no feed
-    const fab = document.getElementById('feed-fab-rep');
-    if (fab) fab.classList.toggle('show', pg === 'pg-feed');
     // Atualiza relatório ao entrar no admin
     if (pg === 'pg-admin') renderRelatorioMaster();
   });
 });
 
-document.getElementById('link-ver-todas').addEventListener('click', () => {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('ativo'));
-  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('ativo'));
-  document.getElementById('pg-indicacoes').classList.add('ativo');
-  document.querySelector('[data-pg="pg-indicacoes"]').classList.add('ativo');
-});
+document.getElementById('link-ver-todas').addEventListener('click', abrirIndicacoesPendentes);
 
-document.getElementById('btn-notif').addEventListener('click', () => {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('ativo'));
-  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('ativo'));
-  document.getElementById('pg-indicacoes').classList.add('ativo');
-  document.querySelector('[data-pg="pg-indicacoes"]').classList.add('ativo');
-});
+document.getElementById('btn-notif').addEventListener('click', abrirIndicacoesPendentes);
 
 // ===== NOTIFICAÇÃO PUSH =====
 document.getElementById('notif-tipo').addEventListener('change', function() {
@@ -1844,138 +1782,6 @@ document.getElementById('btn-fechar-resgate').addEventListener('click', () => do
 document.querySelectorAll('.overlay').forEach(o => {
   o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
 });
-
-// ===== FEED REPRESENTANTE =====
-let _repMidiaFile = null;  // guarda o File original
-let _repMidiaTipo = null;
-let _repInfo = null; // guardado no login
-
-window.abrirNovoPostRep = function() {
-  document.getElementById('post-texto-rep').value = '';
-  document.getElementById('post-img-preview-rep').style.display = 'none';
-  document.getElementById('post-vid-preview-rep').style.display = 'none';
-  _repMidiaFile = null; _repMidiaTipo = null;
-  document.getElementById('post-file-rep').value = '';
-  document.getElementById('m-novo-post-rep').classList.add('show');
-}
-
-window.previewMidiaRep = function(input) {
-  const file = input.files[0];
-  if (!file) return;
-  _repMidiaFile = file;
-  _repMidiaTipo = file.type.startsWith('video') ? 'video' : 'imagem';
-  const url = URL.createObjectURL(file);
-  if (_repMidiaTipo === 'imagem') {
-    const img = document.getElementById('post-img-preview-rep');
-    img.src = url; img.style.display = 'block';
-    document.getElementById('post-vid-preview-rep').style.display = 'none';
-  } else {
-    const vid = document.getElementById('post-vid-preview-rep');
-    vid.src = url; vid.style.display = 'block';
-    document.getElementById('post-img-preview-rep').style.display = 'none';
-  }
-}
-
-window.publicarRep = async function() {
-  const texto = document.getElementById('post-texto-rep').value.trim();
-  if (!texto && !_repMidiaFile) { alert('Escreva algo ou adicione uma mídia.'); return; }
-  const nomeRep = _repInfo?.nome || document.getElementById('saudacao-nome').textContent || 'Representante';
-  document.getElementById('m-novo-post-rep').classList.remove('show');
-  load(true, 'Publicando...');
-  try {
-    let midiaUrl = null;
-    let midiaTipo = null;
-    // Faz upload para Cloudinary se tiver mídia
-    if (_repMidiaFile) {
-      const formData = new FormData();
-      formData.append('file', _repMidiaFile);
-      formData.append('upload_preset', 'romance_feed');
-      formData.append('cloud_name', 'dk7kyendv');
-      const tipo = _repMidiaFile.type.startsWith('video') ? 'video' : 'image';
-      const res = await fetch(`https://api.cloudinary.com/v1_1/dk7kyendv/${tipo}/upload`, {
-        method: 'POST', body: formData
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || 'Erro no upload');
-      midiaUrl = data.secure_url;
-      midiaTipo = _repMidiaTipo;
-    }
-    await db.collection('feed').add({
-      autorId: _repInfo?.uid || 'rep',
-      autorNome: nomeRep,
-      autorTipo: 'representante',
-      texto,
-      midia: midiaUrl,
-      midiaTipo,
-      curtidas: 0,
-      curtidasPor: [],
-      criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-    });
-  } catch(e) {
-    console.error('Erro ao publicar:', e);
-    alert('Erro ao publicar: ' + (e.message || e.code || e));
-  } finally {
-    load(false);
-  }
-}
-
-window.deletarPostRep = async function(postId) {
-  if (!confirm('Excluir esta publicação?')) return;
-  try { await db.collection('feed').doc(postId).delete(); } catch(e) { alert('Erro ao excluir.'); }
-}
-
-function tempoRelativoRep(ts) {
-  if (!ts) return '';
-  const diff = Math.floor((Date.now() - ts.toMillis()) / 1000);
-  if (diff < 60) return 'agora';
-  if (diff < 3600) return Math.floor(diff/60) + 'min';
-  if (diff < 86400) return Math.floor(diff/3600) + 'h';
-  return Math.floor(diff/86400) + 'd';
-}
-
-function ouvirFeedRep() {
-  db.collection('feed').orderBy('criadoEm','desc').limit(50).onSnapshot(snap => {
-    const el = document.getElementById('lista-feed-rep');
-    if (!el) return;
-    if (snap.empty) { el.innerHTML = '<div class="empty-state">Nenhuma publicação ainda.</div>'; return; }
-    el.innerHTML = snap.docs.map(d => {
-      const p = d.data();
-      const isRep = p.autorTipo === 'representante';
-      const ini = (p.autorNome||'').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
-      const midia = p.midia ? (p.midiaTipo === 'video'
-        ? `<video class="feed-midia-video" src="${p.midia}" controls playsinline></video>`
-        : `<img class="feed-midia" src="${p.midia}" loading="lazy"/>`) : '';
-      const comentarios = (p.comentarios||[]).slice(-2).map(c =>
-        `<div class="feed-comentario-r"><strong>${c.autorNome.split(' ')[0]}</strong> ${c.texto}</div>`
-      ).join('');
-      const avClass = isRep ? 'feed-av-r' : 'feed-av-c';
-      const avInner = isRep ? 'feed-av-r-inner' : 'feed-av-c-inner';
-      return `<div class="feed-post">
-        <div class="feed-post-header">
-          <div class="${avClass}"><div class="${avInner}">${ini}</div></div>
-          <div style="flex:1;margin-left:2px;">
-            <div class="feed-autor">${p.autorNome||'—'}${isRep?'<span class="feed-badge-rep">REP</span>':''}</div>
-          </div>
-          <div style="font-size:11px;color:#aaa;">${tempoRelativoRep(p.criadoEm)}</div>
-          <button class="feed-del-btn" onclick="deletarPostRep('${d.id}')">✕</button>
-        </div>
-        ${midia}
-        <div class="feed-acoes-r">
-          <span class="feed-btn-r">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          </span>
-          <span class="feed-btn-r">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          </span>
-        </div>
-        ${(p.curtidas||0) > 0 ? `<div class="feed-curtidas-r">${p.curtidas} curtida${p.curtidas>1?'s':''}</div>` : ''}
-        ${p.texto ? `<div class="feed-texto-r"><strong>${(p.autorNome||'').split(' ')[0]}</strong> ${p.texto}</div>` : ''}
-        ${comentarios ? `<div class="feed-comentarios-r">${comentarios}</div>` : ''}
-      </div>`;
-    }).join('');
-  });
-}
-
 
 // ===== ACERTO DE CONTAS =====
 let acertoConsultoraId = null;
