@@ -197,6 +197,8 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
 .overlay.show{display:flex;}
 .modal{background:white;border-radius:24px 24px 0 0;padding:30px 24px 44px;width:100%;max-width:430px;text-align:center;animation:up .28s ease;}
 @keyframes up{from{transform:translateY(70px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes destaquePulse{0%{box-shadow:0 0 0 0 rgba(217,26,122,0.5)}70%{box-shadow:0 0 0 14px rgba(217,26,122,0)}100%{box-shadow:0 0 0 0 rgba(217,26,122,0)}}
+.destaque-config{animation:destaquePulse 1s ease-out 2;border-radius:14px;}
 .modal-circle{width:64px;height:64px;border-radius:50%;background:var(--pink-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;}
 .modal-h{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin-bottom:10px;}
 .modal-p{font-size:14px;color:var(--gray);line-height:1.6;margin-bottom:20px;}
@@ -327,7 +329,7 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
       <div class="rep-menu-item-icon">⚙️</div>
       <div>
         <div class="rep-menu-item-label">Configurações</div>
-        <div class="rep-menu-item-sub">Percentual de meta e preferências</div>
+        <div class="rep-menu-item-sub">Libere outros representantes e ajuste preferências</div>
       </div>
     </div>
 
@@ -546,7 +548,7 @@ body{font-family:'Outfit',sans-serif;background:#f2f2f2;color:var(--black);min-h
     </div>
 
     <!-- GERENCIAR REPRESENTANTES -->
-    <div style="font-size:13px;font-weight:700;margin-bottom:10px;">⚙️ Gerenciar acessos</div>
+    <div id="sec-gerenciar-acessos" style="font-size:13px;font-weight:700;margin-bottom:10px;">⚙️ Gerenciar acessos</div>
     <button class="btn-main" id="btn-novo-rep" style="margin-bottom:16px;">+ Adicionar representante</button>
     <div id="lista-representantes"><div class="empty-state">Carregando...</div></div>
   </div>
@@ -1763,7 +1765,24 @@ window.abrirMenuRepCursos = function() {
 
 window.abrirMenuRepConfig = function() {
   fecharMenuRep();
-  alert('⚙️ Configurações em breve!');
+  if (!repAtual?.master) {
+    alert('⚙️ As demais configurações estão em breve!\n\nA liberação de novos representantes é feita pela conta master.');
+    return;
+  }
+  // Navega para o Painel Master e destaca a seção de liberar representantes
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('ativo'));
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('ativo'));
+  const pg = document.getElementById('pg-admin');
+  if (pg) pg.classList.add('ativo');
+  renderRelatorioMaster();
+  setTimeout(() => {
+    const sec = document.getElementById('sec-gerenciar-acessos');
+    if (sec) {
+      sec.scrollIntoView({behavior:'smooth', block:'start'});
+      sec.classList.add('destaque-config');
+      setTimeout(() => sec.classList.remove('destaque-config'), 2200);
+    }
+  }, 150);
 };
 
 // ===== FILTRO INDICAÇÕES =====
