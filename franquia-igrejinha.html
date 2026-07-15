@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Franquia Igrejinha</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Franquia Igrejinha">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#D91A7A">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --pink: #D91A7A;
+      --pink-deep: #8B0045;
+      --dark: #1a1a1a;
+      --gray: #888;
+      --bg: #f5f5f7;
+      --green: #2e7d32;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    /* HEADER */
+    .header {
+      background: var(--pink-deep);
+      padding: 32px 20px 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .header-logo-img {
+      height: 30px;
+      width: auto;
+      opacity: 0.9;
+      margin-top: -8px;
+      margin-bottom: 14px;
+    }
+    .header-titulo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 46px;
+      font-weight: 700;
+      color: white;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+    .header-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.5;
+    }
+
+    .body {
+      padding: 20px 16px 24px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* NAV CARDS (HOME) */
+    .nav-card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 3px 16px rgba(139,0,69,0.07);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      border: 1px solid #f2e4ec;
+      position: relative;
+      overflow: hidden;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .nav-card:active {
+      transform: scale(.98);
+      box-shadow: 0 2px 8px rgba(139,0,69,0.1);
+    }
+    .nav-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, var(--pink-deep), var(--pink));
+    }
+    .nav-card-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink-deep), var(--pink));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(217,26,122,0.3);
+    }
+    .nav-card-icon.icon-done {
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      box-shadow: 0 4px 10px rgba(46,125,50,0.3);
+    }
+    .nav-card-info { flex: 1; min-width: 0; }
+    .nav-card-etapa {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--pink);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 2px;
+    }
+    .nav-card-titulo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--dark);
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .nav-card-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      background: #f0f0f0;
+      color: #999;
+    }
+    .nav-card-status.andamento { background: #fdecf5; color: var(--pink-deep); }
+    .nav-card-status.concluido { background: #e3f3e5; color: var(--green); }
+    .nav-card-progress-bg {
+      width: 100%;
+      height: 5px;
+      background: #f2f2f2;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .nav-card-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--pink-deep), var(--pink));
+      border-radius: 20px;
+      transition: width .3s;
+    }
+    .nav-card-arrow {
+      flex-shrink: 0;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #faf3f7;
+      color: var(--pink-deep);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .home-intro {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .home-intro h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      color: var(--dark);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .home-intro p {
+      font-size: 12.5px;
+      color: var(--gray);
+    }
+
+    /* VIEWS */
+    .app-view { display: none; }
+    .app-view.active { display: block; }
+
+    .voltar-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: var(--pink-deep);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 4px 0 16px;
+      cursor: pointer;
+    }
+
+    /* PROGRESS FIXO */
+    .progress-wrap {
+      max-width: 480px;
+      margin: -20px auto 0;
+      padding: 0 16px;
+      position: relative;
+      z-index: 5;
+    }
+    .progress-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .progress-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--dark);
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+    .progress-pct {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--pink);
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: #f0f0f0;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--pink-deep), var(--pink));
+      border-radius: 20px;
+      width: 0%;
+      transition: width .3s;
+    }
+
+    /* DADOS */
+    .dados-card {
+      background: white;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .dados-titulo {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--dark);
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      margin-bottom: 12px;
+    }
+    .campo { margin-bottom: 12px; }
+    .campo:last-child { margin-bottom: 0; }
+    .campo label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+    .campo input, .campo textarea {
+      width: 100%;
+      border: 1.5px solid #e5e5e5;
+      border-radius: 10px;
+      padding: 11px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--dark);
+      background: #fafafa;
+    }
+    .campo textarea { resize: vertical; min-height: 64px; }
+    .campo input:focus, .campo textarea:focus {
+      outline: none;
+      border-color: var(--pink);
+      background: white;
+    }
+
+    /* RATING PILLS */
+    .rating-pills {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .rating-pill {
+      border: 1.5px solid #e5e5e5;
+      background: #fafafa;
+      color: #555;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 11px 6px;
+      border-radius: 11px;
+      cursor: pointer;
+      text-align: center;
+      transition: all .15s;
+    }
+    .rating-pill:active { background: #f0f0f0; }
+    .rating-pill.selected {
+      background: var(--pink);
+      border-color: var(--pink);
+      color: white;
+      box-shadow: 0 3px 8px rgba(217,26,122,0.25);
+    }
+    .campo-obrig-marca {
+      background: #f0d0e8;
+      color: #c2185b;
+      font-size: 8px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    /* NIVEL */
+    .nivel-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      margin-top: 8px;
+    }
+    .nivel-badge {
+      background: #1a1a1a;
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+    .nivel-badge.n2 { background: linear-gradient(135deg, #8B0045, #D91A7A); }
+    .nivel-line {
+      flex: 1;
+      height: 1px;
+      background: #e0e0e0;
+    }
+
+    /* CATEGORIA */
+    .categoria {
+      background: white;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .cat-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 18px 16px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .cat-titulo {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #1a1a1a;
+      flex: 1;
+      text-transform: uppercase;
+      letter-spacing: .2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .cat-tag {
+      font-size: 7.5px;
+      font-weight: 700;
+      border-radius: 6px;
+      padding: 1px 6px;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .cat-tag.obrig { background:#f0d0e8; color:#c2185b; }
+    .cat-tag.opc { background:#e8eef0; color:#607d8b; }
+    .cat-count {
+      font-size: 10px;
+      font-weight: 700;
+      color: white;
+      background: #ccc;
+      border-radius: 20px;
+      padding: 2px 7px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .cat-count.done { background: var(--green); }
+    .cat-arrow {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform .25s;
+    }
+    .cat-arrow.open { transform: rotate(90deg); }
+
+    /* ITENS */
+    .itens {
+      display: none;
+      border-top: 1px solid #f0f0f0;
+    }
+    .itens.open { display: block; }
+    .item-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 18px;
+      border-bottom: 1px solid #f5f5f5;
+      cursor: pointer;
+      transition: background .15s;
+      background: white;
+    }
+    .item-row:last-child { border-bottom: none; }
+    .item-row:active { background: #fafafa; }
+    .item-row.checked { background: #fdf0f8; }
+    .item-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      border: 2px solid #ddd;
+      flex-shrink: 0;
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s;
+    }
+    .item-row.checked .item-check {
+      background: var(--pink);
+      border-color: var(--pink);
+    }
+    .item-check svg { opacity: 0; transition: opacity .15s; }
+    .item-row.checked .item-check svg { opacity: 1; }
+    .item-txt {
+      font-size: 13.5px;
+      color: #333;
+      line-height: 1.4;
+      font-weight: 500;
+    }
+    .item-row.checked .item-txt {
+      color: #999;
+      text-decoration: line-through;
+    }
+
+    /* FINALIZAR */
+    .final-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px 18px;
+      margin-top: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border: 2px solid #f3c6e3;
+    }
+    .final-titulo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--pink-deep);
+      margin-bottom: 6px;
+    }
+    .final-sub {
+      font-size: 12.5px;
+      color: var(--gray);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .final-resumo {
+      background: #fafafa;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .resumo-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--dark);
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ececec;
+    }
+    .resumo-total span.num { color: var(--pink); }
+    .resumo-lista {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .resumo-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      color: #555;
+    }
+    .resumo-item .resumo-nome { font-weight: 500; }
+    .resumo-item .resumo-valor {
+      font-weight: 700;
+      color: #999;
+      background: #eee;
+      border-radius: 20px;
+      padding: 2px 9px;
+      font-size: 11px;
+    }
+    .resumo-item .resumo-valor.done {
+      color: white;
+      background: var(--green);
+    }
+    .btn-enviar {
+      width: 100%;
+      background: linear-gradient(135deg, var(--pink-deep), var(--pink));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-enviar:active { opacity: .85; }
+    .btn-enviar:disabled {
+      background: #ddd;
+      color: #999;
+      cursor: not-allowed;
+    }
+    .aviso-pendente {
+      font-size: 11.5px;
+      color: var(--pink-deep);
+      margin-top: 10px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .whats-final-campo { margin-bottom: 16px; }
+    .btn-whatsapp {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(135deg, #25D366, #1EBE5A);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 14.5px;
+      font-weight: 700;
+      font-family: inherit;
+      letter-spacing: .2px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(37,211,102,0.35);
+      transition: all .15s;
+    }
+    .btn-whatsapp:active { opacity: .88; }
+    .btn-whatsapp:disabled {
+      background: #e2e2e2;
+      color: #999;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 12px;
+      color: #999;
+    }
+    .footer strong { color: var(--pink); }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <img class="header-logo-img" id="logo-img" src="" alt="Romance Favorita">
+    <div class="header-titulo">Franquia Igrejinha</div>
+    <div class="header-sub">Treinamento e Avaliação Técnica</div>
+  </div>
+
+  <div class="body">
+
+    <!-- VIEW: HOME -->
+    <div class="app-view active" id="view-home">
+      <div class="home-intro">
+        <h2>Escolha uma etapa</h2>
+        <p>Complete as duas etapas para liberar o envio do relatório final</p>
+      </div>
+
+      <div class="dados-card">
+        <div class="dados-titulo">Dados do treinamento</div>
+        <div class="campo">
+          <label>Nome do Treinador(a)</label>
+          <input type="text" id="nome-treinador" placeholder="Seu nome" oninput="atualizarTudo()">
+        </div>
+        <div class="campo">
+          <label>Nome do novo Distribuidor(a)</label>
+          <input type="text" id="nome-novato" placeholder="Nome do novo Distribuidor(a)" oninput="atualizarTudo()">
+        </div>
+      </div>
+
+      <div class="nav-card" onclick="abrirView('checklist')">
+        <div class="nav-card-icon" id="icon-checklist">1</div>
+        <div class="nav-card-info">
+          <div class="nav-card-etapa">Etapa Inicial</div>
+          <div class="nav-card-titulo">Checklist Treinamento</div>
+          <div class="nav-card-status" id="status-checklist">Não iniciado</div>
+          <div class="nav-card-progress-bg"><div class="nav-card-progress-fill" id="progress-fill-checklist" style="width:0%"></div></div>
+        </div>
+        <div class="nav-card-arrow">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <div class="nav-card" onclick="abrirView('avaliacao')">
+        <div class="nav-card-icon" id="icon-avaliacao">2</div>
+        <div class="nav-card-info">
+          <div class="nav-card-etapa">Etapa Final</div>
+          <div class="nav-card-titulo">Avaliação Técnica</div>
+          <div class="nav-card-status" id="status-avaliacao">Não iniciado</div>
+          <div class="nav-card-progress-bg"><div class="nav-card-progress-fill" id="progress-fill-avaliacao" style="width:0%"></div></div>
+        </div>
+        <div class="nav-card-arrow">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+
+      <!-- FINALIZAR -->
+      <div class="final-card">
+        <div class="final-titulo">Relatório Final</div>
+        <div class="final-sub" id="final-sub-home">Complete as duas etapas acima para liberar o envio do relatório consolidado.</div>
+        <input type="hidden" id="whats-franqueado" value="5592993727787" oninput="atualizarStatusHome()">
+        <button class="btn-whatsapp" id="btn-gerar-final" onclick="gerarRelatorioFinal()" disabled>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.05 22h-.005c-1.822 0-3.61-.487-5.174-1.408L2 22l1.427-4.784A9.86 9.86 0 0 1 2.1 12.05C2.096 6.508 6.606 2 12.05 2c2.638 0 5.117 1.03 6.98 2.897A9.808 9.808 0 0 1 22 12.055c-.003 5.542-4.513 10.05-9.95 10.05zm-4.9-3.44l.301.179a8.183 8.183 0 0 0 4.6 1.396h.005c4.507 0 8.174-3.667 8.176-8.176a8.128 8.128 0 0 0-2.394-5.789 8.128 8.128 0 0 0-5.783-2.402c-4.507 0-8.174 3.667-8.174 8.176 0 1.685.501 3.322 1.446 4.734l.192.29-.842 2.83 2.897-.824z"/></svg>
+          <span>Enviar relatório pelo WhatsApp</span>
+        </button>
+        <div class="aviso-pendente" id="aviso-final"></div>
+      </div>
+
+      <div class="footer">
+        <p>Desenvolvido pela <strong style="color:#4CAF50;">Levvel</strong></p>
+      </div>
+    </div>
+
+    <!-- VIEW: CHECKLIST -->
+    <div class="app-view" id="view-checklist">
+      <button class="voltar-btn" onclick="voltarHome()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Voltar ao início
+      </button>
+
+      <div class="progress-card" style="margin-bottom:20px;">
+        <div class="progress-top">
+          <div class="progress-label">Progresso do checklist</div>
+          <div class="progress-pct" id="progress-pct">0%</div>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-bar"></div></div>
+      </div>
+
+      <div class="nivel-label">
+        <div class="nivel-badge n2">Etapas obrigatórias</div>
+        <div class="nivel-line"></div>
+      </div>
+
+      <!-- CAT 1: MERCADORIA -->
+      <div class="categoria">
+        <div class="cat-header" onclick="toggleCat('cat-1')">
+          <div class="cat-titulo">1 · Mercadoria <span class="cat-tag obrig">Obrigatório</span></div>
+          <div class="cat-count" id="count-cat-1">0/3</div>
+          <div class="cat-arrow" id="arrow-cat-1">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="itens" id="cat-1">
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Contagem de mercadoria na Empresa</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Troca (devolução) de mercadoria a cada 15 dias</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Montagem de Kit - diversificar mercadorias, tamanho, cores, modelos, observar quantidades conforme a mercadoria recebida na semana</div></div>
+        </div>
+      </div>
+
+      <!-- CAT 2: SISTEMA NO TABLET -->
+      <div class="categoria">
+        <div class="cat-header" onclick="toggleCat('cat-2')">
+          <div class="cat-titulo">2 · Sistema no Tablet <span class="cat-tag obrig">Obrigatório</span></div>
+          <div class="cat-count" id="count-cat-2">0/13</div>
+          <div class="cat-arrow" id="arrow-cat-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="itens" id="cat-2">
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">O tablet é ferramenta pessoal (precisa ser compatível) verificar com suporte escritorio</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">App Vendas Plus: compra e paga anuidade (CrisduLabs)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Verificação de documentos da revendedora (validade, foto legítima, assinatura)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Consulta para liberação de código para abertura (App Vendas Plus)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Como fazer cadastro de nova Consultora (App Vendas)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Como fazer lançamento de nota rascunho (avaliar venda antes)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Como fazer lançamento de nota NOVA</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Como fazer lançamento de nota ADICIONAL</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Como fazer anotações no App Vendas</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Como inserir códigos (RMC, FAV, marcar pedido quitado, antecipação)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Priorizar sempre indicações (LEDS)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Envio da base de dados após finalizar a nota (para atualizar o App da Consultora)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Chamar no suporte (escritório) para enviar os indicadores, antes de sair de casa</div></div>
+        </div>
+      </div>
+
+      <!-- CAT 3: ORGANIZAÇÃO -->
+      <div class="categoria">
+        <div class="cat-header" onclick="toggleCat('cat-3')">
+          <div class="cat-titulo">3 · Organização <span class="cat-tag obrig">Obrigatório</span></div>
+          <div class="cat-count" id="count-cat-3">0/13</div>
+          <div class="cat-arrow" id="arrow-cat-3">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="itens" id="cat-3">
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">O MEI é a empresa dela: responsabilidade por taxas, pagamentos, declaração anual etc.</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Declaração de Imposto de Renda Pessoa Física é responsabilidade dela (comprovante de renda)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Assinatura eletrônica (conferência) — obrigatório no App Vendas Plus</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Controle da pré-venda (App Vendas Plus)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Créditos Favorita (App Vendas Plus)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Pontos da última semana (App Vendas Plus)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Planejamento da semana</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Planejamento da rota</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Organização da devolução (por modelo)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Disciplina — colocar o planejamento em prática</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Criar 6 grupos fechados um para cada setor ou um grupo geral com todas</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Fazer curso disponibilizado pela franquia (falar com a Josi para agendamento)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Levar o novo colega para conhecer e apresentar uma Loja Favorita</div></div>
+        </div>
+      </div>
+
+      <!-- CAT 4: ATENDIMENTO -->
+      <div class="categoria">
+        <div class="cat-header" onclick="toggleCat('cat-4')">
+          <div class="cat-titulo">4 · Atendimento <span class="cat-tag obrig">Obrigatório</span></div>
+          <div class="cat-count" id="count-cat-4">0/16</div>
+          <div class="cat-arrow" id="arrow-cat-4">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="itens" id="cat-4">
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Mostrar primeiro na prática como fazer abordagem e cadastro</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Prospectar sempre será prioridade (consultoras) — Porta a porta e rede social</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Ensinar a responder prospecção digital e prospecção porta a porta</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Abordagem assertiva — renda extra com lucro de 30 a 40%, investimento zero</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Apresentação da marca e do produto</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Solicitação de documentos para cadastro (CPF, RG e comprovante de residência)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Contagem do kit com a consultora — obrigatório na abertura e no acerto</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Usar limite: Abertura de R$ 2.000,00</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">App Romance — baixar junto com a consultora, ensinar e monitorar o uso</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Favorita e seus canais de vendas (WhatsApp, lojas e lojas físicas)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Segundo ciclo Fazer Favorita — incentivar a consultora a ter 40% de lucro na Romance</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Meta e desafio em valores na sacola RMC (nunca liberar crédito sem intenção)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Pagamento — prazo de venda da consultora (falar sempre ao finalizar a entrega do kit)</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Instruir a data de venda/recebimento — ter o valor no dia do acerto</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Instrução sobre recebimento e pagamento em dia</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Cuidados e organização com a mercadoria (falar ao finalizar a entrega do kit)</div></div>
+        </div>
+      </div>
+
+      <!-- CAT 5: MENTORIAS -->
+      <div class="categoria">
+        <div class="cat-header" onclick="toggleCat('cat-5')">
+          <div class="cat-titulo">5 · Mentorias <span class="cat-tag obrig">Obrigatório</span></div>
+          <div class="cat-count" id="count-cat-5">0/1</div>
+          <div class="cat-arrow" id="arrow-cat-5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="itens" id="cat-5">
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Participar de todos os treinamentos</div></div>
+        </div>
+      </div>
+
+      <!-- CAT 6: LUCRO -->
+      <div class="categoria">
+        <div class="cat-header" onclick="toggleCat('cat-6')">
+          <div class="cat-titulo">6 · Lucro do Negócio <span class="cat-tag obrig">Obrigatório</span></div>
+          <div class="cat-count" id="count-cat-6">0/11</div>
+          <div class="cat-arrow" id="arrow-cat-6">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="itens" id="cat-6">
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Faturamento semanal RMC até R$ 4.000,00 → 18% de lucro</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">De R$ 4.000,00 a R$ 4.499,99 → 18,25% de lucro</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">De R$ 4.500,00 a R$ 4.999,99 → 18,50% de lucro</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">De R$ 5.000,00 a R$ 5.999,99 → 18,75% de lucro</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">De R$ 6.000,00 a R$ 6.999,99 → 19% de lucro</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">De R$ 7.000,00 a R$ 8.499,99 → 19,25% de lucro</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">De R$ 8.500,00 a R$ 9.999,99 → 19,50% de lucro</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">De R$ 10.000,00 a R$ 10.999,00 → 19,75% de lucro</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Acima de R$ 11.000,00 → 20% de lucro</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Favorita (boleto pago em dia) → 18% de lucro</div></div>
+          <div class="item-row" onclick="toggleItem(this)"><div class="item-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="item-txt">Favorita (boleto pago em atraso) → 15% de lucro</div></div>
+        </div>
+      </div>
+
+      <!-- FINALIZAR CHECKLIST -->
+      <div class="final-card">
+        <div class="final-titulo">Concluir esta etapa</div>
+        <div class="final-resumo" id="final-resumo">
+          Nenhum item marcado ainda.
+        </div>
+        <button class="btn-enviar" id="btn-concluir-checklist" onclick="concluirChecklist()" disabled>Concluir etapa e voltar</button>
+        <div class="aviso-pendente" id="aviso-pendente"></div>
+      </div>
+    </div>
+
+    <!-- VIEW: AVALIAÇÃO TÉCNICA -->
+    <div class="app-view" id="view-avaliacao">
+      <button class="voltar-btn" onclick="voltarHome()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Voltar ao início
+      </button>
+
+      <div class="dados-card">
+        <div class="dados-titulo">Dados da avaliação</div>
+        <div class="campo">
+          <label>Treinamento<span class="campo-obrig-marca">Obrigatório</span></label>
+          <div class="rating-pills" id="av-treinamento-num">
+            <button type="button" class="rating-pill" data-valor="01" onclick="selecionarPill(this)">01</button>
+            <button type="button" class="rating-pill" data-valor="02" onclick="selecionarPill(this)">02</button>
+          </div>
+        </div>
+        <div class="campo">
+          <label>Data início do treinamento<span class="campo-obrig-marca">Obrigatório</span></label>
+          <input type="date" id="av-data-inicio" oninput="salvarAvaliacaoAuto()">
+        </div>
+        <div class="campo">
+          <label>Data término do treinamento<span class="campo-obrig-marca">Obrigatório</span></label>
+          <input type="date" id="av-data-fim" oninput="salvarAvaliacaoAuto()">
+        </div>
+      </div>
+
+      <div class="dados-card">
+        <div class="dados-titulo">Avaliação de desempenho</div>
+
+        <div class="campo">
+          <label>Comunicação<span class="campo-obrig-marca">Obrigatório</span></label>
+          <div class="rating-pills" id="av-comunicacao">
+            <button type="button" class="rating-pill" data-valor="Péssima" onclick="selecionarPill(this)">Péssima</button>
+            <button type="button" class="rating-pill" data-valor="Ruim" onclick="selecionarPill(this)">Ruim</button>
+            <button type="button" class="rating-pill" data-valor="Razoável" onclick="selecionarPill(this)">Razoável</button>
+            <button type="button" class="rating-pill" data-valor="Boa" onclick="selecionarPill(this)">Boa</button>
+            <button type="button" class="rating-pill" data-valor="Ótima" onclick="selecionarPill(this)">Ótima</button>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Iniciativa<span class="campo-obrig-marca">Obrigatório</span></label>
+          <div class="rating-pills" id="av-iniciativa">
+            <button type="button" class="rating-pill" data-valor="Péssima" onclick="selecionarPill(this)">Péssima</button>
+            <button type="button" class="rating-pill" data-valor="Ruim" onclick="selecionarPill(this)">Ruim</button>
+            <button type="button" class="rating-pill" data-valor="Razoável" onclick="selecionarPill(this)">Razoável</button>
+            <button type="button" class="rating-pill" data-valor="Boa" onclick="selecionarPill(this)">Boa</button>
+            <button type="button" class="rating-pill" data-valor="Ótima" onclick="selecionarPill(this)">Ótima</button>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Pró Atividade<span class="campo-obrig-marca">Obrigatório</span></label>
+          <div class="rating-pills" id="av-proatividade">
+            <button type="button" class="rating-pill" data-valor="Péssima" onclick="selecionarPill(this)">Péssima</button>
+            <button type="button" class="rating-pill" data-valor="Ruim" onclick="selecionarPill(this)">Ruim</button>
+            <button type="button" class="rating-pill" data-valor="Razoável" onclick="selecionarPill(this)">Razoável</button>
+            <button type="button" class="rating-pill" data-valor="Boa" onclick="selecionarPill(this)">Boa</button>
+            <button type="button" class="rating-pill" data-valor="Ótima" onclick="selecionarPill(this)">Ótima</button>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Disciplina<span class="campo-obrig-marca">Obrigatório</span></label>
+          <div class="rating-pills" id="av-disciplina">
+            <button type="button" class="rating-pill" data-valor="Péssima" onclick="selecionarPill(this)">Péssima</button>
+            <button type="button" class="rating-pill" data-valor="Ruim" onclick="selecionarPill(this)">Ruim</button>
+            <button type="button" class="rating-pill" data-valor="Razoável" onclick="selecionarPill(this)">Razoável</button>
+            <button type="button" class="rating-pill" data-valor="Boa" onclick="selecionarPill(this)">Boa</button>
+            <button type="button" class="rating-pill" data-valor="Ótima" onclick="selecionarPill(this)">Ótima</button>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Nível de Interesse<span class="campo-obrig-marca">Obrigatório</span></label>
+          <div class="rating-pills" id="av-interesse">
+            <button type="button" class="rating-pill" data-valor="Péssimo" onclick="selecionarPill(this)">Péssimo</button>
+            <button type="button" class="rating-pill" data-valor="Ruim" onclick="selecionarPill(this)">Ruim</button>
+            <button type="button" class="rating-pill" data-valor="Razoável" onclick="selecionarPill(this)">Razoável</button>
+            <button type="button" class="rating-pill" data-valor="Bom" onclick="selecionarPill(this)">Bom</button>
+            <button type="button" class="rating-pill" data-valor="Ótimo" onclick="selecionarPill(this)">Ótimo</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dados-card">
+        <div class="dados-titulo">Prospecção</div>
+        <div class="campo">
+          <label>Prospecção<span class="campo-obrig-marca">Obrigatório</span></label>
+          <div class="rating-pills" id="av-prospeccao">
+            <button type="button" class="rating-pill" data-valor="Péssima" onclick="selecionarPill(this)">Péssima</button>
+            <button type="button" class="rating-pill" data-valor="Ruim" onclick="selecionarPill(this)">Ruim</button>
+            <button type="button" class="rating-pill" data-valor="Razoável" onclick="selecionarPill(this)">Razoável</button>
+            <button type="button" class="rating-pill" data-valor="Boa" onclick="selecionarPill(this)">Boa</button>
+            <button type="button" class="rating-pill" data-valor="Ótima" onclick="selecionarPill(this)">Ótima</button>
+            <button type="button" class="rating-pill" data-valor="Não houve" onclick="selecionarPill(this)">Não houve</button>
+          </div>
+        </div>
+        <div class="campo">
+          <label>Quantas prospecções enviadas para consulta?<span class="campo-obrig-marca">Obrigatório</span></label>
+          <input type="number" min="0" id="av-prospeccoes-enviadas" placeholder="0" oninput="salvarAvaliacaoAuto()">
+        </div>
+        <div class="campo">
+          <label>Quantas prospecções aprovadas?<span class="campo-obrig-marca">Obrigatório</span></label>
+          <input type="number" min="0" id="av-prospeccoes-aprovadas" placeholder="0" oninput="salvarAvaliacaoAuto()">
+        </div>
+      </div>
+
+      <div class="dados-card">
+        <div class="dados-titulo">Considerações finais</div>
+        <div class="campo">
+          <label>Ponto forte<span class="campo-obrig-marca">Obrigatório</span></label>
+          <textarea id="av-ponto-forte" rows="2" oninput="salvarAvaliacaoAuto()"></textarea>
+        </div>
+        <div class="campo">
+          <label>Ponto fraco<span class="campo-obrig-marca">Obrigatório</span></label>
+          <textarea id="av-ponto-fraco" rows="2" oninput="salvarAvaliacaoAuto()"></textarea>
+        </div>
+        <div class="campo">
+          <label>Comentários/Observações<span class="campo-obrig-marca">Obrigatório</span></label>
+          <textarea id="av-comentarios" rows="3" oninput="salvarAvaliacaoAuto()"></textarea>
+        </div>
+      </div>
+
+      <div class="final-card">
+        <div class="final-titulo">Concluir esta etapa</div>
+        <div class="aviso-pendente" id="aviso-avaliacao" style="margin-top:0;margin-bottom:14px;"></div>
+        <button class="btn-enviar" id="btn-concluir-avaliacao" onclick="concluirAvaliacao()">Concluir etapa e voltar</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* ---------- DADOS DAS CATEGORIAS DO CHECKLIST ---------- */
+    const categorias = {
+      'cat-1': { nome: 'Mercadoria', obrigatorio: true },
+      'cat-2': { nome: 'Sistema no Tablet', obrigatorio: true },
+      'cat-3': { nome: 'Organização', obrigatorio: true },
+      'cat-4': { nome: 'Atendimento', obrigatorio: true },
+      'cat-5': { nome: 'Mentorias', obrigatorio: true },
+      'cat-6': { nome: 'Lucro do Negócio', obrigatorio: true }
+    };
+
+    const AVALIACAO_CAMPOS_TEXTO = ['av-data-inicio', 'av-data-fim', 'av-prospeccoes-enviadas', 'av-prospeccoes-aprovadas', 'av-ponto-forte', 'av-ponto-fraco', 'av-comentarios'];
+    const AVALIACAO_GRUPOS_PILL = ['av-treinamento-num', 'av-comunicacao', 'av-iniciativa', 'av-proatividade', 'av-disciplina', 'av-interesse', 'av-prospeccao'];
+    const AVALIACAO_OBRIGATORIOS_TEXTO = ['av-data-inicio', 'av-data-fim', 'av-prospeccoes-enviadas', 'av-prospeccoes-aprovadas', 'av-ponto-forte', 'av-ponto-fraco', 'av-comentarios'];
+    const AVALIACAO_OBRIGATORIOS_PILL = ['av-treinamento-num', 'av-comunicacao', 'av-iniciativa', 'av-proatividade', 'av-disciplina', 'av-interesse', 'av-prospeccao'];
+
+    /* ---------- LOGO ---------- */
+    document.getElementById('logo-img').src = 'data:image/png;base64,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';
+
+    /* ---------- ROTEAMENTO ---------- */
+    function abrirView(nome) {
+      document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+      document.getElementById('view-' + nome).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    function voltarHome() {
+      abrirView('home');
+      atualizarStatusHome();
+    }
+
+    /* ---------- CHECKLIST: TOGGLE ---------- */
+    function toggleCat(id) {
+      const lista = document.getElementById(id);
+      const arrow = document.getElementById('arrow-' + id);
+      const isOpen = lista.classList.contains('open');
+      lista.classList.toggle('open', !isOpen);
+      arrow.classList.toggle('open', !isOpen);
+    }
+
+    function toggleItem(el) {
+      el.classList.toggle('checked');
+      atualizarTudo();
+    }
+
+    /* ---------- CHECKLIST: ESTADO / AUTOSAVE ---------- */
+    function coletarEstadoChecklist() {
+      const itens = {};
+      Object.keys(categorias).forEach(catId => {
+        const cont = document.getElementById(catId);
+        const linhas = cont.querySelectorAll('.item-row');
+        itens[catId] = Array.from(linhas).map(l => l.classList.contains('checked'));
+      });
+      return {
+        treinador: document.getElementById('nome-treinador').value.trim(),
+        novato: document.getElementById('nome-novato').value.trim(),
+        itens: itens,
+        concluido: false
+      };
+    }
+
+    function salvarChecklistAuto() {
+      const atual = JSON.parse(localStorage.getItem('fi_checklist') || 'null') || {};
+      const novo = coletarEstadoChecklist();
+      novo.concluido = atual.concluido || false;
+      localStorage.setItem('fi_checklist', JSON.stringify(novo));
+    }
+
+    function carregarChecklist() {
+      const estado = JSON.parse(localStorage.getItem('fi_checklist') || 'null');
+      if (!estado) return;
+      if (estado.treinador) document.getElementById('nome-treinador').value = estado.treinador;
+      if (estado.novato) document.getElementById('nome-novato').value = estado.novato;
+      if (estado.itens) {
+        Object.keys(estado.itens).forEach(catId => {
+          const cont = document.getElementById(catId);
+          if (!cont) return;
+          const linhas = cont.querySelectorAll('.item-row');
+          estado.itens[catId].forEach((marcado, i) => {
+            if (marcado && linhas[i]) linhas[i].classList.add('checked');
+          });
+        });
+      }
+    }
+
+    function atualizarTudo() {
+      let totalGeral = 0, checkedGeral = 0;
+      let resumoLinhas = [];
+      let obrigatoriosPendentes = 0;
+
+      Object.keys(categorias).forEach(catId => {
+        const cont = document.getElementById(catId);
+        const itens = cont.querySelectorAll('.item-row');
+        const marcados = cont.querySelectorAll('.item-row.checked');
+        const total = itens.length;
+        const done = marcados.length;
+
+        totalGeral += total;
+        checkedGeral += done;
+
+        const countEl = document.getElementById('count-' + catId);
+        countEl.textContent = done + '/' + total;
+        countEl.classList.toggle('done', done === total);
+
+        if (categorias[catId].obrigatorio && done < total) {
+          obrigatoriosPendentes += (total - done);
+        }
+
+        resumoLinhas.push(
+          '<div class="resumo-item"><span class="resumo-nome">' + categorias[catId].nome + '</span>' +
+          '<span class="resumo-valor' + (done === total ? ' done' : '') + '">' + done + '/' + total + '</span></div>'
+        );
+      });
+
+      const pct = totalGeral ? Math.round((checkedGeral / totalGeral) * 100) : 0;
+      document.getElementById('progress-bar').style.width = pct + '%';
+      document.getElementById('progress-pct').textContent = pct + '%';
+
+      document.getElementById('final-resumo').innerHTML =
+        '<div class="resumo-total">Total ensinado <span class="num">' + checkedGeral + '/' + totalGeral + '</span></div>' +
+        '<div class="resumo-lista">' + resumoLinhas.join('') + '</div>';
+
+      const treinador = document.getElementById('nome-treinador').value.trim();
+      const novato = document.getElementById('nome-novato').value.trim();
+      const btn = document.getElementById('btn-concluir-checklist');
+      const avisoEl = document.getElementById('aviso-pendente');
+
+      const faltaNome = !treinador || !novato;
+
+      if (obrigatoriosPendentes > 0 && faltaNome) {
+        avisoEl.textContent = 'Preencha os dados acima e marque os ' + obrigatoriosPendentes + ' item(s) obrigatório(s) restante(s) para concluir.';
+      } else if (obrigatoriosPendentes > 0) {
+        avisoEl.textContent = 'Ainda faltam ' + obrigatoriosPendentes + ' item(s) obrigatório(s) para marcar.';
+      } else if (faltaNome) {
+        avisoEl.textContent = 'Preencha o nome do Treinador(a) e do novo Distribuidor(a).';
+      } else {
+        avisoEl.textContent = '';
+      }
+
+      btn.disabled = (obrigatoriosPendentes > 0) || faltaNome;
+
+      salvarChecklistAuto();
+    }
+
+    function concluirChecklist() {
+      const estado = coletarEstadoChecklist();
+      estado.concluido = true;
+      localStorage.setItem('fi_checklist', JSON.stringify(estado));
+      voltarHome();
+    }
+
+    /* ---------- RESET GERAL (após envio do relatório) ---------- */
+    function resetarTudo() {
+      localStorage.removeItem('fi_checklist');
+      localStorage.removeItem('fi_avaliacao');
+
+      document.getElementById('nome-treinador').value = '';
+      document.getElementById('nome-novato').value = '';
+      document.querySelectorAll('.item-row.checked').forEach(el => el.classList.remove('checked'));
+      document.querySelectorAll('.itens.open').forEach(el => el.classList.remove('open'));
+      document.querySelectorAll('.cat-arrow.open').forEach(el => el.classList.remove('open'));
+
+      AVALIACAO_CAMPOS_TEXTO.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      AVALIACAO_GRUPOS_PILL.forEach(id => {
+        const grupo = document.getElementById(id);
+        if (grupo) grupo.querySelectorAll('.rating-pill').forEach(p => p.classList.remove('selected'));
+      });
+
+      const avisoAvaliacao = document.getElementById('aviso-avaliacao');
+      if (avisoAvaliacao) avisoAvaliacao.textContent = '';
+
+      atualizarTudo();
+      validarAvaliacao();
+      atualizarStatusHome();
+      voltarHome();
+    }
+
+    /* ---------- AVALIAÇÃO TÉCNICA: PILLS ---------- */
+    function selecionarPill(botao) {
+      const grupo = botao.parentElement;
+      grupo.querySelectorAll('.rating-pill').forEach(p => p.classList.remove('selected'));
+      botao.classList.add('selected');
+      salvarAvaliacaoAuto();
+    }
+
+    function valorPillGrupo(idGrupo) {
+      const grupo = document.getElementById(idGrupo);
+      const sel = grupo.querySelector('.rating-pill.selected');
+      return sel ? sel.dataset.valor : '';
+    }
+
+    function marcarPillGrupo(idGrupo, valor) {
+      if (!valor) return;
+      const grupo = document.getElementById(idGrupo);
+      grupo.querySelectorAll('.rating-pill').forEach(p => {
+        p.classList.toggle('selected', p.dataset.valor === valor);
+      });
+    }
+
+    /* ---------- AVALIAÇÃO TÉCNICA: ESTADO / AUTOSAVE ---------- */
+    function coletarEstadoAvaliacao() {
+      const estado = { concluido: false };
+      AVALIACAO_CAMPOS_TEXTO.forEach(id => {
+        estado[id] = document.getElementById(id).value.trim();
+      });
+      AVALIACAO_GRUPOS_PILL.forEach(id => {
+        estado[id] = valorPillGrupo(id);
+      });
+      return estado;
+    }
+
+    function salvarAvaliacaoAuto() {
+      const atual = JSON.parse(localStorage.getItem('fi_avaliacao') || 'null') || {};
+      const novo = coletarEstadoAvaliacao();
+      novo.concluido = atual.concluido || false;
+      localStorage.setItem('fi_avaliacao', JSON.stringify(novo));
+      validarAvaliacao();
+    }
+
+    function carregarAvaliacao() {
+      const estado = JSON.parse(localStorage.getItem('fi_avaliacao') || 'null');
+      if (!estado) return;
+      AVALIACAO_CAMPOS_TEXTO.forEach(id => {
+        if (estado[id]) document.getElementById(id).value = estado[id];
+      });
+      AVALIACAO_GRUPOS_PILL.forEach(id => {
+        if (estado[id]) marcarPillGrupo(id, estado[id]);
+      });
+    }
+
+    function validarAvaliacao() {
+      const estado = coletarEstadoAvaliacao();
+      let faltando = [];
+
+      AVALIACAO_OBRIGATORIOS_TEXTO.forEach(id => {
+        if (!estado[id]) faltando.push(id);
+      });
+      AVALIACAO_OBRIGATORIOS_PILL.forEach(id => {
+        if (!estado[id]) faltando.push(id);
+      });
+
+      const avisoEl = document.getElementById('aviso-avaliacao');
+      if (faltando.length > 0) {
+        avisoEl.textContent = 'Faltam ' + faltando.length + ' campo(s) obrigatório(s) para concluir esta etapa.';
+      } else {
+        avisoEl.textContent = '';
+      }
+      return faltando.length === 0;
+    }
+
+    function concluirAvaliacao() {
+      if (!validarAvaliacao()) {
+        alert('Preencha todos os campos obrigatórios (marcados com *) antes de concluir.');
+        return;
+      }
+      const estado = coletarEstadoAvaliacao();
+      estado.concluido = true;
+      localStorage.setItem('fi_avaliacao', JSON.stringify(estado));
+      voltarHome();
+    }
+
+    /* ---------- HOME: STATUS DOS CARDS ---------- */
+    function atualizarStatusHome() {
+      const checklist = JSON.parse(localStorage.getItem('fi_checklist') || 'null');
+      const avaliacao = JSON.parse(localStorage.getItem('fi_avaliacao') || 'null');
+
+      const statusChecklistEl = document.getElementById('status-checklist');
+      const statusAvaliacaoEl = document.getElementById('status-avaliacao');
+
+      let checklistOk = false;
+      const progFill = document.getElementById('progress-fill-checklist');
+      const iconChecklist = document.getElementById('icon-checklist');
+      if (checklist && checklist.concluido) {
+        statusChecklistEl.textContent = 'Concluído ✓';
+        statusChecklistEl.className = 'nav-card-status concluido';
+        checklistOk = true;
+        progFill.style.width = '100%';
+        iconChecklist.classList.add('icon-done');
+        iconChecklist.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      } else if (checklist && checklist.itens) {
+        const total = Object.values(checklist.itens).reduce((s, arr) => s + arr.length, 0);
+        const feitos = Object.values(checklist.itens).reduce((s, arr) => s + arr.filter(Boolean).length, 0);
+        statusChecklistEl.textContent = feitos + '/' + total + ' concluídos';
+        statusChecklistEl.className = 'nav-card-status andamento';
+        progFill.style.width = (total ? Math.round((feitos / total) * 100) : 0) + '%';
+        iconChecklist.classList.remove('icon-done');
+        iconChecklist.textContent = '1';
+      } else {
+        statusChecklistEl.textContent = 'Não iniciado';
+        statusChecklistEl.className = 'nav-card-status';
+        progFill.style.width = '0%';
+        iconChecklist.classList.remove('icon-done');
+        iconChecklist.textContent = '1';
+      }
+
+      let avaliacaoOk = false;
+      const iconAvaliacao = document.getElementById('icon-avaliacao');
+      const progFillAvaliacao = document.getElementById('progress-fill-avaliacao');
+      const CAMPOS_OBRIGATORIOS_AVALIACAO = AVALIACAO_OBRIGATORIOS_TEXTO.concat(AVALIACAO_OBRIGATORIOS_PILL);
+      const totalAvaliacao = CAMPOS_OBRIGATORIOS_AVALIACAO.length;
+      const feitosAvaliacao = avaliacao
+        ? CAMPOS_OBRIGATORIOS_AVALIACAO.filter(id => !!avaliacao[id]).length
+        : 0;
+
+      if (avaliacao && avaliacao.concluido) {
+        statusAvaliacaoEl.textContent = 'Concluído ✓';
+        statusAvaliacaoEl.className = 'nav-card-status concluido';
+        avaliacaoOk = true;
+        progFillAvaliacao.style.width = '100%';
+        iconAvaliacao.classList.add('icon-done');
+        iconAvaliacao.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      } else if (avaliacao && feitosAvaliacao > 0) {
+        statusAvaliacaoEl.textContent = feitosAvaliacao + '/' + totalAvaliacao + ' concluídos';
+        statusAvaliacaoEl.className = 'nav-card-status andamento';
+        progFillAvaliacao.style.width = (totalAvaliacao ? Math.round((feitosAvaliacao / totalAvaliacao) * 100) : 0) + '%';
+        iconAvaliacao.classList.remove('icon-done');
+        iconAvaliacao.textContent = '2';
+      } else {
+        statusAvaliacaoEl.textContent = '0/' + totalAvaliacao + ' concluídos';
+        statusAvaliacaoEl.className = 'nav-card-status';
+        progFillAvaliacao.style.width = '0%';
+        iconAvaliacao.classList.remove('icon-done');
+        iconAvaliacao.textContent = '2';
+      }
+
+      const btnFinal = document.getElementById('btn-gerar-final');
+      const avisoFinal = document.getElementById('aviso-final');
+      const subFinal = document.getElementById('final-sub-home');
+      const whats = document.getElementById('whats-franqueado').value.trim();
+
+      if (checklistOk && avaliacaoOk) {
+        subFinal.textContent = 'As duas etapas foram concluídas. Toque no botão abaixo para gerar e enviar o relatório.';
+        btnFinal.disabled = !whats;
+        avisoFinal.textContent = '';
+      } else {
+        subFinal.textContent = 'Complete as duas etapas acima para liberar o envio do relatório consolidado.';
+        btnFinal.disabled = true;
+        avisoFinal.textContent = '';
+      }
+    }
+
+    /* ---------- RELATÓRIO FINAL: PDF CONSOLIDADO ---------- */
+    function construirPDFConsolidado() {
+      const checklist = JSON.parse(localStorage.getItem('fi_checklist') || 'null') || {};
+      const avaliacao = JSON.parse(localStorage.getItem('fi_avaliacao') || 'null') || {};
+      const hoje = new Date().toLocaleDateString('pt-BR');
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const margem = 16;
+      const larguraPagina = doc.internal.pageSize.getWidth();
+      const alturaPagina = doc.internal.pageSize.getHeight();
+      const larguraUtil = larguraPagina - margem * 2;
+      let y = 0;
+
+      /* paleta */
+      const PINK_DEEP = [139, 0, 69];
+      const PINK = [217, 26, 122];
+      const DARK = [30, 30, 32];
+      const GRAY = [140, 140, 145];
+      const GRAY_LIGHT = [180, 180, 184];
+      const GREEN = [46, 125, 50];
+      const BG_PINK = [251, 244, 248];
+      const BORDER = [240, 224, 234];
+      const LINE = [234, 234, 238];
+
+      function formatarData(iso) {
+        if (!iso) return null;
+        const partes = String(iso).split('-');
+        if (partes.length !== 3) return iso;
+        return partes[2] + '/' + partes[1] + '/' + partes[0];
+      }
+
+      function desenharHeaderPagina(primeira) {
+        if (primeira) {
+          doc.setFillColor(...PINK_DEEP);
+          doc.rect(0, 0, larguraPagina, 36, 'F');
+          doc.setFillColor(...PINK);
+          doc.rect(0, 36, larguraPagina, 1.4, 'F');
+
+          doc.setFont('times', 'bold');
+          doc.setFontSize(21);
+          doc.setTextColor(255, 255, 255);
+          doc.text('Relatório Final', margem, 17);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9.5);
+          doc.setTextColor(255, 255, 255);
+          doc.text('Franquia Igrejinha  ·  Treinamento e Avaliação Técnica', margem, 26);
+
+          doc.setFontSize(8.5);
+          doc.setTextColor(244, 214, 229);
+          doc.text('Gerado em ' + hoje, larguraPagina - margem, 26, { align: 'right' });
+
+          y = 50;
+        } else {
+          doc.setFillColor(...PINK_DEEP);
+          doc.rect(0, 0, larguraPagina, 16, 'F');
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8.5);
+          doc.setTextColor(255, 255, 255);
+          doc.text('FRANQUIA IGREJINHA · RELATÓRIO FINAL', margem, 10.5);
+          y = 28;
+        }
+      }
+
+      function novaPagina() {
+        doc.addPage();
+        desenharHeaderPagina(false);
+      }
+
+      function garantirEspaco(altura) {
+        if (y > alturaPagina - altura - 16) { novaPagina(); }
+      }
+
+      function tituloSecao(numero, texto) {
+        garantirEspaco(22);
+        doc.setFillColor(...PINK_DEEP);
+        doc.roundedRect(margem, y, 8.5, 8.5, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(255, 255, 255);
+        doc.text(String(numero), margem + 4.25, y + 5.9, { align: 'center' });
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12.5);
+        doc.setTextColor(...PINK_DEEP);
+        doc.text(texto, margem + 13, y + 6.2);
+
+        y += 13.5;
+        doc.setDrawColor(...BORDER);
+        doc.setLineWidth(0.5);
+        doc.line(margem, y, larguraPagina - margem, y);
+        y += 8;
+      }
+
+      /* --- CABEÇALHO + PAINEL DE DADOS --- */
+      desenharHeaderPagina(true);
+
+      doc.setFillColor(...BG_PINK);
+      doc.setDrawColor(...BORDER);
+      doc.setLineWidth(0.4);
+      doc.roundedRect(margem, y, larguraUtil, 24, 3, 3, 'FD');
+
+      const meioX = margem + larguraUtil / 2;
+      doc.setDrawColor(...BORDER);
+      doc.line(meioX, y + 5, meioX, y + 19);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.6);
+      doc.setTextColor(...PINK_DEEP);
+      doc.text('TREINADOR(A)', margem + 7, y + 9);
+      doc.text('NOVO(A) DISTRIBUIDOR(A)', meioX + 7, y + 9);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11.5);
+      doc.setTextColor(...DARK);
+      doc.text(checklist.treinador || '—', margem + 7, y + 17);
+      doc.text(checklist.novato || '—', meioX + 7, y + 17);
+
+      y += 24 + 12;
+
+      /* --- ETAPA 1 · CHECKLIST --- */
+      tituloSecao(1, 'CHECKLIST DE TREINAMENTO');
+
+      Object.keys(categorias).forEach(catId => {
+        const marcados = (checklist.itens && checklist.itens[catId]) || [];
+        const cont = document.getElementById(catId);
+        const linhasDom = cont.querySelectorAll('.item-row .item-txt');
+        const totalCat = linhasDom.length;
+        const feitosCat = marcados.filter(Boolean).length;
+
+        garantirEspaco(22);
+        doc.setFillColor(...BG_PINK);
+        doc.roundedRect(margem, y, larguraUtil, 9.5, 2, 2, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(...PINK_DEEP);
+        doc.text(categorias[catId].nome.toUpperCase(), margem + 4.5, y + 6.4);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8.5);
+        doc.setTextColor(...GRAY);
+        doc.text(feitosCat + '/' + totalCat, larguraPagina - margem - 4.5, y + 6.4, { align: 'right' });
+        y += 15;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+
+        linhasDom.forEach((elTxt, i) => {
+          const marcado = !!marcados[i];
+          const texto = elTxt.textContent.trim();
+          const linhas = doc.splitTextToSize(texto, larguraUtil - 12);
+          const alturaLinha = linhas.length * 4.6 + 3;
+
+          garantirEspaco(alturaLinha + 4);
+
+          if (marcado) {
+            doc.setFillColor(...GREEN);
+            doc.roundedRect(margem + 1, y - 3.4, 4.2, 4.2, 1, 1, 'F');
+            doc.setDrawColor(255, 255, 255);
+            doc.setLineWidth(0.6);
+            doc.line(margem + 1.9, y - 1.4, margem + 2.8, y - 0.4);
+            doc.line(margem + 2.8, y - 0.4, margem + 4.5, y - 2.7);
+          } else {
+            doc.setDrawColor(...GRAY_LIGHT);
+            doc.setLineWidth(0.5);
+            doc.roundedRect(margem + 1, y - 3.4, 4.2, 4.2, 1, 1, 'S');
+          }
+
+          doc.setTextColor(marcado ? DARK[0] : GRAY[0], marcado ? DARK[1] : GRAY[1], marcado ? DARK[2] : GRAY[2]);
+          doc.text(linhas, margem + 9.5, y);
+          y += alturaLinha;
+        });
+
+        y += 6;
+      });
+
+      /* --- ETAPA 2 · AVALIAÇÃO TÉCNICA --- */
+      y += 2;
+      tituloSecao(2, 'AVALIAÇÃO TÉCNICA');
+
+      const linhasAvaliacao = [
+        ['Treinamento nº', avaliacao['av-treinamento-num']],
+        ['Data início', formatarData(avaliacao['av-data-inicio'])],
+        ['Data término', formatarData(avaliacao['av-data-fim'])],
+        ['Comunicação', avaliacao['av-comunicacao']],
+        ['Iniciativa', avaliacao['av-iniciativa']],
+        ['Pró Atividade', avaliacao['av-proatividade']],
+        ['Disciplina', avaliacao['av-disciplina']],
+        ['Nível de Interesse', avaliacao['av-interesse']],
+        ['Prospecção', avaliacao['av-prospeccao']],
+        ['Prospecções enviadas para consulta', avaliacao['av-prospeccoes-enviadas']],
+        ['Prospecções aprovadas', avaliacao['av-prospeccoes-aprovadas']]
+      ];
+
+      const alturaLinhaTab = 9;
+      linhasAvaliacao.forEach(([rotulo, valor], i) => {
+        garantirEspaco(alturaLinhaTab + 2);
+        if (i % 2 === 0) {
+          doc.setFillColor(...BG_PINK);
+          doc.rect(margem, y - 6.2, larguraUtil, alturaLinhaTab, 'F');
+        }
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...GRAY);
+        doc.text(rotulo, margem + 4.5, y);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...DARK);
+        doc.text(String(valor || '—'), larguraPagina - margem - 4.5, y, { align: 'right' });
+        y += alturaLinhaTab;
+      });
+
+      y += 8;
+
+      const blocosTexto = [
+        ['Ponto forte', avaliacao['av-ponto-forte'], GREEN],
+        ['Ponto fraco', avaliacao['av-ponto-fraco'], PINK],
+        ['Comentários / Observações', avaliacao['av-comentarios'], GRAY]
+      ];
+
+      blocosTexto.forEach(([rotulo, valor, cor]) => {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        const linhas = doc.splitTextToSize(String(valor || '—'), larguraUtil - 14);
+        const alturaBox = linhas.length * 4.6 + 15;
+
+        garantirEspaco(alturaBox + 6);
+
+        doc.setDrawColor(...BORDER);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(margem, y, larguraUtil, alturaBox, 2.5, 2.5, 'S');
+
+        doc.setFillColor(...cor);
+        doc.roundedRect(margem, y, 2.4, alturaBox, 1.2, 1.2, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(...cor);
+        doc.text(rotulo.toUpperCase(), margem + 8, y + 8);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(...DARK);
+        doc.text(linhas, margem + 8, y + 15);
+
+        y += alturaBox + 7;
+      });
+
+      /* --- RODAPÉ EM TODAS AS PÁGINAS --- */
+      const totalPaginas = doc.internal.getNumberOfPages();
+      for (let p = 1; p <= totalPaginas; p++) {
+        doc.setPage(p);
+        doc.setDrawColor(...LINE);
+        doc.setLineWidth(0.3);
+        doc.line(margem, alturaPagina - 14, larguraPagina - margem, alturaPagina - 14);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(...GRAY);
+        doc.text('Franquia Igrejinha', margem, alturaPagina - 8);
+        doc.text('Página ' + p + ' de ' + totalPaginas, larguraPagina - margem, alturaPagina - 8, { align: 'right' });
+      }
+
+      const nomeBase = (checklist.novato || checklist.treinador || 'Relatorio').replace(/[^a-zA-Z0-9]/g, '_');
+      const nomeArquivo = 'Relatorio-Final-' + nomeBase + '.pdf';
+      return { doc, nomeArquivo };
+    }
+
+    async function gerarRelatorioFinal() {
+      const whats = document.getElementById('whats-franqueado').value.trim();
+      if (!whats) {
+        alert('WhatsApp do franqueado não configurado.');
+        return;
+      }
+
+      const checklist = JSON.parse(localStorage.getItem('fi_checklist') || 'null') || {};
+      const { doc, nomeArquivo } = construirPDFConsolidado();
+      const corpo = 'Assunto: *TREINAMENTO*\n\n'
+        + 'Olá, tudo bem\n\n'
+        + '☑️Segue o relatório final consolidado (_Checklist de Treinamento + Avaliação Técnica_).\n\n'
+        + 'Nome do treinador(a): ' + (checklist.treinador || '-') + '\n'
+        + 'Nome do novo distribuidor(a): ' + (checklist.novato || '-');
+
+      let pdfFile = null;
+      try {
+        const pdfBlob = doc.output('blob');
+        pdfFile = new File([pdfBlob], nomeArquivo, { type: 'application/pdf' });
+      } catch (e) {
+        pdfFile = null;
+      }
+
+      if (pdfFile && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+        try {
+          await navigator.share({
+            files: [pdfFile],
+            title: 'Relatório Final',
+            text: corpo
+          });
+          resetarTudo();
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') return;
+        }
+      }
+
+      doc.save(nomeArquivo);
+      const numeroLimpo = whats.replace(/[^0-9]/g, '');
+      const textoWhats = corpo + '\n\nIMPORTANTE: o PDF "' + nomeArquivo + '" acabou de ser baixado no seu dispositivo. Anexe esse arquivo na conversa antes de enviar.';
+      const waLink = 'https://wa.me/' + numeroLimpo + '?text=' + encodeURIComponent(textoWhats);
+      resetarTudo();
+      setTimeout(() => { window.location.href = waLink; }, 600);
+    }
+
+    /* ---------- INICIALIZAÇÃO ---------- */
+    carregarChecklist();
+    carregarAvaliacao();
+    atualizarTudo();
+    validarAvaliacao();
+    atualizarStatusHome();
+  </script>
+
+</body>
+</html>
