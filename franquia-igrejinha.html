@@ -836,7 +836,7 @@
         <div class="final-resumo" id="final-resumo">
           Nenhum item marcado ainda.
         </div>
-        <button class="btn-enviar" id="btn-concluir-checklist" onclick="concluirChecklist()" disabled>Concluir etapa e voltar</button>
+        <button class="btn-enviar" id="btn-concluir-checklist" onclick="concluirChecklist()" disabled>Concluir etapa</button>
         <div class="aviso-pendente" id="aviso-pendente"></div>
       </div>
     </div>
@@ -968,7 +968,7 @@
       <div class="final-card">
         <div class="final-titulo">Concluir esta etapa</div>
         <div class="aviso-pendente" id="aviso-avaliacao" style="margin-top:0;margin-bottom:14px;"></div>
-        <button class="btn-enviar" id="btn-concluir-avaliacao" onclick="concluirAvaliacao()">Concluir etapa e voltar</button>
+        <button class="btn-enviar" id="btn-concluir-avaliacao" onclick="concluirAvaliacao()" disabled>Concluir etapa</button>
       </div>
     </div>
 
@@ -1224,6 +1224,10 @@
       } else {
         avisoEl.textContent = '';
       }
+
+      const btn = document.getElementById('btn-concluir-avaliacao');
+      if (btn) btn.disabled = faltando.length > 0;
+
       return faltando.length === 0;
     }
 
