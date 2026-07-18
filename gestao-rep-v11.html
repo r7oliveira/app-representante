@@ -3229,9 +3229,16 @@ async function buscarFechamentoGeral() {
 
     snap.forEach(doc => {
       const data = doc.data() || {};
+
+      // Só considera tablets que já foram nomeados explicitamente nas configurações
+      // (Configurações → Nome do Tablet). Dispositivos que nunca configuraram um nome
+      // não fazem parte da sua equipe e são ignorados automaticamente.
+      const nomeConfigurado = data.config && data.config.nomeTablet && data.config.nomeTablet.trim();
+      if (!nomeConfigurado) return;
+
       const semanas = data.semanas || [];
       const sem = semanas.find(s => s.numero === numero);
-      const nomeTablet = (data.config && data.config.nomeTablet) || ('Tablet ' + doc.id.slice(-5));
+      const nomeTablet = nomeConfigurado;
 
       let tVendido = 0, tAPagar = 0, tPix = 0, tDin = 0, tDebito = 0;
       let tRemSemana = 0, tRemMes = 0, tParouVender = 0, tVendasCount = 0;
