@@ -567,6 +567,13 @@ input,textarea,select{font-family:var(--font);}
         <div style="font-size:11px;font-weight:700;color:var(--red);">−25</div>
       </div>
 
+      <!-- Ação: Pagar débito antigo -->
+      <div class="crit-row-atend" onclick="abrirRegistro('debito')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+        <div class="crit-chk" id="chk-pagarDebito" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
+        <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-pagarDebito">Pagar débito antigo</div>
+        <div style="font-size:11px;font-weight:700;color:var(--ink-3);" id="valorPagarDebito">—</div>
+      </div>
+
       <!-- Critério: Parou de vender (inativa) -->
       <div class="crit-row-atend" onclick="toggleCrit('parouDeVender')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;cursor:pointer;">
         <div class="crit-chk" id="chk-parouDeVender" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
@@ -2172,6 +2179,39 @@ function atualizarScoreAtend(cons) {
       lbl.style.fontWeight = '600';
     }
   });
+
+  // Linha "Pagar débito antigo" — não pontua, apenas reflete o débito pendente
+  const debAtual = cons.debito || 0;
+  const chkDeb = document.getElementById('chk-pagarDebito');
+  const lblDeb = document.getElementById('lbl-pagarDebito');
+  const valDeb = document.getElementById('valorPagarDebito');
+  if (chkDeb && lblDeb && valDeb) {
+    if (debAtual > 0) {
+      chkDeb.style.background = 'var(--surface)';
+      chkDeb.style.borderColor = 'var(--amber)';
+      chkDeb.innerHTML = '';
+      lblDeb.style.color = 'var(--ink)';
+      lblDeb.style.fontWeight = '700';
+      valDeb.textContent = brl(debAtual);
+      valDeb.style.color = 'var(--amber)';
+    } else if ((cons.debitoPagoAntigo||0) > 0) {
+      chkDeb.style.background = 'var(--green)';
+      chkDeb.style.borderColor = 'var(--green)';
+      chkDeb.innerHTML = '<span style="color:white;">✓</span>';
+      lblDeb.style.color = 'var(--ink)';
+      lblDeb.style.fontWeight = '700';
+      valDeb.textContent = 'Pago';
+      valDeb.style.color = 'var(--green)';
+    } else {
+      chkDeb.style.background = 'var(--surface)';
+      chkDeb.style.borderColor = 'var(--border)';
+      chkDeb.innerHTML = '';
+      lblDeb.style.color = 'var(--ink-3)';
+      lblDeb.style.fontWeight = '600';
+      valDeb.textContent = '—';
+      valDeb.style.color = 'var(--ink-3)';
+    }
+  }
 }
 
 function inicializarCriterios(cons) {
@@ -2214,6 +2254,7 @@ function abrirRegistro(tipo) {
 
   document.getElementById('modalRegTitulo').textContent = tipo === 'venda'
     ? ((cons && cons.vendido > 0) ? 'Editar Venda e Pagamento' : 'Venda e Pagamento')
+    : tipo === 'debito' ? 'Pagar Débito Antigo'
     : 'Observação';
 
   if (tipo === 'venda') {
@@ -2284,6 +2325,38 @@ function abrirRegistro(tipo) {
       document.getElementById('regDinheiro').value = brlInput(cons.recebido);
     }
     atualizarResumo();
+  } else if (tipo === 'debito') {
+    const debAtual = (cons && cons.debito) || 0;
+    document.getElementById('modalRegConteudo').innerHTML = `
+      <div style="background:var(--amber-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Débito atual</div>
+        <div style="font-size:20px;font-weight:800;color:var(--amber);">${brl(debAtual)}</div>
+      </div>
+
+      <label class="field">
+        <span>Valor pago do débito antigo (R$)</span>
+        <input id="regDebito" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(debAtual)}" oninput="maskMoeda(this)">
+      </label>
+
+      <label class="field">
+        <span>Forma de recebimento</span>
+        <div style="display:flex;gap:8px;margin-top:2px;">
+          <button type="button" id="frmDebPix" onclick="selecionarFormaDeb('pix')"
+            style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
+             Pix
+          </button>
+          <button type="button" id="frmDebDinheiro" onclick="selecionarFormaDeb('dinheiro')"
+            style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
+             Dinheiro
+          </button>
+        </div>
+      </label>
+
+      <div class="btn-row">
+        <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
+        <button class="btn-primary" style="flex:1;" onclick="salvarRegistroDebito()">Salvar</button>
+      </div>`;
+    selecionarFormaDeb('dinheiro');
   } else {
     document.getElementById('modalRegConteudo').innerHTML = `
       <label class="field">
@@ -2429,6 +2502,43 @@ function salvarRegistroObs() {
   if (!cons) return;
   const obs = document.getElementById('regObs').value.trim();
   if (obs) { cons.observacao = obs; save(); }
+  fecharModal('modalRegistro');
+}
+
+function selecionarFormaDeb(forma) {
+  window._formaDebito = forma;
+  const btnPix = document.getElementById('frmDebPix');
+  const btnDin = document.getElementById('frmDebDinheiro');
+  const ativo = { background:'var(--rose)', color:'white', borderColor:'var(--rose)' };
+  const inativo = { background:'white', color:'var(--ink-3)', borderColor:'var(--border)' };
+  const setEstilo = (btn, s) => { if (!btn) return; btn.style.background=s.background; btn.style.color=s.color; btn.style.borderColor=s.borderColor; };
+  setEstilo(btnPix, forma === 'pix' ? ativo : inativo);
+  setEstilo(btnDin, forma === 'dinheiro' ? ativo : inativo);
+}
+
+function salvarRegistroDebito() {
+  const sem = getSemanaAtiva();
+  const cons = sem && atendConsId ? sem.consultoras.find(c => c.id === atendConsId) : null;
+  if (!cons) return;
+  const val = parseNum(document.getElementById('regDebito').value);
+  if (!val || val <= 0) { fecharModal('modalRegistro'); return; }
+  const forma = window._formaDebito || 'dinheiro';
+
+  // Lança o valor como recebido (pagamento de débito antigo), não como venda nova
+  cons.recebido = (cons.recebido||0) + val;
+  cons.ultimoPgto = val;
+  if (forma === 'pix') cons.recebidoPix = (cons.recebidoPix||0) + val;
+  else cons.recebidoDinheiro = (cons.recebidoDinheiro||0) + val;
+  cons.debitoPagoAntigo = (cons.debitoPagoAntigo||0) + val;
+
+  const debAnterior = cons.debito || 0;
+  cons.debito = Math.max(0, debAnterior - val);
+  save();
+
+  document.getElementById('atendDebito').textContent = cons.debito > 0 ? brl(cons.debito) : 'R$ 0';
+  document.getElementById('atendUltimoPgto').textContent = brl(cons.ultimoPgto||0);
+  atualizarScoreAtend(cons);
+
   fecharModal('modalRegistro');
 }
 
