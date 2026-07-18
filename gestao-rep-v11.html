@@ -383,7 +383,7 @@ input,textarea,select{font-family:var(--font);}
         <div class="prog-val" id="progMetaVal">0%</div>
       </div>
       <div class="hero-grid">
-        <div class="hero-box">
+        <div class="hero-box" onclick="abrirDetalheAPagar()" style="cursor:pointer;">
           <div class="hero-box-label">A Pagar</div>
           <div class="hero-box-val" id="heroVendido">R$ 0</div>
           <div class="hero-box-sub" id="heroMetaSub">Vendido: —</div>
@@ -393,7 +393,7 @@ input,textarea,select{font-family:var(--font);}
           <div class="hero-box-val" id="heroRecebido">R$ 0</div>
           <div class="hero-box-sub">Esta semana</div>
         </div>
-        <div class="hero-box">
+        <div class="hero-box" onclick="abrirDetalheCobrancas()" style="cursor:pointer;">
           <div class="hero-box-label">Cobranças</div>
           <div class="hero-box-val" id="heroCobrancas">R$ 0</div>
           <div class="hero-box-sub">Pendentes</div>
@@ -3968,6 +3968,77 @@ function abrirDetalheRecebido() {
   document.getElementById('modalRecebido').classList.add('open');
 }
 
+function abrirDetalheAPagar() {
+  const sem = getSemanaAtiva();
+  if (!sem) return;
+
+  function aPagarDe(c) {
+    if (c.aPagar > 0) return c.aPagar;
+    const comissaoPct = c.pedidoFavoritaFeito ? 40 : 30;
+    return Math.round((c.vendido||0) * ((100-comissaoPct)/100) * 100) / 100;
+  }
+
+  const comVenda = sem.consultoras.filter(c => (c.vendido||0) > 0);
+  const totalAPagar = comVenda.reduce((a,c) => a + aPagarDe(c), 0);
+  const totalVendido = comVenda.reduce((a,c) => a + (c.vendido||0), 0);
+
+  document.getElementById('apagarSemanaLabel').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
+  document.getElementById('apagarTotalGeral').textContent = brl(totalAPagar);
+  document.getElementById('apagarTotalVendido').textContent = brl(totalVendido);
+
+  const lista = document.getElementById('apagarLista');
+  if (comVenda.length === 0) {
+    lista.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Nenhuma venda registrada ainda.</div>';
+  } else {
+    const ordenada = [...comVenda].sort((a,b) => aPagarDe(b) - aPagarDe(a));
+    lista.innerHTML = ordenada.map(c => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome}</div>
+          <div style="font-size:11px;color:var(--ink-3);">Vendido: ${brl(c.vendido||0)}</div>
+        </div>
+        <div style="font-size:14px;font-weight:800;color:var(--ink);">${brl(aPagarDe(c))}</div>
+      </div>`).join('');
+  }
+
+  document.getElementById('modalAPagar').classList.add('open');
+}
+
+function abrirDetalheCobrancas() {
+  const sem = getSemanaAtiva();
+  if (!sem) return;
+
+  function debitoDe(c) {
+    if ((c.debito||0) > 0) return c.debito;
+    const aPagarC = Math.round((c.vendido||0) * 0.70 * 100) / 100;
+    return Math.max(0, aPagarC - (c.recebido||0));
+  }
+
+  const comCobranca = sem.consultoras.filter(c => debitoDe(c) > 0);
+  const totalCobrancas = comCobranca.reduce((a,c) => a + debitoDe(c), 0);
+
+  document.getElementById('cobrSemanaLabel').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
+  document.getElementById('cobrTotalGeral').textContent = brl(totalCobrancas);
+  document.getElementById('cobrQtd').textContent = comCobranca.length;
+
+  const lista = document.getElementById('cobrLista');
+  if (comCobranca.length === 0) {
+    lista.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Nenhuma cobrança pendente. 🎉</div>';
+  } else {
+    const ordenada = [...comCobranca].sort((a,b) => debitoDe(b) - debitoDe(a));
+    lista.innerHTML = ordenada.map(c => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="fecharModal('modalCobrancas');abrirAtendimento('${c.id}')">
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome}</div>
+          <div style="font-size:11px;color:var(--ink-3);">${c.cidade||''}</div>
+        </div>
+        <div style="font-size:14px;font-weight:800;color:var(--red);">${brl(debitoDe(c))}</div>
+      </div>`).join('');
+  }
+
+  document.getElementById('modalCobrancas').classList.add('open');
+}
+
 function finalizarSemana() {
   const sem = getSemanaAtiva();
   if (!sem) return;
@@ -4371,6 +4442,58 @@ initFirebase();
     <div id="recebLista"></div>
 
     <button class="btn-ghost" style="width:100%;margin-top:18px;" onclick="fecharModal('modalRecebido')">Fechar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: DETALHE A PAGAR
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalAPagar">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalAPagar')">✕</button>
+    <div class="modal-title" style="margin-bottom:2px;">A Pagar</div>
+    <div style="font-size:13px;color:var(--ink-3);font-weight:500;margin-bottom:18px;" id="apagarSemanaLabel">Semana —</div>
+
+    <div style="background:var(--surface);border-radius:14px;padding:12px;text-align:center;margin-bottom:8px;">
+      <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total a Pagar</div>
+      <div style="font-size:20px;font-weight:800;color:var(--ink);" id="apagarTotalGeral">R$ 0</div>
+    </div>
+    <div style="background:var(--surface);border-radius:14px;padding:10px;text-align:center;margin-bottom:20px;">
+      <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total Vendido</div>
+      <div style="font-size:15px;font-weight:800;color:var(--ink-3);" id="apagarTotalVendido">R$ 0</div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px;">Por consultora</div>
+    <div id="apagarLista"></div>
+
+    <button class="btn-ghost" style="width:100%;margin-top:18px;" onclick="fecharModal('modalAPagar')">Fechar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: DETALHE COBRANÇAS
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalCobrancas">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalCobrancas')">✕</button>
+    <div class="modal-title" style="margin-bottom:2px;">Cobranças</div>
+    <div style="font-size:13px;color:var(--ink-3);font-weight:500;margin-bottom:18px;" id="cobrSemanaLabel">Semana —</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">
+      <div style="background:var(--red-bg);border-radius:14px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total Pendente</div>
+        <div style="font-size:17px;font-weight:800;color:var(--red);" id="cobrTotalGeral">R$ 0</div>
+      </div>
+      <div style="background:var(--red-bg);border-radius:14px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Consultoras</div>
+        <div style="font-size:17px;font-weight:800;color:var(--red);" id="cobrQtd">0</div>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px;">Por consultora</div>
+    <div id="cobrLista"></div>
+
+    <button class="btn-ghost" style="width:100%;margin-top:18px;" onclick="fecharModal('modalCobrancas')">Fechar</button>
   </div>
 </div>
 
