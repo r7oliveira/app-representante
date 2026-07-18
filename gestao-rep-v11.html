@@ -1825,7 +1825,7 @@ function renderSemana() {
 
   document.getElementById('iaStrip').innerHTML =
     (faltaMeta > 0 ? '<strong>Faltam ' + brl(faltaMeta) + ' para a meta (a pagar).</strong> ' : '<strong>Meta atingida! ✓</strong> ') +
-    (proxima ? 'Próxima: ' + proxima.nome + '.' : 'Todas atendidas!');
+    (proxima ? 'Próxima: ' + proxima.nome + '.' : '');
   if (proxima) {
     document.getElementById('ctaBtn').textContent = 'Continuar Semana →';
     document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
