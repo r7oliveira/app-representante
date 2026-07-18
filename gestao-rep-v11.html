@@ -3269,7 +3269,33 @@ async function buscarFechamentoGeral() {
       });
     });
 
-    window._fgTabletsAuto = tablets;
+    // Alguns tablets podem estar cadastrados em mais de um documento com o mesmo
+    // nome (ex: recadastro duplicado). Nesses casos, soma tudo em uma única linha
+    // para não aparecer duas vezes na lista com números divergentes.
+    const agrupados = new Map();
+    tablets.forEach(t => {
+      const chave = (t.nome || '').trim().toLowerCase();
+      if (!agrupados.has(chave)) {
+        agrupados.set(chave, { ...t });
+      } else {
+        const acc = agrupados.get(chave);
+        acc.temSemana   = acc.temSemana || t.temSemana;
+        acc.vendido     += t.vendido;
+        acc.aPagar      += t.aPagar;
+        acc.pix         += t.pix;
+        acc.dinheiro    += t.dinheiro;
+        acc.debito      += t.debito;
+        acc.remSemana   += t.remSemana;
+        acc.remMes      += t.remMes;
+        acc.parouVender += t.parouVender;
+        acc.numVendas   += t.numVendas;
+        acc.ativas      = Math.max(acc.ativas, t.ativas);
+        acc.inativas    = Math.max(acc.inativas, t.inativas);
+        acc.novas       = Math.max(acc.novas, t.novas);
+      }
+    });
+
+    window._fgTabletsAuto = [...agrupados.values()];
     window._fgNumeroAtual = numero;
     recomputeFechamentoGeral();
 
