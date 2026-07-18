@@ -518,6 +518,13 @@ input,textarea,select{font-family:var(--font);}
         </div>
       </div>
 
+      <!-- Critério: Consultora nova -->
+      <div class="crit-row-atend" onclick="toggleCrit('consultoraNova')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+        <div class="crit-chk" id="chk-consultoraNova" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
+        <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-consultoraNova">Consultora nova</div>
+        <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+100</div>
+      </div>
+
       <!-- Critério: Atendimento em dia -->
       <div class="crit-row-atend" onclick="toggleCrit('atendimentoEmDia')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
         <div class="crit-chk" id="chk-atendimentoEmDia" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
@@ -1666,6 +1673,7 @@ function hora() { return new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',m
 function dataFmt(d) { return new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}); }
 function calcScore(c) {
   if (c.parouDeVender) return 0;
+  if (c.consultoraNova) return 100;
   let s = 0;
   if (c.atendimentoEmDia) s += 30;
   if (c.pagamentoNaSemana) s += 30;
@@ -2090,6 +2098,17 @@ function toggleCrit(campo) {
     }
   }
 
+  // Consultora nova → ainda não tem acerto, então zera os demais critérios (score fica 100 automaticamente)
+  if (campo === 'consultoraNova' && cons.consultoraNova) {
+    cons.atendimentoEmDia = false;
+    cons.pagamentoNaSemana = false;
+    cons.pedidoFavoritaFeito = false;
+    cons.assinaturaDigital = false;
+    cons.remarcarSemana = false;
+    cons.remarcarMes = false;
+    cons.parouDeVender = false;
+  }
+
   // Parou de vender → zera todos os pontos e marca como inativa no cadastro mestre
   if (campo === 'parouDeVender') {
     const mestre = DB.consultoras.find(c => c.id === cons.id);
@@ -2100,6 +2119,7 @@ function toggleCrit(campo) {
       cons.assinaturaDigital = false;
       cons.remarcarSemana = false;
       cons.remarcarMes = false;
+      cons.consultoraNova = false;
       if (mestre) mestre.status = 'inativa';
     } else {
       if (mestre) mestre.status = 'ativa';
@@ -2122,6 +2142,7 @@ function atualizarScoreAtend(cons) {
   document.getElementById('atendScore').textContent = 'Score ' + score;
 
   const crits = [
+    { id:'consultoraNova',      pts:'+100', neg:false },
     { id:'atendimentoEmDia',    pts:'+30', neg:false },
     { id:'pagamentoNaSemana',   pts:'+30', neg:false },
     { id:'pedidoFavoritaFeito', pts:'+25', neg:false },
