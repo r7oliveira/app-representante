@@ -2314,7 +2314,12 @@ function abrirRegistro(tipo) {
       <div class="btn-row">
         <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
         <button class="btn-primary" style="flex:1;" onclick="salvarRegistroVenda()">Salvar</button>
-      </div>`;
+      </div>
+      ${(cons && (cons.vendido > 0 || cons.recebido > 0)) ? `
+      <button type="button" onclick="excluirRegistroVenda()"
+        style="width:100%;margin-top:10px;padding:11px;border-radius:12px;border:none;background:transparent;color:var(--red);font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">
+        Excluir lançamento
+      </button>` : ''}`;
 
     window._formaRecebimento = (cons && cons.formaPgto) || null;
     if (cons && cons.formaPgto) {
@@ -2494,6 +2499,45 @@ function salvarRegistroVenda() {
   } catch(e) {
     alert('Erro ao salvar: ' + e.message);
   }
+}
+
+function excluirRegistroVenda() {
+  const sem = getSemanaAtiva();
+  const cons = sem && atendConsId ? sem.consultoras.find(c => c.id === atendConsId) : null;
+  if (!cons) return;
+
+  if (!confirm('Excluir o lançamento de venda e pagamento desta consultora? Essa ação não pode ser desfeita.')) return;
+
+  cons.vendido = 0;
+  cons.recebido = 0;
+  cons.recebidoPix = 0;
+  cons.recebidoDinheiro = 0;
+  cons.debito = 0;
+  cons.aPagar = 0;
+  delete cons.formaPgto;
+  delete cons.ultimaVenda;
+  delete cons.ultimoPgto;
+
+  save();
+
+  // Atualiza tela atendimento
+  document.getElementById('atendUltimaVenda').textContent = brl(0);
+  document.getElementById('atendUltimoPgto').textContent  = brl(0);
+  document.getElementById('atendDebito').textContent      = 'R$ 0';
+  document.getElementById('atendScore').textContent       = 'Score ' + calcScore(cons);
+  atualizarScoreAtend(cons);
+
+  // Reseta botão para o estado padrão
+  const btnVenda = document.getElementById('btnVendaPagamento');
+  if (btnVenda) {
+    btnVenda.querySelector('.action-title').textContent = 'Adicionar Venda e Pagamento';
+    btnVenda.querySelector('.action-title').style.color = 'var(--ink)';
+    btnVenda.querySelector('.action-sub').textContent = 'Registro manual de valores';
+    btnVenda.querySelector('.action-sub').style.color = 'var(--ink-3)';
+    btnVenda.style.borderColor = '';
+  }
+
+  fecharModal('modalRegistro');
 }
 
 function salvarRegistroObs() {
