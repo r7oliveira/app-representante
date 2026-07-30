@@ -672,90 +672,42 @@ input,textarea,select{font-family:var(--font);}
 <div class="view" id="view-mais">
   <div class="page-header">
     <div class="ph-title">Mais</div>
-    <div class="ph-sub">Configuração e ferramentas</div>
+    <div class="ph-sub">Gestão da carteira</div>
   </div>
   <div class="scroll-body" style="padding:12px 16px 80px;">
 
-    <div class="sec-title" style="padding-left:0;">Operação</div>
-    <div class="mais-item" onclick="goTo('domingo')">
-      <div class="mais-icon" style="background:var(--surface-2);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
-      <div>
-        <div class="mais-title">Fluxo de Domingo</div>
-        <div class="mais-sub">Fechamento e planejamento semanal</div>
-      </div>
-      <div style="margin-left:auto;color:var(--ink-3);">›</div>
-    </div>
-    <div class="mais-item" onclick="goTo('iniciativas')">
-      <div class="mais-icon" style="background:var(--purple-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-      <div>
-        <div class="mais-title">Assistente Comercial</div>
-        <div class="mais-sub">Iniciativas e análise do dia</div>
-      </div>
-      <div style="margin-left:auto;color:var(--ink-3);">›</div>
-    </div>
-    <div class="mais-item" onclick="goTo('assist-new')">
-      <div class="mais-icon" style="background:var(--purple-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-      <div>
-        <div class="mais-title">Chat do Assistente</div>
-        <div class="mais-sub">Perguntas livres sobre sua semana</div>
-      </div>
-      <div style="margin-left:auto;color:var(--ink-3);">›</div>
-    </div>
-    <div class="mais-item" onclick="goTo('criar-semana')">
-      <div class="mais-icon" style="background:var(--rose-light);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
-      <div>
-        <div class="mais-title">Criar Semana</div>
-        <div class="mais-sub">Iniciar uma nova semana de trabalho</div>
-      </div>
-      <div style="margin-left:auto;color:var(--ink-3);">›</div>
-    </div>
-    <div class="mais-item" onclick="goTo('motor')">
-      <div class="mais-icon" style="background:var(--amber-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
-      <div>
-        <div class="mais-title">Motor de Prioridade</div>
-        <div class="mais-sub">Score e ranking das consultoras</div>
-      </div>
-      <div style="margin-left:auto;color:var(--ink-3);">›</div>
-    </div>
-
-    <div class="sec-title" style="padding-left:0;">Configuração</div>
+    <div class="sec-title" style="padding-left:0;">Gestão</div>
     <div class="mais-item" onclick="abrirModalConsultora()">
       <div class="mais-icon" style="background:var(--green-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
       <div>
         <div class="mais-title">Nova Consultora</div>
-        <div class="mais-sub">Cadastrar ou importar do tablet</div>
+        <div class="mais-sub">Cadastrar ou importar</div>
       </div>
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
     <div class="mais-item" onclick="abrirGerenciar()">
       <div class="mais-icon" style="background:var(--surface-2);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
       <div>
-        <div class="mais-title">Gerenciar Região</div>
-        <div class="mais-sub">Editar, inativar, reordenar</div>
+        <div class="mais-title">Gerenciar Regiões</div>
+        <div class="mais-sub">Consultoras, ordem e regiões</div>
       </div>
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
-    <div class="mais-item" onclick="goTo('importacao')">
-      <div class="mais-icon" style="background:var(--purple-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+    <div class="mais-item" onclick="goTo('criar-semana')">
+      <div class="mais-icon" style="background:var(--rose-light);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></div>
       <div>
-        <div class="mais-title">Importação Inteligente</div>
-        <div class="mais-sub">Fotografar cadastro do tablet</div>
+        <div class="mais-title">Criar Nova Semana</div>
+        <div class="mais-sub">Iniciar próximo ciclo</div>
       </div>
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
+
+    <div class="sec-title" style="padding-left:0;">Sistema</div>
     <div class="mais-item" onclick="goTo('config')">
       <div class="mais-icon" style="background:var(--surface-2);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
       <div>
         <div class="mais-title">Configurações</div>
-        <div class="mais-sub">Chave Gemini, metas, preferências</div>
-      </div>
-      <div style="margin-left:auto;color:var(--ink-3);">›</div>
-    </div>
-    <div class="mais-item" onclick="goTo('relatorio')">
-      <div class="mais-icon" style="background:var(--green-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
-      <div>
-        <div class="mais-title">Relatório da Semana</div>
-        <div class="mais-sub">Resumo e lista de consultoras atendidas</div>
+        <div class="mais-sub">Metas, integração e preferências</div>
       </div>
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
@@ -1228,22 +1180,62 @@ input,textarea,select{font-family:var(--font);}
 ══════════════════════════════════════════ -->
 <div class="view" id="view-fechamento-geral">
   <div style="background:linear-gradient(160deg,#0A0A1E,#1A1040);padding:calc(20px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
-    <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Consolidado</div>
-    <div style="color:white;font-size:24px;font-weight:800;margin-bottom:3px;">Fechamento Geral</div>
-    <div style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500;margin-bottom:14px;">Soma os dados dos tablets da equipe.</div>
-    <div style="display:flex;gap:8px;align-items:flex-end;">
-      <label class="field" style="margin:0;flex:1;">
-        <span style="color:rgba(255,255,255,.6);">Nº da semana</span>
-        <input type="number" id="fgNumSemana" inputmode="numeric" placeholder="26"
-          style="background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);color:white;">
-      </label>
-      <button class="btn-primary" style="width:auto;padding:11px 18px;white-space:nowrap;" onclick="buscarFechamentoGeral()">Buscar</button>
+    <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Fechamento da Semana</div>
+    <div style="color:white;font-size:24px;font-weight:800;margin-bottom:3px;" id="fgTituloSemana">Semana —</div>
+    <div style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500;margin-bottom:14px;" id="fgSubtitulo">Resultado consolidado dos tablets</div>
+
+    <div style="display:flex;align-items:center;justify-content:center;gap:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:10px;">
+      <button onclick="fgMudarSemana(-1)" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;font-weight:800;cursor:pointer;padding:4px 10px;">‹</button>
+      <div style="font-size:15px;font-weight:800;color:white;letter-spacing:.5px;">SEMANA <span id="fgNumSemanaLabel">—</span></div>
+      <button onclick="fgMudarSemana(1)" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;font-weight:800;cursor:pointer;padding:4px 10px;">›</button>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button onclick="goTo('domingo')" style="flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:white;border-radius:12px;padding:10px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Fechar e planejar próxima semana →</button>
+      <button onclick="goTo('relatorio')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:white;border-radius:12px;padding:10px 14px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;">Relatório →</button>
     </div>
   </div>
 
   <div class="scroll-body" style="padding:16px 16px 80px;">
-    <div id="fgStatus" style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Escolha o número da semana e toque em Buscar.</div>
+    <div id="fgStatus" style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Carregando dados dos tablets...</div>
     <div id="fgConteudo" style="display:none;">
+
+      <!-- META GERAL -->
+      <div style="background:linear-gradient(135deg,#0A0A1E,#2A1550);border-radius:18px;padding:16px 18px;margin-bottom:12px;">
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Resultado da Semana</div>
+        <div style="font-size:24px;font-weight:800;color:white;margin-bottom:2px;"><span id="fgMetaResultado">R$ 0</span> <span style="font-size:15px;font-weight:600;color:rgba(255,255,255,.4);">/ <span id="fgMetaTotal">R$ 0</span></span></div>
+        <div style="height:8px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin:10px 0 6px;">
+          <div id="fgMetaBar" style="height:100%;background:linear-gradient(90deg,#FF4D6D,#FF8FA3);border-radius:6px;width:0%;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.6);font-weight:600;margin-bottom:12px;">
+          <span id="fgMetaPct">0% da meta</span>
+          <span id="fgMetaFalta">Faltam R$ 0</span>
+        </div>
+        <div id="fgMetaPorTablet" style="border-top:1px solid rgba(255,255,255,.1);padding-top:10px;"></div>
+      </div>
+
+      <!-- ATENDIMENTOS -->
+      <div style="background:white;border:1px solid var(--border);border-radius:18px;padding:14px 16px;margin-bottom:12px;">
+        <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Atendimentos</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--ink);" id="fgPrevistas">0</div>
+            <div style="font-size:11px;color:var(--ink-3);font-weight:600;">Previstas</div>
+          </div>
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--green);" id="fgAtendidas">0</div>
+            <div style="font-size:11px;color:var(--ink-3);font-weight:600;">Atendidas</div>
+          </div>
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--amber);" id="fgPendentes">0</div>
+            <div style="font-size:11px;color:var(--ink-3);font-weight:600;">Pendentes</div>
+          </div>
+          <div>
+            <div style="font-size:22px;font-weight:800;color:var(--rose);" id="fgCobertura">0%</div>
+            <div style="font-size:11px;color:var(--ink-3);font-weight:600;">Cobertura</div>
+          </div>
+        </div>
+      </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
         <div class="card" style="padding:12px 14px;">
@@ -1271,18 +1263,6 @@ input,textarea,select{font-family:var(--font);}
           <div style="font-size:22px;font-weight:800;color:var(--amber);" id="fgDebito">R$ 0</div>
         </div>
         <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Remarcadas · semana</div>
-          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgRemSemana">0</div>
-        </div>
-        <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Remarcadas · mês</div>
-          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgRemMes">0</div>
-        </div>
-        <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Parou de vender</div>
-          <div style="font-size:18px;font-weight:800;color:var(--red);" id="fgParouVender">0</div>
-        </div>
-        <div class="card" style="padding:12px 14px;">
           <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ticket médio</div>
           <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgTicket">R$ 0</div>
         </div>
@@ -1294,13 +1274,29 @@ input,textarea,select{font-family:var(--font);}
           <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Consultoras inativas</div>
           <div style="font-size:18px;font-weight:800;color:var(--red);" id="fgInativas">0</div>
         </div>
-        <div class="card" style="padding:12px 14px;grid-column:span 2;">
-          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Clientes novas (cadastradas nesta semana)</div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Novas consultoras</div>
           <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgClienteNova">0</div>
         </div>
       </div>
 
-      <div style="font-size:13px;font-weight:700;color:var(--ink);margin:16px 0 8px;">Por tablet</div>
+      <!-- Indicadores secundários (alimentados no atendimento) -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:16px;">
+        <div class="card" style="padding:9px 10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Rem. Semana</div>
+          <div style="font-size:15px;font-weight:800;color:var(--ink);" id="fgRemSemana">0</div>
+        </div>
+        <div class="card" style="padding:9px 10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Rem. Mês</div>
+          <div style="font-size:15px;font-weight:800;color:var(--ink);" id="fgRemMes">0</div>
+        </div>
+        <div class="card" style="padding:9px 10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Parou vender</div>
+          <div style="font-size:15px;font-weight:800;color:var(--red);" id="fgParouVender">0</div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;font-weight:700;color:var(--ink);margin:8px 0 8px;">Por tablet</div>
       <div id="fgPorTablet"></div>
       <button class="btn-ghost" onclick="abrirModalFechManual()" style="margin-top:4px;">+ Adicionar tablet manualmente</button>
     </div>
@@ -1319,12 +1315,20 @@ input,textarea,select{font-family:var(--font);}
     <label class="field"><span>Nome do tablet / responsável *</span><input id="fmNome" placeholder="Ex: Tablet 2"></label>
 
     <div class="two-col">
+      <label class="field" style="margin:0;"><span>Meta da semana (R$)</span><input id="fmMeta" type="text" inputmode="decimal" placeholder="R$ 15.000,00" oninput="maskMoeda(this)"></label>
       <label class="field" style="margin:0;"><span>Vendido (R$)</span><input id="fmVendido" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
-      <label class="field" style="margin:0;"><span>Débito (R$)</span><input id="fmDebito" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
     </div>
     <div class="two-col" style="margin-top:12px;">
+      <label class="field" style="margin:0;"><span>Débito (R$)</span><input id="fmDebito" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
       <label class="field" style="margin:0;"><span>Recebido Pix (R$)</span><input id="fmPix" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+    </div>
+    <div class="two-col" style="margin-top:12px;">
       <label class="field" style="margin:0;"><span>Recebido Dinheiro (R$)</span><input id="fmDinheiro" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+      <label class="field" style="margin:0;"><span>Nº de vendas (p/ ticket médio)</span><input id="fmNumVendas" type="number" inputmode="numeric" placeholder="0"></label>
+    </div>
+    <div class="two-col" style="margin-top:12px;">
+      <label class="field" style="margin:0;"><span>Consultoras previstas</span><input id="fmPrevistas" type="number" inputmode="numeric" placeholder="0"></label>
+      <label class="field" style="margin:0;"><span>Consultoras atendidas</span><input id="fmAtendidas" type="number" inputmode="numeric" placeholder="0"></label>
     </div>
     <div class="two-col" style="margin-top:12px;">
       <label class="field" style="margin:0;"><span>Remarc. semana</span><input id="fmRemSemana" type="number" inputmode="numeric" placeholder="0"></label>
@@ -1332,18 +1336,65 @@ input,textarea,select{font-family:var(--font);}
     </div>
     <div class="two-col" style="margin-top:12px;">
       <label class="field" style="margin:0;"><span>Parou de vender</span><input id="fmParouVender" type="number" inputmode="numeric" placeholder="0"></label>
-      <label class="field" style="margin:0;"><span>Nº de vendas (p/ ticket médio)</span><input id="fmNumVendas" type="number" inputmode="numeric" placeholder="0"></label>
+      <label class="field" style="margin:0;"><span>Consultoras ativas</span><input id="fmAtivas" type="number" inputmode="numeric" placeholder="0"></label>
     </div>
     <div class="two-col" style="margin-top:12px;">
-      <label class="field" style="margin:0;"><span>Consultoras ativas</span><input id="fmAtivas" type="number" inputmode="numeric" placeholder="0"></label>
       <label class="field" style="margin:0;"><span>Consultoras inativas</span><input id="fmInativas" type="number" inputmode="numeric" placeholder="0"></label>
+      <label class="field" style="margin:0;"><span>Novas consultoras</span><input id="fmNovas" type="number" inputmode="numeric" placeholder="0"></label>
     </div>
-    <label class="field" style="margin-top:12px;"><span>Clientes novas</span><input id="fmNovas" type="number" inputmode="numeric" placeholder="0"></label>
 
     <div class="btn-row" style="margin-top:8px;">
       <button class="btn-ghost" style="flex:1;" id="fmBtnExcluir" onclick="excluirFechManual()">Excluir</button>
       <button class="btn-primary" style="flex:1;" onclick="salvarFechManual()">Salvar</button>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: DETALHE DE TABLET (Fechamento Geral)
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalFechDetalhe">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalFechDetalhe')">✕</button>
+    <div class="modal-title" id="fdNome">Tablet</div>
+    <div style="font-size:13px;color:var(--ink-3);font-weight:600;margin-bottom:16px;" id="fdSemanaLabel">Semana —</div>
+
+    <div style="background:var(--surface);border-radius:14px;padding:12px 14px;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;">Atendimentos</span>
+        <span style="font-size:13px;font-weight:800;color:var(--ink);" id="fdAtendPct">0/0</span>
+      </div>
+      <div style="height:7px;background:var(--border);border-radius:5px;overflow:hidden;">
+        <div id="fdAtendBar" style="height:100%;background:var(--green);width:0%;"></div>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border-radius:14px;padding:12px 14px;margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;">Meta</span>
+        <span style="font-size:13px;font-weight:800;color:var(--ink);" id="fdMetaPct">0%</span>
+      </div>
+      <div style="height:7px;background:var(--border);border-radius:5px;overflow:hidden;margin-bottom:4px;">
+        <div id="fdMetaBar" style="height:100%;background:var(--rose);width:0%;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--ink-3);" id="fdMetaValores">R$ 0 / R$ 0</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div class="card" style="padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:3px;">Vendido</div><div style="font-size:15px;font-weight:800;" id="fdVendido">R$ 0</div></div>
+      <div class="card" style="padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:3px;">Recebido</div><div style="font-size:15px;font-weight:800;color:var(--green);" id="fdRecebido">R$ 0</div></div>
+      <div class="card" style="padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:3px;">Pix</div><div style="font-size:15px;font-weight:800;" id="fdPix">R$ 0</div></div>
+      <div class="card" style="padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:3px;">Dinheiro</div><div style="font-size:15px;font-weight:800;" id="fdDinheiro">R$ 0</div></div>
+      <div class="card" style="padding:10px 12px;grid-column:span 2;background:var(--amber-bg);border-color:transparent;"><div style="font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;margin-bottom:3px;">Débito</div><div style="font-size:17px;font-weight:800;color:var(--amber);" id="fdDebito">R$ 0</div></div>
+    </div>
+
+    <div style="font-size:12px;color:var(--ink-2);line-height:1.8;background:var(--surface);border-radius:14px;padding:12px 14px;">
+      Remarc. semana: <strong id="fdRemSemana">0</strong> · Remarc. mês: <strong id="fdRemMes">0</strong> · Parou de vender: <strong id="fdParouVender">0</strong><br>
+      Ativas: <strong id="fdAtivas">0</strong> · Inativas: <strong id="fdInativas">0</strong> · Novas: <strong id="fdNovas">0</strong>
+    </div>
+
+    <button class="btn-ghost" style="width:100%;margin-top:16px;" onclick="fecharModal('modalFechDetalhe')">Fechar</button>
+    <button class="btn-primary" style="width:100%;margin-top:8px;display:none;" id="fdBtnEditar" onclick="fecharModal('modalFechDetalhe');abrirModalFechManual(window._fdManualId)">Editar lançamento</button>
   </div>
 </div>
 
@@ -1360,6 +1411,7 @@ input,textarea,select{font-family:var(--font);}
     </button>
     <input type="file" id="consPhotoInput" accept="image/*" style="display:none" onchange="extrairFotoConsultora(this)">
     <div class="ai-loading" id="consAiLoading"><span class="spinner"></span>Lendo dados da imagem...</div>
+    <button type="button" onclick="fecharModal('modalConsultora');goTo('importacao')" style="width:100%;background:none;border:none;color:var(--rose);font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;margin:-6px 0 14px;text-align:center;">Importar várias de uma vez (fotos em lote) →</button>
 
     <label class="field"><span>Nome completo *</span><input id="cNome" placeholder="Ex: Ana Leticia de Oliveira"></label>
     <label class="field"><span>Telefone</span><input id="cTel" inputmode="tel" placeholder="(51) 99999-9999"></label>
@@ -3116,16 +3168,28 @@ function salvarConfig() {
 function renderFechamentoGeral() {
   const sem = getSemanaAtiva();
   const ultimaSemana = DB.semanas.length ? DB.semanas[DB.semanas.length-1].numero : '';
-  document.getElementById('fgNumSemana').value = sem ? sem.numero : ultimaSemana;
-  document.getElementById('fgStatus').style.display = '';
-  document.getElementById('fgStatus').textContent = 'Escolha o número da semana e toque em Buscar.';
-  document.getElementById('fgConteudo').style.display = 'none';
+  const numero = window._fgNumeroAtual || (sem ? sem.numero : ultimaSemana) || 1;
+  if (!_db) {
+    document.getElementById('fgStatus').style.display = '';
+    document.getElementById('fgStatus').textContent = 'Firebase não conectado. Verifique sua internet e tente novamente.';
+    document.getElementById('fgConteudo').style.display = 'none';
+    return;
+  }
+  buscarFechamentoGeral(numero);
 }
 
-async function buscarFechamentoGeral() {
-  const numero = parseInt(document.getElementById('fgNumSemana').value) || null;
+function fgMudarSemana(delta) {
+  const atual = window._fgNumeroAtual || 1;
+  buscarFechamentoGeral(Math.max(1, atual + delta));
+}
+
+async function buscarFechamentoGeral(numero) {
+  numero = numero || window._fgNumeroAtual;
   if (!numero) { alert('Informe o número da semana.'); return; }
   if (!_db) { alert('Firebase não conectado. Verifique sua internet e tente novamente.'); return; }
+
+  document.getElementById('fgNumSemanaLabel').textContent = numero;
+  document.getElementById('fgTituloSemana').textContent = 'Semana ' + numero;
 
   const statusEl = document.getElementById('fgStatus');
   statusEl.style.display = '';
@@ -3148,11 +3212,15 @@ async function buscarFechamentoGeral() {
       const semanas = data.semanas || [];
       const sem = semanas.find(s => s.numero === numero);
       const nomeTablet = nomeConfigurado;
+      const metaTablet = (sem && sem.meta) || (data.config && data.config.metaPadrao) || 15000;
 
       let tVendido = 0, tAPagar = 0, tPix = 0, tDin = 0, tDebito = 0;
       let tRemSemana = 0, tRemMes = 0, tParouVender = 0, tVendasCount = 0;
+      let tPrevistas = 0, tAtendidas = 0;
 
       if (sem) {
+        tPrevistas = (sem.consultoras || []).length;
+        tAtendidas = (sem.consultoras || []).filter(c => c.status === 'concluida').length;
         (sem.consultoras || []).forEach(c => {
           tVendido += (c.vendido || 0);
           tAPagar  += (c.aPagar || 0);
@@ -3178,10 +3246,11 @@ async function buscarFechamentoGeral() {
         : 0;
 
       tablets.push({
-        origem: 'auto', nome: nomeTablet, temSemana: !!sem,
+        origem: 'auto', nome: nomeTablet, temSemana: !!sem, meta: metaTablet,
         vendido: tVendido, aPagar: tAPagar, pix: tPix, dinheiro: tDin, debito: tDebito,
         remSemana: tRemSemana, remMes: tRemMes, parouVender: tParouVender, numVendas: tVendasCount,
         ativas: ativasTablet, inativas: inativasTablet, novas: novaTablet,
+        previstas: tPrevistas, atendidas: tAtendidas,
       });
     });
 
@@ -3196,6 +3265,7 @@ async function buscarFechamentoGeral() {
       } else {
         const acc = agrupados.get(chave);
         acc.temSemana   = acc.temSemana || t.temSemana;
+        acc.meta        += t.meta;
         acc.vendido     += t.vendido;
         acc.aPagar      += t.aPagar;
         acc.pix         += t.pix;
@@ -3205,6 +3275,8 @@ async function buscarFechamentoGeral() {
         acc.remMes      += t.remMes;
         acc.parouVender += t.parouVender;
         acc.numVendas   += t.numVendas;
+        acc.previstas   += t.previstas;
+        acc.atendidas   += t.atendidas;
         acc.ativas      = Math.max(acc.ativas, t.ativas);
         acc.inativas    = Math.max(acc.inativas, t.inativas);
         acc.novas       = Math.max(acc.novas, t.novas);
@@ -3231,20 +3303,55 @@ function recomputeFechamentoGeral() {
   const auto = window._fgTabletsAuto || [];
   const manuais = (DB.config.manuaisFechamento && DB.config.manuaisFechamento[numero]) || [];
   const tablets = [...auto, ...manuais.map(m => ({ ...m, origem: 'manual', temSemana: true }))];
+  window._fgTabletsAll = tablets;
 
-  let totVendido = 0, totAPagar = 0, totPix = 0, totDin = 0, totDebito = 0;
+  document.getElementById('fgSubtitulo').textContent = 'Resultado consolidado ' + (tablets.length ? 'dos ' + tablets.length + ' tablet' + (tablets.length > 1 ? 's' : '') : 'dos tablets');
+
+  let totVendido = 0, totAPagar = 0, totPix = 0, totDin = 0, totDebito = 0, totMeta = 0;
   let totRemSemana = 0, totRemMes = 0, totParouVender = 0, totVendasCount = 0;
   let totAtivas = 0, totInativas = 0, totClienteNova = 0;
+  let totPrevistas = 0, totAtendidas = 0;
 
   tablets.forEach(t => {
-    totVendido += (t.vendido||0); totAPagar += (t.aPagar||0);
+    totVendido += (t.vendido||0); totAPagar += (t.aPagar||0); totMeta += (t.meta||0);
     totPix += (t.pix||0); totDin += (t.dinheiro||0); totDebito += (t.debito||0);
     totRemSemana += (t.remSemana||0); totRemMes += (t.remMes||0); totParouVender += (t.parouVender||0);
     totVendasCount += (t.numVendas||0);
     totAtivas += (t.ativas||0); totInativas += (t.inativas||0); totClienteNova += (t.novas||0);
+    totPrevistas += (t.previstas||0); totAtendidas += (t.atendidas||0);
   });
 
   const ticketMedio = totVendasCount > 0 ? totVendido / totVendasCount : 0;
+
+  // Meta geral
+  const pctMetaGeral = totMeta > 0 ? Math.round(totAPagar/totMeta*100) : 0;
+  const faltaMetaGeral = Math.max(0, totMeta - totAPagar);
+  document.getElementById('fgMetaResultado').textContent = brl(totAPagar);
+  document.getElementById('fgMetaTotal').textContent = brl(totMeta);
+  document.getElementById('fgMetaBar').style.width = Math.min(100, pctMetaGeral) + '%';
+  document.getElementById('fgMetaPct').textContent = pctMetaGeral + '% da meta';
+  document.getElementById('fgMetaFalta').textContent = faltaMetaGeral > 0 ? 'Faltam ' + brl(faltaMetaGeral) : 'Meta batida! ✓';
+
+  const tabletsOrdenadosPct = [...tablets].sort((a,b) => {
+    const pa = (a.meta>0) ? (a.aPagar||0)/a.meta : 0;
+    const pb = (b.meta>0) ? (b.aPagar||0)/b.meta : 0;
+    return pb - pa;
+  });
+  document.getElementById('fgMetaPorTablet').innerHTML = tabletsOrdenadosPct.map(t => {
+    const pct = t.meta > 0 ? Math.round((t.aPagar||0)/t.meta*100) : 0;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12.5px;">
+      <span style="color:rgba(255,255,255,.8);font-weight:600;">${t.nome}</span>
+      <span style="color:${pct>=100?'#6EF0B0':'rgba(255,255,255,.6)'};font-weight:800;">${pct}%${pct>=100?' 🏆':''}</span>
+    </div>`;
+  }).join('') || '<div style="color:rgba(255,255,255,.4);font-size:12px;">Nenhum tablet com dados nesta semana.</div>';
+
+  // Atendimentos
+  const pendentesGeral = Math.max(0, totPrevistas - totAtendidas);
+  const coberturaGeral = totPrevistas > 0 ? Math.round(totAtendidas/totPrevistas*100) : 0;
+  document.getElementById('fgPrevistas').textContent = totPrevistas;
+  document.getElementById('fgAtendidas').textContent = totAtendidas;
+  document.getElementById('fgPendentes').textContent = pendentesGeral;
+  document.getElementById('fgCobertura').textContent = coberturaGeral + '%';
 
   document.getElementById('fgVendido').textContent = brl(totVendido);
   document.getElementById('fgAPagar').textContent = brl(totAPagar);
@@ -3260,22 +3367,66 @@ function recomputeFechamentoGeral() {
   document.getElementById('fgInativas').textContent = totInativas;
   document.getElementById('fgClienteNova').textContent = totClienteNova;
 
-  document.getElementById('fgPorTablet').innerHTML = tablets.map((t, i) => `
-    <div class="card" style="padding:12px 14px;margin-bottom:8px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <div style="font-size:13px;font-weight:800;color:var(--ink);">${t.nome}${t.origem==='manual' ? ' <span style="font-size:10px;font-weight:700;color:var(--rose);">· manual</span>' : ''}</div>
-        <div style="display:flex;gap:10px;align-items:center;">
-          ${!t.temSemana ? '<span style="font-size:11px;color:var(--ink-3);">Sem dados na semana ' + numero + '</span>' : ''}
-          ${t.origem==='manual' ? `<button onclick="abrirModalFechManual('${t.id}')" style="background:none;border:none;color:var(--rose);font-size:12px;font-weight:700;cursor:pointer;">Editar</button>` : ''}
-        </div>
+  document.getElementById('fgPorTablet').innerHTML = tablets.map((t, i) => {
+    const atendPct = t.previstas > 0 ? Math.round((t.atendidas||0)/t.previstas*100) : 0;
+    return `
+    <div class="card" style="padding:14px;margin-bottom:8px;cursor:pointer;" onclick="abrirFechDetalhe(${i})">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${t.temSemana?'8px':'0'};">
+        <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;">${t.nome}${t.origem==='manual' ? ' <span style="color:var(--rose);">· manual</span>' : ''}</div>
+        <span style="color:var(--ink-3);font-size:16px;">›</span>
       </div>
       ${t.temSemana ? `
-      <div style="font-size:12px;color:var(--ink-2);line-height:1.7;">
-        Vendido: <strong>${brl(t.vendido)}</strong> · Recebido: <strong>${brl((t.pix||0)+(t.dinheiro||0))}</strong> · Débito: <strong>${brl(t.debito)}</strong><br>
-        Remarc. semana: <strong>${t.remSemana||0}</strong> · Remarc. mês: <strong>${t.remMes||0}</strong> · Parou de vender: <strong>${t.parouVender||0}</strong><br>
-        Ativas: <strong>${t.ativas||0}</strong> · Inativas: <strong>${t.inativas||0}</strong> · Novas: <strong>${t.novas||0}</strong>
-      </div>` : ''}
-    </div>`).join('');
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+          <div style="font-size:13px;font-weight:800;color:var(--ink);">Atendidas ${t.atendidas||0}/${t.previstas||0}</div>
+          <div style="font-size:11px;color:var(--ink-3);margin-top:2px;">Vendido ${brl(t.vendido)} · Recebido ${brl((t.pix||0)+(t.dinheiro||0))}</div>
+          <div style="font-size:11px;color:var(--amber);font-weight:700;margin-top:1px;">${t.debito>0 ? 'Débito ' + brl(t.debito) : 'Sem débito'}</div>
+        </div>
+        <div style="font-size:18px;font-weight:800;color:${atendPct>=100?'var(--green)':'var(--ink)'};">${atendPct}%</div>
+      </div>` : '<div style="font-size:12px;color:var(--ink-3);">Sem dados na semana ' + numero + '</div>'}
+    </div>`;
+  }).join('');
+}
+
+function abrirFechDetalhe(index) {
+  const t = (window._fgTabletsAll || [])[index];
+  if (!t) return;
+  const numero = window._fgNumeroAtual;
+
+  document.getElementById('fdNome').textContent = t.nome;
+  document.getElementById('fdSemanaLabel').textContent = 'Semana ' + numero + (t.origem === 'manual' ? ' · lançamento manual' : '');
+
+  const atendPct = t.previstas > 0 ? Math.round((t.atendidas||0)/t.previstas*100) : 0;
+  document.getElementById('fdAtendPct').textContent = (t.atendidas||0) + '/' + (t.previstas||0);
+  document.getElementById('fdAtendBar').style.width = Math.min(100, atendPct) + '%';
+
+  const metaPct = t.meta > 0 ? Math.round((t.aPagar||0)/t.meta*100) : 0;
+  document.getElementById('fdMetaPct').textContent = metaPct + '%';
+  document.getElementById('fdMetaBar').style.width = Math.min(100, metaPct) + '%';
+  document.getElementById('fdMetaValores').textContent = brl(t.aPagar||0) + ' / ' + brl(t.meta||0);
+
+  document.getElementById('fdVendido').textContent = brl(t.vendido||0);
+  document.getElementById('fdRecebido').textContent = brl((t.pix||0)+(t.dinheiro||0));
+  document.getElementById('fdPix').textContent = brl(t.pix||0);
+  document.getElementById('fdDinheiro').textContent = brl(t.dinheiro||0);
+  document.getElementById('fdDebito').textContent = brl(t.debito||0);
+
+  document.getElementById('fdRemSemana').textContent = t.remSemana||0;
+  document.getElementById('fdRemMes').textContent = t.remMes||0;
+  document.getElementById('fdParouVender').textContent = t.parouVender||0;
+  document.getElementById('fdAtivas').textContent = t.ativas||0;
+  document.getElementById('fdInativas').textContent = t.inativas||0;
+  document.getElementById('fdNovas').textContent = t.novas||0;
+
+  const btnEditar = document.getElementById('fdBtnEditar');
+  if (t.origem === 'manual') {
+    window._fdManualId = t.id;
+    btnEditar.style.display = '';
+  } else {
+    btnEditar.style.display = 'none';
+  }
+
+  document.getElementById('modalFechDetalhe').classList.add('open');
 }
 
 /* ── Tablets manuais no Fechamento Geral ── */
@@ -3289,10 +3440,13 @@ function abrirModalFechManual(id) {
   document.getElementById('fmTitulo').textContent = m ? 'Editar tablet manual' : 'Adicionar tablet manualmente';
   document.getElementById('fmId').value = m ? m.id : '';
   document.getElementById('fmNome').value = m ? m.nome : '';
+  document.getElementById('fmMeta').value = brlInput(m?.meta) || brlInput(DB.config.metaPadrao || 15000);
   document.getElementById('fmVendido').value = brlInput(m?.vendido);
   document.getElementById('fmDebito').value = brlInput(m?.debito);
   document.getElementById('fmPix').value = brlInput(m?.pix);
   document.getElementById('fmDinheiro').value = brlInput(m?.dinheiro);
+  document.getElementById('fmPrevistas').value = m?.previstas || '';
+  document.getElementById('fmAtendidas').value = m?.atendidas || '';
   document.getElementById('fmRemSemana').value = m?.remSemana || '';
   document.getElementById('fmRemMes').value = m?.remMes || '';
   document.getElementById('fmParouVender').value = m?.parouVender || '';
@@ -3311,13 +3465,18 @@ function salvarFechManual() {
   const nome = document.getElementById('fmNome').value.trim();
   if (!nome) { alert('Digite o nome do tablet.'); return; }
 
+  const vendido = parseNum(document.getElementById('fmVendido').value);
   const entry = {
     id: document.getElementById('fmId').value || uid(),
     nome,
-    vendido: parseNum(document.getElementById('fmVendido').value),
+    meta: parseNum(document.getElementById('fmMeta').value) || (DB.config.metaPadrao || 15000),
+    vendido,
+    aPagar: Math.round(vendido * 0.70 * 100) / 100,
     debito: parseNum(document.getElementById('fmDebito').value),
     pix: parseNum(document.getElementById('fmPix').value),
     dinheiro: parseNum(document.getElementById('fmDinheiro').value),
+    previstas: parseInt(document.getElementById('fmPrevistas').value) || 0,
+    atendidas: parseInt(document.getElementById('fmAtendidas').value) || 0,
     remSemana: parseInt(document.getElementById('fmRemSemana').value) || 0,
     remMes: parseInt(document.getElementById('fmRemMes').value) || 0,
     parouVender: parseInt(document.getElementById('fmParouVender').value) || 0,
