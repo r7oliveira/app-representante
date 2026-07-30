@@ -341,14 +341,6 @@ input,textarea,select{font-family:var(--font);}
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
     Semana
   </button>
-  <button class="nav-item" onclick="goTo('radar')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"/></svg>
-    Radar
-  </button>
-  <button class="nav-item" onclick="goTo('assist-new')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-    Assistente
-  </button>
   <button class="nav-item" onclick="goTo('mais')">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
     Mais
@@ -369,7 +361,13 @@ input,textarea,select{font-family:var(--font);}
     <div class="hero-grad" style="padding:calc(16px + env(safe-area-inset-top)) 20px 22px;" id="semanaHero">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
         <div class="hero-week-label" id="semanaNumero">Semana —</div>
-        <div id="syncStatus" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);">● Carregando</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div id="syncStatus" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);">● Carregando</div>
+          <button onclick="goTo('assist-new')" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:5px 10px;cursor:pointer;">
+            <span style="font-size:12px;">✦</span>
+            <span style="font-size:11px;font-weight:700;color:white;">Assistente</span>
+          </button>
+        </div>
       </div>
       <div class="hero-region" id="semanaRegiao">Carregando...</div>
       <div class="prog-row">
@@ -420,6 +418,16 @@ input,textarea,select{font-family:var(--font);}
           <div style="color:#FF9090;font-size:20px;font-weight:800;letter-spacing:-.5px;" id="cntRemMes">0</div>
         </div>
       </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;">
+        <div onclick="abrirDetalheCobrancas()" style="cursor:pointer;background:rgba(201,38,30,.12);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(201,38,30,.1);">
+          <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Com débito</div>
+          <div style="color:#FF6B60;font-size:20px;font-weight:800;letter-spacing:-.5px;" id="cntComDebito">0</div>
+        </div>
+        <div style="background:rgba(255,200,0,.1);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,200,0,.15);">
+          <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Sem favorita</div>
+          <div style="color:#FFD060;font-size:20px;font-weight:800;letter-spacing:-.5px;" id="cntSemFavorita">0</div>
+        </div>
+      </div>
     </div>
     <div class="ia-strip">
       <div class="ia-orb">✦</div>
@@ -451,7 +459,13 @@ input,textarea,select{font-family:var(--font);}
 <div class="view" id="view-atendimento">
 
   <div class="atend-header">
-    <button class="atend-back" onclick="fecharAtendimento()">← <span id="atendBreadcrumb">Semana</span></button>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <button class="atend-back" onclick="fecharAtendimento()">← <span id="atendBreadcrumb">Semana</span></button>
+      <button onclick="abrirAssistDeAtendimento()" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:5px 10px;cursor:pointer;">
+        <span style="font-size:12px;">✦</span>
+        <span style="font-size:11px;font-weight:700;color:white;">Assistente</span>
+      </button>
+    </div>
     <div class="atend-top">
       <div class="atend-av" id="atendAv">--</div>
       <div>
@@ -614,45 +628,6 @@ input,textarea,select{font-family:var(--font);}
 </div>
 
 <!-- ══════════════════════════════════════════
-     TELA 3: RADAR DA SEMANA
-══════════════════════════════════════════ -->
-<div class="view" id="view-radar">
-  <div class="radar-header">
-    <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;" id="radarSemanaLabel">Semana —</div>
-    <div style="color:white;font-size:24px;font-weight:800;margin-bottom:3px;">Radar da Semana</div>
-    <div style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500;">Situação antes de você sair.</div>
-    <div class="radar-nums">
-      <div class="radar-num-box">
-        <div class="radar-num-label">Visitar</div>
-        <div class="radar-num-val" id="radarTotal">0</div>
-      </div>
-      <div class="radar-num-box" style="background:rgba(201,38,30,.15);border-color:rgba(201,38,30,.2);">
-        <div class="radar-num-label" style="color:rgba(255,150,140,.8);">Com débito</div>
-        <div class="radar-num-val" style="color:#FF6B60;" id="radarDebito">0</div>
-      </div>
-      <div class="radar-num-box" style="background:rgba(255,200,0,.1);border-color:rgba(255,200,0,.15);">
-        <div class="radar-num-label" style="color:rgba(255,220,100,.8);">Sem favorita</div>
-        <div class="radar-num-val" style="color:#FFD060;" id="radarSemFav">0</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="scroll-body" style="padding:12px 16px 80px;">
-    <div id="radarAlertas"></div>
-
-    <div style="background:linear-gradient(135deg,#F3EFFE,#FFF0F5);border-radius:18px;padding:14px 16px;border:1px solid rgba(124,58,237,.12);margin-bottom:10px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-        <div class="ia-orb">✦</div>
-        <div style="font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.8px;">Assistente sugere começar por</div>
-      </div>
-      <div style="font-size:13.5px;color:var(--ink-2);font-weight:500;line-height:1.55;" id="radarIA">Carregando análise...</div>
-    </div>
-
-    <button class="btn-primary" id="radarCtaBtn" onclick="abrirAtendimento()">Iniciar Semana →</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
      TELA 4: ASSISTENTE COMERCIAL
 ══════════════════════════════════════════ -->
 <div class="view" id="view-assist-new" style="background:white;">
@@ -715,6 +690,14 @@ input,textarea,select{font-family:var(--font);}
       <div>
         <div class="mais-title">Assistente Comercial</div>
         <div class="mais-sub">Iniciativas e análise do dia</div>
+      </div>
+      <div style="margin-left:auto;color:var(--ink-3);">›</div>
+    </div>
+    <div class="mais-item" onclick="goTo('assist-new')">
+      <div class="mais-icon" style="background:var(--purple-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+      <div>
+        <div class="mais-title">Chat do Assistente</div>
+        <div class="mais-sub">Perguntas livres sobre sua semana</div>
       </div>
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
@@ -1090,7 +1073,6 @@ input,textarea,select{font-family:var(--font);}
       </div>
 
       <button class="btn-primary" style="font-size:16px;padding:18px;margin-bottom:10px;" onclick="goTo('criar-semana')">Criar Semana →</button>
-      <button class="btn-ghost" onclick="goTo('radar')">Ver Radar completo</button>
     </div>
   </div>
 </div>
@@ -1732,14 +1714,13 @@ function goTo(v) {
   // Marca aba ativa
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const navItems = document.querySelectorAll('.nav-item');
-  const navIdx = { semana:0, radar:1, 'assist-new':2, mais:3, 'fechamento-geral':4 };
+  const navIdx = { semana:0, mais:1, 'fechamento-geral':2 };
   if (navIdx[v] !== undefined) navItems[navIdx[v]]?.classList.add('active');
 
   viewHistory.push(v);
 
   // Renderizar
   if (v === 'semana')       renderSemana();
-  if (v === 'radar')        renderRadar();
   if (v === 'motor')        renderMotor();
   if (v === 'criar-semana') renderCriarSemana();
   if (v === 'config')       renderConfig();
@@ -1778,6 +1759,8 @@ function renderSemana() {
     document.getElementById('heroRecebido').textContent = 'R$ 0';
     document.getElementById('heroCobrancas').textContent = 'R$ 0';
     document.getElementById('heroPendentes').textContent = '0';
+    document.getElementById('cntComDebito').textContent = '0';
+    document.getElementById('cntSemFavorita').textContent = '0';
     document.getElementById('listaConsultoras').innerHTML = `
       <div style="text-align:center;padding:40px 20px;">
         <div style="font-size:48px;margin-bottom:12px;"></div>
@@ -1831,21 +1814,42 @@ function renderSemana() {
   document.getElementById('heroPendentes').textContent = total - atendidas;
 
   // Contadores de status
-  const nAtendidas  = sem.consultoras.filter(c => c.status === 'concluida').length;
-  const nRemSemana  = sem.consultoras.filter(c => c.remarcarSemana).length;
-  const nRemMes     = sem.consultoras.filter(c => c.remarcarMes).length;
-  document.getElementById('cntAtendidas').textContent = nAtendidas;
-  document.getElementById('cntRemSemana').textContent = nRemSemana;
-  document.getElementById('cntRemMes').textContent    = nRemMes;
+  const pendentesAgora = sem.consultoras.filter(c => c.status !== 'concluida');
+  const nAtendidas   = sem.consultoras.filter(c => c.status === 'concluida').length;
+  const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
+  const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
+  const nComDebito   = pendentesAgora.filter(c => c.debito > 0).length;
+  const nSemFavorita = pendentesAgora.filter(c => !c.pedidoFavoritaUltimo).length;
+  document.getElementById('cntAtendidas').textContent   = nAtendidas;
+  document.getElementById('cntRemSemana').textContent   = nRemSemana;
+  document.getElementById('cntRemMes').textContent      = nRemMes;
+  document.getElementById('cntComDebito').textContent   = nComDebito;
+  document.getElementById('cntSemFavorita').textContent = nSemFavorita;
+
+  // Sugestão do assistente: quem atender primeiro (e depois), como antes no Radar
+  const segunda = pendentesAgora[1];
+  let sugestaoTxt = '';
+  if (proxima) {
+    const partes1 = ['Comece por <strong>' + proxima.nome + '</strong>'];
+    if (proxima.diaMelhor)     partes1.push(proxima.diaMelhor.replace('-feira',''));
+    if (proxima.horarioMelhor) partes1.push(proxima.horarioMelhor);
+    if (proxima.cidade)        partes1.push(proxima.cidade);
+    sugestaoTxt = partes1.join(' · ') + '.';
+    if (segunda) {
+      const partes2 = [segunda.nome, segunda.diaMelhor?.replace('-feira',''), segunda.horarioMelhor, segunda.cidade].filter(Boolean);
+      sugestaoTxt += ' Depois: ' + partes2.join(' · ') + '.';
+    }
+  }
 
   document.getElementById('iaStrip').innerHTML =
     (faltaMeta > 0 ? '<strong>Faltam ' + brl(faltaMeta) + ' para a meta (a pagar).</strong> ' : '<strong>Meta atingida! ✓</strong> ') +
-    (proxima ? 'Próxima: ' + proxima.nome + '.' : '');
+    sugestaoTxt;
   if (proxima) {
     document.getElementById('ctaBtn').textContent = 'Continuar Semana →';
     document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
     document.getElementById('ctaBtn').onclick = () => abrirAtendimento(proxima.id);
-    document.getElementById('ctaSub').textContent = 'Próxima: ' + proxima.nome + ' · ' + (atendidas+1) + 'ª de ' + total;
+    const mediaDia = Math.ceil(pendentesAgora.length / 5);
+    document.getElementById('ctaSub').textContent = 'Próxima: ' + proxima.nome + ' · ' + (atendidas+1) + 'ª de ' + total + ' · Média de ' + mediaDia + '/dia para terminar sexta';
   } else if (total === 0) {
     document.getElementById('ctaBtn').textContent = '+ Adicionar Consultoras';
     document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
@@ -2586,113 +2590,6 @@ function salvarRegistroDebito() {
   fecharModal('modalRegistro');
 }
 
-/* ════════════════════════════════════════════
-   RADAR DA SEMANA
-════════════════════════════════════════════ */
-function renderRadar() {
-  const sem = getSemanaAtiva();
-  document.getElementById('radarSemanaLabel').textContent = sem ? 'Semana ' + sem.numero + ' · ' + sem.regiao : 'Semana —';
-
-  if (!sem) {
-    document.getElementById('radarTotal').textContent = '0';
-    document.getElementById('radarDebito').textContent = '0';
-    document.getElementById('radarSemFav').textContent = '0';
-    document.getElementById('radarAlertas').innerHTML = '';
-    document.getElementById('radarIA').textContent = 'Nenhuma semana ativa.';
-    const ctaBtnVazio = document.getElementById('radarCtaBtn');
-    if (ctaBtnVazio) {
-      ctaBtnVazio.textContent = 'Iniciar Semana →';
-      ctaBtnVazio.onclick = () => goTo('criar-semana');
-    }
-    return;
-  }
-
-  const pendentes = sem.consultoras.filter(c => c.status !== 'concluida');
-  const comDebito = pendentes.filter(c => c.debito > 0);
-  const semFav = pendentes.filter(c => !c.pedidoFavoritaUltimo);
-
-  document.getElementById('radarTotal').textContent = pendentes.length;
-  document.getElementById('radarDebito').textContent = comDebito.length;
-  document.getElementById('radarSemFav').textContent = semFav.length;
-
-  let html = '';
-  if (comDebito.length) {
-    const total = comDebito.reduce((a,c) => a+(c.debito||0), 0);
-    html += `<div class="radar-item">
-      <div class="radar-item-head" style="background:var(--red-bg);">
-        <span style="font-size:20px;">●</span>
-        <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--red);">${comDebito.length} com débito · ${brl(total)}</div><div style="font-size:12px;color:var(--red);opacity:.8;font-weight:500;margin-top:1px;">Prioridade de cobrança</div></div>
-      </div>
-      <div class="radar-item-body">${comDebito.slice(0,3).map(c => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);"><span style="font-weight:600;color:var(--ink);">${c.nome}</span><span style="font-weight:800;color:var(--red);">${brl(c.debito)}</span></div>`).join('')}${comDebito.length > 3 ? `<div style="color:var(--ink-3);font-size:12px;margin-top:4px;">+ ${comDebito.length-3} outras</div>` : ''}</div>
-    </div>`;
-  }
-  if (semFav.length) {
-    const pedidoMin = 400;
-    const potVendas = semFav.length * pedidoMin;
-    const potLucro  = Math.round(semFav.length * pedidoMin * 0.70 * 0.18 * 100) / 100;
-    html += `<div class="radar-item">
-      <div class="radar-item-head" style="background:var(--amber-bg);">
-        <span style="font-size:20px;color:var(--amber);">●</span>
-        <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--amber);">${semFav.length} sem pedido favorita</div><div style="font-size:12px;color:var(--amber);opacity:.8;font-weight:500;margin-top:1px;">Oportunidade de venda</div></div>
-      </div>
-      <div class="radar-item-body">
-        Pedido mínimo R$ 400 × ${semFav.length} = <strong style="color:var(--ink);">${brl(potVendas)}</strong> em vendas · Seu lucro de 18%: <strong style="color:var(--green);">${brl(potLucro)}</strong>
-      </div>
-    </div>`;
-  }
-  html += `<div class="radar-item">
-    <div class="radar-item-head" style="background:var(--green-bg);">
-      <span style="font-size:20px;">●</span>
-      <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--green);">${pendentes.length} consultoras para atender</div></div>
-    </div>
-    <div class="radar-item-body">Média de <strong style="color:var(--ink);">${Math.ceil(pendentes.length/5)} por dia</strong> para terminar na sexta.</div>
-  </div>`;
-  document.getElementById('radarAlertas').innerHTML = html;
-
-  // Sugestão: mesma ordenação da lista (dia da semana + horário)
-  const diasOrdR = {'Segunda-feira':1,'Terça-feira':2,'Quarta-feira':3,'Quinta-feira':4,'Sexta-feira':5,'Sábado':6};
-  function hMinR2(h) { if (!h) return 9999; const [hh,mm] = h.split(':').map(Number); return hh*60+mm; }
-
-  const pendentesOrdenados = [...pendentes].sort((a, b) => {
-    const dA = diasOrdR[a.diaMelhor] ?? 7;
-    const dB = diasOrdR[b.diaMelhor] ?? 7;
-    if (dA !== dB) return dA - dB;
-    return hMinR2(a.horarioMelhor) - hMinR2(b.horarioMelhor);
-  });
-
-  const sugerida = pendentesOrdenados[0];
-  const segunda  = pendentesOrdenados[1];
-
-  let textoSugestao = '';
-  if (sugerida) {
-    const partes = ['Comece por <strong>' + sugerida.nome + '</strong>'];
-    if (sugerida.diaMelhor)    partes.push(sugerida.diaMelhor.replace('-feira',''));
-    if (sugerida.horarioMelhor) partes.push(sugerida.horarioMelhor);
-    if (sugerida.cidade)        partes.push(sugerida.cidade);
-    textoSugestao = partes.join(' · ');
-    if (segunda) {
-      textoSugestao += '<br><span style="color:var(--ink-3);font-size:12px;margin-top:4px;display:block;">Depois: '
-        + [segunda.nome, segunda.diaMelhor?.replace('-feira',''), segunda.horarioMelhor, segunda.cidade].filter(Boolean).join(' · ')
-        + '</span>';
-    }
-  } else {
-    textoSugestao = 'Todas as consultoras foram atendidas!';
-  }
-
-  document.getElementById('radarIA').innerHTML = textoSugestao;
-
-  // Botão de ação: reflete o estado real da semana (igual à tela Semana)
-  const ctaBtn = document.getElementById('radarCtaBtn');
-  if (ctaBtn) {
-    if (sugerida) {
-      ctaBtn.textContent = 'Continuar Semana →';
-      ctaBtn.onclick = () => abrirAtendimento(sugerida.id);
-    } else {
-      ctaBtn.textContent = '✓ Finalizar Semana';
-      ctaBtn.onclick = () => mostrarFechamentoSemana();
-    }
-  }
-}
 
 /* ════════════════════════════════════════════
    MOTOR DE PRIORIDADE
@@ -3119,7 +3016,10 @@ function salvarImportacao() {
 ════════════════════════════════════════════ */
 let assistHistNew = [];
 
-function fecharAssistente() { goTo('semana'); }
+function fecharAssistente() {
+  const anterior = viewHistory[viewHistory.length - 2];
+  goTo(anterior === 'atendimento' ? 'atendimento' : 'semana');
+}
 function fecharIniciativas() { goTo('semana'); }
 
 function limparChatNew() {
@@ -3130,6 +3030,15 @@ function limparChatNew() {
 function perguntarAssist(pergunta) {
   document.getElementById('assistInputNew').value = pergunta;
   enviarAssistNew();
+}
+
+function abrirAssistDeAtendimento() {
+  const sem = getSemanaAtiva();
+  const cons = sem && atendConsId ? sem.consultoras.find(c => c.id === atendConsId) : null;
+  goTo('assist-new');
+  if (cons) {
+    setTimeout(() => perguntarAssist('O que você sugere para o atendimento de ' + cons.nome + '?'), 150);
+  }
 }
 
 function renderChatNew() {
@@ -3567,7 +3476,7 @@ function renderDomingo() {
     const comDeb = pend.filter(c=>c.debito>0);
     const semFav = pend.filter(c=>!c.pedidoFavoritaUltimo);
     radarEl.innerHTML = `
-      <div class="card-row" style="background:var(--red-bg);cursor:pointer;" onclick="goTo('radar')">
+      <div class="card-row" style="background:var(--red-bg);cursor:pointer;" onclick="goTo('semana')">
         <span style="font-size:18px;">●</span>
         <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:var(--red);">${comDeb.length} com débito</div><div style="font-size:11px;color:var(--red);opacity:.8;">Semana ${sem.numero} · ${sem.regiao}</div></div>
         <span style="color:var(--red);font-size:16px;">›</span>
@@ -3653,7 +3562,7 @@ function gerarIniciativas(sem) {
     iniciativas.push({
       cor:'var(--red)', tag:'Cobrança', tempo:'urgente',
       texto:`<strong>${comDebito.length} consultora${comDebito.length>1?'s':''}</strong> com débito total de ${brl(totalDeb)}. ${comDebito[0]?comDebito[0].nome+' tem o maior valor ('+brl(comDebito[0].debito)+').':''}`,
-      acao:'Ver radar', fn:"goTo('radar')"
+      acao:'Ver na Semana', fn:"goTo('semana')"
     });
   }
 
