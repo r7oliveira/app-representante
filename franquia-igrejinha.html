@@ -1117,17 +1117,15 @@
 
       const faltaNome = !treinador || !novato;
 
-      if (obrigatoriosPendentes > 0 && faltaNome) {
-        avisoEl.textContent = 'Preencha os dados acima e marque os ' + obrigatoriosPendentes + ' item(s) obrigatório(s) restante(s) para concluir.';
+      if (faltaNome) {
+        avisoEl.textContent = 'Preencha o nome do Treinador(a) e do novo Distribuidor(a) para concluir.';
       } else if (obrigatoriosPendentes > 0) {
-        avisoEl.textContent = 'Ainda faltam ' + obrigatoriosPendentes + ' item(s) obrigatório(s) para marcar.';
-      } else if (faltaNome) {
-        avisoEl.textContent = 'Preencha o nome do Treinador(a) e do novo Distribuidor(a).';
+        avisoEl.textContent = 'Ainda faltam ' + obrigatoriosPendentes + ' item(s) por marcar (não impede concluir a etapa).';
       } else {
         avisoEl.textContent = '';
       }
 
-      btn.disabled = (obrigatoriosPendentes > 0) || faltaNome;
+      btn.disabled = faltaNome;
 
       salvarChecklistAuto();
     }
@@ -1460,6 +1458,8 @@
       /* --- ETAPA 1 · CHECKLIST --- */
       tituloSecao(1, 'CHECKLIST DE TREINAMENTO');
 
+      const itensPendentes = [];
+
       Object.keys(categorias).forEach(catId => {
         const marcados = (checklist.itens && checklist.itens[catId]) || [];
         const cont = document.getElementById(catId);
@@ -1488,6 +1488,10 @@
           const texto = elTxt.textContent.trim();
           const linhas = doc.splitTextToSize(texto, larguraUtil - 12);
           const alturaLinha = linhas.length * 4.6 + 3;
+
+          if (!marcado) {
+            itensPendentes.push({ categoria: categorias[catId].nome, texto: texto });
+          }
 
           garantirEspaco(alturaLinha + 4);
 
@@ -1582,6 +1586,48 @@
 
         y += alturaBox + 7;
       });
+
+      /* --- ITENS PENDENTES · PRÓXIMO TREINAMENTO --- */
+      if (itensPendentes.length > 0) {
+        y += 4;
+        tituloSecao(3, 'ITENS A SEREM FALADOS NO PRÓXIMO TREINAMENTO');
+
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(8.5);
+        doc.setTextColor(...GRAY);
+        garantirEspaco(10);
+        doc.text('Itens do checklist ainda não abordados com ' + (checklist.novato || 'o(a) novo(a) distribuidor(a)') + ':', margem, y);
+        y += 9;
+
+        let categoriaAtual = null;
+        itensPendentes.forEach(item => {
+          if (item.categoria !== categoriaAtual) {
+            categoriaAtual = item.categoria;
+            garantirEspaco(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
+            doc.setTextColor(...PINK_DEEP);
+            doc.text(categoriaAtual.toUpperCase(), margem, y);
+            y += 6.5;
+          }
+
+          const linhas = doc.splitTextToSize(item.texto, larguraUtil - 14);
+          const alturaLinha = linhas.length * 4.6 + 3;
+          garantirEspaco(alturaLinha + 4);
+
+          doc.setDrawColor(...PINK);
+          doc.setLineWidth(0.5);
+          doc.roundedRect(margem + 1, y - 3.4, 4.2, 4.2, 1, 1, 'S');
+
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9.5);
+          doc.setTextColor(...DARK);
+          doc.text(linhas, margem + 9.5, y);
+          y += alturaLinha;
+        });
+
+        y += 4;
+      }
 
       /* --- RODAPÉ EM TODAS AS PÁGINAS --- */
       const totalPaginas = doc.internal.getNumberOfPages();
