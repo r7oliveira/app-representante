@@ -1486,29 +1486,25 @@
         linhasDom.forEach((elTxt, i) => {
           const marcado = !!marcados[i];
           const texto = elTxt.textContent.trim();
-          const linhas = doc.splitTextToSize(texto, larguraUtil - 12);
-          const alturaLinha = linhas.length * 4.6 + 3;
 
           if (!marcado) {
             itensPendentes.push({ categoria: categorias[catId].nome, texto: texto });
+            return;
           }
+
+          const linhas = doc.splitTextToSize(texto, larguraUtil - 12);
+          const alturaLinha = linhas.length * 4.6 + 3;
 
           garantirEspaco(alturaLinha + 4);
 
-          if (marcado) {
-            doc.setFillColor(...GREEN);
-            doc.roundedRect(margem + 1, y - 3.4, 4.2, 4.2, 1, 1, 'F');
-            doc.setDrawColor(255, 255, 255);
-            doc.setLineWidth(0.6);
-            doc.line(margem + 1.9, y - 1.4, margem + 2.8, y - 0.4);
-            doc.line(margem + 2.8, y - 0.4, margem + 4.5, y - 2.7);
-          } else {
-            doc.setDrawColor(...GRAY_LIGHT);
-            doc.setLineWidth(0.5);
-            doc.roundedRect(margem + 1, y - 3.4, 4.2, 4.2, 1, 1, 'S');
-          }
+          doc.setFillColor(...GREEN);
+          doc.roundedRect(margem + 1, y - 3.4, 4.2, 4.2, 1, 1, 'F');
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(0.6);
+          doc.line(margem + 1.9, y - 1.4, margem + 2.8, y - 0.4);
+          doc.line(margem + 2.8, y - 0.4, margem + 4.5, y - 2.7);
 
-          doc.setTextColor(marcado ? DARK[0] : GRAY[0], marcado ? DARK[1] : GRAY[1], marcado ? DARK[2] : GRAY[2]);
+          doc.setTextColor(...DARK);
           doc.text(linhas, margem + 9.5, y);
           y += alturaLinha;
         });
