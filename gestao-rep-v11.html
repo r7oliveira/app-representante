@@ -2137,9 +2137,10 @@ const DIAS_AGENDA = [
   { key:'segunda', label:'Segunda-feira' }, { key:'terca', label:'Terça-feira' },
   { key:'quarta', label:'Quarta-feira' }, { key:'quinta', label:'Quinta-feira' },
   { key:'sexta', label:'Sexta-feira' }, { key:'sabado', label:'Sábado' },
+  { key:'domingo', label:'Domingo' },
 ];
 function hojeAgendaKey() {
-  const map = { 1:'segunda', 2:'terca', 3:'quarta', 4:'quinta', 5:'sexta', 6:'sabado', 0:'segunda' };
+  const map = { 1:'segunda', 2:'terca', 3:'quarta', 4:'quinta', 5:'sexta', 6:'sabado', 0:'domingo' };
   return map[new Date().getDay()];
 }
 function blankAgenda() {
@@ -2241,7 +2242,10 @@ function renderAgendaHoje() {
       <div onclick="toggleTarefa('${t.id}')" style="width:20px;height:20px;border-radius:50%;border:1.5px solid ${t.feito?'var(--green)':'var(--border)'};background:${t.feito?'var(--green)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:11px;font-weight:800;">${t.feito?'✓':''}</div>
       <div style="flex:1;cursor:pointer;" onclick="abrirNovaTarefa('${t.id}')">
         <div style="font-size:13px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
-        <div style="font-size:11px;color:var(--ink-3);">${[t.horario, t.prioridade==='importante'?'⚡ importante':'', t.autor==='admin'?'· da administração':''].filter(Boolean).join(' · ')}</div>
+        ${(t.horario || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">
+          ${(t.horario || t.autor==='admin') ? `<span style="font-size:11px;color:var(--ink-3);">${[t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
+          ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
+        </div>` : ''}
       </div>
     </div>`).join('');
 }
@@ -2251,22 +2255,37 @@ function renderAgendaCompleta() {
   if (!el) return;
   const hoje = hojeAgendaKey();
   const agenda = DB.agenda || blankAgenda();
-  el.innerHTML = DIAS_AGENDA.map(d => {
+
+  // Mostra primeiro hoje, depois o resto da semana na ordem normal
+  const hojeIdx = DIAS_AGENDA.findIndex(d => d.key === hoje);
+  const diasOrdenados = hojeIdx >= 0 ? [...DIAS_AGENDA.slice(hojeIdx), ...DIAS_AGENDA.slice(0, hojeIdx)] : DIAS_AGENDA;
+
+  el.innerHTML = diasOrdenados.map(d => {
+    const isHoje = d.key === hoje;
     const tarefas = [...(agenda[d.key] || [])].sort((a,b) => (a.feito?1:0) - (b.feito?1:0));
+    const feitas = tarefas.filter(t => t.feito).length;
+
     return `
-    <div style="margin-bottom:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div style="font-size:13px;font-weight:800;color:${d.key===hoje?'var(--rose-deep)':'var(--ink)'};">${d.label}${d.key===hoje?' · hoje':''}</div>
-        <button onclick="abrirNovaTarefa(null,'${d.key}')" style="background:none;border:none;color:var(--rose);font-size:12px;font-weight:700;cursor:pointer;">+ Tarefa</button>
+    <div style="background:white;border-radius:16px;border:1.5px solid ${isHoje?'var(--rose)':'var(--border)'};${isHoje?'box-shadow:0 4px 16px rgba(184,103,122,.12);':''}padding:14px 16px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${tarefas.length?'10px':'2px'};">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="font-size:14.5px;font-weight:800;color:${isHoje?'var(--rose-deep)':'var(--ink)'};">${d.label}</div>
+          ${isHoje ? '<span style="background:var(--rose);color:white;font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.4px;">Hoje</span>' : ''}
+          ${tarefas.length ? `<span style="font-size:10.5px;font-weight:700;color:var(--ink-3);">${feitas}/${tarefas.length}</span>` : ''}
+        </div>
+        <button onclick="abrirNovaTarefa(null,'${d.key}')" style="width:26px;height:26px;border-radius:50%;background:var(--rose-light);color:var(--rose-deep);border:none;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
       </div>
-      ${tarefas.length ? tarefas.map(t => `
-        <div style="display:flex;align-items:center;gap:10px;background:white;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:6px;">
-          <div onclick="toggleTarefa('${t.id}','${d.key}')" style="width:20px;height:20px;border-radius:50%;border:1.5px solid ${t.feito?'var(--green)':'var(--border)'};background:${t.feito?'var(--green)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:11px;font-weight:800;">${t.feito?'✓':''}</div>
-          <div style="flex:1;cursor:pointer;" onclick="abrirNovaTarefa('${t.id}','${d.key}')">
-            <div style="font-size:13px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
-            <div style="font-size:11px;color:var(--ink-3);">${[t.horario, t.prioridade==='importante'?'⚡ importante':'', t.autor==='admin'?'· da administração':''].filter(Boolean).join(' · ')}</div>
+      ${tarefas.length ? `<div>${tarefas.map((t,i) => `
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;${i < tarefas.length-1 ? 'border-bottom:1px solid var(--surface-2);' : ''}">
+          <div onclick="toggleTarefa('${t.id}','${d.key}')" style="width:21px;height:21px;border-radius:50%;border:1.5px solid ${t.feito?'var(--green)':'var(--border)'};background:${t.feito?'var(--green)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:11px;font-weight:800;margin-top:1px;">${t.feito?'✓':''}</div>
+          <div style="flex:1;cursor:pointer;min-width:0;" onclick="abrirNovaTarefa('${t.id}','${d.key}')">
+            <div style="font-size:13.5px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};line-height:1.4;word-break:break-word;">${t.texto}</div>
+            ${(t.horario || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
+              ${(t.horario || t.autor==='admin') ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
+              ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
+            </div>` : ''}
           </div>
-        </div>`).join('') : '<div style="font-size:12px;color:var(--ink-3);padding:6px 0 2px;">Nenhuma tarefa.</div>'}
+        </div>`).join('')}</div>` : '<div style="font-size:12.5px;color:var(--ink-3);">Nenhuma tarefa por aqui.</div>'}
     </div>`;
   }).join('');
 }
