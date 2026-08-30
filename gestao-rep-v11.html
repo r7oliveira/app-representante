@@ -7,34 +7,37 @@
 <meta name="apple-mobile-web-app-title" content="Gestão Representante">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#6B0030">
+<meta name="theme-color" content="#9C4C5E">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Gestão · Representante</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- Firebase via CDN compatível com Safari -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 :root {
-  --rose:#C8185A; --rose-deep:#6B0030; --rose-light:#FFF0F5; --rose-mid:#E8A0BE;
-  --ink:#0F0A14; --ink-2:#3D3447; --ink-3:#6B6478;
-  --surface:#F5F4F2; --surface-2:#EEECEA; --white:#FFFFFF;
-  --green:#0A8F5C; --green-bg:#E8F7F1;
-  --amber:#B86E00; --amber-bg:#FFF5E0;
-  --red:#C9261E; --red-bg:#FEF0EE;
-  --purple:#7C3AED; --purple-bg:#F3EFFE;
-  --border:rgba(0,0,0,.07);
+  /* Paleta padrão da equipe: creme/plum/rose/gold */
+  --rose:#B8677A; --rose-deep:#9C4C5E; --rose-light:#F3E0DE; --rose-mid:#D79CA8;
+  --ink:#3D2029; --ink-2:#6B4552; --ink-3:#9C7E86;
+  --surface:#FBF6F2; --surface-2:#F3E0DE; --white:#FFFDFB;
+  --green:#6E8C63; --green-bg:#E3EBDF;
+  --amber:#B98B3E; --amber-bg:#F1E4C9;
+  --red:#C4553F; --red-bg:#F5DFDA;
+  --purple:#9C4C5E; --purple-bg:#F3E0DE;
+  --border:#EAD9D3;
   --r:18px; --r-sm:12px;
-  --font:'Plus Jakarta Sans',sans-serif;
-  --gold:#C9A84C;
+  --font:'Work Sans',sans-serif;
+  --font-serif:'Playfair Display',serif;
+  --gold:#B98B3E;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;width:100%;}
 body{font-family:var(--font);background:var(--surface);color:var(--ink);-webkit-font-smoothing:antialiased;}
 button{font-family:var(--font);cursor:pointer;border:none;background:none;}
 input,textarea,select{font-family:var(--font);}
+.ph-title,.sec-title,.modal-title,h1,h2{font-family:var(--font-serif)!important;}
 
 /* ── APP SHELL ── */
 #app{display:flex;flex-direction:column;height:100%;height:100dvh;max-width:480px;margin:0 auto;position:relative;background:var(--surface);}
@@ -49,15 +52,16 @@ input,textarea,select{font-family:var(--font);}
 /* ── BOTTOM NAV ── */
 .bottom-nav{
   position:fixed;bottom:0;left:0;right:0;
-  background:rgba(15,10,20,.97);
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  border-top:1px solid rgba(255,255,255,.06);
+  background:var(--white);
+  border-top:1px solid var(--border);
   display:flex;align-items:center;
-  z-index:100;height:52px;
+  z-index:100;height:64px;
   max-width:480px;margin:0 auto;
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+  gap:4px;
 }
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:700;color:rgba(255,255,255,.3);transition:color .15s;height:52px;}
-.nav-item.active{color:var(--rose);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10.5px;font-weight:700;color:var(--ink-3);transition:.15s;height:100%;border-radius:14px;}
+.nav-item.active{color:var(--rose-deep);background:var(--rose-light);}
 
 /* ── SHARED COMPONENTS ── */
 .page-header{background:white;padding:calc(16px + env(safe-area-inset-top)) 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
@@ -89,7 +93,7 @@ input,textarea,select{font-family:var(--font);}
 .btn-row{display:flex;gap:10px;}
 
 /* ── HERO GRADIENT ── */
-.hero-grad{background:linear-gradient(150deg,#1A0010 0%,#4A0025 40%,#8A0038 75%,#C8185A 100%);position:relative;overflow:hidden;}
+.hero-grad{background:linear-gradient(150deg,#2A1620 0%,#3D2029 40%,#6B4552 75%,#B8677A 100%);position:relative;overflow:hidden;}
 .hero-grad::before{content:'';position:absolute;top:-80px;right:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(200,24,90,.25) 0%,transparent 70%);pointer-events:none;}
 .hero-grad::after{content:'';position:absolute;bottom:-40px;left:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.08) 0%,transparent 70%);pointer-events:none;}
 
@@ -107,10 +111,28 @@ input,textarea,select{font-family:var(--font);}
 .hero-box-sub{color:rgba(255,255,255,.4);font-size:10px;font-weight:500;margin-top:3px;}
 
 /* ── IA ORB ── */
-.ia-orb{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#7C3AED,#C8185A);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;flex-shrink:0;box-shadow:0 2px 8px rgba(124,58,237,.3);}
+.ia-orb{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#B98B3E,#B8677A);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;flex-shrink:0;box-shadow:0 2px 8px rgba(124,58,237,.3);}
 
 /* ── MODAL ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;}
+
+/* ── SORTEIO EM TELA CHEIA ── */
+#sorteioOverlay{display:none;position:fixed;inset:0;z-index:500;background:linear-gradient(160deg,#2A1620,#3D2029 40%,#6B4552 100%);align-items:center;justify-content:center;flex-direction:column;padding:24px;text-align:center;overflow:hidden;}
+#sorteioConfetes{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+#sorteioOverlay.open{display:flex;}
+.sorteio-die{font-size:64px;margin-bottom:18px;display:inline-block;}
+.sorteio-die.girando{animation:sorteioGiro .5s linear infinite;}
+@keyframes sorteioGiro{0%{transform:rotate(0deg) scale(1);}50%{transform:rotate(180deg) scale(1.15);}100%{transform:rotate(360deg) scale(1);}}
+.sorteio-label{color:rgba(255,255,255,.5);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;}
+.sorteio-nome{font-family:var(--font-serif);color:white;font-size:clamp(32px,12vw,52px);line-height:1.15;font-weight:800;min-height:1.2em;transition:transform .1s;word-break:break-word;}
+.sorteio-nome.girando{color:rgba(255,255,255,.55);}
+.sorteio-nome.revelada{animation:sorteioPop .5s cubic-bezier(.34,1.56,.64,1);color:#F1E4C9;}
+@keyframes sorteioPop{0%{transform:scale(.6);opacity:0;}60%{transform:scale(1.12);opacity:1;}100%{transform:scale(1);}}
+.sorteio-confete{position:absolute;top:-10%;font-size:22px;animation:sorteioCair linear forwards;pointer-events:none;}
+@keyframes sorteioCair{to{transform:translateY(115vh) rotate(360deg);opacity:0;}}
+#sorteioFechar{margin-top:34px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:white;border-radius:14px;padding:13px 28px;font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:none;}
+.ind-filtro-btn{flex-shrink:0;background:var(--surface-2);border:none;color:var(--ink-3);font-size:12.5px;font-weight:700;font-family:var(--font);padding:8px 14px;border-radius:20px;cursor:pointer;white-space:nowrap;}
+.ind-filtro-btn.active{background:var(--rose);color:white;}
 .modal-overlay.open{display:flex;}
 .modal-box{background:white;border-radius:28px 28px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;}
 .modal-title{font-size:20px;font-weight:800;margin-bottom:18px;}
@@ -145,7 +167,7 @@ input,textarea,select{font-family:var(--font);}
 .ia-txt strong{color:var(--ink);font-weight:700;}
 
 .cta-wrap{padding:12px 16px 4px;background:white;flex-shrink:0;}
-.cta-btn{width:100%;background:linear-gradient(135deg,#6B0030,#C8185A);color:white;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 28px rgba(107,0,48,.4),0 2px 8px rgba(200,24,90,.2);letter-spacing:.2px;}
+.cta-btn{width:100%;background:linear-gradient(135deg,#9C4C5E,#B8677A);color:white;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 28px rgba(107,0,48,.4),0 2px 8px rgba(200,24,90,.2);letter-spacing:.2px;}
 .cta-sub{text-align:center;font-size:11px;color:var(--ink-3);margin-top:7px;font-weight:500;}
 
 .cons-card{background:white;border-radius:16px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border:1.5px solid transparent;cursor:pointer;}
@@ -244,7 +266,7 @@ input,textarea,select{font-family:var(--font);}
 /* ════════════════════════════════════════
    TELA: RADAR DA SEMANA
 ════════════════════════════════════════ */
-.radar-header{background:linear-gradient(160deg,#0A0A1E,#1A1040);padding:calc(20px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;}
+.radar-header{background:linear-gradient(160deg,#3D2029,#6B4552);padding:calc(20px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;}
 .radar-nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px;}
 .radar-num-box{background:rgba(255,255,255,.08);border-radius:12px;padding:10px;text-align:center;border:1px solid rgba(255,255,255,.08);}
 .radar-num-label{color:rgba(255,255,255,.5);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
@@ -328,6 +350,13 @@ input,textarea,select{font-family:var(--font);}
 .ai-photo-btn{width:100%;padding:13px;border:2px dashed var(--rose-mid);border-radius:var(--r-sm);background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;}
 .ai-loading{text-align:center;padding:12px;color:var(--rose);font-size:13px;font-weight:700;display:none;}
 .ai-loading.show{display:block;}
+.login-pessoa-card{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px 16px;cursor:pointer;text-align:left;width:100%;font-family:var(--font);}
+.login-pessoa-av{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:white;flex-shrink:0;}
+.login-pin-dot{width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,255,255,.35);background:transparent;transition:.15s;}
+.login-pin-dot.filled{background:white;border-color:white;}
+.login-pin-key{aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:white;font-size:20px;font-weight:700;font-family:var(--font);cursor:pointer;}
+.login-pin-key:active{background:rgba(255,255,255,.2);}
+#adminTopBar{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 20px 12px;background:linear-gradient(160deg,#3D2029,#6B4552);}
 </style>
 </head>
 <body>
@@ -338,18 +367,63 @@ input,textarea,select{font-family:var(--font);}
 ══════════════════════════════════════════ -->
 <nav class="bottom-nav" id="bottomNav">
   <button class="nav-item active" onclick="goTo('semana')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
-    Semana
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    Início
   </button>
-  <button class="nav-item" onclick="goTo('mais')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
-    Mais
+  <button class="nav-item" onclick="goTo('agenda')">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+    Agenda
+  </button>
+  <button class="nav-item" onclick="abrirGerenciar()">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+    Consultoras
   </button>
   <button class="nav-item" onclick="goTo('fechamento-geral')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
     Fechamento
   </button>
+  <button class="nav-item" onclick="goTo('mais')">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+    Mais
+  </button>
 </nav>
+
+<!-- ══════════════════════════════════════════
+     TELA: LOGIN (seleção de pessoa + PIN)
+══════════════════════════════════════════ -->
+<div class="view" id="view-login" style="background:linear-gradient(160deg,#3D2029,#6B4552);">
+  <div class="scroll-body" style="padding:calc(40px + env(safe-area-inset-top)) 24px 40px;display:flex;flex-direction:column;align-items:center;">
+    <div style="color:white;font-size:22px;font-weight:800;margin-bottom:4px;">Quem é você?</div>
+    <div style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500;margin-bottom:28px;">Toque no seu nome para entrar</div>
+
+    <div id="loginPessoas" style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px;"></div>
+
+    <!-- PIN pad -->
+    <div id="loginPinArea" style="display:none;width:100%;max-width:300px;flex-direction:column;align-items:center;margin-top:8px;">
+      <div id="loginPinNome" style="color:white;font-size:17px;font-weight:800;margin-bottom:4px;">—</div>
+      <div style="color:rgba(255,255,255,.45);font-size:12px;margin-bottom:18px;">Digite o PIN de 4 dígitos</div>
+      <div id="loginPinDots" style="display:flex;gap:14px;margin-bottom:26px;">
+        <div class="login-pin-dot"></div><div class="login-pin-dot"></div><div class="login-pin-dot"></div><div class="login-pin-dot"></div>
+      </div>
+      <div id="loginPinErro" style="color:#FF6B60;font-size:12px;font-weight:700;margin-bottom:12px;height:14px;"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;">
+        <button class="login-pin-key" onclick="digitarPin('1')">1</button>
+        <button class="login-pin-key" onclick="digitarPin('2')">2</button>
+        <button class="login-pin-key" onclick="digitarPin('3')">3</button>
+        <button class="login-pin-key" onclick="digitarPin('4')">4</button>
+        <button class="login-pin-key" onclick="digitarPin('5')">5</button>
+        <button class="login-pin-key" onclick="digitarPin('6')">6</button>
+        <button class="login-pin-key" onclick="digitarPin('7')">7</button>
+        <button class="login-pin-key" onclick="digitarPin('8')">8</button>
+        <button class="login-pin-key" onclick="digitarPin('9')">9</button>
+        <button class="login-pin-key" style="visibility:hidden;">0</button>
+        <button class="login-pin-key" onclick="digitarPin('0')">0</button>
+        <button class="login-pin-key" onclick="apagarPin()" style="font-size:16px;">⌫</button>
+      </div>
+      <button onclick="voltarSelecaoLogin()" style="margin-top:22px;background:none;border:none;color:rgba(255,255,255,.5);font-size:13px;font-weight:700;cursor:pointer;">← Trocar de pessoa</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════════
      TELA 1: SEMANA ATUAL
@@ -432,6 +506,27 @@ input,textarea,select{font-family:var(--font);}
     <div class="ia-strip">
       <div class="ia-orb">✦</div>
       <div class="ia-txt" id="iaStrip">Carregando análise do dia...</div>
+    </div>
+
+    <!-- Observações do admin -->
+    <div id="obsBanner" style="display:none;margin:0 16px 12px;background:var(--amber-bg);border:1px solid rgba(201,168,76,.25);border-radius:14px;padding:12px 14px;cursor:pointer;" onclick="abrirObservacoes()">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px;">📋</span>
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:800;color:var(--amber);" id="obsBannerTitulo">Nova observação</div>
+          <div style="font-size:11.5px;color:var(--ink-2);" id="obsBannerTexto">—</div>
+        </div>
+        <span style="color:var(--ink-3);">›</span>
+      </div>
+    </div>
+
+    <!-- Agenda de hoje -->
+    <div style="margin:0 16px 12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="sec-title" style="padding:0;margin:0;">Agenda de hoje</div>
+        <button onclick="abrirNovaTarefa()" style="background:none;border:none;color:var(--rose);font-size:12px;font-weight:700;cursor:pointer;">+ Tarefa</button>
+      </div>
+      <div id="agendaHojeLista"></div>
     </div>
 
     <!-- CTA -->
@@ -701,6 +796,14 @@ input,textarea,select{font-family:var(--font);}
       </div>
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
     </div>
+    <div class="mais-item" onclick="goTo('programas')">
+      <div class="mais-icon" style="background:var(--amber-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      <div>
+        <div class="mais-title">🌟 Programas</div>
+        <div class="mais-sub">Lives, sorteios, indicações e estrelas</div>
+      </div>
+      <div style="margin-left:auto;color:var(--ink-3);">›</div>
+    </div>
 
     <div class="sec-title" style="padding-left:0;">Sistema</div>
     <div class="mais-item" onclick="goTo('config')">
@@ -710,6 +813,418 @@ input,textarea,select{font-family:var(--font);}
         <div class="mais-sub">Metas, integração e preferências</div>
       </div>
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: AGENDA (semana inteira)
+══════════════════════════════════════════ -->
+<div class="view" id="view-agenda">
+  <div class="page-header">
+    <div class="ph-title">Agenda</div>
+    <div class="ph-sub">Tarefas da semana, dia a dia</div>
+  </div>
+  <div class="scroll-body" style="padding:16px 16px 80px;">
+    <div id="agendaCompletaLista"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: PROGRAMAS (hub de engajamento)
+══════════════════════════════════════════ -->
+<div class="view" id="view-programas">
+  <div class="page-header" style="display:flex;align-items:center;gap:12px;">
+    <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">← Voltar</button>
+    <div>
+      <div class="ph-title">🌟 Programas</div>
+      <div class="ph-sub">Tudo que engaja suas consultoras, num só lugar</div>
+    </div>
+  </div>
+  <div class="scroll-body" style="padding:16px 16px 80px;">
+
+    <button onclick="goTo('lives')" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:14px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--amber-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎥</div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:800;color:var(--ink);">Lives &amp; Sorteios</div>
+        <div style="font-size:12px;color:var(--ink-3);">Organize suas lives, participantes e sorteios do Instagram</div>
+      </div>
+      <span style="color:var(--ink-3);font-size:18px;">›</span>
+    </button>
+
+    <button onclick="goTo('indicacoes')" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:14px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎁</div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:800;color:var(--ink);">Indique e Ganhe</div>
+        <div style="font-size:12px;color:var(--ink-3);">Aprove indicações — cada aprovação já vira 1 estrela</div>
+      </div>
+      <span style="color:var(--ink-3);font-size:18px;">›</span>
+    </button>
+
+    <button onclick="goTo('estrelas')" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:14px;">
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⭐</div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:800;color:var(--ink);">Histórico de Estrelas</div>
+        <div style="font-size:12px;color:var(--ink-3);">Ranking somando todos os programas</div>
+      </div>
+      <span style="color:var(--ink-3);font-size:18px;">›</span>
+    </button>
+
+    <div style="text-align:center;color:var(--ink-3);font-size:11.5px;padding:16px 20px;">Mais programas de engajamento chegam aqui conforme você for criando.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: INDIQUE E GANHE
+══════════════════════════════════════════ -->
+<div class="view" id="view-indicacoes">
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">←</button>
+      <div>
+        <div class="ph-title">🎁 Indique e Ganhe</div>
+        <div class="ph-sub">Cada indicação aprovada vira 1 estrela</div>
+      </div>
+    </div>
+    <button class="btn-primary" style="width:auto;padding:10px 16px;" onclick="abrirNovaIndicacao()">+ Indicação</button>
+  </div>
+  <div class="scroll-body" style="padding:16px 16px 80px;">
+
+    <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;">
+      <button class="ind-filtro-btn active" data-f="pendente" onclick="filtrarIndicacoes('pendente')">Pendentes</button>
+      <button class="ind-filtro-btn" data-f="aprovada" onclick="filtrarIndicacoes('aprovada')">Aprovadas</button>
+      <button class="ind-filtro-btn" data-f="reprovada" onclick="filtrarIndicacoes('reprovada')">Reprovadas</button>
+      <button class="ind-filtro-btn" data-f="todas" onclick="filtrarIndicacoes('todas')">Todas</button>
+    </div>
+
+    <div id="indicacoesLista"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: NOVA INDICAÇÃO
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalNovaIndicacao">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalNovaIndicacao')">✕</button>
+    <div class="modal-title">Nova Indicação</div>
+
+    <label class="field" style="margin-bottom:14px;">
+      <span>Quem indicou</span>
+      <div style="display:flex;gap:8px;margin-top:2px;">
+        <button type="button" id="indTipoBtnConsultora" onclick="selecionarTipoIndicador('consultora')" style="flex:1;padding:11px;border-radius:12px;border:2px solid var(--rose);font-size:13px;font-weight:700;font-family:var(--font);background:var(--rose-light);color:var(--rose-deep);cursor:pointer;">⭐ Consultora Romance</button>
+        <button type="button" id="indTipoBtnExterna" onclick="selecionarTipoIndicador('externa')" style="flex:1;padding:11px;border-radius:12px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">💰 Pessoa de fora (Pix)</button>
+      </div>
+    </label>
+
+    <div id="indCampoConsultora">
+      <label class="field">
+        <span>Selecione a consultora *</span>
+        <select id="indIndicadora">
+          <option value="">— Selecione —</option>
+        </select>
+      </label>
+    </div>
+
+    <div id="indCampoExterna" style="display:none;">
+      <label class="field"><span>Nome de quem indicou *</span><input id="indNomeIndicadorExterno" placeholder="Ex: Cliente Fernanda"></label>
+      <label class="field"><span>Chave Pix para pagamento *</span><input id="indPixChave" placeholder="CPF, e-mail, telefone ou chave aleatória"></label>
+      <label class="field"><span>Valor do Pix (R$)</span><input id="indPixValor" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+    </div>
+
+    <label class="field"><span>Nome de quem foi indicada(o) *</span><input id="indNomeIndicado" placeholder="Ex: Fernanda Costa"></label>
+    <div class="two-col">
+      <label class="field" style="margin:0;"><span>Telefone</span><input id="indTelefone" inputmode="tel" placeholder="(51) 99999-9999"></label>
+      <label class="field" style="margin:0;"><span>Cidade</span><input id="indCidade" placeholder="Ex: Gramado"></label>
+    </div>
+    <div class="two-col" style="margin-top:12px;">
+      <label class="field" style="margin:0;"><span>CPF</span><input id="indCpf" inputmode="numeric" placeholder="000.000.000-00"></label>
+      <label class="field" style="margin:0;"><span>Data de nascimento</span><input id="indNascimento" type="date"></label>
+    </div>
+    <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="salvarNovaIndicacao()">Cadastrar indicação</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: LIVES & SORTEIOS (lista)
+══════════════════════════════════════════ -->
+<div class="view" id="view-lives">
+  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div class="ph-title">Lives &amp; Sorteios</div>
+      <div class="ph-sub">Organize suas lives do Instagram</div>
+    </div>
+    <button class="btn-primary" style="width:auto;padding:10px 16px;" onclick="abrirNovaLive()">+ Live</button>
+  </div>
+  <div class="scroll-body" style="padding:16px 16px 80px;">
+    <button onclick="goTo('estrelas')" style="width:100%;display:flex;align-items:center;gap:10px;background:var(--amber-bg);border:1px solid rgba(185,139,62,.25);border-radius:14px;padding:12px 14px;margin-bottom:14px;cursor:pointer;">
+      <span style="font-size:18px;">⭐</span>
+      <div style="flex:1;text-align:left;">
+        <div style="font-size:13px;font-weight:800;color:var(--amber);">Histórico de Estrelas</div>
+        <div style="font-size:11px;color:var(--ink-3);">Ranking de participação nas lives</div>
+      </div>
+      <span style="color:var(--ink-3);">›</span>
+    </button>
+    <div id="livesLista"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: DETALHE DA LIVE (participantes, sorteio, convite)
+══════════════════════════════════════════ -->
+<div class="view" id="view-live-detalhe">
+  <div class="page-header" style="display:flex;align-items:center;gap:12px;">
+    <button onclick="goTo('lives')" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">← Voltar</button>
+    <div style="flex:1;">
+      <div class="ph-title" id="liveDetTitulo" style="font-size:17px;">Live</div>
+      <div class="ph-sub" id="liveDetSub">—</div>
+    </div>
+    <button onclick="excluirLive()" style="color:var(--red);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;">Excluir</button>
+  </div>
+  <div class="scroll-body" style="padding:16px 16px 80px;">
+
+    <!-- Prêmio -->
+    <div class="card" style="padding:12px 14px;margin-bottom:16px;">
+      <label class="field" style="margin:0;"><span>Prêmio do sorteio</span><input id="livePremio" placeholder="Ex: Kit de perfumes" oninput="salvarLiveCampo('premio', this.value)"></label>
+    </div>
+
+    <!-- Participantes -->
+    <div class="sec-title" style="padding:0;margin-bottom:8px;">⭐ Participantes <span id="liveQtdParticipantes" style="color:var(--ink-3);font-weight:600;">(0)</span></div>
+    <div style="font-size:11.5px;color:var(--ink-3);margin-bottom:10px;">Cada participante marcada ganha 1 estrela automaticamente, que entra no histórico dela.</div>
+    <button class="btn-primary" style="width:100%;margin-bottom:8px;" onclick="abrirSelecionarConsultoras()">☑️ Selecionar consultoras cadastradas</button>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <input id="liveNovoParticipante" placeholder="Nome avulso (sem cadastro)" style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;font-family:var(--font);" onkeydown="if(event.key==='Enter')adicionarParticipante()">
+      <button class="btn-primary" style="width:auto;padding:0 16px;" onclick="adicionarParticipante()">+</button>
+    </div>
+    <button onclick="abrirColarLista()" style="background:none;border:none;color:var(--rose);font-size:12px;font-weight:700;cursor:pointer;margin-bottom:12px;">Colar lista com vários nomes de uma vez</button>
+    <div id="liveParticipantesLista" style="margin-bottom:20px;"></div>
+
+    <!-- Sorteio -->
+    <button class="btn-primary" style="width:100%;font-size:16px;padding:16px;margin-bottom:8px;" onclick="realizarSorteio()">🎲 Sortear vencedora</button>
+    <div id="liveResultado" style="display:none;background:linear-gradient(135deg,#3D2029,#6B4552);border-radius:16px;padding:18px;text-align:center;margin-bottom:20px;">
+      <div style="color:rgba(255,255,255,.6);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🎉 Vencedora do sorteio</div>
+      <div id="liveVencedoraNome" style="color:white;font-size:22px;font-weight:800;">—</div>
+    </div>
+
+    <!-- Convite WhatsApp -->
+    <div class="sec-title" style="padding:0;margin-bottom:8px;">Convite para WhatsApp</div>
+    <textarea id="liveMensagemWpp" rows="6" style="width:100%;border:1.5px solid var(--border);border-radius:14px;padding:12px;font-size:13.5px;font-family:var(--font);resize:none;color:var(--ink);line-height:1.5;margin-bottom:8px;" oninput="salvarLiveCampo('mensagem', this.value)"></textarea>
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <button class="btn-ghost" style="flex:1;" onclick="copiarMensagemLive()">📋 Copiar texto</button>
+      <button class="btn-primary" style="flex:1;" onclick="abrirWhatsappLive()">Abrir WhatsApp →</button>
+    </div>
+
+    <!-- Imagem do convite -->
+    <div class="sec-title" style="padding:0;margin-bottom:8px;">Imagem do convite</div>
+    <button class="btn-ghost" style="width:100%;margin-bottom:12px;" onclick="gerarImagemLive()">🖼️ Criar imagem automaticamente</button>
+    <canvas id="liveCanvas" width="600" height="750" style="display:none;width:100%;border-radius:14px;border:1px solid var(--border);margin-bottom:10px;"></canvas>
+    <a id="liveDownloadImg" style="display:none;" download="convite-live.png">
+      <button class="btn-primary" style="width:100%;">⬇ Baixar imagem</button>
+    </a>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: NOVA LIVE
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalNovaLive">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalNovaLive')">✕</button>
+    <div class="modal-title">Nova Live</div>
+    <label class="field"><span>Título</span><input id="liveTitulo" placeholder="Ex: Live de sexta-feira"></label>
+    <div class="two-col">
+      <label class="field" style="margin:0;"><span>Data</span><input id="liveData" type="date"></label>
+      <label class="field" style="margin:0;"><span>Horário</span><input id="liveHorario" type="time"></label>
+    </div>
+    <label class="field"><span>Prêmio (opcional, pode editar depois)</span><input id="livePremioInicial" placeholder="Ex: Kit de perfumes"></label>
+    <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="salvarNovaLive()">Criar live</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: COLAR LISTA DE PARTICIPANTES
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalColarLista">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalColarLista')">✕</button>
+    <div class="modal-title">Colar lista de nomes</div>
+    <div style="font-size:12px;color:var(--ink-3);margin-bottom:10px;">Um nome por linha.</div>
+    <textarea id="listaColada" rows="8" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:12px;font-size:14px;font-family:var(--font);resize:none;" placeholder="Maria Silva&#10;Ana Souza&#10;Carla Pereira"></textarea>
+    <button class="btn-primary" style="width:100%;margin-top:12px;" onclick="salvarListaColada()">Adicionar todos</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: SELECIONAR CONSULTORAS CADASTRADAS
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalSelecionarConsultoras">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalSelecionarConsultoras')">✕</button>
+    <div class="modal-title" style="margin-bottom:2px;">Consultoras participantes</div>
+    <div style="font-size:12px;color:var(--ink-3);margin-bottom:14px;">Marque quem está assistindo a live agora.</div>
+    <input id="filtroSelecionarConsultoras" placeholder="Buscar por nome..." oninput="renderSelecionarConsultoras()" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;font-size:14px;font-family:var(--font);margin-bottom:12px;">
+    <div id="selecionarConsultorasLista" style="max-height:50vh;overflow-y:auto;"></div>
+    <button class="btn-primary" style="width:100%;margin-top:14px;" onclick="fecharModal('modalSelecionarConsultoras')">Concluído</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: HISTÓRICO DE ESTRELAS
+══════════════════════════════════════════ -->
+<div class="view" id="view-estrelas">
+  <div class="page-header" style="display:flex;align-items:center;gap:12px;">
+    <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">← Voltar</button>
+    <div>
+      <div class="ph-title">⭐ Histórico de Estrelas</div>
+      <div class="ph-sub">Participação nas lives</div>
+    </div>
+  </div>
+  <div class="scroll-body" style="padding:16px 16px 80px;">
+    <div id="estrelasRanking"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: DETALHE DE ESTRELAS DE UMA CONSULTORA
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalEstrelasDetalhe">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalEstrelasDetalhe')">✕</button>
+    <div class="modal-title" id="estDetNome" style="margin-bottom:2px;">—</div>
+    <div style="font-size:13px;color:var(--ink-3);font-weight:600;margin-bottom:12px;" id="estDetTotal">0 estrelas</div>
+    <div id="estDetResgateBox" style="display:none;background:var(--amber-bg);border-radius:14px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;">🎁</span>
+      <div style="flex:1;">
+        <div style="font-size:12.5px;font-weight:800;color:var(--amber);" id="estDetResgateTxt">Pronta pra resgatar!</div>
+      </div>
+      <button onclick="abrirResgate()" style="background:var(--amber);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Resgatar</button>
+    </div>
+    <div id="estDetLista"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: RESGATAR PRÊMIO (10 estrelas)
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalResgate">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalResgate')">✕</button>
+    <div class="modal-title" style="margin-bottom:2px;">Resgatar prêmio</div>
+    <div style="font-size:13px;color:var(--ink-3);font-weight:600;margin-bottom:14px;" id="resgNomeLabel">—</div>
+
+    <label class="field">
+      <span>Tipo de prêmio</span>
+      <div style="display:flex;gap:8px;margin-top:2px;">
+        <button type="button" id="resgBtnPix" onclick="selecionarTipoResgate('pix')" style="flex:1;padding:11px;border-radius:12px;border:2px solid var(--rose);font-size:13px;font-weight:700;font-family:var(--font);background:var(--rose-light);color:var(--rose-deep);cursor:pointer;">💰 Pix</button>
+        <button type="button" id="resgBtnBrinde" onclick="selecionarTipoResgate('brinde')" style="flex:1;padding:11px;border-radius:12px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">🎁 Brinde</button>
+      </div>
+    </label>
+
+    <div id="resgCampoPix">
+      <label class="field"><span>Valor do Pix (R$)</span><input id="resgPixValor" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+      <label class="field"><span>Chave Pix</span><input id="resgPixChave" placeholder="CPF, e-mail, telefone..."></label>
+    </div>
+    <div id="resgCampoBrinde" style="display:none;">
+      <label class="field"><span>Descrição do brinde</span><input id="resgBrindeDesc" placeholder="Ex: Kit de perfumes"></label>
+    </div>
+
+    <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="salvarResgate()">Confirmar resgate (usa 10 ⭐)</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: PAINEL DO ADMINISTRADOR (visão dos 4 tablets)
+══════════════════════════════════════════ -->
+<div class="view" id="view-admin-home">
+  <div id="adminTopBar">
+    <div>
+      <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Painel do Administrador</div>
+      <div style="color:white;font-size:20px;font-weight:800;">Equipe · tempo real</div>
+    </div>
+    <button onclick="fazerLogout()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:white;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Sair</button>
+  </div>
+  <div class="scroll-body" style="padding:16px 16px 80px;background:var(--surface);">
+    <div id="adminHomeLista"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: DETALHE DE UMA PESSOA (admin)
+══════════════════════════════════════════ -->
+<div class="view" id="view-admin-pessoa">
+  <div id="adminTopBar">
+    <button onclick="goTo('admin-home')" style="background:none;border:none;color:rgba(255,255,255,.7);font-size:14px;font-weight:700;cursor:pointer;">← Equipe</button>
+    <div style="color:white;font-size:16px;font-weight:800;" id="adminPessoaNomeTop">—</div>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="scroll-body" style="padding:16px 16px 80px;background:var(--surface);">
+
+    <div id="adminPessoaStatus" style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Carregando...</div>
+    <div id="adminPessoaConteudo" style="display:none;">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;">Semana</div>
+          <div style="font-size:16px;font-weight:800;" id="apSemana">—</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;">Atendimentos</div>
+          <div style="font-size:16px;font-weight:800;" id="apAtendimentos">0/0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;">Vendido</div>
+          <div style="font-size:16px;font-weight:800;" id="apVendido">R$ 0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:4px;">Recebido</div>
+          <div style="font-size:16px;font-weight:800;color:var(--green);" id="apRecebido">R$ 0</div>
+        </div>
+      </div>
+
+      <!-- Nova observação -->
+      <div class="sec-title" style="padding:0;margin-bottom:8px;">Enviar observação</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input id="apNovaObs" placeholder="Ex: Priorize as consultoras de Canela hoje" style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;font-family:var(--font);">
+        <button class="btn-primary" style="width:auto;padding:0 16px;" onclick="adminEnviarObservacao()">Enviar</button>
+      </div>
+      <div id="apObsHistorico" style="margin-bottom:20px;"></div>
+
+      <!-- Agenda -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="sec-title" style="padding:0;margin:0;">Agenda da semana</div>
+      </div>
+      <div id="apAgendaDias"></div>
+
+      <!-- Consultoras da semana -->
+      <div class="sec-title" style="padding:0;margin:20px 0 8px;">Consultoras da semana</div>
+      <div id="apConsultorasLista"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: NOVA TAREFA (admin envia para a pessoa)
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalAdminTarefa">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalAdminTarefa')">✕</button>
+    <div class="modal-title" id="atModalTitulo">Nova tarefa</div>
+    <input type="hidden" id="atId">
+    <input type="hidden" id="atDiaKey">
+    <label class="field"><span>O que precisa ser feito</span><input id="atTexto" placeholder="Ex: Repor vitrine da loja"></label>
+    <div class="two-col">
+      <label class="field" style="margin:0;"><span>Horário (opcional)</span><input id="atHorario" type="time"></label>
+      <label class="field" style="margin:0;">
+        <span>Prioridade</span>
+        <select id="atPrioridade">
+          <option value="normal">Normal</option>
+          <option value="importante">Importante</option>
+        </select>
+      </label>
+    </div>
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn-ghost" style="flex:1;" id="atBtnExcluir" onclick="adminExcluirTarefa()">Excluir</button>
+      <button class="btn-primary" style="flex:1;" onclick="adminSalvarTarefa()">Salvar</button>
     </div>
   </div>
 </div>
@@ -961,7 +1476,7 @@ input,textarea,select{font-family:var(--font);}
 <div class="view" id="view-domingo">
   <div class="scroll-body">
     <!-- Header escuro -->
-    <div style="background:linear-gradient(160deg,#0A0A1E,#1A1040);padding:calc(20px + env(safe-area-inset-top)) 20px 24px;position:relative;overflow:hidden;flex-shrink:0;">
+    <div style="background:linear-gradient(160deg,#3D2029,#6B4552);padding:calc(20px + env(safe-area-inset-top)) 20px 24px;position:relative;overflow:hidden;flex-shrink:0;">
       <div style="position:absolute;top:-50px;right:-30px;width:200px;height:200px;border-radius:50%;background:rgba(124,58,237,.15);"></div>
       <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;" id="domingoData">Domingo</div>
       <div style="color:white;font-size:24px;font-weight:800;margin-bottom:3px;">Bom dia, Rogério.</div>
@@ -1124,7 +1639,7 @@ input,textarea,select{font-family:var(--font);}
       <div class="ph-sub" id="relSubtitulo">Semana —</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button onclick="gerarRelatorioIA()" style="background:linear-gradient(135deg,#7C3AED,#C8185A);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">✦ Gerar com IA</button>
+      <button onclick="gerarRelatorioIA()" style="background:linear-gradient(135deg,#B98B3E,#B8677A);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">✦ Gerar com IA</button>
       <button onclick="gerarPDF()" style="background:var(--rose);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">PDF</button>
     </div>
   </div>
@@ -1149,12 +1664,12 @@ input,textarea,select{font-family:var(--font);}
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;">
     <div class="card" style="margin-bottom:16px;">
-      <div style="padding:14px 16px;">
-        <label class="field">
-          <span>Nome deste tablet / responsável</span>
-          <input type="text" id="cfgNomeTablet" placeholder="Ex: Rogério, Tablet 2..." oninput="salvarConfig()">
-        </label>
-        <span style="font-size:11px;color:var(--ink-3);">Usado para identificar este tablet na tela de Fechamento (consolidado dos 4 tablets)</span>
+      <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;color:var(--ink-3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Conectado como</div>
+          <div style="font-size:15px;font-weight:800;color:var(--ink);" id="cfgNomePessoa">—</div>
+        </div>
+        <button class="btn-ghost" style="width:auto;padding:9px 16px;color:var(--red);" onclick="fazerLogout()">Sair</button>
       </div>
     </div>
     <div class="card" style="margin-bottom:16px;">
@@ -1169,6 +1684,23 @@ input,textarea,select{font-family:var(--font);}
         </label>
       </div>
     </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="padding:14px 16px;">
+        <label class="field" style="margin-bottom:0;">
+          <span>Link do site "Indique e Ganhe"</span>
+          <input type="text" id="cfgLinkIndicacoes" placeholder="https://..." oninput="salvarConfig()">
+        </label>
+        <span style="font-size:11px;color:var(--ink-3);">Usado pelo botão "Indique e Ganhe" em Programas (opcional, legado)</span>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="padding:14px 16px;">
+        <label class="field" style="margin-bottom:0;">
+          <span>Valor padrão do Pix por indicação (pessoas de fora)</span>
+          <input type="text" id="cfgValorPixIndicacao" inputmode="decimal" placeholder="R$ 20,00" oninput="maskMoeda(this);salvarConfig();">
+        </label>
+      </div>
+    </div>
     <button class="btn-ghost" onclick="exportarDados()" style="margin-bottom:10px;">Exportar dados</button>
     <button class="btn-ghost" onclick="testarSync()" style="margin-bottom:10px;">Testar sincronização Firebase</button>
     <button class="btn-ghost" style="color:var(--red);" onclick="if(confirm('Apagar todos os dados?')){limparTudo();}">Limpar todos os dados</button>
@@ -1179,7 +1711,7 @@ input,textarea,select{font-family:var(--font);}
      TELA 13: FECHAMENTO GERAL (consolidado dos tablets)
 ══════════════════════════════════════════ -->
 <div class="view" id="view-fechamento-geral">
-  <div style="background:linear-gradient(160deg,#0A0A1E,#1A1040);padding:calc(20px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
+  <div style="background:linear-gradient(160deg,#3D2029,#6B4552);padding:calc(20px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
     <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Fechamento da Semana</div>
     <div style="color:white;font-size:24px;font-weight:800;margin-bottom:3px;" id="fgTituloSemana">Semana —</div>
     <div style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500;margin-bottom:14px;" id="fgSubtitulo">Resultado consolidado dos tablets</div>
@@ -1201,11 +1733,11 @@ input,textarea,select{font-family:var(--font);}
     <div id="fgConteudo" style="display:none;">
 
       <!-- META GERAL -->
-      <div style="background:linear-gradient(135deg,#0A0A1E,#2A1550);border-radius:18px;padding:16px 18px;margin-bottom:12px;">
+      <div style="background:linear-gradient(135deg,#3D2029,#6B4552);border-radius:18px;padding:16px 18px;margin-bottom:12px;">
         <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Resultado da Semana</div>
         <div style="font-size:24px;font-weight:800;color:white;margin-bottom:2px;"><span id="fgMetaResultado">R$ 0</span> <span style="font-size:15px;font-weight:600;color:rgba(255,255,255,.4);">/ <span id="fgMetaTotal">R$ 0</span></span></div>
         <div style="height:8px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin:10px 0 6px;">
-          <div id="fgMetaBar" style="height:100%;background:linear-gradient(90deg,#FF4D6D,#FF8FA3);border-radius:6px;width:0%;"></div>
+          <div id="fgMetaBar" style="height:100%;background:linear-gradient(90deg,#9C4C5E,#B8677A);border-radius:6px;width:0%;"></div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.6);font-weight:600;margin-bottom:12px;">
           <span id="fgMetaPct">0% da meta</span>
@@ -1568,6 +2100,15 @@ input,textarea,select{font-family:var(--font);}
   <div id="overlayStatus">Processando com IA...</div>
 </div>
 
+<!-- Sorteio em tela cheia -->
+<div id="sorteioOverlay">
+  <div class="sorteio-die" id="sorteioDie">🎲</div>
+  <div class="sorteio-label" id="sorteioLabel">Sorteando...</div>
+  <div class="sorteio-nome" id="sorteioNome">—</div>
+  <div id="sorteioConfetes"></div>
+  <button id="sorteioFechar" onclick="fecharSorteioOverlay()">Fechar</button>
+</div>
+
 <script>
 /* ════════════════════════════════════════════
    FIREBASE CONFIG
@@ -1581,14 +2122,1079 @@ const firebaseConfig = {
   appId: "1:1000995187899:web:af4c97957e8f10bb42cd9e"
 };
 
-// ID único do dispositivo — garante que cada usuário tem seus próprios dados
-const USER_ID = (() => {
-  let id = localStorage.getItem('rep_user_id');
-  if (!id) { id = 'rogerio_' + Date.now().toString(36); localStorage.setItem('rep_user_id', id); }
-  return id;
+// ── EQUIPE: cada pessoa tem um ID fixo (não muda por aparelho) e um PIN de 4 dígitos.
+// O admin consegue ler os 4 tablets porque os IDs são sempre os mesmos, em qualquer aparelho.
+const PESSOAS = [
+  { id: 'isabel',  nome: 'Isabel',  pin: '1111', role: 'op', cargo: 'Loja' },
+  { id: 'rogerio', nome: 'Rogério', pin: '2222', role: 'op', cargo: 'Representante' },
+  { id: 'alceu',   nome: 'Alceu',   pin: '3333', role: 'op', cargo: 'Representante' },
+  { id: 'lucia',   nome: 'Lúcia',   pin: '4444', role: 'op', cargo: 'Representante' },
+  { id: 'admin',   nome: 'Administrador', pin: '9999', role: 'admin', cargo: 'Gestão' },
+];
+const OPERADORES = PESSOAS.filter(p => p.role === 'op');
+
+const DIAS_AGENDA = [
+  { key:'segunda', label:'Segunda-feira' }, { key:'terca', label:'Terça-feira' },
+  { key:'quarta', label:'Quarta-feira' }, { key:'quinta', label:'Quinta-feira' },
+  { key:'sexta', label:'Sexta-feira' }, { key:'sabado', label:'Sábado' },
+];
+function hojeAgendaKey() {
+  const map = { 1:'segunda', 2:'terca', 3:'quarta', 4:'quinta', 5:'sexta', 6:'sabado', 0:'segunda' };
+  return map[new Date().getDay()];
+}
+function blankAgenda() {
+  const t = {};
+  DIAS_AGENDA.forEach(d => t[d.key] = []);
+  return t;
+}
+
+/* ════════════════════════════════════════════
+   LOGIN
+════════════════════════════════════════════ */
+const CORES_PESSOA = { isabel:'#B8677A', rogerio:'#B98B3E', alceu:'#6E8C63', lucia:'#C4553F', admin:'#3D2029' };
+let _loginPinAtual = '';
+let _loginPessoaSelecionada = null;
+
+function renderLoginPessoas() {
+  const el = document.getElementById('loginPessoas');
+  if (!el) return;
+  el.innerHTML = PESSOAS.map(p => `
+    <button class="login-pessoa-card" onclick="selecionarPessoaLogin('${p.id}')">
+      <div class="login-pessoa-av" style="background:${CORES_PESSOA[p.id]||'#666'};">${p.nome.charAt(0)}</div>
+      <div>
+        <div style="color:white;font-size:15px;font-weight:800;">${p.nome}</div>
+        <div style="color:rgba(255,255,255,.5);font-size:12px;font-weight:600;">${p.role==='admin' ? 'Administrador · vê tudo' : p.cargo}</div>
+      </div>
+      <div style="margin-left:auto;color:rgba(255,255,255,.3);font-size:16px;">›</div>
+    </button>`).join('');
+}
+
+function selecionarPessoaLogin(id) {
+  _loginPessoaSelecionada = PESSOAS.find(p => p.id === id);
+  _loginPinAtual = '';
+  atualizarPinDots();
+  document.getElementById('loginPinErro').textContent = '';
+  document.getElementById('loginPinNome').textContent = _loginPessoaSelecionada.nome;
+  document.getElementById('loginPessoas').style.display = 'none';
+  document.getElementById('loginPinArea').style.display = 'flex';
+}
+
+function voltarSelecaoLogin() {
+  _loginPessoaSelecionada = null;
+  _loginPinAtual = '';
+  document.getElementById('loginPinArea').style.display = 'none';
+  document.getElementById('loginPessoas').style.display = 'flex';
+}
+
+function atualizarPinDots() {
+  document.querySelectorAll('.login-pin-dot').forEach((d, i) => {
+    d.classList.toggle('filled', i < _loginPinAtual.length);
+  });
+}
+
+function digitarPin(d) {
+  if (_loginPinAtual.length >= 4) return;
+  _loginPinAtual += d;
+  atualizarPinDots();
+  if (_loginPinAtual.length === 4) setTimeout(validarPin, 150);
+}
+
+function apagarPin() {
+  _loginPinAtual = _loginPinAtual.slice(0, -1);
+  atualizarPinDots();
+}
+
+function validarPin() {
+  if (_loginPinAtual === _loginPessoaSelecionada.pin) {
+    const perfil = { id: _loginPessoaSelecionada.id, nome: _loginPessoaSelecionada.nome, role: _loginPessoaSelecionada.role };
+    localStorage.setItem('rep_active_profile', JSON.stringify(perfil));
+    location.reload();
+  } else {
+    document.getElementById('loginPinErro').textContent = 'PIN incorreto. Tente novamente.';
+    _loginPinAtual = '';
+    atualizarPinDots();
+  }
+}
+
+function fazerLogout() {
+  if (!confirm('Sair e voltar para a tela de login?')) return;
+  localStorage.removeItem('rep_active_profile');
+  location.reload();
+}
+
+/* ════════════════════════════════════════════
+   AGENDA DO DIA
+════════════════════════════════════════════ */
+function renderAgendaHoje() {
+  const el = document.getElementById('agendaHojeLista');
+  if (!el) return;
+  const diaKey = hojeAgendaKey();
+  const tarefas = (DB.agenda && DB.agenda[diaKey]) || [];
+
+  if (!tarefas.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:14px 0;background:var(--surface);border-radius:12px;">Nenhuma tarefa para hoje.</div>';
+    return;
+  }
+  const ordenadas = [...tarefas].sort((a,b) => (a.feito?1:0) - (b.feito?1:0));
+  el.innerHTML = ordenadas.map(t => `
+    <div style="display:flex;align-items:center;gap:10px;background:white;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:6px;">
+      <div onclick="toggleTarefa('${t.id}')" style="width:20px;height:20px;border-radius:50%;border:1.5px solid ${t.feito?'var(--green)':'var(--border)'};background:${t.feito?'var(--green)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:11px;font-weight:800;">${t.feito?'✓':''}</div>
+      <div style="flex:1;cursor:pointer;" onclick="abrirNovaTarefa('${t.id}')">
+        <div style="font-size:13px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
+        <div style="font-size:11px;color:var(--ink-3);">${[t.horario, t.prioridade==='importante'?'⚡ importante':'', t.autor==='admin'?'· da administração':''].filter(Boolean).join(' · ')}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderAgendaCompleta() {
+  const el = document.getElementById('agendaCompletaLista');
+  if (!el) return;
+  const hoje = hojeAgendaKey();
+  const agenda = DB.agenda || blankAgenda();
+  el.innerHTML = DIAS_AGENDA.map(d => {
+    const tarefas = [...(agenda[d.key] || [])].sort((a,b) => (a.feito?1:0) - (b.feito?1:0));
+    return `
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:800;color:${d.key===hoje?'var(--rose-deep)':'var(--ink)'};">${d.label}${d.key===hoje?' · hoje':''}</div>
+        <button onclick="abrirNovaTarefa(null,'${d.key}')" style="background:none;border:none;color:var(--rose);font-size:12px;font-weight:700;cursor:pointer;">+ Tarefa</button>
+      </div>
+      ${tarefas.length ? tarefas.map(t => `
+        <div style="display:flex;align-items:center;gap:10px;background:white;border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:6px;">
+          <div onclick="toggleTarefa('${t.id}','${d.key}')" style="width:20px;height:20px;border-radius:50%;border:1.5px solid ${t.feito?'var(--green)':'var(--border)'};background:${t.feito?'var(--green)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:11px;font-weight:800;">${t.feito?'✓':''}</div>
+          <div style="flex:1;cursor:pointer;" onclick="abrirNovaTarefa('${t.id}','${d.key}')">
+            <div style="font-size:13px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
+            <div style="font-size:11px;color:var(--ink-3);">${[t.horario, t.prioridade==='importante'?'⚡ importante':'', t.autor==='admin'?'· da administração':''].filter(Boolean).join(' · ')}</div>
+          </div>
+        </div>`).join('') : '<div style="font-size:12px;color:var(--ink-3);padding:6px 0 2px;">Nenhuma tarefa.</div>'}
+    </div>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   LIVES & SORTEIOS
+════════════════════════════════════════════ */
+let _liveAtual = null;
+
+function fmtDataCurta(iso) {
+  if (!iso) return '';
+  try {
+    const [y,m,d] = iso.split('-');
+    return d + '/' + m;
+  } catch(e) { return iso; }
+}
+
+function renderLivesLista() {
+  const el = document.getElementById('livesLista');
+  const lives = [...(DB.lives || [])].sort((a,b) => (b.data||'').localeCompare(a.data||''));
+  if (!lives.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:40px 0;">Nenhuma live cadastrada ainda.<br>Toque em "+ Live" para organizar a próxima.</div>';
+    return;
+  }
+  el.innerHTML = lives.map(l => `
+    <div class="card" style="padding:14px;margin-bottom:10px;cursor:pointer;" onclick="abrirLiveDetalhe('${l.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div style="font-size:14px;font-weight:800;color:var(--ink);">${l.titulo}</div>
+        <span style="color:var(--ink-3);font-size:16px;">›</span>
+      </div>
+      <div style="font-size:12px;color:var(--ink-3);">${fmtDataCurta(l.data)}${l.horario ? ' · ' + l.horario : ''} · ${(l.participantes||[]).length} participante(s)</div>
+      ${l.vencedora ? `<div style="margin-top:6px;font-size:12px;font-weight:700;color:var(--green);">🎉 Sorteio feito: ${l.vencedora}</div>` : `<div style="margin-top:6px;font-size:12px;font-weight:700;color:var(--amber);">Aguardando sorteio</div>`}
+    </div>`).join('');
+}
+
+function abrirNovaLive() {
+  document.getElementById('liveTitulo').value = '';
+  document.getElementById('liveData').value = '';
+  document.getElementById('liveHorario').value = '';
+  document.getElementById('livePremioInicial').value = '';
+  document.getElementById('modalNovaLive').classList.add('open');
+}
+
+function salvarNovaLive() {
+  const titulo = document.getElementById('liveTitulo').value.trim();
+  if (!titulo) { alert('Digite um título para a live.'); return; }
+  const live = {
+    id: uid(),
+    titulo,
+    data: document.getElementById('liveData').value,
+    horario: document.getElementById('liveHorario').value,
+    premio: document.getElementById('livePremioInicial').value.trim(),
+    participantes: [],
+    vencedora: null,
+    mensagem: '',
+    criadoEm: new Date().toISOString(),
+  };
+  DB.lives = DB.lives || [];
+  DB.lives.push(live);
+  save();
+  fecharModal('modalNovaLive');
+  abrirLiveDetalhe(live.id);
+}
+
+function excluirLive() {
+  if (!_liveAtual) return;
+  if (!confirm('Excluir esta live e todos os dados do sorteio?')) return;
+  DB.lives = (DB.lives || []).filter(l => l.id !== _liveAtual);
+  save();
+  goTo('lives');
+}
+
+function abrirLiveDetalhe(id) {
+  _liveAtual = id;
+  goTo('live-detalhe');
+}
+
+function getLiveAtual() {
+  return (DB.lives || []).find(l => l.id === _liveAtual);
+}
+
+function renderLiveDetalhe() {
+  const live = getLiveAtual();
+  if (!live) { goTo('lives'); return; }
+
+  document.getElementById('liveDetTitulo').textContent = live.titulo;
+  document.getElementById('liveDetSub').textContent = [fmtDataCurta(live.data), live.horario].filter(Boolean).join(' · ') || 'Sem data definida';
+  document.getElementById('livePremio').value = live.premio || '';
+
+  // Gera mensagem padrão automaticamente se ainda não foi personalizada
+  if (!live.mensagem) {
+    live.mensagem = gerarMensagemPadrao(live);
+  }
+  document.getElementById('liveMensagemWpp').value = live.mensagem;
+
+  renderParticipantesLista();
+
+  const resultado = document.getElementById('liveResultado');
+  if (live.vencedora) {
+    resultado.style.display = '';
+    document.getElementById('liveVencedoraNome').textContent = live.vencedora;
+  } else {
+    resultado.style.display = 'none';
+  }
+
+  document.getElementById('liveCanvas').style.display = 'none';
+  document.getElementById('liveDownloadImg').style.display = 'none';
+}
+
+function chaveEstrela(p) {
+  return p.consultoraId ? ('c:' + p.consultoraId) : ('n:' + (p.nome||'').trim().toLowerCase());
+}
+
+function concederEstrela(live, participante) {
+  DB.estrelas = DB.estrelas || [];
+  const chave = chaveEstrela(participante);
+  const jaTem = DB.estrelas.some(e => e.liveId === live.id && chaveEstrela(e) === chave);
+  if (jaTem) return;
+  DB.estrelas.push({
+    id: uid(),
+    consultoraId: participante.consultoraId || null,
+    nome: participante.nome,
+    programa: 'sorteio',
+    origem: live.titulo,
+    liveId: live.id,
+    liveTitulo: live.titulo,
+    criadoEm: new Date().toISOString(),
+  });
+}
+
+function revogarEstrela(live, participante) {
+  DB.estrelas = (DB.estrelas || []).filter(e => !(e.liveId === live.id && chaveEstrela(e) === chaveEstrela(participante)));
+}
+
+function totalEstrelas(participante) {
+  const chave = chaveEstrela(participante);
+  return (DB.estrelas || []).filter(e => chaveEstrela(e) === chave).length;
+}
+
+/* ── Estrelas vindas do programa "Indique e Ganhe" (indicações aprovadas) ── */
+function concederEstrelaIndicacao(refDoc) {
+  DB.estrelas = DB.estrelas || [];
+  const nome = refDoc.indicadorNome;
+  if (!nome) return;
+  const jaTem = DB.estrelas.some(e => e.programa === 'indicacao' && e.origemId === refDoc.id);
+  if (jaTem) return;
+  DB.estrelas.push({
+    id: uid(),
+    consultoraId: null,
+    nome,
+    programa: 'indicacao',
+    origem: 'Indique e Ganhe',
+    origemId: refDoc.id,
+    liveId: null,
+    liveTitulo: 'Indicação aprovada: ' + (refDoc.indicadaNome || '—'),
+    criadoEm: new Date().toISOString(),
+  });
+}
+
+function sincronizarEstrelasIndicacoes() {
+  if (!_db) return;
+  _db.collection('indicacoes').where('status', '==', 'aprovada').onSnapshot(snap => {
+    let mudou = false;
+    snap.forEach(doc => {
+      const data = doc.data() || {};
+      const jaTem = (DB.estrelas || []).some(e => e.programa === 'indicacao' && e.origemId === doc.id);
+      if (!jaTem) {
+        concederEstrelaIndicacao({ id: doc.id, indicadorNome: data.indicadorNome, indicadaNome: data.indicadaNome });
+        mudou = true;
+      }
+    });
+    if (mudou) {
+      save();
+      if (document.getElementById('view-estrelas')?.classList.contains('active')) renderEstrelasRanking();
+    }
+  }, err => console.warn('Sync indicações indisponível:', err.message));
+}
+
+function abrirProgramaIndicacoes() {
+  let link = DB.config.linkIndiqueGanhe;
+  if (!link) {
+    link = prompt('Cole aqui o link do site "Indique e Ganhe" (onde você aprova as indicações). Só precisa fazer isso uma vez.');
+    if (!link) return;
+    link = link.trim();
+    if (!/^https?:\/\//i.test(link)) link = 'https://' + link;
+    DB.config.linkIndiqueGanhe = link;
+    save();
+  }
+  window.open(link, '_blank');
+}
+
+/* ════════════════════════════════════════════
+   INDIQUE E GANHE (nativo)
+════════════════════════════════════════════ */
+let _filtroIndicacoes = 'pendente';
+
+let _tipoIndicadorAtual = 'consultora';
+
+function abrirNovaIndicacao() {
+  const sel = document.getElementById('indIndicadora');
+  const ativas = [...DB.consultoras].filter(c => c.status !== 'inativa').sort((a,b) => a.nome.localeCompare(b.nome));
+  sel.innerHTML = '<option value="">— Selecione —</option>' + ativas.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+  document.getElementById('indNomeIndicado').value = '';
+  document.getElementById('indTelefone').value = '';
+  document.getElementById('indCidade').value = '';
+  document.getElementById('indCpf').value = '';
+  document.getElementById('indNascimento').value = '';
+  document.getElementById('indNomeIndicadorExterno').value = '';
+  document.getElementById('indPixChave').value = '';
+  document.getElementById('indPixValor').value = brlInput(DB.config.valorPixIndicacao || 20);
+  selecionarTipoIndicador('consultora');
+  document.getElementById('modalNovaIndicacao').classList.add('open');
+}
+
+function selecionarTipoIndicador(tipo) {
+  _tipoIndicadorAtual = tipo;
+  const btnC = document.getElementById('indTipoBtnConsultora');
+  const btnE = document.getElementById('indTipoBtnExterna');
+  const ativo = { borderColor:'var(--rose)', background:'var(--rose-light)', color:'var(--rose-deep)' };
+  const inativo = { borderColor:'var(--border)', background:'white', color:'var(--ink-3)' };
+  const aplicar = (btn, s) => { btn.style.borderColor=s.borderColor; btn.style.background=s.background; btn.style.color=s.color; };
+  aplicar(btnC, tipo === 'consultora' ? ativo : inativo);
+  aplicar(btnE, tipo === 'externa' ? ativo : inativo);
+  document.getElementById('indCampoConsultora').style.display = tipo === 'consultora' ? '' : 'none';
+  document.getElementById('indCampoExterna').style.display = tipo === 'externa' ? '' : 'none';
+}
+
+function salvarNovaIndicacao() {
+  const nomeIndicado = document.getElementById('indNomeIndicado').value.trim();
+  if (!nomeIndicado) { alert('Digite o nome de quem foi indicado.'); return; }
+
+  DB.indicacoes = DB.indicacoes || [];
+  const base = {
+    id: uid(),
+    tipo: _tipoIndicadorAtual,
+    nomeIndicado,
+    telefone: document.getElementById('indTelefone').value.trim(),
+    cidade: document.getElementById('indCidade').value.trim(),
+    cpf: document.getElementById('indCpf').value.trim(),
+    nascimento: document.getElementById('indNascimento').value,
+    status: 'pendente',
+    criadoEm: new Date().toISOString(),
+  };
+
+  if (_tipoIndicadorAtual === 'consultora') {
+    const indicadoraId = document.getElementById('indIndicadora').value;
+    if (!indicadoraId) { alert('Selecione quem fez a indicação.'); return; }
+    const indicadora = DB.consultoras.find(c => c.id === indicadoraId);
+    base.indicadoraId = indicadoraId;
+    base.indicadoraNome = indicadora ? indicadora.nome : '—';
+  } else {
+    const nome = document.getElementById('indNomeIndicadorExterno').value.trim();
+    const pixChave = document.getElementById('indPixChave').value.trim();
+    if (!nome) { alert('Digite o nome de quem indicou.'); return; }
+    if (!pixChave) { alert('Digite a chave Pix para pagamento.'); return; }
+    base.indicadoraNome = nome;
+    base.pixChave = pixChave;
+    base.pixValor = parseNum(document.getElementById('indPixValor').value) || (DB.config.valorPixIndicacao || 20);
+    base.pixPago = false;
+  }
+
+  DB.indicacoes.push(base);
+  save();
+  fecharModal('modalNovaIndicacao');
+  renderIndicacoesLista();
+}
+
+function filtrarIndicacoes(f) {
+  _filtroIndicacoes = f;
+  document.querySelectorAll('.ind-filtro-btn').forEach(b => b.classList.toggle('active', b.dataset.f === f));
+  renderIndicacoesLista();
+}
+
+function renderIndicacoesLista() {
+  const el = document.getElementById('indicacoesLista');
+  if (!el) return;
+  let lista = [...(DB.indicacoes || [])].sort((a,b) => b.criadoEm.localeCompare(a.criadoEm));
+  if (_filtroIndicacoes !== 'todas') lista = lista.filter(i => i.status === _filtroIndicacoes);
+
+  if (!lista.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:40px 0;">Nenhuma indicação aqui ainda.</div>';
+    return;
+  }
+
+  const cores = { pendente: ['var(--amber-bg)','var(--amber)','Aguardando'], aprovada: ['var(--green-bg)','var(--green)','Aprovada'], reprovada: ['var(--red-bg)','var(--red)','Reprovada'] };
+  el.innerHTML = lista.map(i => {
+    const externa = i.tipo === 'externa';
+    const [bg, cor, txt] = cores[i.status] || cores.pendente;
+    return `
+    <div class="card" style="padding:14px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--ink);">${i.nomeIndicado}</div>
+          <div style="font-size:12px;color:var(--ink-3);">Indicada por <strong>${i.indicadoraNome}</strong>${externa ? ' <span style="color:var(--rose);font-weight:700;">· fora da Romance</span>' : ''}</div>
+          ${i.cidade ? `<div style="font-size:11.5px;color:var(--ink-3);">${i.cidade}${i.telefone ? ' · ' + i.telefone : ''}</div>` : ''}
+          ${(i.cpf || i.nascimento) ? `<div style="font-size:11.5px;color:var(--ink-3);">${[i.cpf, i.nascimento ? i.nascimento.split('-').reverse().join('/') : ''].filter(Boolean).join(' · ')}</div>` : ''}
+        </div>
+        <span style="font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:8px;background:${bg};color:${cor};white-space:nowrap;">${txt}</span>
+      </div>
+      <div style="font-size:10.5px;color:var(--ink-3);margin-bottom:8px;">${dataHoraCurta(i.criadoEm)}</div>
+      ${i.status === 'pendente' ? `
+      <div style="display:flex;gap:8px;">
+        <button onclick="reprovarIndicacao('${i.id}')" style="flex:1;background:var(--red-bg);color:var(--red);border:none;border-radius:10px;padding:9px;font-size:12.5px;font-weight:700;font-family:var(--font);cursor:pointer;">✕ Reprovar</button>
+        <button onclick="aprovarIndicacao('${i.id}')" style="flex:1;background:var(--green);color:white;border:none;border-radius:10px;padding:9px;font-size:12.5px;font-weight:700;font-family:var(--font);cursor:pointer;">✓ Aprovar ${externa ? '(💰 Pix)' : '(⭐1)'}</button>
+      </div>` : ''}
+      ${i.status === 'aprovada' && externa ? `
+      <div style="background:${i.pixPago?'var(--green-bg)':'var(--amber-bg)'};border-radius:10px;padding:10px 12px;margin-top:4px;display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;">
+          <div style="font-size:12.5px;font-weight:800;color:${i.pixPago?'var(--green)':'var(--amber)'};">${i.pixPago ? '✓ Pix pago' : '💰 Pix pendente: ' + brl(i.pixValor)}</div>
+          <div style="font-size:10.5px;color:var(--ink-3);">Chave: ${i.pixChave}</div>
+        </div>
+        ${!i.pixPago ? `<button onclick="marcarPixPago('${i.id}')" style="background:var(--amber);color:white;border:none;border-radius:8px;padding:7px 12px;font-size:11.5px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;">Marcar pago</button>` : ''}
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function aprovarIndicacao(id) {
+  const ind = (DB.indicacoes || []).find(i => i.id === id);
+  if (!ind) return;
+  ind.status = 'aprovada';
+  ind.aprovadaEm = new Date().toISOString();
+
+  if (ind.tipo === 'externa') {
+    // Pessoa de fora: não ganha estrela, gera um Pix a pagar
+    save();
+    renderIndicacoesLista();
+    return;
+  }
+
+  DB.estrelas = DB.estrelas || [];
+  const origemId = 'nativa:' + ind.id;
+  const jaTem = DB.estrelas.some(e => e.origemId === origemId);
+  if (!jaTem) {
+    DB.estrelas.push({
+      id: uid(),
+      consultoraId: ind.indicadoraId || null,
+      nome: ind.indicadoraNome,
+      programa: 'indicacao',
+      origem: 'Indique e Ganhe',
+      origemId,
+      liveId: null,
+      liveTitulo: 'Indicação aprovada: ' + ind.nomeIndicado,
+      criadoEm: new Date().toISOString(),
+    });
+  }
+  save();
+  renderIndicacoesLista();
+}
+
+function marcarPixPago(id) {
+  const ind = (DB.indicacoes || []).find(i => i.id === id);
+  if (!ind) return;
+  ind.pixPago = true;
+  ind.pixPagoEm = new Date().toISOString();
+  save();
+  renderIndicacoesLista();
+}
+
+function reprovarIndicacao(id) {
+  const ind = (DB.indicacoes || []).find(i => i.id === id);
+  if (!ind) return;
+  ind.status = 'reprovada';
+  save();
+  renderIndicacoesLista();
+}
+
+function renderParticipantesLista() {
+  const live = getLiveAtual();
+  if (!live) return;
+  document.getElementById('liveQtdParticipantes').textContent = '(' + (live.participantes||[]).length + ')';
+  const el = document.getElementById('liveParticipantesLista');
+  if (!live.participantes || !live.participantes.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:14px 0;background:var(--surface);border-radius:12px;">Nenhuma participante ainda.</div>';
+    return;
+  }
+  el.innerHTML = live.participantes.map(p => `
+    <div style="display:flex;align-items:center;gap:10px;background:white;border:1px solid var(--border);border-radius:10px;padding:9px 12px;margin-bottom:5px;">
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;color:${live.vencedora===p.nome?'var(--green)':'var(--ink)'};">${p.nome}${live.vencedora===p.nome?' 🏆':''}</div>
+        <div style="font-size:10.5px;color:var(--amber);font-weight:700;">⭐ ${totalEstrelas(p)} no total</div>
+      </div>
+      <button onclick="removerParticipante('${p.id}')" style="background:none;border:none;color:var(--ink-3);font-size:16px;cursor:pointer;">✕</button>
+    </div>`).join('');
+}
+
+function adicionarParticipante() {
+  const input = document.getElementById('liveNovoParticipante');
+  const nome = input.value.trim();
+  if (!nome) return;
+  const live = getLiveAtual();
+  live.participantes = live.participantes || [];
+  const p = { id: uid(), nome, consultoraId: null };
+  live.participantes.push(p);
+  concederEstrela(live, p);
+  save();
+  input.value = '';
+  renderParticipantesLista();
+}
+
+function removerParticipante(id) {
+  const live = getLiveAtual();
+  const p = (live.participantes || []).find(x => x.id === id);
+  if (p) revogarEstrela(live, p);
+  live.participantes = (live.participantes || []).filter(p => p.id !== id);
+  save();
+  renderParticipantesLista();
+}
+
+function abrirColarLista() {
+  document.getElementById('listaColada').value = '';
+  document.getElementById('modalColarLista').classList.add('open');
+}
+
+function salvarListaColada() {
+  const texto = document.getElementById('listaColada').value;
+  const nomes = texto.split('\n').map(n => n.trim()).filter(Boolean);
+  if (!nomes.length) { fecharModal('modalColarLista'); return; }
+  const live = getLiveAtual();
+  live.participantes = live.participantes || [];
+  nomes.forEach(nome => {
+    const p = { id: uid(), nome, consultoraId: null };
+    live.participantes.push(p);
+    concederEstrela(live, p);
+  });
+  save();
+  fecharModal('modalColarLista');
+  renderParticipantesLista();
+}
+
+/* ── Selecionar consultoras cadastradas (com checkbox) ── */
+function abrirSelecionarConsultoras() {
+  document.getElementById('filtroSelecionarConsultoras').value = '';
+  renderSelecionarConsultoras();
+  document.getElementById('modalSelecionarConsultoras').classList.add('open');
+}
+
+function renderSelecionarConsultoras() {
+  const live = getLiveAtual();
+  if (!live) return;
+  const filtro = document.getElementById('filtroSelecionarConsultoras').value.trim().toLowerCase();
+  const idsSelecionados = new Set((live.participantes||[]).filter(p => p.consultoraId).map(p => p.consultoraId));
+  const lista = DB.consultoras
+    .filter(c => c.status !== 'inativa')
+    .filter(c => !filtro || c.nome.toLowerCase().includes(filtro))
+    .sort((a,b) => a.nome.localeCompare(b.nome));
+
+  const el = document.getElementById('selecionarConsultorasLista');
+  if (!lista.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Nenhuma consultora encontrada.</div>';
+    return;
+  }
+  el.innerHTML = lista.map(c => {
+    const marcada = idsSelecionados.has(c.id);
+    return `
+    <div onclick="toggleConsultoraParticipante('${c.id}')" style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--border);cursor:pointer;">
+      <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid ${marcada?'var(--green)':'var(--border)'};background:${marcada?'var(--green)':'white'};display:flex;align-items:center;justify-content:center;color:white;font-size:13px;font-weight:800;flex-shrink:0;">${marcada?'✓':''}</div>
+      <div style="flex:1;font-size:13.5px;font-weight:600;color:var(--ink);">${c.nome}</div>
+      <div style="font-size:10.5px;color:var(--amber);font-weight:700;">⭐ ${totalEstrelas({consultoraId:c.id, nome:c.nome})}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleConsultoraParticipante(consultoraId) {
+  const live = getLiveAtual();
+  const cons = DB.consultoras.find(c => c.id === consultoraId);
+  if (!live || !cons) return;
+
+  live.participantes = live.participantes || [];
+  const existente = live.participantes.find(p => p.consultoraId === consultoraId);
+
+  if (existente) {
+    revogarEstrela(live, existente);
+    live.participantes = live.participantes.filter(p => p.consultoraId !== consultoraId);
+  } else {
+    const p = { id: uid(), nome: cons.nome, consultoraId };
+    live.participantes.push(p);
+    concederEstrela(live, p);
+  }
+  save();
+  renderSelecionarConsultoras();
+  renderParticipantesLista();
+}
+
+/* ── Histórico de estrelas ── */
+function estrelasUsadasEmResgates(chave) {
+  return (DB.resgates || []).filter(r => r.chave === chave).reduce((s,r) => s + (r.estrelasUsadas||10), 0);
+}
+
+function renderEstrelasRanking() {
+  const el = document.getElementById('estrelasRanking');
+  const mapa = new Map();
+  (DB.estrelas || []).forEach(e => {
+    const chave = chaveEstrela(e);
+    if (!mapa.has(chave)) mapa.set(chave, { chave, nome: e.nome, consultoraId: e.consultoraId, total: 0, sorteio: 0, indicacao: 0 });
+    const item = mapa.get(chave);
+    item.total++;
+    if (e.programa === 'indicacao') item.indicacao++; else item.sorteio++;
+  });
+  const ranking = [...mapa.values()].map(r => ({ ...r, disponiveis: r.total - estrelasUsadasEmResgates(r.chave) })).sort((a,b) => b.total - a.total);
+
+  if (!ranking.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:40px 0;">Nenhuma estrela concedida ainda.<br>Marque participantes numa live ou aprove uma indicação para começar.</div>';
+    return;
+  }
+  el.innerHTML = ranking.map((r, i) => `
+    <div class="card" style="padding:13px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;" onclick="abrirEstrelasDetalhe('${r.chave}')">
+      <div style="font-size:13px;font-weight:800;color:var(--ink-3);width:20px;">${i+1}º</div>
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:800;color:var(--ink);">${r.nome}</div>
+        <div style="font-size:10px;color:var(--ink-3);">${[r.sorteio ? '🎥 ' + r.sorteio + ' sorteio(s)' : '', r.indicacao ? '🎁 ' + r.indicacao + ' indicação(ões)' : ''].filter(Boolean).join(' · ')}${r.consultoraId ? '' : ' · sem cadastro'}</div>
+        ${r.disponiveis >= 10 ? '<div style="font-size:10.5px;color:var(--amber);font-weight:800;margin-top:2px;">🎁 Pronta pra resgatar!</div>' : ''}
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:15px;font-weight:800;color:var(--amber);">⭐ ${r.total}</div>
+        ${r.disponiveis !== r.total ? `<div style="font-size:9.5px;color:var(--ink-3);">${r.disponiveis} disponíveis</div>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+let _estrelaChaveAtual = null, _estrelaNomeAtual = null, _estrelaConsultoraIdAtual = null;
+
+function abrirEstrelasDetalhe(chave) {
+  const registros = (DB.estrelas || []).filter(e => chaveEstrela(e) === chave).sort((a,b) => a.criadoEm.localeCompare(b.criadoEm));
+  if (!registros.length) return;
+
+  _estrelaChaveAtual = chave;
+  _estrelaNomeAtual = registros[0].nome;
+  _estrelaConsultoraIdAtual = registros[0].consultoraId;
+
+  const disponiveis = registros.length - estrelasUsadasEmResgates(chave);
+
+  document.getElementById('estDetNome').textContent = registros[0].nome;
+  document.getElementById('estDetTotal').textContent = registros.length + (registros.length===1 ? ' estrela' : ' estrelas') + ' no total · ' + disponiveis + ' disponíveis';
+
+  const resgateBox = document.getElementById('estDetResgateBox');
+  if (disponiveis >= 10) {
+    resgateBox.style.display = 'flex';
+    document.getElementById('estDetResgateTxt').textContent = disponiveis + ' estrelas disponíveis — pronta pra resgatar!';
+  } else {
+    resgateBox.style.display = 'none';
+  }
+
+  const resgatesDaPessoa = (DB.resgates || []).filter(r => r.chave === chave).map(r => ({ ...r, _tipo: 'resgate' }));
+  const timeline = [...registros.map(r => ({ ...r, _tipo: 'estrela' })), ...resgatesDaPessoa].sort((a,b) => a.criadoEm.localeCompare(b.criadoEm));
+
+  document.getElementById('estDetLista').innerHTML = timeline.map(r => {
+    if (r._tipo === 'resgate') {
+      return `
+      <div style="display:flex;align-items:center;gap:10px;background:var(--rose-light);border-radius:10px;padding:10px 12px;margin-bottom:6px;">
+        <span>🎁</span>
+        <div style="flex:1;">
+          <div style="font-size:13px;color:var(--ink);font-weight:600;">Resgate: ${r.tipo === 'pix' ? 'Pix ' + brl(r.valor) : r.descricao} — usou 10 ⭐</div>
+          <div style="font-size:10px;color:var(--ink-3);">Prêmio resgatado</div>
+        </div>
+        <div style="font-size:10.5px;color:var(--ink-3);">${dataHoraCurta(r.criadoEm)}</div>
+      </div>`;
+    }
+    return `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:10px;padding:10px 12px;margin-bottom:6px;">
+      <span style="color:var(--amber);">⭐</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;color:var(--ink);font-weight:600;">${r.liveTitulo} — 1 estrela</div>
+        <div style="font-size:10px;color:var(--ink-3);">${r.programa === 'indicacao' ? '🎁 Indique e Ganhe' : '🎥 Live & Sorteio'}</div>
+      </div>
+      <div style="font-size:10.5px;color:var(--ink-3);">${dataHoraCurta(r.criadoEm)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('modalEstrelasDetalhe').classList.add('open');
+}
+
+/* ── Resgate de prêmio (10 estrelas) ── */
+let _tipoResgateAtual = 'pix';
+
+function abrirResgate() {
+  document.getElementById('resgNomeLabel').textContent = _estrelaNomeAtual;
+  document.getElementById('resgPixValor').value = '';
+  document.getElementById('resgPixChave').value = '';
+  document.getElementById('resgBrindeDesc').value = '';
+  selecionarTipoResgate('pix');
+  fecharModal('modalEstrelasDetalhe');
+  document.getElementById('modalResgate').classList.add('open');
+}
+
+function selecionarTipoResgate(tipo) {
+  _tipoResgateAtual = tipo;
+  const btnPix = document.getElementById('resgBtnPix');
+  const btnBrinde = document.getElementById('resgBtnBrinde');
+  const ativo = { borderColor:'var(--rose)', background:'var(--rose-light)', color:'var(--rose-deep)' };
+  const inativo = { borderColor:'var(--border)', background:'white', color:'var(--ink-3)' };
+  const aplicar = (btn, s) => { btn.style.borderColor=s.borderColor; btn.style.background=s.background; btn.style.color=s.color; };
+  aplicar(btnPix, tipo === 'pix' ? ativo : inativo);
+  aplicar(btnBrinde, tipo === 'brinde' ? ativo : inativo);
+  document.getElementById('resgCampoPix').style.display = tipo === 'pix' ? '' : 'none';
+  document.getElementById('resgCampoBrinde').style.display = tipo === 'brinde' ? '' : 'none';
+}
+
+function salvarResgate() {
+  const chave = _estrelaChaveAtual;
+  if (!chave) return;
+
+  const totalGanhas = (DB.estrelas || []).filter(e => chaveEstrela(e) === chave).length;
+  const disponiveis = totalGanhas - estrelasUsadasEmResgates(chave);
+  if (disponiveis < 10) { alert('Essa consultora ainda não tem 10 estrelas disponíveis.'); return; }
+
+  const resgate = {
+    id: uid(),
+    chave,
+    nome: _estrelaNomeAtual,
+    consultoraId: _estrelaConsultoraIdAtual,
+    tipo: _tipoResgateAtual,
+    estrelasUsadas: 10,
+    criadoEm: new Date().toISOString(),
+  };
+
+  if (_tipoResgateAtual === 'pix') {
+    const valor = parseNum(document.getElementById('resgPixValor').value);
+    const chavePix = document.getElementById('resgPixChave').value.trim();
+    if (!valor) { alert('Informe o valor do Pix.'); return; }
+    if (!chavePix) { alert('Informe a chave Pix.'); return; }
+    resgate.valor = valor;
+    resgate.pixChave = chavePix;
+  } else {
+    const desc = document.getElementById('resgBrindeDesc').value.trim();
+    if (!desc) { alert('Descreva o brinde.'); return; }
+    resgate.descricao = desc;
+  }
+
+  DB.resgates = DB.resgates || [];
+  DB.resgates.push(resgate);
+  save();
+  fecharModal('modalResgate');
+  renderEstrelasRanking();
+}
+
+function salvarLiveCampo(campo, valor) {
+  const live = getLiveAtual();
+  if (!live) return;
+  live[campo] = valor;
+  save();
+}
+
+function realizarSorteio() {
+  const live = getLiveAtual();
+  if (!live || !(live.participantes||[]).length) { alert('Adicione ao menos uma participante antes de sortear.'); return; }
+
+  const overlay = document.getElementById('sorteioOverlay');
+  const die = document.getElementById('sorteioDie');
+  const label = document.getElementById('sorteioLabel');
+  const nomeEl = document.getElementById('sorteioNome');
+  const btnFechar = document.getElementById('sorteioFechar');
+  const confetesEl = document.getElementById('sorteioConfetes');
+
+  confetesEl.innerHTML = '';
+  btnFechar.style.display = 'none';
+  label.textContent = 'Sorteando...';
+  die.classList.add('girando');
+  nomeEl.classList.remove('revelada');
+  nomeEl.classList.add('girando');
+  overlay.classList.add('open');
+
+  let voltas = 0;
+  const totalVoltas = 20;
+  const intervalo = setInterval(() => {
+    const aleatorio = live.participantes[Math.floor(Math.random() * live.participantes.length)];
+    nomeEl.textContent = aleatorio.nome;
+    voltas++;
+    if (voltas >= totalVoltas) {
+      clearInterval(intervalo);
+      const vencedora = live.participantes[Math.floor(Math.random() * live.participantes.length)];
+
+      die.classList.remove('girando');
+      die.textContent = '🏆';
+      label.textContent = '🎉 Vencedora do sorteio';
+      nomeEl.classList.remove('girando');
+      nomeEl.textContent = vencedora.nome;
+      nomeEl.classList.add('revelada');
+      dispararConfetes(confetesEl);
+      btnFechar.style.display = 'inline-block';
+
+      live.vencedora = vencedora.nome;
+      live.sorteadoEm = new Date().toISOString();
+      save();
+      renderParticipantesLista();
+
+      const resultado = document.getElementById('liveResultado');
+      resultado.style.display = '';
+      document.getElementById('liveVencedoraNome').textContent = vencedora.nome;
+    }
+  }, 90);
+}
+
+function dispararConfetes(container) {
+  const emojis = ['🎉','🎊','✨','💐','🏆','💕'];
+  for (let i = 0; i < 26; i++) {
+    const span = document.createElement('span');
+    span.className = 'sorteio-confete';
+    span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    span.style.left = Math.random() * 100 + '%';
+    span.style.animationDuration = (1.6 + Math.random() * 1.4) + 's';
+    span.style.animationDelay = (Math.random() * 0.4) + 's';
+    container.appendChild(span);
+  }
+}
+
+function fecharSorteioOverlay() {
+  document.getElementById('sorteioOverlay').classList.remove('open');
+  document.getElementById('sorteioDie').textContent = '🎲';
+}
+
+function gerarMensagemPadrao(live) {
+  const partes = [];
+  partes.push('🎥✨ Vem para a nossa LIVE no Instagram!');
+  if (live.data || live.horario) {
+    partes.push('📅 ' + [fmtDataCurta(live.data), live.horario ? live.horario + 'h' : ''].filter(Boolean).join(' às '));
+  }
+  if (live.premio) {
+    partes.push('🎁 Vamos sortear *' + live.premio + '* entre quem estiver assistindo!');
+  } else {
+    partes.push('🎁 Vai ter sorteio pra quem estiver assistindo!');
+  }
+  partes.push('Chama suas amigas e não perca 💄💕');
+  return partes.join('\n');
+}
+
+function copiarMensagemLive() {
+  const texto = document.getElementById('liveMensagemWpp').value;
+  navigator.clipboard.writeText(texto).then(() => {
+    alert('Mensagem copiada! Já pode colar no WhatsApp.');
+  }).catch(() => {
+    alert('Não foi possível copiar automaticamente. Selecione o texto manualmente.');
+  });
+}
+
+function abrirWhatsappLive() {
+  const texto = document.getElementById('liveMensagemWpp').value;
+  window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
+}
+
+function gerarImagemLive() {
+  const live = getLiveAtual();
+  if (!live) return;
+  const canvas = document.getElementById('liveCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  // Fundo em degradê usando a paleta do app
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#3D2029');
+  grad.addColorStop(0.5, '#6B4552');
+  grad.addColorStop(1, '#B8677A');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Selo dourado no topo
+  ctx.fillStyle = '#F1E4C9';
+  ctx.font = '700 22px "Work Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('LIVE NO INSTAGRAM', W/2, 90);
+
+  // Título
+  ctx.fillStyle = '#FFFDFB';
+  ctx.font = '800 46px "Playfair Display", serif';
+  wrapText(ctx, live.titulo || 'Nossa Live', W/2, 190, W-100, 54);
+
+  // Data/horário
+  ctx.font = '600 26px "Work Sans", sans-serif';
+  ctx.fillStyle = '#F1E4C9';
+  const dataTxt = [fmtDataCurta(live.data), live.horario ? live.horario + 'h' : ''].filter(Boolean).join(' às ');
+  ctx.fillText(dataTxt || 'Em breve', W/2, 330);
+
+  // Caixa do prêmio
+  if (live.premio) {
+    ctx.fillStyle = 'rgba(255,255,255,.12)';
+    roundRect(ctx, 70, 410, W-140, 130, 20);
+    ctx.fill();
+    ctx.fillStyle = '#F1E4C9';
+    ctx.font = '700 18px "Work Sans", sans-serif';
+    ctx.fillText('SORTEIO ESPECIAL', W/2, 460);
+    ctx.fillStyle = '#FFFDFB';
+    ctx.font = '800 30px "Playfair Display", serif';
+    wrapText(ctx, live.premio, W/2, 505, W-200, 36);
+  }
+
+  // Rodapé
+  ctx.font = '600 20px "Work Sans", sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,.7)';
+  ctx.fillText('Chama suas amigas e não perca! 💕', W/2, H-60);
+
+  canvas.style.display = 'block';
+  const link = document.getElementById('liveDownloadImg');
+  link.href = canvas.toDataURL('image/png');
+  link.download = 'convite-' + (live.titulo||'live').toLowerCase().replace(/[^a-z0-9]+/g,'-') + '.png';
+  link.style.display = 'block';
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  const lines = [];
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+      lines.push(line);
+      line = words[n] + ' ';
+    } else {
+      line = testLine;
+    }
+  }
+  lines.push(line);
+  const startY = y - ((lines.length - 1) * lineHeight) / 2;
+  lines.forEach((l, i) => ctx.fillText(l.trim(), x, startY + i * lineHeight));
+}
+
+function toggleTarefa(id, diaKey) {
+  diaKey = diaKey || hojeAgendaKey();
+  const t = (DB.agenda[diaKey] || []).find(x => x.id === id);
+  if (!t) return;
+  t.feito = !t.feito;
+  save();
+  renderAgendaHoje();
+  renderAgendaCompleta();
+}
+
+function abrirNovaTarefa(id, diaKey) {
+  diaKey = diaKey || hojeAgendaKey();
+  const t = id ? (DB.agenda[diaKey] || []).find(x => x.id === id) : null;
+  document.getElementById('tarefaModalTitulo').textContent = t ? 'Editar tarefa' : 'Nova tarefa';
+  document.getElementById('tarefaId').value = t ? t.id : '';
+  document.getElementById('tarefaDiaKey').value = diaKey;
+  document.getElementById('tarefaTexto').value = t ? t.texto : '';
+  document.getElementById('tarefaHorario').value = t ? (t.horario || '') : '';
+  document.getElementById('tarefaPrioridade').value = t ? (t.prioridade || 'normal') : 'normal';
+  document.getElementById('tarefaBtnExcluir').style.display = t ? '' : 'none';
+  document.getElementById('modalNovaTarefa').classList.add('open');
+}
+
+function salvarTarefa() {
+  const texto = document.getElementById('tarefaTexto').value.trim();
+  if (!texto) { alert('Descreva a tarefa.'); return; }
+  const diaKey = document.getElementById('tarefaDiaKey').value;
+  const id = document.getElementById('tarefaId').value;
+  DB.agenda = DB.agenda || blankAgenda();
+  DB.agenda[diaKey] = DB.agenda[diaKey] || [];
+
+  if (id) {
+    const t = DB.agenda[diaKey].find(x => x.id === id);
+    if (t) { t.texto = texto; t.horario = document.getElementById('tarefaHorario').value; t.prioridade = document.getElementById('tarefaPrioridade').value; }
+  } else {
+    DB.agenda[diaKey].push({
+      id: uid(), texto,
+      horario: document.getElementById('tarefaHorario').value,
+      prioridade: document.getElementById('tarefaPrioridade').value,
+      feito: false, autor: 'self', criadoEm: agoraISO(),
+    });
+  }
+  save();
+  fecharModal('modalNovaTarefa');
+  renderAgendaHoje();
+  renderAgendaCompleta();
+}
+
+function excluirTarefa() {
+  const diaKey = document.getElementById('tarefaDiaKey').value;
+  const id = document.getElementById('tarefaId').value;
+  if (!id) return;
+  if (!confirm('Excluir esta tarefa?')) return;
+  DB.agenda[diaKey] = (DB.agenda[diaKey] || []).filter(x => x.id !== id);
+  save();
+  fecharModal('modalNovaTarefa');
+  renderAgendaHoje();
+  renderAgendaCompleta();
+}
+
+function agoraISO() { return new Date().toISOString(); }
+
+/* ════════════════════════════════════════════
+   OBSERVAÇÕES DA ADMINISTRAÇÃO
+════════════════════════════════════════════ */
+function atualizarObsBanner() {
+  const banner = document.getElementById('obsBanner');
+  if (!banner) return;
+  const naoLidas = (DB.observacoes || []).filter(o => !o.lida);
+  if (!naoLidas.length) { banner.style.display = 'none'; return; }
+  const ultima = naoLidas[naoLidas.length - 1];
+  document.getElementById('obsBannerTitulo').textContent = naoLidas.length > 1 ? naoLidas.length + ' novas observações da administração' : 'Nova observação da administração';
+  document.getElementById('obsBannerTexto').textContent = ultima.texto;
+  banner.style.display = '';
+}
+
+function abrirObservacoes() {
+  const lista = [...(DB.observacoes || [])].reverse();
+  document.getElementById('obsListaModal').innerHTML = lista.length ? lista.map(o => `
+    <div style="background:${o.lida?'var(--surface)':'var(--amber-bg)'};border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+      <div style="font-size:13px;color:var(--ink);font-weight:600;line-height:1.5;">${o.texto}</div>
+      <div style="font-size:10.5px;color:var(--ink-3);margin-top:4px;">${dataHoraCurta(o.criadoEm)}</div>
+    </div>`).join('') : '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Nenhuma observação ainda.</div>';
+
+  (DB.observacoes || []).forEach(o => o.lida = true);
+  save();
+  atualizarObsBanner();
+
+  document.getElementById('modalObservacoes').classList.add('open');
+}
+
+function dataHoraCurta(iso) {
+  try { return new Date(iso).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }); }
+  catch(e) { return ''; }
+}
+
+let ACTIVE_PROFILE = (() => {
+  try { return JSON.parse(localStorage.getItem('rep_active_profile') || 'null'); } catch(e) { return null; }
 })();
 
-const KEY = 'gestao_rep_v2'; // ainda usado como cache local
+// ID fixo da pessoa logada (só existe para quem opera consultoras — não para o admin)
+const USER_ID = (ACTIVE_PROFILE && ACTIVE_PROFILE.role === 'op') ? ACTIVE_PROFILE.id : null;
+
+const KEY = 'gestao_rep_v2_' + (USER_ID || 'sem_perfil'); // cache local, namespaced por pessoa
 let DB = (() => {
   try {
     const r = localStorage.getItem(KEY);
@@ -1604,14 +3210,27 @@ let DB = (() => {
             semanas: parsed.semanas || [],
             semanaAtiva: parsed.semanaAtiva || null,
             config: parsed.config || { geminiKey: '', metaPadrao: 15000 },
+            agenda: parsed.agenda || blankAgenda(),
+            observacoes: parsed.observacoes || [],
+            fcmTokens: parsed.fcmTokens || [],
+            lives: parsed.lives || [],
+            estrelas: parsed.estrelas || [],
+            indicacoes: parsed.indicacoes || [],
+            resgates: parsed.resgates || [],
             seq: parsed.seq || 1
           };
         }
       }
     }
   } catch(e) {}
-  return { consultoras:[], semanas:[], semanaAtiva:null, config:{geminiKey:'',metaPadrao:15000}, seq:1 };
+  return { consultoras:[], semanas:[], semanaAtiva:null, config:{geminiKey:'',metaPadrao:15000}, agenda: blankAgenda(), observacoes:[], fcmTokens:[], lives:[], estrelas:[], indicacoes:[], resgates:[], seq:1 };
 })();
+
+// Com login fixo, o nome do tablet é sempre o nome da pessoa logada (não precisa mais digitar)
+if (ACTIVE_PROFILE && ACTIVE_PROFILE.role === 'op') {
+  DB.config = DB.config || {};
+  DB.config.nomeTablet = ACTIVE_PROFILE.nome;
+}
 
 // Firebase refs
 let _db = null;
@@ -1619,6 +3238,7 @@ let _docRef = null;
 let _syncTimeout = null;
 
 async function initFirebase() {
+  if (!USER_ID) return; // admin não tem doc próprio — usa initFirebaseAdmin()
   try {
     if (typeof firebase === 'undefined') {
       throw new Error('Firebase SDK não carregou');
@@ -1636,6 +3256,9 @@ async function initFirebase() {
       const remoto = snap.data();
       if (remoto && (remoto.seq || 0) >= DB.seq) {
         DB = remoto;
+        DB.agenda = DB.agenda || blankAgenda();
+        DB.observacoes = DB.observacoes || [];
+        DB.fcmTokens = DB.fcmTokens || []; DB.lives = DB.lives || []; DB.estrelas = DB.estrelas || []; DB.indicacoes = DB.indicacoes || []; DB.resgates = DB.resgates || [];
         localStorage.setItem(KEY, JSON.stringify(DB));
         renderSemana();
         console.log('Dados carregados do Firebase');
@@ -1654,6 +3277,9 @@ async function initFirebase() {
         const remoto = snap.data();
         if (remoto && (remoto.seq || 0) > DB.seq) {
           DB = remoto;
+          DB.agenda = DB.agenda || blankAgenda();
+          DB.observacoes = DB.observacoes || [];
+          DB.fcmTokens = DB.fcmTokens || []; DB.lives = DB.lives || []; DB.estrelas = DB.estrelas || []; DB.indicacoes = DB.indicacoes || []; DB.resgates = DB.resgates || [];
           localStorage.setItem(KEY, JSON.stringify(DB));
           renderSemana();
         }
@@ -1662,6 +3288,7 @@ async function initFirebase() {
 
     document.getElementById('syncStatus').textContent = '● Sincronizado';
     document.getElementById('syncStatus').style.color = '#6EF0B0';
+    sincronizarEstrelasIndicacoes();
   } catch(e) {
     console.error('Firebase erro:', e);
     document.getElementById('syncStatus').textContent = '● Local';
@@ -1687,6 +3314,224 @@ function save() {
 }
 
 function uid() { return 'id' + (DB.seq++) + Date.now().toString(36); }
+function adminUid() { return 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+/* ════════════════════════════════════════════
+   PAINEL DO ADMINISTRADOR
+════════════════════════════════════════════ */
+let _adminDB = {};
+let _adminRefs = {};
+let _adminPessoaAtual = null;
+
+function initFirebaseAdmin() {
+  try {
+    if (typeof firebase === 'undefined') throw new Error('Firebase SDK não carregou');
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    _db = firebase.firestore();
+
+    OPERADORES.forEach(op => {
+      const ref = _db.collection('representantes').doc(op.id);
+      _adminRefs[op.id] = ref;
+      ref.onSnapshot(snap => {
+        _adminDB[op.id] = snap.exists ? snap.data() : null;
+        if (document.getElementById('view-admin-home')?.classList.contains('active')) renderAdminHome();
+        if (_adminPessoaAtual === op.id && document.getElementById('view-admin-pessoa')?.classList.contains('active')) renderAdminPessoa();
+      });
+    });
+  } catch(e) {
+    console.error('Erro admin firebase:', e);
+    document.getElementById('adminHomeLista').innerHTML = '<div style="text-align:center;color:var(--ink-3);padding:20px;">Erro ao conectar: ' + e.message + '</div>';
+  }
+}
+
+function _statsSemanaPessoa(data) {
+  if (!data) return null;
+  const semanas = data.semanas || [];
+  const sem = (data.semanaAtiva != null ? semanas.find(s => s.numero === data.semanaAtiva) : semanas[semanas.length-1]) || null;
+  if (!sem) return { sem: null, previstas:0, atendidas:0, vendido:0, recebido:0, meta: (data.config && data.config.metaPadrao) || 15000 };
+  let vendido = 0, recebido = 0;
+  (sem.consultoras || []).forEach(c => { vendido += (c.vendido||0); recebido += (c.recebido||0); });
+  const previstas = (sem.consultoras || []).length;
+  const atendidas = (sem.consultoras || []).filter(c => c.status === 'concluida').length;
+  const meta = sem.meta || (data.config && data.config.metaPadrao) || 15000;
+  return { sem, previstas, atendidas, vendido, recebido, meta };
+}
+
+function renderAdminHome() {
+  const el = document.getElementById('adminHomeLista');
+  el.innerHTML = OPERADORES.map(op => {
+    const data = _adminDB[op.id];
+    if (data === undefined) return `<div class="card" style="padding:14px;margin-bottom:10px;color:var(--ink-3);font-size:13px;">Carregando ${op.nome}...</div>`;
+    if (data === null) return `<div class="card" style="padding:14px;margin-bottom:10px;">
+        <div style="font-size:14px;font-weight:800;color:var(--ink);">${op.nome}</div>
+        <div style="font-size:12px;color:var(--ink-3);">Ainda não usou o app neste aparelho.</div>
+      </div>`;
+    const st = _statsSemanaPessoa(data);
+    const pct = st.meta > 0 ? Math.round((st.vendido||0)/st.meta*100) : 0;
+    const naoLidas = (data.observacoes || []).filter(o => !o.lida).length;
+    return `
+    <div class="card" style="padding:14px;margin-bottom:10px;cursor:pointer;" onclick="abrirAdminPessoa('${op.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:${CORES_PESSOA[op.id]};display:flex;align-items:center;justify-content:center;color:white;font-weight:800;">${op.nome.charAt(0)}</div>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:var(--ink);">${op.nome}</div>
+            <div style="font-size:11px;color:var(--ink-3);">${st.sem ? 'Semana ' + st.sem.numero : 'Sem semana ativa'}</div>
+          </div>
+        </div>
+        <span style="color:var(--ink-3);font-size:18px;">›</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:12.5px;color:var(--ink-2);">Atendidas <strong>${st.atendidas}/${st.previstas}</strong> · Vendido <strong>${brl(st.vendido)}</strong></div>
+        <div style="font-size:15px;font-weight:800;color:${pct>=100?'var(--green)':'var(--ink)'};">${pct}%</div>
+      </div>
+      ${naoLidas ? `<div style="margin-top:6px;font-size:11px;color:var(--amber);font-weight:700;">📋 ${naoLidas} observação(ões) ainda não lida(s)</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function abrirAdminPessoa(id) {
+  _adminPessoaAtual = id;
+  goTo('admin-pessoa');
+  renderAdminPessoa();
+}
+
+function renderAdminPessoa() {
+  const id = _adminPessoaAtual;
+  const op = PESSOAS.find(p => p.id === id);
+  const data = _adminDB[id];
+  document.getElementById('adminPessoaNomeTop').textContent = op ? op.nome : '—';
+
+  if (data === undefined || data === null) {
+    document.getElementById('adminPessoaStatus').style.display = '';
+    document.getElementById('adminPessoaStatus').textContent = data === null ? (op.nome + ' ainda não usou o app.') : 'Carregando...';
+    document.getElementById('adminPessoaConteudo').style.display = 'none';
+    return;
+  }
+  document.getElementById('adminPessoaStatus').style.display = 'none';
+  document.getElementById('adminPessoaConteudo').style.display = '';
+
+  const st = _statsSemanaPessoa(data);
+  document.getElementById('apSemana').textContent = st.sem ? 'Semana ' + st.sem.numero : '—';
+  document.getElementById('apAtendimentos').textContent = st.atendidas + '/' + st.previstas;
+  document.getElementById('apVendido').textContent = brl(st.vendido);
+  document.getElementById('apRecebido').textContent = brl(st.recebido);
+
+  // Observações
+  const obs = [...(data.observacoes || [])].reverse();
+  document.getElementById('apObsHistorico').innerHTML = obs.length ? obs.map(o => `
+    <div style="background:var(--surface);border-radius:10px;padding:9px 12px;margin-bottom:6px;font-size:12px;color:var(--ink-2);">
+      ${o.texto}
+      <div style="font-size:10px;color:var(--ink-3);margin-top:2px;">${dataHoraCurta(o.criadoEm)} · ${o.lida ? 'lida' : 'não lida'}</div>
+    </div>`).join('') : '<div style="font-size:12px;color:var(--ink-3);">Nenhuma observação enviada ainda.</div>';
+
+  // Agenda por dia
+  const agenda = data.agenda || blankAgenda();
+  document.getElementById('apAgendaDias').innerHTML = DIAS_AGENDA.map(d => {
+    const tarefas = agenda[d.key] || [];
+    return `
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;">${d.label}</div>
+        <button onclick="adminAbrirTarefa('${d.key}')" style="background:none;border:none;color:var(--rose);font-size:11px;font-weight:700;cursor:pointer;">+ Tarefa</button>
+      </div>
+      ${tarefas.length ? tarefas.map(t => `
+        <div onclick="adminAbrirTarefa('${d.key}','${t.id}')" style="display:flex;align-items:center;gap:8px;background:white;border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:4px;cursor:pointer;">
+          <span style="color:${t.feito?'var(--green)':'var(--ink-3)'};font-size:13px;">${t.feito?'✓':'○'}</span>
+          <div style="flex:1;font-size:12.5px;color:var(--ink);text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
+          ${t.horario ? `<span style="font-size:11px;color:var(--ink-3);">${t.horario}</span>` : ''}
+        </div>`).join('') : '<div style="font-size:11.5px;color:var(--ink-3);padding:4px 0;">Nenhuma tarefa.</div>'}
+    </div>`;
+  }).join('');
+
+  // Consultoras da semana
+  const consultoras = (st.sem && st.sem.consultoras) || [];
+  document.getElementById('apConsultorasLista').innerHTML = consultoras.length ? consultoras.map(c => `
+    <div style="display:flex;align-items:center;gap:10px;background:white;border:1px solid var(--border);border-radius:10px;padding:9px 12px;margin-bottom:5px;">
+      <div style="flex:1;">
+        <div style="font-size:12.5px;font-weight:700;color:var(--ink);">${c.nome}</div>
+        <div style="font-size:10.5px;color:var(--ink-3);">${c.cidade||''}</div>
+      </div>
+      <span style="font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:8px;background:${c.status==='concluida'?'var(--green-bg)':'var(--surface-2)'};color:${c.status==='concluida'?'var(--green)':'var(--ink-3)'};">${c.status==='concluida'?'Atendida':'Pendente'}</span>
+    </div>`).join('') : '<div style="font-size:12px;color:var(--ink-3);">Nenhuma consultora nesta semana.</div>';
+}
+
+function adminEnviarObservacao() {
+  const texto = document.getElementById('apNovaObs').value.trim();
+  if (!texto) return;
+  const id = _adminPessoaAtual;
+  const data = _adminDB[id];
+  if (!data) { alert('Sem dados dessa pessoa ainda.'); return; }
+
+  data.observacoes = data.observacoes || [];
+  data.observacoes.push({ id: adminUid(), texto, criadoEm: new Date().toISOString(), lida: false });
+  data.seq = (data.seq || 1) + 1;
+  data.ultimaNotificacao = { tipo: 'observacao', texto, criadoEm: new Date().toISOString() };
+
+  _adminRefs[id].set(data).then(() => {
+    document.getElementById('apNovaObs').value = '';
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao enviar: ' + e.message));
+}
+
+function adminAbrirTarefa(diaKey, taskId) {
+  const data = _adminDB[_adminPessoaAtual];
+  const agenda = data.agenda || blankAgenda();
+  const t = taskId ? (agenda[diaKey] || []).find(x => x.id === taskId) : null;
+
+  document.getElementById('atModalTitulo').textContent = t ? 'Editar tarefa' : 'Nova tarefa';
+  document.getElementById('atId').value = t ? t.id : '';
+  document.getElementById('atDiaKey').value = diaKey;
+  document.getElementById('atTexto').value = t ? t.texto : '';
+  document.getElementById('atHorario').value = t ? (t.horario || '') : '';
+  document.getElementById('atPrioridade').value = t ? (t.prioridade || 'normal') : 'normal';
+  document.getElementById('atBtnExcluir').style.display = t ? '' : 'none';
+  document.getElementById('modalAdminTarefa').classList.add('open');
+}
+
+function adminSalvarTarefa() {
+  const texto = document.getElementById('atTexto').value.trim();
+  if (!texto) { alert('Descreva a tarefa.'); return; }
+  const diaKey = document.getElementById('atDiaKey').value;
+  const id = document.getElementById('atId').value;
+  const horario = document.getElementById('atHorario').value;
+  const prioridade = document.getElementById('atPrioridade').value;
+
+  const pessoaId = _adminPessoaAtual;
+  const data = _adminDB[pessoaId];
+  data.agenda = data.agenda || blankAgenda();
+  data.agenda[diaKey] = data.agenda[diaKey] || [];
+
+  if (id) {
+    const t = data.agenda[diaKey].find(x => x.id === id);
+    if (t) { t.texto = texto; t.horario = horario; t.prioridade = prioridade; }
+  } else {
+    data.agenda[diaKey].push({ id: adminUid(), texto, horario, prioridade, feito: false, autor: 'admin', criadoEm: new Date().toISOString() });
+  }
+  data.seq = (data.seq || 1) + 1;
+  data.ultimaNotificacao = { tipo: 'tarefa', texto, criadoEm: new Date().toISOString() };
+
+  _adminRefs[pessoaId].set(data).then(() => {
+    fecharModal('modalAdminTarefa');
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao salvar: ' + e.message));
+}
+
+function adminExcluirTarefa() {
+  const diaKey = document.getElementById('atDiaKey').value;
+  const id = document.getElementById('atId').value;
+  if (!id || !confirm('Excluir esta tarefa?')) return;
+
+  const pessoaId = _adminPessoaAtual;
+  const data = _adminDB[pessoaId];
+  data.agenda[diaKey] = (data.agenda[diaKey] || []).filter(x => x.id !== id);
+  data.seq = (data.seq || 1) + 1;
+
+  _adminRefs[pessoaId].set(data).then(() => {
+    fecharModal('modalAdminTarefa');
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao excluir: ' + e.message));
+}
 
 /* ════════════════════════════════════════════
    UTILS
@@ -1760,13 +3605,13 @@ function goTo(v) {
   el.classList.add('active');
 
   // Nav bar
-  const semNav = ['atendimento', 'assist-new', 'iniciativas'];
+  const semNav = ['atendimento', 'assist-new', 'iniciativas', 'login', 'admin-home', 'admin-pessoa'];
   document.getElementById('bottomNav').style.display = semNav.includes(v) ? 'none' : 'flex';
 
   // Marca aba ativa
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const navItems = document.querySelectorAll('.nav-item');
-  const navIdx = { semana:0, mais:1, 'fechamento-geral':2 };
+  const navIdx = { semana:0, agenda:1, gerenciar:2, 'fechamento-geral':3, mais:4 };
   if (navIdx[v] !== undefined) navItems[navIdx[v]]?.classList.add('active');
 
   viewHistory.push(v);
@@ -1780,6 +3625,12 @@ function goTo(v) {
   if (v === 'iniciativas')  renderIniciativas();
   if (v === 'relatorio')    renderRelatorio();
   if (v === 'fechamento-geral') renderFechamentoGeral();
+  if (v === 'admin-home')   renderAdminHome();
+  if (v === 'agenda')       renderAgendaCompleta();
+  if (v === 'lives')        renderLivesLista();
+  if (v === 'indicacoes')   renderIndicacoesLista();
+  if (v === 'live-detalhe') renderLiveDetalhe();
+  if (v === 'estrelas')     renderEstrelasRanking();
 }
 
 function goBack() {
@@ -1794,6 +3645,8 @@ function goBack() {
 ════════════════════════════════════════════ */
 function renderSemana() {
   const sem = getSemanaAtiva();
+  renderAgendaHoje();
+  atualizarObsBanner();
 
   if (!sem) {
     document.getElementById('semanaNumero').textContent = 'Semana —';
@@ -3152,13 +5005,16 @@ async function enviarAssistNew() {
 function renderConfig() {
   document.getElementById('cfgGemini').value = DB.config.geminiKey || '';
   document.getElementById('cfgMeta').value = DB.config.metaPadrao || 15000;
-  document.getElementById('cfgNomeTablet').value = DB.config.nomeTablet || '';
+  document.getElementById('cfgLinkIndicacoes').value = DB.config.linkIndiqueGanhe || '';
+  document.getElementById('cfgValorPixIndicacao').value = brlInput(DB.config.valorPixIndicacao || 20);
+  document.getElementById('cfgNomePessoa').textContent = ACTIVE_PROFILE ? ACTIVE_PROFILE.nome : '—';
 }
 
 function salvarConfig() {
   DB.config.geminiKey = document.getElementById('cfgGemini').value.trim();
   DB.config.metaPadrao = parseNum(document.getElementById('cfgMeta').value) || 15000;
-  DB.config.nomeTablet = document.getElementById('cfgNomeTablet').value.trim();
+  DB.config.linkIndiqueGanhe = document.getElementById('cfgLinkIndicacoes').value.trim();
+  DB.config.valorPixIndicacao = parseNum(document.getElementById('cfgValorPixIndicacao').value) || 20;
   save();
 }
 
@@ -4512,8 +6368,16 @@ async function gerarPDF() {
 /* ════════════════════════════════════════════
    INIT
 ════════════════════════════════════════════ */
-goTo('semana');
-initFirebase();
+if (!ACTIVE_PROFILE) {
+  renderLoginPessoas();
+  goTo('login');
+} else if (ACTIVE_PROFILE.role === 'admin') {
+  goTo('admin-home');
+  initFirebaseAdmin();
+} else {
+  goTo('semana');
+  initFirebase();
+}
 </script>
 <!-- ══════════════════════════════════════════
      MODAL: DETALHE DO RECEBIDO
@@ -4595,6 +6459,45 @@ initFirebase();
     <div id="cobrLista"></div>
 
     <button class="btn-ghost" style="width:100%;margin-top:18px;" onclick="fecharModal('modalCobrancas')">Fechar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: OBSERVAÇÕES DA ADMINISTRAÇÃO
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalObservacoes">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalObservacoes')">✕</button>
+    <div class="modal-title" style="margin-bottom:14px;">Observações</div>
+    <div id="obsListaModal"></div>
+    <button class="btn-ghost" style="width:100%;margin-top:14px;" onclick="fecharModal('modalObservacoes')">Fechar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: NOVA TAREFA (Agenda)
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalNovaTarefa">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalNovaTarefa')">✕</button>
+    <div class="modal-title" id="tarefaModalTitulo">Nova tarefa</div>
+    <input type="hidden" id="tarefaId">
+    <input type="hidden" id="tarefaDiaKey">
+    <label class="field"><span>O que precisa ser feito</span><input id="tarefaTexto" placeholder="Ex: Repor vitrine da loja"></label>
+    <div class="two-col">
+      <label class="field" style="margin:0;"><span>Horário (opcional)</span><input id="tarefaHorario" type="time"></label>
+      <label class="field" style="margin:0;">
+        <span>Prioridade</span>
+        <select id="tarefaPrioridade">
+          <option value="normal">Normal</option>
+          <option value="importante">Importante</option>
+        </select>
+      </label>
+    </div>
+    <div class="btn-row" style="margin-top:8px;">
+      <button class="btn-ghost" style="flex:1;" id="tarefaBtnExcluir" onclick="excluirTarefa()">Excluir</button>
+      <button class="btn-primary" style="flex:1;" onclick="salvarTarefa()">Salvar</button>
+    </div>
   </div>
 </div>
 
