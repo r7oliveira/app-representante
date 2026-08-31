@@ -357,6 +357,8 @@ input,textarea,select{font-family:var(--font);}
 .login-pin-dot.filled{background:var(--rose);border-color:var(--rose);}
 .login-pin-key{aspect-ratio:1;border-radius:50%;background:white;border:1.5px solid var(--border);color:var(--ink);font-size:23px;font-weight:700;font-family:var(--font);cursor:pointer;}
 .login-pin-key:active{background:var(--rose-light);border-color:var(--rose);}
+.dia-chip{background:var(--surface);border:1.5px solid var(--border);color:var(--ink-2);font-size:12.5px;font-weight:700;font-family:var(--font);padding:8px 13px;border-radius:20px;cursor:pointer;}
+.dia-chip.active{background:var(--rose);border-color:var(--rose);color:white;}
 #adminTopBar{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 20px 12px;background:linear-gradient(160deg,#3D2029,#6B4552);}
 </style>
 </head>
@@ -2252,8 +2254,8 @@ function renderAgendaHoje() {
       <div onclick="toggleTarefa('${t.id}')" style="width:20px;height:20px;border-radius:50%;border:1.5px solid ${t.feito?'var(--green)':'var(--border)'};background:${t.feito?'var(--green)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:11px;font-weight:800;">${t.feito?'✓':''}</div>
       <div style="flex:1;cursor:pointer;" onclick="abrirNovaTarefa('${t.id}')">
         <div style="font-size:13px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
-        ${(t.horario || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">
-          ${(t.horario || t.autor==='admin') ? `<span style="font-size:11px;color:var(--ink-3);">${[t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
+        ${(t.horario || t.diaTodo || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">
+          ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:11px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
           ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
         </div>` : ''}
       </div>
@@ -2290,8 +2292,8 @@ function renderAgendaCompleta() {
           <div onclick="toggleTarefa('${t.id}','${d.key}')" style="width:21px;height:21px;border-radius:50%;border:1.5px solid ${t.feito?'var(--green)':'var(--border)'};background:${t.feito?'var(--green)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:11px;font-weight:800;margin-top:1px;">${t.feito?'✓':''}</div>
           <div style="flex:1;cursor:pointer;min-width:0;" onclick="abrirNovaTarefa('${t.id}','${d.key}')">
             <div style="font-size:13.5px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};line-height:1.4;word-break:break-word;">${t.texto}</div>
-            ${(t.horario || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
-              ${(t.horario || t.autor==='admin') ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
+            ${(t.horario || t.diaTodo || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
+              ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
               ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
             </div>` : ''}
           </div>
@@ -3130,6 +3132,9 @@ function toggleTarefa(id, diaKey) {
   renderAgendaCompleta();
 }
 
+let _tarefaRepetirSelecionados = new Set();
+let _tarefaDiaTodo = false;
+
 function abrirNovaTarefa(id, diaKey) {
   diaKey = diaKey || hojeAgendaKey();
   const t = id ? (DB.agenda[diaKey] || []).find(x => x.id === id) : null;
@@ -3140,7 +3145,59 @@ function abrirNovaTarefa(id, diaKey) {
   document.getElementById('tarefaHorario').value = t ? (t.horario || '') : '';
   document.getElementById('tarefaPrioridade').value = t ? (t.prioridade || 'normal') : 'normal';
   document.getElementById('tarefaBtnExcluir').style.display = t ? '' : 'none';
+
+  _tarefaDiaTodo = t ? !!t.diaTodo : false;
+  aplicarEstadoDiaTodo();
+
+  // "Repetir também em" só faz sentido ao criar uma tarefa nova
+  _tarefaRepetirSelecionados = new Set();
+  const repetirBox = document.getElementById('tarefaRepetirBox');
+  if (t) {
+    repetirBox.style.display = 'none';
+  } else {
+    repetirBox.style.display = '';
+    document.getElementById('tarefaRepetirDias').innerHTML = DIAS_AGENDA
+      .filter(d => d.key !== diaKey)
+      .map(d => `<button type="button" class="dia-chip" data-key="${d.key}" onclick="toggleRepetirDia('${d.key}')">${d.label.replace('-feira','')}</button>`)
+      .join('');
+  }
+
   document.getElementById('modalNovaTarefa').classList.add('open');
+}
+
+function toggleDiaTodo() {
+  _tarefaDiaTodo = !_tarefaDiaTodo;
+  aplicarEstadoDiaTodo();
+}
+
+function aplicarEstadoDiaTodo() {
+  const input = document.getElementById('tarefaHorario');
+  const btn = document.getElementById('tarefaBtnDiaTodo');
+  if (_tarefaDiaTodo) {
+    input.value = '';
+    input.disabled = true;
+    input.style.opacity = '.4';
+    btn.style.background = 'var(--rose)';
+    btn.style.borderColor = 'var(--rose)';
+    btn.style.color = 'white';
+  } else {
+    input.disabled = false;
+    input.style.opacity = '1';
+    btn.style.background = 'white';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--ink-3)';
+  }
+}
+
+function toggleRepetirDia(diaKey) {
+  const btn = document.querySelector(`#tarefaRepetirDias .dia-chip[data-key="${diaKey}"]`);
+  if (_tarefaRepetirSelecionados.has(diaKey)) {
+    _tarefaRepetirSelecionados.delete(diaKey);
+    btn.classList.remove('active');
+  } else {
+    _tarefaRepetirSelecionados.add(diaKey);
+    btn.classList.add('active');
+  }
 }
 
 function salvarTarefa() {
@@ -3148,18 +3205,27 @@ function salvarTarefa() {
   if (!texto) { alert('Descreva a tarefa.'); return; }
   const diaKey = document.getElementById('tarefaDiaKey').value;
   const id = document.getElementById('tarefaId').value;
+  const horario = _tarefaDiaTodo ? '' : document.getElementById('tarefaHorario').value;
+  const diaTodo = _tarefaDiaTodo;
+  const prioridade = document.getElementById('tarefaPrioridade').value;
   DB.agenda = DB.agenda || blankAgenda();
   DB.agenda[diaKey] = DB.agenda[diaKey] || [];
 
   if (id) {
     const t = DB.agenda[diaKey].find(x => x.id === id);
-    if (t) { t.texto = texto; t.horario = document.getElementById('tarefaHorario').value; t.prioridade = document.getElementById('tarefaPrioridade').value; }
+    if (t) { t.texto = texto; t.horario = horario; t.diaTodo = diaTodo; t.prioridade = prioridade; }
   } else {
     DB.agenda[diaKey].push({
-      id: uid(), texto,
-      horario: document.getElementById('tarefaHorario').value,
-      prioridade: document.getElementById('tarefaPrioridade').value,
+      id: uid(), texto, horario, diaTodo, prioridade,
       feito: false, autor: 'self', criadoEm: agoraISO(),
+    });
+    // Repete a mesma tarefa nos outros dias marcados
+    _tarefaRepetirSelecionados.forEach(outroDia => {
+      DB.agenda[outroDia] = DB.agenda[outroDia] || [];
+      DB.agenda[outroDia].push({
+        id: uid(), texto, horario, diaTodo, prioridade,
+        feito: false, autor: 'self', criadoEm: agoraISO(),
+      });
     });
   }
   save();
@@ -3468,7 +3534,7 @@ function renderAdminPessoa() {
         <div onclick="adminAbrirTarefa('${d.key}','${t.id}')" style="display:flex;align-items:center;gap:8px;background:white;border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:4px;cursor:pointer;">
           <span style="color:${t.feito?'var(--green)':'var(--ink-3)'};font-size:13px;">${t.feito?'✓':'○'}</span>
           <div style="flex:1;font-size:12.5px;color:var(--ink);text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
-          ${t.horario ? `<span style="font-size:11px;color:var(--ink-3);">${t.horario}</span>` : ''}
+          ${(t.horario || t.diaTodo) ? `<span style="font-size:11px;color:var(--ink-3);">${t.diaTodo ? 'Dia todo' : t.horario}</span>` : ''}
         </div>`).join('') : '<div style="font-size:11.5px;color:var(--ink-3);padding:4px 0;">Nenhuma tarefa.</div>'}
     </div>`;
   }).join('');
@@ -6513,15 +6579,23 @@ if (!ACTIVE_PROFILE) {
     <input type="hidden" id="tarefaId">
     <input type="hidden" id="tarefaDiaKey">
     <label class="field"><span>O que precisa ser feito</span><input id="tarefaTexto" placeholder="Ex: Repor vitrine da loja"></label>
-    <div class="two-col">
-      <label class="field" style="margin:0;"><span>Horário (opcional)</span><input id="tarefaHorario" type="time"></label>
-      <label class="field" style="margin:0;">
-        <span>Prioridade</span>
-        <select id="tarefaPrioridade">
-          <option value="normal">Normal</option>
-          <option value="importante">Importante</option>
-        </select>
-      </label>
+    <label class="field" style="margin:0;">
+      <span>Horário (opcional)</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="tarefaHorario" type="time" style="flex:1;">
+        <button type="button" id="tarefaBtnDiaTodo" onclick="toggleDiaTodo()" style="flex-shrink:0;padding:11px 13px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-3);font-size:12.5px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;">Dia todo</button>
+      </div>
+    </label>
+    <label class="field">
+      <span>Prioridade</span>
+      <select id="tarefaPrioridade">
+        <option value="normal">Normal</option>
+        <option value="importante">Importante</option>
+      </select>
+    </label>
+    <div id="tarefaRepetirBox" style="margin-bottom:14px;">
+      <span style="font-size:13px;font-weight:700;color:var(--ink-2);display:block;margin-bottom:8px;">Repetir também em</span>
+      <div id="tarefaRepetirDias" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
     </div>
     <div class="btn-row" style="margin-top:8px;">
       <button class="btn-ghost" style="flex:1;" id="tarefaBtnExcluir" onclick="excluirTarefa()">Excluir</button>
