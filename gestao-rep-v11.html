@@ -93,7 +93,7 @@ input,textarea,select{font-family:var(--font);}
 .btn-row{display:flex;gap:10px;}
 
 /* ── HERO GRADIENT ── */
-.hero-grad{background:linear-gradient(150deg,#2A1620 0%,#3D2029 40%,#6B4552 75%,#B8677A 100%);position:relative;overflow:hidden;}
+.hero-grad{background:linear-gradient(135deg,var(--rose-deep),var(--rose));position:relative;overflow:hidden;}
 .hero-grad::before{content:'';position:absolute;top:-80px;right:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(200,24,90,.25) 0%,transparent 70%);pointer-events:none;}
 .hero-grad::after{content:'';position:absolute;bottom:-40px;left:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.08) 0%,transparent 70%);pointer-events:none;}
 
@@ -1659,21 +1659,21 @@ input,textarea,select{font-family:var(--font);}
      TELA 11: GERENCIAR REGIÃO
 ══════════════════════════════════════════ -->
 <div class="view" id="view-gerenciar">
-  <div style="background:#0F0A14;padding:calc(16px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
-    <button onclick="goBack()" style="color:rgba(255,255,255,.55);font-size:12px;font-weight:600;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
-    <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Configuração</div>
-    <div style="color:white;font-size:24px;font-weight:800;margin-bottom:12px;" id="gerenciarTitulo">Gramado 3</div>
+  <div style="background:linear-gradient(135deg,var(--rose-deep),var(--rose));padding:calc(16px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
+    <button onclick="goBack()" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:12px;display:block;">← Voltar</button>
+    <div style="color:rgba(255,255,255,.6);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Configuração</div>
+    <div style="color:white;font-size:26px;font-weight:800;margin-bottom:14px;font-family:var(--font-serif);" id="gerenciarTitulo">Gramado 3</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-      <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:8px;text-align:center;">
-        <div style="color:rgba(255,255,255,.5);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ativas</div>
+      <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px;text-align:center;">
+        <div style="color:rgba(255,255,255,.65);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ativas</div>
         <div style="color:white;font-size:20px;font-weight:800;" id="gerAtivas">0</div>
       </div>
-      <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:8px;text-align:center;">
-        <div style="color:rgba(255,255,255,.5);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Inativas</div>
-        <div style="color:rgba(255,255,255,.7);font-size:20px;font-weight:800;" id="gerInativas">0</div>
+      <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px;text-align:center;">
+        <div style="color:rgba(255,255,255,.65);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Inativas</div>
+        <div style="color:white;font-size:20px;font-weight:800;" id="gerInativas">0</div>
       </div>
-      <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:8px;text-align:center;">
-        <div style="color:rgba(255,255,255,.5);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ciclo</div>
+      <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px;text-align:center;">
+        <div style="color:rgba(255,255,255,.65);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ciclo</div>
         <div style="color:white;font-size:20px;font-weight:800;" id="gerCiclo">—</div>
       </div>
     </div>
