@@ -1310,7 +1310,7 @@ input,textarea,select{font-family:var(--font);}
         </div>
       </div>
       <div class="sec-title">Escolha a região desta semana</div>
-      <div class="card" style="margin:0 16px;">
+      <div class="card" style="margin:0 16px;" id="regiaoOptContainer">
         <div class="regiao-opt" data-regiao="Gramado 1" onclick="selecionarRegiao(this)">
           <div style="flex:1;"><div style="font-size:15px;font-weight:700;color:var(--ink);">Gramado 1</div><div style="font-size:12px;color:var(--ink-3);margin-top:2px;" id="infoG1">—</div></div>
         </div>
@@ -1747,6 +1747,18 @@ input,textarea,select{font-family:var(--font);}
           <span>Valor padrão do Pix por indicação (pessoas de fora)</span>
           <input type="text" id="cfgValorPixIndicacao" inputmode="decimal" placeholder="R$ 20,00" oninput="maskMoeda(this);salvarConfig();">
         </label>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="padding:14px 16px;">
+        <span style="font-size:13px;font-weight:700;color:var(--ink-2);display:block;margin-bottom:2px;">Nomes das 6 regiões / semanas</span>
+        <span style="font-size:11px;color:var(--ink-3);display:block;margin-bottom:10px;">Usadas no ciclo de "Criar Semana"</span>
+        <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao1" placeholder="Região 1" oninput="salvarConfig()"></label>
+        <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao2" placeholder="Região 2" oninput="salvarConfig()"></label>
+        <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao3" placeholder="Região 3" oninput="salvarConfig()"></label>
+        <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao4" placeholder="Região 4" oninput="salvarConfig()"></label>
+        <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao5" placeholder="Região 5" oninput="salvarConfig()"></label>
+        <label class="field" style="margin-bottom:0;"><input id="cfgRegiao6" placeholder="Região 6" oninput="salvarConfig()"></label>
       </div>
     </div>
     <button class="btn-ghost" onclick="exportarDados()" style="margin-bottom:10px;">Exportar dados</button>
@@ -3689,11 +3701,15 @@ function adminExcluirObservacao(obsId) {
 }
 
 /* ── Admin cria semana para uma pessoa da equipe ── */
-function proximaRegiaoPara(semanas) {
-  if (!semanas || !semanas.length) return CICLO[0];
+function proximaRegiaoPara(semanas, regs) {
+  regs = regs || regioesAtuais();
+  if (!semanas || !semanas.length) return regs[0];
   const ultima = semanas[semanas.length - 1].regiao;
-  const idx = CICLO.indexOf(ultima);
-  return CICLO[(idx + 1) % CICLO.length];
+  const idx = regs.indexOf(ultima);
+  return regs[(idx + 1) % regs.length];
+}
+function regioesDe(data) {
+  return (data && data.config && Array.isArray(data.config.regioes) && data.config.regioes.length === 6) ? data.config.regioes : CICLO;
 }
 
 function abrirAdminCriarSemana() {
@@ -3703,9 +3719,10 @@ function abrirAdminCriarSemana() {
   const pessoa = PESSOAS.find(p => p.id === pessoaId);
 
   data.semanas = data.semanas || [];
-  const sugerida = proximaRegiaoPara(data.semanas);
+  const regs = regioesDe(data);
+  const sugerida = proximaRegiaoPara(data.semanas, regs);
   document.getElementById('acsPessoaLabel').textContent = 'Para ' + (pessoa ? pessoa.nome : '—');
-  document.getElementById('acsRegiao').value = sugerida;
+  popularSelectRegiaoLista('acsRegiao', regs, sugerida);
   document.getElementById('acsNumero').value = data.semanas.length + 1;
   document.getElementById('acsMeta').value = (data.config && data.config.metaPadrao) || 15000;
 
@@ -3966,12 +3983,25 @@ function getSemanaAtiva() {
    CICLO DE REGIÕES
 ════════════════════════════════════════════ */
 const CICLO = ['Gramado 1','Gramado 2','Gramado 3','Gramado 4','Gramado 5','Cambará do Sul'];
+function regioesAtuais() {
+  return (DB.config && Array.isArray(DB.config.regioes) && DB.config.regioes.length === 6) ? DB.config.regioes : CICLO;
+}
+function popularSelectRegiaoLista(selectId, regs, valorAtual) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  const valor = valorAtual && regs.includes(valorAtual) ? valorAtual : regs[0];
+  sel.innerHTML = regs.map(r => `<option${r===valor?' selected':''}>${r}</option>`).join('');
+}
+function popularSelectRegiao(selectId, valorAtual) {
+  popularSelectRegiaoLista(selectId, regioesAtuais(), valorAtual);
+}
 function proximaRegiao() {
+  const regs = regioesAtuais();
   const semanas = DB.semanas;
-  if (!semanas.length) return CICLO[0];
+  if (!semanas.length) return regs[0];
   const ultima = semanas[semanas.length-1].regiao;
-  const idx = CICLO.indexOf(ultima);
-  return CICLO[(idx + 1) % CICLO.length];
+  const idx = regs.indexOf(ultima);
+  return regs[(idx + 1) % regs.length];
 }
 function ultimaSemanaRegiao(regiao) {
   const ss = DB.semanas.filter(s => s.regiao === regiao);
@@ -4369,8 +4399,9 @@ function toggleCrit(campo) {
 
   // Quando remarcar próxima semana → muda região para a próxima no ciclo
   if (campo === 'remarcarSemana' && cons[campo]) {
-    const idxAtual = CICLO.indexOf(sem.regiao);
-    const proximaRegiao = CICLO[(idxAtual + 1) % CICLO.length];
+    const regsCiclo = regioesAtuais();
+    const idxAtual = regsCiclo.indexOf(sem.regiao);
+    const proximaRegiao = regsCiclo[(idxAtual + 1) % regsCiclo.length];
     // Atualiza no Cadastro Mestre
     const mestre = DB.consultoras.find(c => c.id === cons.id);
     if (mestre) {
@@ -4957,10 +4988,17 @@ function renderCriarSemana() {
   document.getElementById('criarDataLabel').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
   document.getElementById('criarSugestao').textContent = proximaRegiao();
 
+  // Regenera as caixas de região com os nomes atuais (podem ter sido renomeados em Configurações)
+  const regs = regioesAtuais();
+  const ids = ['G1','G2','G3','G4','G5','C1'];
+  document.getElementById('regiaoOptContainer').innerHTML = regs.map((r, i) => `
+    <div class="regiao-opt" data-regiao="${r}" onclick="selecionarRegiao(this)">
+      <div style="flex:1;"><div style="font-size:15px;font-weight:700;color:var(--ink);">${r}</div><div style="font-size:12px;color:var(--ink-3);margin-top:2px;" id="info${ids[i]}">—</div></div>
+    </div>`).join('');
+
   // Info de cada região
-  CICLO.forEach((r, i) => {
+  regs.forEach((r, i) => {
     const ultima = ultimaSemanaRegiao(r);
-    const ids = ['G1','G2','G3','G4','G5','C1'];
     const el = document.getElementById('info' + ids[i]);
     if (el) el.textContent = ultima ? 'Última: Sem ' + ultima.numero + ' · ' + (ultima.consultoras||[]).length + ' consultoras' : 'Nunca visitada';
   });
@@ -5134,6 +5172,7 @@ function abrirModalConsultora() {
   });
   document.getElementById('cDia').value = '';
   document.getElementById('cHorario').value = '';
+  popularSelectRegiao('cRegiao');
   document.getElementById('modalConsultora').classList.add('open');
 }
 
@@ -5274,6 +5313,7 @@ async function importarDoTablet(input) {
     document.getElementById('impEnd').textContent = json.endereco || '—';
 
     window._importData = json;
+    popularSelectRegiao('impRegiao', regioesAtuais()[2]);
     document.getElementById('importPreview').style.display = '';
   } catch(e) {
     alert('Erro ao ler foto: ' + e.message);
@@ -5396,6 +5436,11 @@ function renderConfig() {
   document.getElementById('cfgLinkIndicacoes').value = DB.config.linkIndiqueGanhe || '';
   document.getElementById('cfgValorPixIndicacao').value = brlInput(DB.config.valorPixIndicacao || 20);
   document.getElementById('cfgNomePessoa').textContent = ACTIVE_PROFILE ? ACTIVE_PROFILE.nome : '—';
+  const regs = regioesAtuais();
+  for (let i = 0; i < 6; i++) {
+    const el = document.getElementById('cfgRegiao' + (i+1));
+    if (el) el.value = regs[i] || '';
+  }
 }
 
 function salvarConfig() {
@@ -5403,6 +5448,15 @@ function salvarConfig() {
   DB.config.metaPadrao = parseNum(document.getElementById('cfgMeta').value) || 15000;
   DB.config.linkIndiqueGanhe = document.getElementById('cfgLinkIndicacoes').value.trim();
   DB.config.valorPixIndicacao = parseNum(document.getElementById('cfgValorPixIndicacao').value) || 20;
+
+  const novasRegioes = [];
+  for (let i = 0; i < 6; i++) {
+    const el = document.getElementById('cfgRegiao' + (i+1));
+    const val = el ? el.value.trim() : '';
+    novasRegioes.push(val || CICLO[i]);
+  }
+  DB.config.regioes = novasRegioes;
+
   save();
 }
 
@@ -6077,7 +6131,7 @@ let gerenciarRegiao = null;
 
 function abrirGerenciar() {
   const sem = getSemanaAtiva();
-  gerenciarRegiao = sem ? sem.regiao : (CICLO[0]);
+  gerenciarRegiao = sem ? sem.regiao : (regioesAtuais()[0]);
   renderGerenciar();
   goTo('gerenciar');
 }
@@ -6086,7 +6140,7 @@ function renderGerenciar() {
   const regiao = gerenciarRegiao;
   const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa');
   const inativas = DB.consultoras.filter(c => c.regiao === regiao && c.status === 'inativa');
-  const cicloPos = CICLO.indexOf(regiao) + 1;
+  const cicloPos = regioesAtuais().indexOf(regiao) + 1;
 
   document.getElementById('gerenciarTitulo').textContent = regiao;
   document.getElementById('gerAtivas').textContent = ativas.length;
@@ -6153,7 +6207,7 @@ function editarConsultora(id) {
   document.getElementById('cDia').value = c.diaMelhor || '';
   document.getElementById('cHorario').value = c.horarioMelhor || '';
   document.getElementById('cRotaObs').value = c.rotaObs || '';
-  document.getElementById('cRegiao').value = c.regiao || CICLO[0];
+  popularSelectRegiao('cRegiao', c.regiao);
   document.getElementById('modalConsTitulo').textContent = 'Editar Consultora';
   // Salvar vai criar nova — idealmente atualizaria. Por agora marca para edição:
   window._editConsId = id;
