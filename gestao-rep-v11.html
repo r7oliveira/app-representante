@@ -544,7 +544,7 @@ input,textarea,select{font-family:var(--font);}
     </div>
 
     <!-- Lista consultoras -->
-    <div class="sec-title">Consultoras de hoje</div>
+    <div class="sec-title">Consultoras da semana</div>
     <div style="padding:0 16px 80px;" id="listaConsultoras">
       <div style="text-align:center;padding:32px;color:var(--ink-3);font-size:14px;">
         Nenhuma semana ativa. <br><br>
@@ -4044,6 +4044,31 @@ function fmtTelefone(tel) {
   if (n.length === 10) return '(' + n.slice(0,2) + ') ' + n.slice(2,6) + '-' + n.slice(6);
   return tel;
 }
+function telefoneWa(tel) {
+  const d = String(tel||'').replace(/\D/g,'');
+  const n = d.slice(-11);
+  if (!n) return '';
+  return '55' + n;
+}
+function mensagemAgendarHorario() {
+  return 'Oi tudo, como está?\n\n' +
+    'Essa semana teremos nosso atendimento para retirada de _novidades e encomendas_. 🙋🏻‍♀️\n\n' +
+    'Já estou organizando os horários.\n' +
+    '*Qual desses dias fica melhor para você vir*?\n\n' +
+    '• Terça-feira | 09:00 às 18:00\n' +
+    '• Quarta-feira | 09:00 às 18:00\n' +
+    '• Quinta-feira | 09:00 às 18:00\n' +
+    '• Sexta-feira | 09:00 às 18:00\n' +
+    '• Sábado | 09:00 às 12:00\n\n' +
+    '📌 *Importante:* será necessário trazer _documento original com foto_ para retira de materiais.';
+}
+function enviarWhatsappHorario(consultoraId) {
+  const sem = getSemanaAtiva();
+  const c = sem ? sem.consultoras.find(x => x.id === consultoraId) : null;
+  if (!c || !c.telefone) { alert('Essa consultora não tem telefone cadastrado.'); return; }
+  const numero = telefoneWa(c.telefone);
+  window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(mensagemAgendarHorario()), '_blank');
+}
 function parseNum(s) {
   if (typeof s === 'number') return s;
   if (!s) return 0;
@@ -4323,6 +4348,7 @@ function renderSemana() {
     return '<div class="cons-card ' + cls + '" onclick="abrirAtendimento(\'' + c.id + '\')">'
       + '<div class="c-av ' + avCls + '">' + avTxt + '</div>'
       + '<div class="c-info"><div class="c-name">' + c.nome + '</div><div class="c-sub">' + sub + '</div></div>'
+      + (c.telefone ? '<button onclick="event.stopPropagation();enviarWhatsappHorario(\'' + c.id + '\')" title="Combinar horário no WhatsApp" style="background:#25D366;border:none;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:6px;cursor:pointer;"><svg width="17" height="17" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0012.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 012.41 5.83c0 4.55-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.42-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.23.89 2.41 1.02 2.58.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg></button>' : '')
       + badge + '</div>';
   }).join('')
   + '<button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-top:4px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>'
