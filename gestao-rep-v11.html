@@ -1187,7 +1187,8 @@ input,textarea,select{font-family:var(--font);}
         </div>
       </div>
 
-      <button class="btn-primary" style="width:100%;margin-bottom:18px;" onclick="abrirAdminCriarSemana()">+ Criar Semana para esta pessoa</button>
+      <button class="btn-primary" style="width:100%;margin-bottom:8px;" onclick="abrirAdminCriarSemana()">+ Criar Semana para esta pessoa</button>
+      <button class="btn-ghost" style="width:100%;margin-bottom:18px;" onclick="abrirAdminRegioes()">✏️ Renomear as 6 regiões desta pessoa</button>
 
       <!-- Nova observação -->
       <div class="sec-title" style="padding:0;margin-bottom:8px;">Enviar observação</div>
@@ -1274,6 +1275,26 @@ input,textarea,select{font-family:var(--font);}
     </div>
 
     <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="confirmarAdminCriarSemana()">Criar semana</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: ADMIN RENOMEIA AS 6 REGIÕES DE UMA PESSOA
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalAdminRegioes">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalAdminRegioes')">✕</button>
+    <div class="modal-title" style="margin-bottom:2px;">Nomes das regiões</div>
+    <div style="font-size:13px;color:var(--ink-3);font-weight:600;margin-bottom:16px;" id="arPessoaLabel">—</div>
+
+    <label class="field" style="margin-bottom:8px;"><input id="arRegiao1" placeholder="Região 1"></label>
+    <label class="field" style="margin-bottom:8px;"><input id="arRegiao2" placeholder="Região 2"></label>
+    <label class="field" style="margin-bottom:8px;"><input id="arRegiao3" placeholder="Região 3"></label>
+    <label class="field" style="margin-bottom:8px;"><input id="arRegiao4" placeholder="Região 4"></label>
+    <label class="field" style="margin-bottom:8px;"><input id="arRegiao5" placeholder="Região 5"></label>
+    <label class="field" style="margin-bottom:0;"><input id="arRegiao6" placeholder="Região 6"></label>
+
+    <button class="btn-primary" style="width:100%;margin-top:14px;" onclick="confirmarAdminRegioes()">Salvar nomes</button>
   </div>
 </div>
 
@@ -3788,6 +3809,44 @@ function confirmarAdminCriarSemana() {
     fecharModal('modalAdminCriarSemana');
     renderAdminPessoa();
   }).catch(e => alert('Erro ao criar semana: ' + e.message));
+}
+
+/* ── Admin renomeia as 6 regiões de uma pessoa ── */
+function abrirAdminRegioes() {
+  const pessoaId = _adminPessoaAtual;
+  const data = _adminDB[pessoaId];
+  if (!data) { alert('Sem dados dessa pessoa ainda — ela precisa abrir o app pelo menos uma vez.'); return; }
+  const pessoa = PESSOAS.find(p => p.id === pessoaId);
+
+  document.getElementById('arPessoaLabel').textContent = 'Para ' + (pessoa ? pessoa.nome : '—');
+  const regs = regioesDe(data);
+  for (let i = 0; i < 6; i++) {
+    const el = document.getElementById('arRegiao' + (i+1));
+    if (el) el.value = regs[i] || '';
+  }
+  document.getElementById('modalAdminRegioes').classList.add('open');
+}
+
+function confirmarAdminRegioes() {
+  const pessoaId = _adminPessoaAtual;
+  const data = _adminDB[pessoaId];
+  if (!data) return;
+
+  const novasRegioes = [];
+  for (let i = 0; i < 6; i++) {
+    const el = document.getElementById('arRegiao' + (i+1));
+    const val = el ? el.value.trim() : '';
+    novasRegioes.push(val || CICLO[i]);
+  }
+
+  data.config = data.config || {};
+  data.config.regioes = novasRegioes;
+  data.seq = (data.seq || 1) + 1;
+
+  _adminRefs[pessoaId].set(data).then(() => {
+    fecharModal('modalAdminRegioes');
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao salvar: ' + e.message));
 }
 
 let _atRepetirSelecionados = new Set();
