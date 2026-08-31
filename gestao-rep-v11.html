@@ -6025,7 +6025,7 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
 /* ════════════════════════════════════════════
    GEMINI
 ════════════════════════════════════════════ */
-const MODELS = ['gemini-2.5-flash','gemini-2.0-flash','gemini-1.5-flash','gemini-2.0-flash-lite'];
+const MODELS = ['gemini-3.5-flash-lite','gemini-2.5-flash','gemini-2.5-flash-lite'];
 
 async function geminiCall(key, body, timeout=90000) {
   for (let i = 0; i < MODELS.length; i++) {
@@ -6040,7 +6040,7 @@ async function geminiCall(key, body, timeout=90000) {
       const d = await r.json();
       if (d.error) {
         const msg = d.error.message||'';
-        if (/high demand|RESOURCE_EXHAUSTED|not found|quota|overloaded|503|429/.test(msg)) continue;
+        if (/high demand|RESOURCE_EXHAUSTED|not found|quota|overloaded|503|429|no longer available|deprecated|not available/i.test(msg)) continue;
         throw new Error(msg);
       }
       return d;
