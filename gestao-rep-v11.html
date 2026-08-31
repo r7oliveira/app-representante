@@ -534,7 +534,7 @@ input,textarea,select{font-family:var(--font);}
     <div style="margin:0 16px 12px;background:white;border-radius:16px;border:1px solid var(--border);overflow:hidden;">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:linear-gradient(135deg,var(--rose-deep),var(--rose));">
         <div style="font-size:12.5px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:white;">Agenda de hoje</div>
-        <button onclick="abrirNovaTarefa()" style="background:rgba(255,255,255,.22);border:none;color:white;font-size:11px;font-weight:700;font-family:var(--font);cursor:pointer;padding:5px 11px;border-radius:20px;">+ Tarefa</button>
+        <button onclick="abrirEscolhaTarefa()" style="background:rgba(255,255,255,.22);border:none;color:white;font-size:11px;font-weight:700;font-family:var(--font);cursor:pointer;padding:5px 11px;border-radius:20px;">+ Tarefa</button>
       </div>
       <div id="agendaHojeLista" style="padding:4px 16px 6px;"></div>
     </div>
@@ -2440,7 +2440,7 @@ function renderAgendaCompleta() {
           ${isHoje ? '<span style="background:rgba(255,255,255,.25);color:white;font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.4px;">Hoje</span>' : ''}
           ${tarefas.length ? `<span style="font-size:10.5px;font-weight:700;color:${isHoje?'rgba(255,255,255,.85)':'var(--ink-3)'};">${feitas}/${tarefas.length}</span>` : ''}
         </div>
-        <button onclick="abrirNovaTarefa(null,'${d.key}')" style="width:26px;height:26px;border-radius:50%;background:${isHoje?'rgba(255,255,255,.22)':'white'};color:${isHoje?'white':'var(--rose-deep)'};border:none;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
+        <button onclick="abrirEscolhaTarefa('${d.key}')" style="width:26px;height:26px;border-radius:50%;background:${isHoje?'rgba(255,255,255,.22)':'white'};color:${isHoje?'white':'var(--rose-deep)'};border:none;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
       </div>
       <div style="padding:${tarefas.length?'4px 16px 8px':'12px 16px'};">
       ${tarefas.length ? `<div>${tarefas.map((t,i) => `
@@ -3293,6 +3293,58 @@ function toggleTarefa(id, diaKey) {
 let _tarefaRepetirSelecionados = new Set();
 let _tarefaDiaTodo = false;
 let _tarefaRecorrente = false;
+
+let _escolhaTarefaDia = null;
+function abrirEscolhaTarefa(diaKey) {
+  _escolhaTarefaDia = diaKey || hojeAgendaKey();
+  document.getElementById('modalEscolhaTarefa').classList.add('open');
+}
+
+function abrirAgendarCliente(diaKey) {
+  diaKey = diaKey || hojeAgendaKey();
+  document.getElementById('acDiaKey').value = diaKey;
+  const diaInfo = DIAS_AGENDA.find(d => d.key === diaKey);
+  document.getElementById('acDiaLabel').textContent = diaInfo ? diaInfo.label : '';
+
+  const sel = document.getElementById('acConsultora');
+  const sem = getSemanaAtiva();
+  const consultoras = sem ? [...sem.consultoras].sort((a,b) => a.nome.localeCompare(b.nome)) : [];
+  sel.innerHTML = '<option value="">— Selecione —</option>' + consultoras.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+  document.getElementById('acHorario').value = '';
+  document.getElementById('acEnviarWpp').checked = true;
+
+  document.getElementById('modalAgendarCliente').classList.add('open');
+}
+
+function confirmarAgendarCliente() {
+  const diaKey = document.getElementById('acDiaKey').value;
+  const consultoraId = document.getElementById('acConsultora').value;
+  const horario = document.getElementById('acHorario').value;
+  if (!consultoraId) { alert('Selecione a consultora.'); return; }
+
+  const sem = getSemanaAtiva();
+  const c = sem ? sem.consultoras.find(x => x.id === consultoraId) : null;
+  if (!c) { alert('Consultora não encontrada nesta semana.'); return; }
+
+  DB.agenda = DB.agenda || blankAgenda();
+  DB.agenda[diaKey] = DB.agenda[diaKey] || [];
+  DB.agenda[diaKey].push({
+    id: uid(),
+    texto: 'Atendimento: ' + c.nome + (c.cidade ? ' · ' + c.cidade : ''),
+    horario, diaTodo: !horario, recorrente: false,
+    prioridade: 'normal', feito: false, autor: 'self', criadoEm: agoraISO(),
+  });
+  save();
+
+  fecharModal('modalAgendarCliente');
+  renderAgendaHoje();
+  renderAgendaCompleta();
+
+  if (document.getElementById('acEnviarWpp').checked) {
+    enviarWhatsappHorario(consultoraId);
+  }
+}
+
 
 function abrirNovaTarefa(id, diaKey) {
   diaKey = diaKey || hojeAgendaKey();
@@ -7096,6 +7148,61 @@ if (!ACTIVE_PROFILE) {
     <div class="modal-title" style="margin-bottom:14px;">Observações</div>
     <div id="obsListaModal"></div>
     <button class="btn-ghost" style="width:100%;margin-top:14px;" onclick="fecharModal('modalObservacoes')">Fechar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: ESCOLHA (nova tarefa ou agendar cliente)
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalEscolhaTarefa">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalEscolhaTarefa')">✕</button>
+    <div class="modal-title" style="margin-bottom:16px;">O que deseja fazer?</div>
+
+    <button onclick="fecharModal('modalEscolhaTarefa');abrirNovaTarefa(null, _escolhaTarefaDia)" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">📝</div>
+      <div style="flex:1;">
+        <div style="font-size:14.5px;font-weight:800;color:var(--ink);">Criar tarefa nova</div>
+        <div style="font-size:11.5px;color:var(--ink-3);">Uma tarefa livre, do seu jeito</div>
+      </div>
+      <span style="color:var(--ink-3);font-size:16px;">›</span>
+    </button>
+
+    <button onclick="fecharModal('modalEscolhaTarefa');abrirAgendarCliente(_escolhaTarefaDia)" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <div style="width:40px;height:40px;border-radius:12px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;">🗓️</div>
+      <div style="flex:1;">
+        <div style="font-size:14.5px;font-weight:800;color:var(--ink);">Agendar horário de cliente</div>
+        <div style="font-size:11.5px;color:var(--ink-3);">Escolhe a consultora e já avisa no WhatsApp</div>
+      </div>
+      <span style="color:var(--ink-3);font-size:16px;">›</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: AGENDAR HORÁRIO DE CLIENTE
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalAgendarCliente">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalAgendarCliente')">✕</button>
+    <div class="modal-title" style="margin-bottom:2px;">Agendar horário</div>
+    <div style="font-size:13px;color:var(--ink-3);font-weight:600;margin-bottom:16px;" id="acDiaLabel">—</div>
+    <input type="hidden" id="acDiaKey">
+
+    <label class="field">
+      <span>Consultora *</span>
+      <select id="acConsultora">
+        <option value="">— Selecione —</option>
+      </select>
+    </label>
+    <label class="field"><span>Horário</span><input type="time" id="acHorario"></label>
+
+    <label style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;" onclick="document.getElementById('acEnviarWpp').click()">
+      <input type="checkbox" id="acEnviarWpp" checked style="width:18px;height:18px;accent-color:var(--rose);flex-shrink:0;">
+      <span style="font-size:13px;color:var(--ink-2);font-weight:600;">Enviar mensagem no WhatsApp agora</span>
+    </label>
+
+    <button class="btn-primary" style="width:100%;" onclick="confirmarAgendarCliente()">Agendar</button>
   </div>
 </div>
 
