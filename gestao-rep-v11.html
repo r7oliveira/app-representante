@@ -386,9 +386,9 @@ input,textarea,select{font-family:var(--font);}
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
     Fechamento
   </button>
-  <button class="nav-item" onclick="goTo('mais')">
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
-    Mais
+  <button class="nav-item" onclick="goTo('programas')">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Programas
   </button>
 </nav>
 
@@ -447,6 +447,9 @@ input,textarea,select{font-family:var(--font);}
           <button onclick="goTo('assist-new')" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:5px 10px;cursor:pointer;">
             <span style="font-size:12px;">✦</span>
             <span style="font-size:11px;font-weight:700;color:white;">Assistente</span>
+          </button>
+          <button onclick="abrirMenuRapido()" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:50%;cursor:pointer;color:white;flex-shrink:0;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
           </button>
         </div>
       </div>
@@ -1303,6 +1306,42 @@ input,textarea,select{font-family:var(--font);}
     <label class="field" style="margin-bottom:0;"><input id="arRegiao6" placeholder="Região 6"></label>
 
     <button class="btn-primary" style="width:100%;margin-top:14px;" onclick="confirmarAdminRegioes()">Salvar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: MENU RÁPIDO (gestão + conta)
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalMenuRapido">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalMenuRapido')">✕</button>
+    <div class="modal-title" style="margin-bottom:14px;">Menu</div>
+
+    <button onclick="fecharModal('modalMenuRapido');abrirModalConsultora()" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <div style="width:38px;height:38px;border-radius:11px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">👤</div>
+      <div style="flex:1;font-size:14px;font-weight:700;color:var(--ink);">Nova Consultora</div>
+      <span style="color:var(--ink-3);font-size:16px;">›</span>
+    </button>
+
+    <button onclick="fecharModal('modalMenuRapido');abrirGerenciar()" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <div style="width:38px;height:38px;border-radius:11px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">🗺️</div>
+      <div style="flex:1;font-size:14px;font-weight:700;color:var(--ink);">Gerenciar Regiões</div>
+      <span style="color:var(--ink-3);font-size:16px;">›</span>
+    </button>
+
+    <button onclick="fecharModal('modalMenuRapido');goTo('criar-semana')" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <div style="width:38px;height:38px;border-radius:11px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">📅</div>
+      <div style="flex:1;font-size:14px;font-weight:700;color:var(--ink);">Criar Nova Semana</div>
+      <span style="color:var(--ink-3);font-size:16px;">›</span>
+    </button>
+
+    <button onclick="fecharModal('modalMenuRapido');goTo('config')" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:16px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+      <div style="width:38px;height:38px;border-radius:11px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">⚙️</div>
+      <div style="flex:1;font-size:14px;font-weight:700;color:var(--ink);">Configurações</div>
+      <span style="color:var(--ink-3);font-size:16px;">›</span>
+    </button>
+
+    <button onclick="fazerLogout()" style="width:100%;background:none;border:none;color:var(--red);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;padding:8px;">Sair</button>
   </div>
 </div>
 
@@ -2312,6 +2351,10 @@ function validarPin() {
     _loginPinAtual = '';
     atualizarPinDots();
   }
+}
+
+function abrirMenuRapido() {
+  document.getElementById('modalMenuRapido').classList.add('open');
 }
 
 function fazerLogout() {
@@ -4150,7 +4193,7 @@ function goTo(v) {
   // Marca aba ativa
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const navItems = document.querySelectorAll('.nav-item');
-  const navIdx = { semana:0, agenda:1, gerenciar:2, 'fechamento-geral':3, mais:4 };
+  const navIdx = { semana:0, agenda:1, gerenciar:2, 'fechamento-geral':3, programas:4 };
   if (navIdx[v] !== undefined) navItems[navIdx[v]]?.classList.add('active');
 
   viewHistory.push(v);
