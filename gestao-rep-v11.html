@@ -1188,7 +1188,7 @@ input,textarea,select{font-family:var(--font);}
       </div>
 
       <button class="btn-primary" style="width:100%;margin-bottom:8px;" onclick="abrirAdminCriarSemana()">+ Criar Semana para esta pessoa</button>
-      <button class="btn-ghost" style="width:100%;margin-bottom:18px;" onclick="abrirAdminRegioes()">✏️ Renomear as 6 regiões desta pessoa</button>
+      <button class="btn-ghost" style="width:100%;margin-bottom:18px;" onclick="abrirAdminRegioes()">⚙️ Configurações desta pessoa</button>
 
       <!-- Nova observação -->
       <div class="sec-title" style="padding:0;margin-bottom:8px;">Enviar observação</div>
@@ -1279,14 +1279,21 @@ input,textarea,select{font-family:var(--font);}
 </div>
 
 <!-- ══════════════════════════════════════════
-     MODAL: ADMIN RENOMEIA AS 6 REGIÕES DE UMA PESSOA
+     MODAL: ADMIN EDITA CONFIGURAÇÕES DE UMA PESSOA
 ══════════════════════════════════════════ -->
 <div class="modal-overlay" id="modalAdminRegioes">
   <div class="modal-box">
     <button class="modal-close" onclick="fecharModal('modalAdminRegioes')">✕</button>
-    <div class="modal-title" style="margin-bottom:2px;">Nomes das regiões</div>
+    <div class="modal-title" style="margin-bottom:2px;">Configurações</div>
     <div style="font-size:13px;color:var(--ink-3);font-weight:600;margin-bottom:16px;" id="arPessoaLabel">—</div>
 
+    <label class="field"><span>Chave da IA (Gemini)</span><input type="password" id="arGemini" placeholder="AIza..."></label>
+    <label class="field"><span>Meta padrão semanal (R$)</span><input type="number" id="arMeta" placeholder="15000"></label>
+    <label class="field"><span>Link do site "Indique e Ganhe"</span><input type="text" id="arLink" placeholder="https://..."></label>
+    <label class="field"><span>Valor padrão do Pix por indicação</span><input type="text" id="arPixValor" inputmode="decimal" placeholder="R$ 20,00" oninput="maskMoeda(this)"></label>
+
+    <span style="font-size:13px;font-weight:700;color:var(--ink-2);display:block;margin-bottom:2px;margin-top:6px;">Nomes das 6 regiões / semanas</span>
+    <span style="font-size:11px;color:var(--ink-3);display:block;margin-bottom:10px;">Usadas no ciclo de "Criar Semana"</span>
     <label class="field" style="margin-bottom:8px;"><input id="arRegiao1" placeholder="Região 1"></label>
     <label class="field" style="margin-bottom:8px;"><input id="arRegiao2" placeholder="Região 2"></label>
     <label class="field" style="margin-bottom:8px;"><input id="arRegiao3" placeholder="Região 3"></label>
@@ -1294,7 +1301,7 @@ input,textarea,select{font-family:var(--font);}
     <label class="field" style="margin-bottom:8px;"><input id="arRegiao5" placeholder="Região 5"></label>
     <label class="field" style="margin-bottom:0;"><input id="arRegiao6" placeholder="Região 6"></label>
 
-    <button class="btn-primary" style="width:100%;margin-top:14px;" onclick="confirmarAdminRegioes()">Salvar nomes</button>
+    <button class="btn-primary" style="width:100%;margin-top:14px;" onclick="confirmarAdminRegioes()">Salvar</button>
   </div>
 </div>
 
@@ -1741,45 +1748,47 @@ input,textarea,select{font-family:var(--font);}
         <button class="btn-ghost" style="width:auto;padding:9px 16px;color:var(--red);" onclick="fazerLogout()">Sair</button>
       </div>
     </div>
-    <div class="card" style="margin-bottom:16px;">
-      <div style="padding:14px 16px;">
-        <label class="field">
-          <span>Chave da IA (Gemini)</span>
-          <input type="password" id="cfgGemini" placeholder="AIza..." oninput="salvarConfig()">
-        </label>
-        <label class="field" style="margin-bottom:0;">
-          <span>Meta padrão semanal (R$)</span>
-          <input type="number" id="cfgMeta" placeholder="15000" oninput="salvarConfig()">
-        </label>
+    <div id="cfgApenasAdminBox" style="display:none;">
+      <div class="card" style="margin-bottom:16px;">
+        <div style="padding:14px 16px;">
+          <label class="field">
+            <span>Chave da IA (Gemini)</span>
+            <input type="password" id="cfgGemini" placeholder="AIza..." oninput="salvarConfig()">
+          </label>
+          <label class="field" style="margin-bottom:0;">
+            <span>Meta padrão semanal (R$)</span>
+            <input type="number" id="cfgMeta" placeholder="15000" oninput="salvarConfig()">
+          </label>
+        </div>
       </div>
-    </div>
-    <div class="card" style="margin-bottom:16px;">
-      <div style="padding:14px 16px;">
-        <label class="field" style="margin-bottom:0;">
-          <span>Link do site "Indique e Ganhe"</span>
-          <input type="text" id="cfgLinkIndicacoes" placeholder="https://..." oninput="salvarConfig()">
-        </label>
-        <span style="font-size:11px;color:var(--ink-3);">Usado pelo botão "Indique e Ganhe" em Programas (opcional, legado)</span>
+      <div class="card" style="margin-bottom:16px;">
+        <div style="padding:14px 16px;">
+          <label class="field" style="margin-bottom:0;">
+            <span>Link do site "Indique e Ganhe"</span>
+            <input type="text" id="cfgLinkIndicacoes" placeholder="https://..." oninput="salvarConfig()">
+          </label>
+          <span style="font-size:11px;color:var(--ink-3);">Usado pelo botão "Indique e Ganhe" em Programas (opcional, legado)</span>
+        </div>
       </div>
-    </div>
-    <div class="card" style="margin-bottom:16px;">
-      <div style="padding:14px 16px;">
-        <label class="field" style="margin-bottom:0;">
-          <span>Valor padrão do Pix por indicação (pessoas de fora)</span>
-          <input type="text" id="cfgValorPixIndicacao" inputmode="decimal" placeholder="R$ 20,00" oninput="maskMoeda(this);salvarConfig();">
-        </label>
+      <div class="card" style="margin-bottom:16px;">
+        <div style="padding:14px 16px;">
+          <label class="field" style="margin-bottom:0;">
+            <span>Valor padrão do Pix por indicação (pessoas de fora)</span>
+            <input type="text" id="cfgValorPixIndicacao" inputmode="decimal" placeholder="R$ 20,00" oninput="maskMoeda(this);salvarConfig();">
+          </label>
+        </div>
       </div>
-    </div>
-    <div class="card" style="margin-bottom:16px;">
-      <div style="padding:14px 16px;">
-        <span style="font-size:13px;font-weight:700;color:var(--ink-2);display:block;margin-bottom:2px;">Nomes das 6 regiões / semanas</span>
-        <span style="font-size:11px;color:var(--ink-3);display:block;margin-bottom:10px;">Usadas no ciclo de "Criar Semana"</span>
-        <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao1" placeholder="Região 1" oninput="salvarConfig()"></label>
-        <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao2" placeholder="Região 2" oninput="salvarConfig()"></label>
-        <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao3" placeholder="Região 3" oninput="salvarConfig()"></label>
-        <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao4" placeholder="Região 4" oninput="salvarConfig()"></label>
-        <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao5" placeholder="Região 5" oninput="salvarConfig()"></label>
-        <label class="field" style="margin-bottom:0;"><input id="cfgRegiao6" placeholder="Região 6" oninput="salvarConfig()"></label>
+      <div class="card" style="margin-bottom:16px;">
+        <div style="padding:14px 16px;">
+          <span style="font-size:13px;font-weight:700;color:var(--ink-2);display:block;margin-bottom:2px;">Nomes das 6 regiões / semanas</span>
+          <span style="font-size:11px;color:var(--ink-3);display:block;margin-bottom:10px;">Usadas no ciclo de "Criar Semana"</span>
+          <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao1" placeholder="Região 1" oninput="salvarConfig()"></label>
+          <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao2" placeholder="Região 2" oninput="salvarConfig()"></label>
+          <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao3" placeholder="Região 3" oninput="salvarConfig()"></label>
+          <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao4" placeholder="Região 4" oninput="salvarConfig()"></label>
+          <label class="field" style="margin-bottom:8px;"><input id="cfgRegiao5" placeholder="Região 5" oninput="salvarConfig()"></label>
+          <label class="field" style="margin-bottom:0;"><input id="cfgRegiao6" placeholder="Região 6" oninput="salvarConfig()"></label>
+        </div>
       </div>
     </div>
     <button class="btn-ghost" onclick="exportarDados()" style="margin-bottom:10px;">Exportar dados</button>
@@ -3817,8 +3826,14 @@ function abrirAdminRegioes() {
   const data = _adminDB[pessoaId];
   if (!data) { alert('Sem dados dessa pessoa ainda — ela precisa abrir o app pelo menos uma vez.'); return; }
   const pessoa = PESSOAS.find(p => p.id === pessoaId);
+  data.config = data.config || {};
 
   document.getElementById('arPessoaLabel').textContent = 'Para ' + (pessoa ? pessoa.nome : '—');
+  document.getElementById('arGemini').value = data.config.geminiKey || '';
+  document.getElementById('arMeta').value = data.config.metaPadrao || 15000;
+  document.getElementById('arLink').value = data.config.linkIndiqueGanhe || '';
+  document.getElementById('arPixValor').value = brlInput(data.config.valorPixIndicacao || 20);
+
   const regs = regioesDe(data);
   for (let i = 0; i < 6; i++) {
     const el = document.getElementById('arRegiao' + (i+1));
@@ -3840,6 +3855,10 @@ function confirmarAdminRegioes() {
   }
 
   data.config = data.config || {};
+  data.config.geminiKey = document.getElementById('arGemini').value.trim();
+  data.config.metaPadrao = parseNum(document.getElementById('arMeta').value) || 15000;
+  data.config.linkIndiqueGanhe = document.getElementById('arLink').value.trim();
+  data.config.valorPixIndicacao = parseNum(document.getElementById('arPixValor').value) || 20;
   data.config.regioes = novasRegioes;
   data.seq = (data.seq || 1) + 1;
 
@@ -5490,11 +5509,17 @@ async function enviarAssistNew() {
    CONFIGURAÇÕES
 ════════════════════════════════════════════ */
 function renderConfig() {
+  document.getElementById('cfgNomePessoa').textContent = ACTIVE_PROFILE ? ACTIVE_PROFILE.nome : '—';
+
+  const souAdmin = ACTIVE_PROFILE && ACTIVE_PROFILE.role === 'admin';
+  const box = document.getElementById('cfgApenasAdminBox');
+  if (box) box.style.display = souAdmin ? '' : 'none';
+  if (!souAdmin) return; // operador não edita mais essas configurações — fica só com o administrador
+
   document.getElementById('cfgGemini').value = DB.config.geminiKey || '';
   document.getElementById('cfgMeta').value = DB.config.metaPadrao || 15000;
   document.getElementById('cfgLinkIndicacoes').value = DB.config.linkIndiqueGanhe || '';
   document.getElementById('cfgValorPixIndicacao').value = brlInput(DB.config.valorPixIndicacao || 20);
-  document.getElementById('cfgNomePessoa').textContent = ACTIVE_PROFILE ? ACTIVE_PROFILE.nome : '—';
   const regs = regioesAtuais();
   for (let i = 0; i < 6; i++) {
     const el = document.getElementById('cfgRegiao' + (i+1));
