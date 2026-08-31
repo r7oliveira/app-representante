@@ -2294,7 +2294,7 @@ function renderAgendaHoje() {
       <div style="flex:1;cursor:pointer;" onclick="abrirNovaTarefa('${t.id}')">
         <div style="font-size:13px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
         ${(t.horario || t.diaTodo || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">
-          ${(t.horario || t.diaTodo || t.autor==='admin' || t.recorrente) ? `<span style="font-size:11px;color:var(--ink-3);">${[t.recorrente ? '🔁' : '', t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
+          ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:11px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
           ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
         </div>` : ''}
       </div>
@@ -2333,7 +2333,7 @@ function renderAgendaCompleta() {
           <div style="flex:1;cursor:pointer;min-width:0;" onclick="abrirNovaTarefa('${t.id}','${d.key}')">
             <div style="font-size:13.5px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};line-height:1.4;word-break:break-word;">${t.texto}</div>
             ${(t.horario || t.diaTodo || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
-              ${(t.horario || t.diaTodo || t.autor==='admin' || t.recorrente) ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.recorrente ? '🔁' : '', t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
+              ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
               ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
             </div>` : ''}
           </div>
