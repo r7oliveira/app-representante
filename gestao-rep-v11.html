@@ -3312,7 +3312,6 @@ function abrirAgendarCliente(diaKey) {
   const consultoras = sem ? [...sem.consultoras].sort((a,b) => a.nome.localeCompare(b.nome)) : [];
   sel.innerHTML = '<option value="">— Selecione —</option>' + consultoras.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
   document.getElementById('acHorario').value = '';
-  document.getElementById('acEnviarWpp').checked = true;
 
   document.getElementById('modalAgendarCliente').classList.add('open');
 }
@@ -3340,10 +3339,6 @@ function confirmarAgendarCliente() {
   fecharModal('modalAgendarCliente');
   renderAgendaHoje();
   renderAgendaCompleta();
-
-  if (document.getElementById('acEnviarWpp').checked) {
-    enviarWhatsappHorario(consultoraId);
-  }
 }
 
 
@@ -7194,12 +7189,7 @@ if (!ACTIVE_PROFILE) {
         <option value="">— Selecione —</option>
       </select>
     </label>
-    <label class="field"><span>Horário</span><input type="time" id="acHorario" style="width:100%;max-width:100%;"></label>
-
-    <label style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;" onclick="document.getElementById('acEnviarWpp').click()">
-      <input type="checkbox" id="acEnviarWpp" checked style="width:18px;height:18px;accent-color:var(--rose);flex-shrink:0;">
-      <span style="font-size:13px;color:var(--ink-2);font-weight:600;">Enviar mensagem no WhatsApp agora</span>
-    </label>
+    <label class="field" style="margin-bottom:20px;"><span>Horário</span><input type="time" id="acHorario" style="width:100%;max-width:100%;"></label>
 
     <button class="btn-primary" style="width:100%;" onclick="confirmarAgendarCliente()">Agendar</button>
   </div>
