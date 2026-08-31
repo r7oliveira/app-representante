@@ -3523,9 +3523,12 @@ function renderAdminPessoa() {
   // Observações
   const obs = [...(data.observacoes || [])].reverse();
   document.getElementById('apObsHistorico').innerHTML = obs.length ? obs.map(o => `
-    <div style="background:var(--surface);border-radius:10px;padding:9px 12px;margin-bottom:6px;font-size:12px;color:var(--ink-2);">
-      ${o.texto}
-      <div style="font-size:10px;color:var(--ink-3);margin-top:2px;">${dataHoraCurta(o.criadoEm)} · ${o.lida ? 'lida' : 'não lida'}</div>
+    <div style="background:var(--surface);border-radius:10px;padding:9px 12px;margin-bottom:6px;font-size:12px;color:var(--ink-2);display:flex;gap:8px;align-items:flex-start;">
+      <div style="flex:1;">
+        ${o.texto}
+        <div style="font-size:10px;color:var(--ink-3);margin-top:2px;">${dataHoraCurta(o.criadoEm)} · ${o.lida ? 'lida' : 'não lida'}</div>
+      </div>
+      <button onclick="adminExcluirObservacao('${o.id}')" style="background:none;border:none;color:var(--ink-3);font-size:15px;cursor:pointer;flex-shrink:0;padding:2px;">✕</button>
     </div>`).join('') : '<div style="font-size:12px;color:var(--ink-3);">Nenhuma observação enviada ainda.</div>';
 
   // Agenda por dia
@@ -3575,6 +3578,20 @@ function adminEnviarObservacao() {
     document.getElementById('apNovaObs').value = '';
     renderAdminPessoa();
   }).catch(e => alert('Erro ao enviar: ' + e.message));
+}
+
+function adminExcluirObservacao(obsId) {
+  if (!confirm('Excluir esta observação?')) return;
+  const pessoaId = _adminPessoaAtual;
+  const data = _adminDB[pessoaId];
+  if (!data) return;
+
+  data.observacoes = (data.observacoes || []).filter(o => o.id !== obsId);
+  data.seq = (data.seq || 1) + 1;
+
+  _adminRefs[pessoaId].set(data).then(() => {
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao excluir: ' + e.message));
 }
 
 let _atRepetirSelecionados = new Set();
