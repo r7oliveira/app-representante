@@ -167,7 +167,8 @@ input,textarea,select{font-family:var(--font);}
 .ia-txt strong{color:var(--ink);font-weight:700;}
 
 .cta-wrap{padding:12px 16px 4px;background:white;flex-shrink:0;}
-.cta-btn{width:100%;background:linear-gradient(135deg,#9C4C5E,#B8677A);color:white;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 28px rgba(107,0,48,.4),0 2px 8px rgba(200,24,90,.2);letter-spacing:.2px;}
+.cta-btn{width:100%;background:linear-gradient(135deg,#9C4C5E,#B8677A);color:white;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 28px rgba(107,0,48,.4),0 2px 8px rgba(200,24,90,.2);letter-spacing:.2px;cursor:pointer;}
+.cta-plain{width:100%;background:none;color:var(--rose-deep);border:none;padding:6px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:var(--font);}
 .cta-sub{text-align:center;font-size:11px;color:var(--ink-3);margin-top:7px;font-weight:500;}
 
 .cons-card{background:white;border-radius:16px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;border:1.5px solid transparent;cursor:pointer;}
@@ -536,11 +537,11 @@ input,textarea,select{font-family:var(--font);}
     </div>
 
     <!-- CTA -->
-    <div class="cta-wrap">
-      <button class="cta-btn" id="ctaBtn" onclick="abrirAtendimento()">
-        Continuar Semana →
-      </button>
-      <div class="cta-sub" id="ctaSub">Carregando...</div>
+    <div class="cta-wrap" style="padding:14px 16px 6px;">
+      <div id="ctaBtn" class="cta-plain" onclick="abrirAtendimento()">
+        Continuar Semana <span style="font-size:18px;">↓</span>
+      </div>
+      <div class="cta-sub" id="ctaSub"></div>
     </div>
 
     <!-- Lista consultoras -->
@@ -4190,8 +4191,10 @@ function renderSemana() {
     document.getElementById('semanaNumero').textContent = 'Semana —';
     document.getElementById('semanaRegiao').textContent = 'Nenhuma semana ativa';
     document.getElementById('iaStrip').innerHTML = 'É hora de criar a próxima semana.';
-    document.getElementById('ctaBtn').textContent = ' Criar Nova Semana';
-    document.getElementById('ctaBtn').onclick = () => goTo('criar-semana');
+    const ctaBtnEl0 = document.getElementById('ctaBtn');
+    ctaBtnEl0.className = 'cta-btn';
+    ctaBtnEl0.innerHTML = 'Criar Nova Semana →';
+    ctaBtnEl0.onclick = () => goTo('criar-semana');
     document.getElementById('ctaSub').textContent = 'Toque para escolher a região e iniciar';
     document.getElementById('progConsultoras').style.width = '0%';
     document.getElementById('progMeta').style.width = '0%';
@@ -4286,20 +4289,23 @@ function renderSemana() {
 
   document.getElementById('iaStrip').innerHTML =
     '<strong>Dica de hoje:</strong> ' + fraseMotivacional();
+  const ctaBtnEl = document.getElementById('ctaBtn');
   if (proxima) {
-    document.getElementById('ctaBtn').textContent = 'Continuar Semana →';
-    document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
-    document.getElementById('ctaBtn').onclick = () => abrirAtendimento(proxima.id);
+    ctaBtnEl.className = 'cta-plain';
+    ctaBtnEl.innerHTML = 'Continuar Semana <span style="font-size:18px;">↓</span>';
+    ctaBtnEl.onclick = () => abrirAtendimento(proxima.id);
     document.getElementById('ctaSub').textContent = '';
   } else if (total === 0) {
-    document.getElementById('ctaBtn').textContent = '+ Adicionar Consultoras';
-    document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
-    document.getElementById('ctaBtn').onclick = () => adicionarConsultorasSemana();
+    ctaBtnEl.className = 'cta-btn';
+    ctaBtnEl.style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
+    ctaBtnEl.innerHTML = '+ Adicionar Consultoras';
+    ctaBtnEl.onclick = () => adicionarConsultorasSemana();
     document.getElementById('ctaSub').textContent = 'Nenhuma consultora nesta semana ainda.';
   } else {
-    document.getElementById('ctaBtn').textContent = '✓ Finalizar Semana';
-    document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,#0A5C3A,#0D9E6E)';
-    document.getElementById('ctaBtn').onclick = () => mostrarFechamentoSemana();
+    ctaBtnEl.className = 'cta-btn';
+    ctaBtnEl.style.background = 'linear-gradient(135deg,#0A5C3A,#0D9E6E)';
+    ctaBtnEl.innerHTML = '✓ Finalizar Semana';
+    ctaBtnEl.onclick = () => mostrarFechamentoSemana();
     document.getElementById('ctaSub').textContent = 'Todas as ' + total + ' consultoras foram atendidas!';
   }
 
@@ -4344,17 +4350,15 @@ function renderSemana() {
       sub = partes.join(' · ');
     }
 
-    return '<div class="cons-card ' + cls + '" onclick="abrirAtendimento(\'' + c.id + '\')">'
-      + '<div class="c-av ' + avCls + '">' + avTxt + '</div>'
+    return '<div class="cons-card ' + cls + '" style="align-items:flex-start;" onclick="abrirAtendimento(\'' + c.id + '\')">'
+      + '<div class="c-av ' + avCls + '" style="margin-top:1px;">' + avTxt + '</div>'
       + '<div class="c-info">'
-        + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">'
-          + '<div class="c-name" style="white-space:normal;overflow:visible;text-overflow:clip;">' + c.nome + '</div>'
-          + badge
-        + '</div>'
-        + '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:2px;">'
-          + '<div class="c-sub" style="margin-top:0;">' + sub + '</div>'
-          + (c.telefone ? '<button onclick="event.stopPropagation();enviarWhatsappHorario(\'' + c.id + '\')" title="Combinar horário no WhatsApp" style="background:#25D366;border:none;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0012.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 012.41 5.83c0 4.55-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.42-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.23.89 2.41 1.02 2.58.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg></button>' : '')
-        + '</div>'
+        + '<div class="c-name" style="white-space:normal;overflow:visible;text-overflow:clip;">' + c.nome + '</div>'
+        + '<div class="c-sub">' + sub + '</div>'
+      + '</div>'
+      + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">'
+        + badge
+        + (c.telefone ? '<button onclick="event.stopPropagation();enviarWhatsappHorario(\'' + c.id + '\')" title="Combinar horário no WhatsApp" style="background:#25D366;border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;padding:0;"><svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0012.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 012.41 5.83c0 4.55-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.42-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.23.89 2.41 1.02 2.58.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg></button>' : '')
       + '</div>'
     + '</div>';
   }).join('')
