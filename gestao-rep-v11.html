@@ -3392,6 +3392,23 @@ function excluirTarefa() {
 
 function agoraISO() { return new Date().toISOString(); }
 
+const FRASES_MOTIVACIONAIS = [
+  'Ofereça a Favorita todos os dias. 💄',
+  'Fale dos nossos programas — elas podem ganhar brindes e Pix. 🎁',
+  'Peça indicação a cada atendimento. 🤝',
+  'Mostre os lançamentos antes de fechar o pedido. ✨',
+  'Pergunte se ela quer entrar numa das nossas lives. 🎥',
+  'Reforce o prazo de troca e devolução — passa confiança. 📋',
+  'Sempre confirme o próximo atendimento antes de sair. 📅',
+  'Comente sobre o programa de estrelas e o resgate de prêmios. ⭐',
+  'Aproveite pra atualizar o cadastro dela se estiver desatualizado. 📝',
+  'Elogie o que ela já comprou antes de sugerir algo novo. 💖',
+];
+function fraseMotivacional() {
+  const diaDoAno = Math.floor((Date.now() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+  return FRASES_MOTIVACIONAIS[diaDoAno % FRASES_MOTIVACIONAIS.length];
+}
+
 /* ════════════════════════════════════════════
    OBSERVAÇÕES DA ADMINISTRAÇÃO
 ════════════════════════════════════════════ */
@@ -4243,8 +4260,7 @@ function renderSemana() {
   }
 
   document.getElementById('iaStrip').innerHTML =
-    (faltaMeta > 0 ? '<strong>Faltam ' + brl(faltaMeta) + ' para a meta (a pagar).</strong> ' : '<strong>Meta atingida! ✓</strong> ') +
-    sugestaoTxt;
+    '<strong>Dica de hoje:</strong> ' + fraseMotivacional();
   if (proxima) {
     document.getElementById('ctaBtn').textContent = 'Continuar Semana →';
     document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
