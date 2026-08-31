@@ -1218,15 +1218,23 @@ input,textarea,select{font-family:var(--font);}
     <input type="hidden" id="atId">
     <input type="hidden" id="atDiaKey">
     <label class="field"><span>O que precisa ser feito</span><input id="atTexto" placeholder="Ex: Repor vitrine da loja"></label>
-    <div class="two-col">
-      <label class="field" style="margin:0;"><span>Horário (opcional)</span><input id="atHorario" type="time"></label>
-      <label class="field" style="margin:0;">
-        <span>Prioridade</span>
-        <select id="atPrioridade">
-          <option value="normal">Normal</option>
-          <option value="importante">Importante</option>
-        </select>
-      </label>
+    <label class="field" style="margin:0;">
+      <span>Horário (opcional)</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="atHorario" type="time" style="flex:1;">
+        <button type="button" id="atBtnDiaTodo" onclick="adminToggleDiaTodo()" style="flex-shrink:0;padding:11px 13px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-3);font-size:12.5px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;">Dia todo</button>
+      </div>
+    </label>
+    <label class="field">
+      <span>Prioridade</span>
+      <select id="atPrioridade">
+        <option value="normal">Normal</option>
+        <option value="importante">Importante</option>
+      </select>
+    </label>
+    <div id="atRepetirBox" style="margin-bottom:14px;">
+      <span style="font-size:13px;font-weight:700;color:var(--ink-2);display:block;margin-bottom:8px;">Repetir também em</span>
+      <div id="atRepetirDias" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
     </div>
     <div class="btn-row" style="margin-top:8px;">
       <button class="btn-ghost" style="flex:1;" id="atBtnExcluir" onclick="adminExcluirTarefa()">Excluir</button>
@@ -3569,6 +3577,9 @@ function adminEnviarObservacao() {
   }).catch(e => alert('Erro ao enviar: ' + e.message));
 }
 
+let _atRepetirSelecionados = new Set();
+let _atDiaTodo = false;
+
 function adminAbrirTarefa(diaKey, taskId) {
   const data = _adminDB[_adminPessoaAtual];
   const agenda = data.agenda || blankAgenda();
@@ -3581,7 +3592,58 @@ function adminAbrirTarefa(diaKey, taskId) {
   document.getElementById('atHorario').value = t ? (t.horario || '') : '';
   document.getElementById('atPrioridade').value = t ? (t.prioridade || 'normal') : 'normal';
   document.getElementById('atBtnExcluir').style.display = t ? '' : 'none';
+
+  _atDiaTodo = t ? !!t.diaTodo : false;
+  adminAplicarEstadoDiaTodo();
+
+  _atRepetirSelecionados = new Set();
+  const repetirBox = document.getElementById('atRepetirBox');
+  if (t) {
+    repetirBox.style.display = 'none';
+  } else {
+    repetirBox.style.display = '';
+    document.getElementById('atRepetirDias').innerHTML = DIAS_AGENDA
+      .filter(d => d.key !== diaKey)
+      .map(d => `<button type="button" class="dia-chip" data-key="${d.key}" onclick="adminToggleRepetirDia('${d.key}')">${d.label.replace('-feira','')}</button>`)
+      .join('');
+  }
+
   document.getElementById('modalAdminTarefa').classList.add('open');
+}
+
+function adminToggleDiaTodo() {
+  _atDiaTodo = !_atDiaTodo;
+  adminAplicarEstadoDiaTodo();
+}
+
+function adminAplicarEstadoDiaTodo() {
+  const input = document.getElementById('atHorario');
+  const btn = document.getElementById('atBtnDiaTodo');
+  if (_atDiaTodo) {
+    input.value = '';
+    input.disabled = true;
+    input.style.opacity = '.4';
+    btn.style.background = 'var(--rose)';
+    btn.style.borderColor = 'var(--rose)';
+    btn.style.color = 'white';
+  } else {
+    input.disabled = false;
+    input.style.opacity = '1';
+    btn.style.background = 'white';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--ink-3)';
+  }
+}
+
+function adminToggleRepetirDia(diaKey) {
+  const btn = document.querySelector(`#atRepetirDias .dia-chip[data-key="${diaKey}"]`);
+  if (_atRepetirSelecionados.has(diaKey)) {
+    _atRepetirSelecionados.delete(diaKey);
+    btn.classList.remove('active');
+  } else {
+    _atRepetirSelecionados.add(diaKey);
+    btn.classList.add('active');
+  }
 }
 
 function adminSalvarTarefa() {
@@ -3589,7 +3651,8 @@ function adminSalvarTarefa() {
   if (!texto) { alert('Descreva a tarefa.'); return; }
   const diaKey = document.getElementById('atDiaKey').value;
   const id = document.getElementById('atId').value;
-  const horario = document.getElementById('atHorario').value;
+  const horario = _atDiaTodo ? '' : document.getElementById('atHorario').value;
+  const diaTodo = _atDiaTodo;
   const prioridade = document.getElementById('atPrioridade').value;
 
   const pessoaId = _adminPessoaAtual;
@@ -3599,9 +3662,13 @@ function adminSalvarTarefa() {
 
   if (id) {
     const t = data.agenda[diaKey].find(x => x.id === id);
-    if (t) { t.texto = texto; t.horario = horario; t.prioridade = prioridade; }
+    if (t) { t.texto = texto; t.horario = horario; t.diaTodo = diaTodo; t.prioridade = prioridade; }
   } else {
-    data.agenda[diaKey].push({ id: adminUid(), texto, horario, prioridade, feito: false, autor: 'admin', criadoEm: new Date().toISOString() });
+    data.agenda[diaKey].push({ id: adminUid(), texto, horario, diaTodo, prioridade, feito: false, autor: 'admin', criadoEm: new Date().toISOString() });
+    _atRepetirSelecionados.forEach(outroDia => {
+      data.agenda[outroDia] = data.agenda[outroDia] || [];
+      data.agenda[outroDia].push({ id: adminUid(), texto, horario, diaTodo, prioridade, feito: false, autor: 'admin', criadoEm: new Date().toISOString() });
+    });
   }
   data.seq = (data.seq || 1) + 1;
   data.ultimaNotificacao = { tipo: 'tarefa', texto, criadoEm: new Date().toISOString() };
