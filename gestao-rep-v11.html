@@ -1232,6 +1232,11 @@ input,textarea,select{font-family:var(--font);}
         <option value="importante">Importante</option>
       </select>
     </label>
+    <button type="button" id="atBtnRecorrente" onclick="adminToggleRecorrente()" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-2);font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;margin-bottom:14px;text-align:left;">
+      <span id="atRecorrenteIcone" style="font-size:16px;">🔁</span>
+      <span style="flex:1;">Usar toda semana</span>
+      <span id="atRecorrenteCheck" style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);flex-shrink:0;"></span>
+    </button>
     <div id="atRepetirBox" style="margin-bottom:14px;">
       <span style="font-size:13px;font-weight:700;color:var(--ink-2);display:block;margin-bottom:8px;">Repetir também em</span>
       <div id="atRepetirDias" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
@@ -2246,7 +2251,33 @@ function fazerLogout() {
 /* ════════════════════════════════════════════
    AGENDA DO DIA
 ════════════════════════════════════════════ */
+function inicioSemanaAtual() {
+  const agora = new Date();
+  const diaSemana = agora.getDay(); // 0=domingo
+  const diasDesdeSegunda = diaSemana === 0 ? 6 : diaSemana - 1;
+  const inicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() - diasDesdeSegunda);
+  inicio.setHours(0, 0, 0, 0);
+  return inicio;
+}
+
+function resetarTarefasRecorrentes() {
+  if (!DB.agenda) return;
+  const inicio = inicioSemanaAtual();
+  let mudou = false;
+  DIAS_AGENDA.forEach(d => {
+    (DB.agenda[d.key] || []).forEach(t => {
+      if (t.recorrente && t.feito && t.feitoEm && new Date(t.feitoEm) < inicio) {
+        t.feito = false;
+        t.feitoEm = null;
+        mudou = true;
+      }
+    });
+  });
+  if (mudou) save();
+}
+
 function renderAgendaHoje() {
+  resetarTarefasRecorrentes();
   const el = document.getElementById('agendaHojeLista');
   if (!el) return;
   const diaKey = hojeAgendaKey();
@@ -2263,7 +2294,7 @@ function renderAgendaHoje() {
       <div style="flex:1;cursor:pointer;" onclick="abrirNovaTarefa('${t.id}')">
         <div style="font-size:13px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
         ${(t.horario || t.diaTodo || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">
-          ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:11px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
+          ${(t.horario || t.diaTodo || t.autor==='admin' || t.recorrente) ? `<span style="font-size:11px;color:var(--ink-3);">${[t.recorrente ? '🔁' : '', t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
           ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
         </div>` : ''}
       </div>
@@ -2271,6 +2302,7 @@ function renderAgendaHoje() {
 }
 
 function renderAgendaCompleta() {
+  resetarTarefasRecorrentes();
   const el = document.getElementById('agendaCompletaLista');
   if (!el) return;
   const hoje = hojeAgendaKey();
@@ -2301,7 +2333,7 @@ function renderAgendaCompleta() {
           <div style="flex:1;cursor:pointer;min-width:0;" onclick="abrirNovaTarefa('${t.id}','${d.key}')">
             <div style="font-size:13.5px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};line-height:1.4;word-break:break-word;">${t.texto}</div>
             ${(t.horario || t.diaTodo || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
-              ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
+              ${(t.horario || t.diaTodo || t.autor==='admin' || t.recorrente) ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.recorrente ? '🔁' : '', t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
               ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
             </div>` : ''}
           </div>
@@ -3135,6 +3167,7 @@ function toggleTarefa(id, diaKey) {
   const t = (DB.agenda[diaKey] || []).find(x => x.id === id);
   if (!t) return;
   t.feito = !t.feito;
+  t.feitoEm = t.feito ? new Date().toISOString() : null;
   save();
   renderAgendaHoje();
   renderAgendaCompleta();
@@ -3142,6 +3175,7 @@ function toggleTarefa(id, diaKey) {
 
 let _tarefaRepetirSelecionados = new Set();
 let _tarefaDiaTodo = false;
+let _tarefaRecorrente = false;
 
 function abrirNovaTarefa(id, diaKey) {
   diaKey = diaKey || hojeAgendaKey();
@@ -3156,6 +3190,9 @@ function abrirNovaTarefa(id, diaKey) {
 
   _tarefaDiaTodo = t ? !!t.diaTodo : false;
   aplicarEstadoDiaTodo();
+
+  _tarefaRecorrente = t ? !!t.recorrente : false;
+  aplicarEstadoRecorrente();
 
   // "Repetir também em" só faz sentido ao criar uma tarefa nova
   _tarefaRepetirSelecionados = new Set();
@@ -3197,6 +3234,31 @@ function aplicarEstadoDiaTodo() {
   }
 }
 
+function toggleRecorrente() {
+  _tarefaRecorrente = !_tarefaRecorrente;
+  aplicarEstadoRecorrente();
+}
+
+function aplicarEstadoRecorrente() {
+  const btn = document.getElementById('tarefaBtnRecorrente');
+  const check = document.getElementById('tarefaRecorrenteCheck');
+  if (_tarefaRecorrente) {
+    btn.style.background = 'var(--rose-light)';
+    btn.style.borderColor = 'var(--rose)';
+    btn.style.color = 'var(--rose-deep)';
+    check.style.background = 'var(--rose)';
+    check.style.borderColor = 'var(--rose)';
+    check.innerHTML = '<span style="color:white;font-size:12px;line-height:20px;display:block;text-align:center;">✓</span>';
+  } else {
+    btn.style.background = 'white';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--ink-2)';
+    check.style.background = 'transparent';
+    check.style.borderColor = 'var(--border)';
+    check.innerHTML = '';
+  }
+}
+
 function toggleRepetirDia(diaKey) {
   const btn = document.querySelector(`#tarefaRepetirDias .dia-chip[data-key="${diaKey}"]`);
   if (_tarefaRepetirSelecionados.has(diaKey)) {
@@ -3215,23 +3277,24 @@ function salvarTarefa() {
   const id = document.getElementById('tarefaId').value;
   const horario = _tarefaDiaTodo ? '' : document.getElementById('tarefaHorario').value;
   const diaTodo = _tarefaDiaTodo;
+  const recorrente = _tarefaRecorrente;
   const prioridade = document.getElementById('tarefaPrioridade').value;
   DB.agenda = DB.agenda || blankAgenda();
   DB.agenda[diaKey] = DB.agenda[diaKey] || [];
 
   if (id) {
     const t = DB.agenda[diaKey].find(x => x.id === id);
-    if (t) { t.texto = texto; t.horario = horario; t.diaTodo = diaTodo; t.prioridade = prioridade; }
+    if (t) { t.texto = texto; t.horario = horario; t.diaTodo = diaTodo; t.recorrente = recorrente; t.prioridade = prioridade; }
   } else {
     DB.agenda[diaKey].push({
-      id: uid(), texto, horario, diaTodo, prioridade,
+      id: uid(), texto, horario, diaTodo, recorrente, prioridade,
       feito: false, autor: 'self', criadoEm: agoraISO(),
     });
     // Repete a mesma tarefa nos outros dias marcados
     _tarefaRepetirSelecionados.forEach(outroDia => {
       DB.agenda[outroDia] = DB.agenda[outroDia] || [];
       DB.agenda[outroDia].push({
-        id: uid(), texto, horario, diaTodo, prioridade,
+        id: uid(), texto, horario, diaTodo, recorrente, prioridade,
         feito: false, autor: 'self', criadoEm: agoraISO(),
       });
     });
@@ -3545,7 +3608,7 @@ function renderAdminPessoa() {
         <div onclick="adminAbrirTarefa('${d.key}','${t.id}')" style="display:flex;align-items:center;gap:8px;background:white;border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:4px;cursor:pointer;">
           <span style="color:${t.feito?'var(--green)':'var(--ink-3)'};font-size:13px;">${t.feito?'✓':'○'}</span>
           <div style="flex:1;font-size:12.5px;color:var(--ink);text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
-          ${(t.horario || t.diaTodo) ? `<span style="font-size:11px;color:var(--ink-3);">${t.diaTodo ? 'Dia todo' : t.horario}</span>` : ''}
+          ${(t.horario || t.diaTodo || t.recorrente) ? `<span style="font-size:11px;color:var(--ink-3);">${[t.recorrente ? '🔁' : '', t.diaTodo ? 'Dia todo' : t.horario].filter(Boolean).join(' ')}</span>` : ''}
         </div>`).join('') : '<div style="font-size:11.5px;color:var(--ink-3);padding:4px 0;">Nenhuma tarefa.</div>'}
     </div>`;
   }).join('');
@@ -3596,6 +3659,7 @@ function adminExcluirObservacao(obsId) {
 
 let _atRepetirSelecionados = new Set();
 let _atDiaTodo = false;
+let _atRecorrente = false;
 
 function adminAbrirTarefa(diaKey, taskId) {
   const data = _adminDB[_adminPessoaAtual];
@@ -3612,6 +3676,9 @@ function adminAbrirTarefa(diaKey, taskId) {
 
   _atDiaTodo = t ? !!t.diaTodo : false;
   adminAplicarEstadoDiaTodo();
+
+  _atRecorrente = t ? !!t.recorrente : false;
+  adminAplicarEstadoRecorrente();
 
   _atRepetirSelecionados = new Set();
   const repetirBox = document.getElementById('atRepetirBox');
@@ -3652,6 +3719,31 @@ function adminAplicarEstadoDiaTodo() {
   }
 }
 
+function adminToggleRecorrente() {
+  _atRecorrente = !_atRecorrente;
+  adminAplicarEstadoRecorrente();
+}
+
+function adminAplicarEstadoRecorrente() {
+  const btn = document.getElementById('atBtnRecorrente');
+  const check = document.getElementById('atRecorrenteCheck');
+  if (_atRecorrente) {
+    btn.style.background = 'var(--rose-light)';
+    btn.style.borderColor = 'var(--rose)';
+    btn.style.color = 'var(--rose-deep)';
+    check.style.background = 'var(--rose)';
+    check.style.borderColor = 'var(--rose)';
+    check.innerHTML = '<span style="color:white;font-size:12px;line-height:20px;display:block;text-align:center;">✓</span>';
+  } else {
+    btn.style.background = 'white';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--ink-2)';
+    check.style.background = 'transparent';
+    check.style.borderColor = 'var(--border)';
+    check.innerHTML = '';
+  }
+}
+
 function adminToggleRepetirDia(diaKey) {
   const btn = document.querySelector(`#atRepetirDias .dia-chip[data-key="${diaKey}"]`);
   if (_atRepetirSelecionados.has(diaKey)) {
@@ -3670,6 +3762,7 @@ function adminSalvarTarefa() {
   const id = document.getElementById('atId').value;
   const horario = _atDiaTodo ? '' : document.getElementById('atHorario').value;
   const diaTodo = _atDiaTodo;
+  const recorrente = _atRecorrente;
   const prioridade = document.getElementById('atPrioridade').value;
 
   const pessoaId = _adminPessoaAtual;
@@ -3679,12 +3772,12 @@ function adminSalvarTarefa() {
 
   if (id) {
     const t = data.agenda[diaKey].find(x => x.id === id);
-    if (t) { t.texto = texto; t.horario = horario; t.diaTodo = diaTodo; t.prioridade = prioridade; }
+    if (t) { t.texto = texto; t.horario = horario; t.diaTodo = diaTodo; t.recorrente = recorrente; t.prioridade = prioridade; }
   } else {
-    data.agenda[diaKey].push({ id: adminUid(), texto, horario, diaTodo, prioridade, feito: false, autor: 'admin', criadoEm: new Date().toISOString() });
+    data.agenda[diaKey].push({ id: adminUid(), texto, horario, diaTodo, recorrente, prioridade, feito: false, autor: 'admin', criadoEm: new Date().toISOString() });
     _atRepetirSelecionados.forEach(outroDia => {
       data.agenda[outroDia] = data.agenda[outroDia] || [];
-      data.agenda[outroDia].push({ id: adminUid(), texto, horario, diaTodo, prioridade, feito: false, autor: 'admin', criadoEm: new Date().toISOString() });
+      data.agenda[outroDia].push({ id: adminUid(), texto, horario, diaTodo, recorrente, prioridade, feito: false, autor: 'admin', criadoEm: new Date().toISOString() });
     });
   }
   data.seq = (data.seq || 1) + 1;
@@ -6677,6 +6770,11 @@ if (!ACTIVE_PROFILE) {
         <option value="importante">Importante</option>
       </select>
     </label>
+    <button type="button" id="tarefaBtnRecorrente" onclick="toggleRecorrente()" style="width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-2);font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;margin-bottom:14px;text-align:left;">
+      <span id="tarefaRecorrenteIcone" style="font-size:16px;">🔁</span>
+      <span style="flex:1;">Usar toda semana</span>
+      <span id="tarefaRecorrenteCheck" style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);flex-shrink:0;"></span>
+    </button>
     <div id="tarefaRepetirBox" style="margin-bottom:14px;">
       <span style="font-size:13px;font-weight:700;color:var(--ink-2);display:block;margin-bottom:8px;">Repetir também em</span>
       <div id="tarefaRepetirDias" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
