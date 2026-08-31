@@ -4290,8 +4290,7 @@ function renderSemana() {
     document.getElementById('ctaBtn').textContent = 'Continuar Semana →';
     document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
     document.getElementById('ctaBtn').onclick = () => abrirAtendimento(proxima.id);
-    const mediaDia = Math.ceil(pendentesAgora.length / 5);
-    document.getElementById('ctaSub').textContent = 'Próxima: ' + proxima.nome + ' · ' + (atendidas+1) + 'ª de ' + total + ' · Média de ' + mediaDia + '/dia para terminar sexta';
+    document.getElementById('ctaSub').textContent = '';
   } else if (total === 0) {
     document.getElementById('ctaBtn').textContent = '+ Adicionar Consultoras';
     document.getElementById('ctaBtn').style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
