@@ -1045,7 +1045,7 @@ input[type="time"]{max-width:100%;}
     <label class="field"><span>Título</span><input id="liveTitulo" placeholder="Ex: Live de sexta-feira"></label>
     <div class="two-col">
       <label class="field" style="margin:0;"><span>Data</span><input id="liveData" type="date"></label>
-      <label class="field" style="margin:0;"><span>Horário</span><input id="liveHorario" type="time" style="width:100%;max-width:100%;"></label>
+      <label class="field" style="margin:0;"><span>Horário</span><div style="border:1.5px solid var(--border);border-radius:var(--r-sm);overflow:hidden;background:white;"><input id="liveHorario" type="time" style="width:100%;border:none;padding:11px 14px;font-size:15px;font-family:var(--font);color:var(--ink);background:transparent;outline:none;"></div></label>
     </div>
     <label class="field"><span>Prêmio (opcional, pode editar depois)</span><input id="livePremioInicial" placeholder="Ex: Kit de perfumes"></label>
     <button class="btn-primary" style="width:100%;margin-top:8px;" onclick="salvarNovaLive()">Criar live</button>
@@ -1229,7 +1229,9 @@ input[type="time"]{max-width:100%;}
     <label class="field" style="margin:0;">
       <span>Horário (opcional)</span>
       <div style="display:flex;gap:8px;align-items:center;">
-        <input id="atHorario" type="time" style="flex:1;min-width:0;max-width:100%;">
+        <div style="flex:1;min-width:0;border:1.5px solid var(--border);border-radius:var(--r-sm);overflow:hidden;background:white;">
+          <input id="atHorario" type="time" style="width:100%;border:none;padding:11px 14px;font-size:15px;font-family:var(--font);color:var(--ink);background:transparent;outline:none;">
+        </div>
         <button type="button" id="atBtnDiaTodo" onclick="adminToggleDiaTodo()" style="flex-shrink:0;padding:11px 13px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-3);font-size:12.5px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;">Dia todo</button>
       </div>
     </label>
@@ -7189,7 +7191,7 @@ if (!ACTIVE_PROFILE) {
         <option value="">— Selecione —</option>
       </select>
     </label>
-    <label class="field" style="margin-bottom:20px;"><span>Horário</span><input type="time" id="acHorario" style="width:100%;max-width:100%;"></label>
+    <label class="field" style="margin-bottom:20px;"><span>Horário</span><div style="border:1.5px solid var(--border);border-radius:var(--r-sm);overflow:hidden;background:white;"><input type="time" id="acHorario" style="width:100%;border:none;padding:11px 14px;font-size:15px;font-family:var(--font);color:var(--ink);background:transparent;outline:none;"></div></label>
 
     <button class="btn-primary" style="width:100%;" onclick="confirmarAgendarCliente()">Agendar</button>
   </div>
@@ -7208,7 +7210,9 @@ if (!ACTIVE_PROFILE) {
     <label class="field" style="margin:0;">
       <span>Horário (opcional)</span>
       <div style="display:flex;gap:8px;align-items:center;">
-        <input id="tarefaHorario" type="time" style="flex:1;min-width:0;max-width:100%;">
+        <div style="flex:1;min-width:0;border:1.5px solid var(--border);border-radius:var(--r-sm);overflow:hidden;background:white;">
+          <input id="tarefaHorario" type="time" style="width:100%;border:none;padding:11px 14px;font-size:15px;font-family:var(--font);color:var(--ink);background:transparent;outline:none;">
+        </div>
         <button type="button" id="tarefaBtnDiaTodo" onclick="toggleDiaTodo()" style="flex-shrink:0;padding:11px 13px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-3);font-size:12.5px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;">Dia todo</button>
       </div>
     </label>
