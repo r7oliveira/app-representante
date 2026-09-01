@@ -4826,6 +4826,9 @@ function finalizarAtendimento() {
       ? Math.round((cons.tempoMedioMin + min) / 2)
       : min;
   }
+
+  concederEstrelaAtendimento(cons, sem);
+
   save();
 
   if (timerInterval) clearInterval(timerInterval);
@@ -4838,6 +4841,34 @@ function finalizarAtendimento() {
     goTo('semana');
     setTimeout(() => mostrarFechamentoSemana(), 300);
   }}
+
+/* ── Acerto perfeito no atendimento vira estrela (dobra se pediu Favorita) ── */
+function concederEstrelaAtendimento(cons, sem) {
+  // Consultora nova ou que parou de vender não pontuam estrela por acerto
+  if (cons.consultoraNova || cons.parouDeVender) return;
+
+  const acertoCompleto = cons.atendimentoEmDia && cons.pagamentoNaSemana && cons.assinaturaDigital;
+  if (!acertoCompleto) return;
+
+  const qtd = cons.pedidoFavoritaFeito ? 2 : 1;
+  const origemId = 'atendimento:' + sem.id + ':' + cons.id;
+  DB.estrelas = DB.estrelas || [];
+  if (DB.estrelas.some(e => e.origemId === origemId)) return; // já concedida para este atendimento
+
+  for (let i = 0; i < qtd; i++) {
+    DB.estrelas.push({
+      id: uid(),
+      consultoraId: cons.id,
+      nome: cons.nome,
+      programa: 'atendimento',
+      origem: 'Acerto completo',
+      origemId: origemId + (i > 0 ? ':' + i : ''),
+      liveId: null,
+      liveTitulo: 'Acerto completo' + (cons.pedidoFavoritaFeito ? ' + Favorita (estrela dobrada)' : ''),
+      criadoEm: new Date().toISOString(),
+    });
+  }
+}
 
 function abrirRegistro(tipo) {
   const sem = getSemanaAtiva();
