@@ -1724,23 +1724,15 @@ input[type="time"]{max-width:100%;}
   </div>
 
   <div class="scroll-body" style="padding:0 16px 80px;">
-    <!-- Ações -->
-    <div class="sec-title" style="padding-left:0;">Ações</div>
-    <div class="card" style="margin-bottom:12px;">
-      <div class="card-row" style="cursor:pointer;" onclick="abrirModalConsultora()">
-        <span style="font-size:20px;">+</span>
-        <div style="flex:1;font-size:14px;font-weight:700;color:var(--ink);">Nova consultora</div>
-        <span style="color:var(--ink-3);font-size:18px;">›</span>
-      </div>
-      <div class="card-row" style="cursor:pointer;" onclick="goTo('importacao')">
-        <span style="font-size:20px;"></span>
-        <div style="flex:1;font-size:14px;font-weight:700;color:var(--ink);">Importar do tablet</div>
-        <span style="color:var(--ink-3);font-size:18px;">›</span>
-      </div>
-    </div>
+    <!-- Regiões -->
+    <div class="sec-title" style="padding-left:0;">Regiões</div>
+    <div id="gerRegioesRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;"></div>
 
     <!-- Ativas -->
-    <div class="sec-title" style="padding-left:0;">Consultoras ativas</div>
+    <div class="sec-title" style="padding-left:0;display:flex;align-items:center;justify-content:space-between;padding-right:0;">
+      <span>Consultoras ativas</span>
+      <button onclick="abrirModalConsultora()" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">+ Nova consultora</button>
+    </div>
     <div id="gerListaAtivas"></div>
 
     <!-- Inativas -->
@@ -6437,6 +6429,11 @@ function abrirGerenciar() {
   goTo('gerenciar');
 }
 
+function trocarRegiaoGerenciar(regiao) {
+  gerenciarRegiao = regiao;
+  renderGerenciar();
+}
+
 function renderGerenciar() {
   const regiao = gerenciarRegiao;
   const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa');
@@ -6447,6 +6444,14 @@ function renderGerenciar() {
   document.getElementById('gerAtivas').textContent = ativas.length;
   document.getElementById('gerInativas').textContent = inativas.length;
   document.getElementById('gerCiclo').textContent = cicloPos + 'ª';
+
+  // Botões das 6 regiões, com a quantidade de consultoras ativas em cada uma
+  const regs = regioesAtuais();
+  document.getElementById('gerRegioesRow').innerHTML = regs.map(r => {
+    const qtd = DB.consultoras.filter(c => c.regiao === r && c.status !== 'inativa').length;
+    const ativo = r === regiao;
+    return `<button onclick="trocarRegiaoGerenciar('${r}')" style="flex-shrink:0;background:${ativo?'var(--rose)':'white'};color:${ativo?'white':'var(--ink-2)'};border:1.5px solid ${ativo?'var(--rose)':'var(--border)'};border-radius:20px;padding:8px 14px;font-size:12.5px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;">${r} <span style="opacity:.75;">(${qtd})</span></button>`;
+  }).join('');
 
   // Lista ativas
   const listaAt = document.getElementById('gerListaAtivas');
