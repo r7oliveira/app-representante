@@ -3338,6 +3338,12 @@ function confirmarAgendarCliente() {
   const c = sem ? sem.consultoras.find(x => x.id === consultoraId) : null;
   if (!c) { alert('Consultora não encontrada nesta semana.'); return; }
 
+  // Vincula o horário agendado à consultora, para que a lista "Consultoras da semana"
+  // já fique ordenada por horário automaticamente
+  const diaInfo2 = DIAS_AGENDA.find(d => d.key === diaKey);
+  if (diaInfo2) c.diaMelhor = diaInfo2.label;
+  if (horario) c.horarioMelhor = horario;
+
   DB.agenda = DB.agenda || blankAgenda();
   DB.agenda[diaKey] = DB.agenda[diaKey] || [];
   DB.agenda[diaKey].push({
