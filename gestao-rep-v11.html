@@ -1707,19 +1707,15 @@ input[type="time"]{max-width:100%;}
     <button onclick="goBack()" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:12px;display:block;">← Voltar</button>
     <div style="color:rgba(255,255,255,.6);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Configuração</div>
     <div style="color:white;font-size:26px;font-weight:800;margin-bottom:14px;font-family:var(--font-serif);" id="gerenciarTitulo">Gramado 3</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
       <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px;text-align:center;">
         <div style="color:rgba(255,255,255,.65);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ativas</div>
         <div style="color:white;font-size:20px;font-weight:800;" id="gerAtivas">0</div>
       </div>
-      <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px;text-align:center;">
-        <div style="color:rgba(255,255,255,.65);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Inativas</div>
-        <div style="color:white;font-size:20px;font-weight:800;" id="gerInativas">0</div>
-      </div>
-      <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px;text-align:center;">
-        <div style="color:rgba(255,255,255,.65);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ciclo</div>
-        <div style="color:white;font-size:20px;font-weight:800;" id="gerCiclo">—</div>
-      </div>
+      <button onclick="toggleInativasGerenciar()" style="background:rgba(255,255,255,.15);border:none;border-radius:12px;padding:10px;text-align:center;cursor:pointer;font-family:var(--font);">
+        <div style="color:rgba(255,255,255,.65);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Inativas (<span id="gerInativas">0</span>)</div>
+        <div style="color:white;font-size:12.5px;font-weight:800;">Acessar consultoras inativas</div>
+      </button>
     </div>
   </div>
 
@@ -1736,8 +1732,10 @@ input[type="time"]{max-width:100%;}
     <div id="gerListaAtivas"></div>
 
     <!-- Inativas -->
-    <div class="sec-title" style="padding-left:0;" id="gerInativasTitle">Inativas</div>
-    <div id="gerListaInativas"></div>
+    <div id="gerInativasSection" style="display:none;">
+      <div class="sec-title" style="padding-left:0;" id="gerInativasTitle">Inativas</div>
+      <div id="gerListaInativas"></div>
+    </div>
   </div>
 </div>
 
@@ -6434,16 +6432,21 @@ function trocarRegiaoGerenciar(regiao) {
   renderGerenciar();
 }
 
+function toggleInativasGerenciar() {
+  const el = document.getElementById('gerInativasSection');
+  const aberto = el.style.display !== 'none';
+  el.style.display = aberto ? 'none' : '';
+  if (!aberto) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function renderGerenciar() {
   const regiao = gerenciarRegiao;
   const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa');
   const inativas = DB.consultoras.filter(c => c.regiao === regiao && c.status === 'inativa');
-  const cicloPos = regioesAtuais().indexOf(regiao) + 1;
 
   document.getElementById('gerenciarTitulo').textContent = regiao;
   document.getElementById('gerAtivas').textContent = ativas.length;
   document.getElementById('gerInativas').textContent = inativas.length;
-  document.getElementById('gerCiclo').textContent = cicloPos + 'ª';
 
   // Botões das 6 regiões, com a quantidade de consultoras ativas em cada uma
   const regs = regioesAtuais();
@@ -6476,9 +6479,8 @@ function renderGerenciar() {
 
   // Lista inativas
   const listaIn = document.getElementById('gerListaInativas');
-  document.getElementById('gerInativasTitle').style.display = inativas.length ? '' : 'none';
   if (!inativas.length) {
-    listaIn.innerHTML = '';
+    listaIn.innerHTML = '<div style="text-align:center;padding:16px;color:var(--ink-3);font-size:13px;">Nenhuma consultora inativa nesta região.</div>';
   } else {
     listaIn.innerHTML = '<div class="card" style="margin-bottom:12px;">' +
       inativas.map(c =>
