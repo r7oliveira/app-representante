@@ -4695,6 +4695,18 @@ function toggleCrit(campo) {
     cons.assinaturaDigital = false;
   }
 
+  // Marcar um critério positivo também não combina com um desfecho negativo já marcado
+  const positivosAtendimento = ['atendimentoEmDia', 'pagamentoNaSemana', 'pedidoFavoritaFeito', 'assinaturaDigital'];
+  if (positivosAtendimento.includes(campo) && cons[campo]) {
+    negativosExclusivos.forEach(neg => {
+      if (cons[neg]) {
+        cons[neg] = false;
+        if (neg === 'remarcarSemana') desfazerRemarcacaoRegiao(cons, sem);
+        if (neg === 'parouDeVender') desfazerParouDeVender(cons);
+      }
+    });
+  }
+
   // Quando remarcar próxima semana → muda região para a próxima no ciclo
   if (campo === 'remarcarSemana' && cons[campo]) {
     const regsCiclo = regioesAtuais();
