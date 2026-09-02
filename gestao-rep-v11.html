@@ -579,6 +579,7 @@ input[type="time"]{max-width:100%;}
       <div>
         <div class="atend-nome" id="atendNome">—</div>
         <div class="atend-cidade" id="atendCidade">—</div>
+        <div id="atendRemarcadaNota" style="display:none;color:#B98B3E;font-size:11px;font-weight:700;margin-top:2px;">→ Remarcada</div>
         <div class="atend-status-pill">● Ativa</div>
       </div>
       <div class="atend-pos" id="atendPos">0/0</div>
@@ -4606,6 +4607,17 @@ function abrirAtendimento(consId) {
   const cidadeEl = document.getElementById('atendCidade');
   cidadeEl.innerHTML = (cons.cidade||'') + (cons.telefone ? ' · ' + cons.telefone : '')
     + (rotaInfo ? '<br><span style="color:#6EF0B0;font-size:11px;font-weight:600;"> ' + rotaInfo + '</span>' : '');
+
+  const notaRemarcada = document.getElementById('atendRemarcadaNota');
+  if (notaRemarcada) {
+    if (cons.remarcarSemana && cons.remarcarPara) {
+      notaRemarcada.textContent = '→ Remarcada para ' + cons.remarcarPara;
+      notaRemarcada.style.display = '';
+    } else {
+      notaRemarcada.style.display = 'none';
+    }
+  }
+
   document.getElementById('atendPos').textContent = pos + '/' + total;
   document.getElementById('atendScore').textContent = 'Score ' + calcScore(cons);
   document.getElementById('atendUltimaVenda').textContent = brl(cons.ultimaVenda||0);
@@ -4665,6 +4677,19 @@ function toggleCrit(campo) {
   if (!cons) return;
   cons[campo] = !cons[campo];
 
+  // "Remarcar p/ próxima semana", "Remarcar p/ próximo mês" e "Parou de vender" são
+  // desfechos que se excluem entre si — só um pode estar marcado por vez.
+  const negativosExclusivos = ['remarcarSemana', 'remarcarMes', 'parouDeVender'];
+  if (negativosExclusivos.includes(campo) && cons[campo]) {
+    negativosExclusivos.forEach(outro => {
+      if (outro !== campo && cons[outro]) {
+        cons[outro] = false;
+        if (outro === 'remarcarSemana') desfazerRemarcacaoRegiao(cons, sem);
+        if (outro === 'parouDeVender') desfazerParouDeVender(cons);
+      }
+    });
+  }
+
   // Quando remarcar próxima semana → muda região para a próxima no ciclo
   if (campo === 'remarcarSemana' && cons[campo]) {
     const regsCiclo = regioesAtuais();
@@ -4677,28 +4702,16 @@ function toggleCrit(campo) {
     }
     cons.regiao = proximaRegiao;
     cons.remarcarPara = proximaRegiao;
-    // Mostra confirmação
-    setTimeout(() => {
-      const chk = document.getElementById('chk-remarcarSemana');
-      if (chk) {
-        chk.title = 'Remarcada para ' + proximaRegiao;
-      }
-      // Atualiza sub do header
-      const cidadeEl = document.getElementById('atendCidade');
-      if (cidadeEl) {
-        cidadeEl.innerHTML = cidadeEl.innerHTML +
-          '<br><span style="color:#FFD060;font-size:11px;font-weight:700;">→ Remarcada para ' + proximaRegiao + '</span>';
-      }
-    }, 100);
+    // Mostra confirmação (substitui, nunca duplica)
+    const nota = document.getElementById('atendRemarcadaNota');
+    if (nota) {
+      nota.textContent = '→ Remarcada para ' + proximaRegiao;
+      nota.style.display = '';
+    }
   }
   // Se desmarcar remarcar, volta à região original da semana
   if (campo === 'remarcarSemana' && !cons[campo]) {
-    const mestre = DB.consultoras.find(c => c.id === cons.id);
-    if (mestre && cons.remarcarPara) {
-      mestre.regiao = sem.regiao;
-      cons.regiao = sem.regiao;
-      delete cons.remarcarPara;
-    }
+    desfazerRemarcacaoRegiao(cons, sem);
   }
 
   // Consultora nova → ainda não tem acerto, então zera os demais critérios (score fica 100 automaticamente)
@@ -4707,8 +4720,10 @@ function toggleCrit(campo) {
     cons.pagamentoNaSemana = false;
     cons.pedidoFavoritaFeito = false;
     cons.assinaturaDigital = false;
+    if (cons.remarcarSemana) desfazerRemarcacaoRegiao(cons, sem);
     cons.remarcarSemana = false;
     cons.remarcarMes = false;
+    if (cons.parouDeVender) desfazerParouDeVender(cons);
     cons.parouDeVender = false;
   }
 
@@ -4720,6 +4735,7 @@ function toggleCrit(campo) {
       cons.pagamentoNaSemana = false;
       cons.pedidoFavoritaFeito = false;
       cons.assinaturaDigital = false;
+      if (cons.remarcarSemana) desfazerRemarcacaoRegiao(cons, sem);
       cons.remarcarSemana = false;
       cons.remarcarMes = false;
       cons.consultoraNova = false;
@@ -4731,6 +4747,22 @@ function toggleCrit(campo) {
 
   save();
   atualizarScoreAtend(cons);
+}
+
+function desfazerRemarcacaoRegiao(cons, sem) {
+  const mestre = DB.consultoras.find(c => c.id === cons.id);
+  if (mestre && cons.remarcarPara) {
+    mestre.regiao = sem.regiao;
+    cons.regiao = sem.regiao;
+    delete cons.remarcarPara;
+  }
+  const nota = document.getElementById('atendRemarcadaNota');
+  if (nota) nota.style.display = 'none';
+}
+
+function desfazerParouDeVender(cons) {
+  const mestre = DB.consultoras.find(c => c.id === cons.id);
+  if (mestre) mestre.status = 'ativa';
 }
 
 function atualizarScoreAtend(cons) {
