@@ -4693,6 +4693,7 @@ function toggleCrit(campo) {
     cons.pagamentoNaSemana = false;
     cons.pedidoFavoritaFeito = false;
     cons.assinaturaDigital = false;
+    cons.consultoraNova = false;
   }
 
   // Marcar um critério positivo também não combina com um desfecho negativo já marcado
@@ -4705,6 +4706,7 @@ function toggleCrit(campo) {
         if (neg === 'parouDeVender') desfazerParouDeVender(cons);
       }
     });
+    cons.consultoraNova = false;
   }
 
   // Quando remarcar próxima semana → muda região para a próxima no ciclo
