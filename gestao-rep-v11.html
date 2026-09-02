@@ -651,28 +651,28 @@ input[type="time"]{max-width:100%;}
       <div class="crit-row-atend" onclick="toggleCrit('atendimentoEmDia')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
         <div class="crit-chk" id="chk-atendimentoEmDia" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
         <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-atendimentoEmDia">Atendimento em dia</div>
-        <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+30</div>
+        <div style="font-size:14px;">⭐</div>
       </div>
 
       <!-- Critério: Pagamento na semana -->
       <div class="crit-row-atend" onclick="toggleCrit('pagamentoNaSemana')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
         <div class="crit-chk" id="chk-pagamentoNaSemana" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
         <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-pagamentoNaSemana">Pagamento feito na semana</div>
-        <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+30</div>
+        <div style="font-size:14px;">⭐</div>
       </div>
 
       <!-- Critério: Pedido Favorita -->
       <div class="crit-row-atend" onclick="toggleCrit('pedidoFavoritaFeito')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
         <div class="crit-chk" id="chk-pedidoFavoritaFeito" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
         <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-pedidoFavoritaFeito">Pedido favorita feito</div>
-        <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+25</div>
+        <div style="font-size:11px;font-weight:700;color:var(--amber);white-space:nowrap;">⭐ dobra</div>
       </div>
 
       <!-- Critério: Assinatura digital -->
       <div class="crit-row-atend" onclick="toggleCrit('assinaturaDigital')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
         <div class="crit-chk" id="chk-assinaturaDigital" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
         <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-assinaturaDigital">Assinatura digital</div>
-        <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+15</div>
+        <div style="font-size:14px;">⭐</div>
       </div>
 
       <!-- Critério: Remarcar semana -->
@@ -812,7 +812,7 @@ input[type="time"]{max-width:100%;}
     <div class="mais-item" onclick="goTo('programas')">
       <div class="mais-icon" style="background:var(--amber-bg);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
       <div>
-        <div class="mais-title">🌟 Programas</div>
+        <div class="mais-title">Programas</div>
         <div class="mais-sub">Lives, sorteios, indicações e estrelas</div>
       </div>
       <div style="margin-left:auto;color:var(--ink-3);">›</div>
@@ -850,14 +850,16 @@ input[type="time"]{max-width:100%;}
   <div class="page-header" style="display:flex;align-items:center;gap:12px;">
     <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">← Voltar</button>
     <div>
-      <div class="ph-title">🌟 Programas</div>
+      <div class="ph-title">Programas</div>
       <div class="ph-sub">Tudo que engaja suas consultoras, num só lugar</div>
     </div>
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;">
 
     <button onclick="goTo('lives')" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:14px;">
-      <div style="width:44px;height:44px;border-radius:12px;background:var(--amber-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎥</div>
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--amber-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="15" height="12" rx="2"/><path d="M17 10l5-3v10l-5-3"/></svg>
+      </div>
       <div style="flex:1;">
         <div style="font-size:15px;font-weight:800;color:var(--ink);">Lives &amp; Sorteios</div>
         <div style="font-size:12px;color:var(--ink-3);">Organize suas lives, participantes e sorteios do Instagram</div>
@@ -866,7 +868,9 @@ input[type="time"]{max-width:100%;}
     </button>
 
     <button onclick="goTo('indicacoes')" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:14px;">
-      <div style="width:44px;height:44px;border-radius:12px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎁</div>
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--rose-deep)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+      </div>
       <div style="flex:1;">
         <div style="font-size:15px;font-weight:800;color:var(--ink);">Indique e Ganhe</div>
         <div style="font-size:12px;color:var(--ink-3);">Aprove indicações — cada aprovação já vira 1 estrela</div>
@@ -875,7 +879,9 @@ input[type="time"]{max-width:100%;}
     </button>
 
     <button onclick="goTo('estrelas')" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:14px;">
-      <div style="width:44px;height:44px;border-radius:12px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⭐</div>
+      <div style="width:44px;height:44px;border-radius:12px;background:var(--green-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
       <div style="flex:1;">
         <div style="font-size:15px;font-weight:800;color:var(--ink);">Histórico de Estrelas</div>
         <div style="font-size:12px;color:var(--ink-3);">Ranking somando todos os programas</div>
@@ -895,7 +901,7 @@ input[type="time"]{max-width:100%;}
     <div style="display:flex;align-items:center;gap:12px;">
       <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">←</button>
       <div>
-        <div class="ph-title">🎁 Indique e Ganhe</div>
+        <div class="ph-title">Indique e Ganhe</div>
         <div class="ph-sub">Cada indicação aprovada vira 1 estrela</div>
       </div>
     </div>
@@ -1088,7 +1094,7 @@ input[type="time"]{max-width:100%;}
   <div class="page-header" style="display:flex;align-items:center;gap:12px;">
     <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">← Voltar</button>
     <div>
-      <div class="ph-title">⭐ Histórico de Estrelas</div>
+      <div class="ph-title">Histórico de Estrelas</div>
       <div class="ph-sub">Participação nas lives</div>
     </div>
   </div>
@@ -1955,7 +1961,7 @@ input[type="time"]{max-width:100%;}
 
       <div style="font-size:13px;font-weight:700;color:var(--ink);margin:8px 0 8px;">Por tablet</div>
       <div id="fgPorTablet"></div>
-      <button class="btn-ghost" onclick="abrirModalFechManual()" style="margin-top:4px;">+ Adicionar tablet manualmente</button>
+      <button class="btn-ghost" id="fgBtnAddManual" onclick="abrirModalFechManual()" style="margin-top:4px;">+ Adicionar tablet manualmente</button>
     </div>
   </div>
 </div>
@@ -2731,6 +2737,14 @@ function filtrarIndicacoes(f) {
   renderIndicacoesLista();
 }
 
+function copiarTexto(valor, label) {
+  navigator.clipboard?.writeText(valor).then(() => {
+    alert((label || 'Texto') + ' copiado!');
+  }).catch(() => {
+    alert('Não foi possível copiar. Selecione o texto manualmente.');
+  });
+}
+
 function renderIndicacoesLista() {
   const el = document.getElementById('indicacoesLista');
   if (!el) return;
@@ -2752,8 +2766,8 @@ function renderIndicacoesLista() {
         <div>
           <div style="font-size:14px;font-weight:800;color:var(--ink);">${i.nomeIndicado}</div>
           <div style="font-size:12px;color:var(--ink-3);">Indicada por <strong>${i.indicadoraNome}</strong>${externa ? ' <span style="color:var(--rose);font-weight:700;">· fora da Romance</span>' : ''}</div>
-          ${i.cidade ? `<div style="font-size:11.5px;color:var(--ink-3);">${i.cidade}${i.telefone ? ' · ' + i.telefone : ''}</div>` : ''}
-          ${(i.cpf || i.nascimento) ? `<div style="font-size:11.5px;color:var(--ink-3);">${[i.cpf, i.nascimento ? i.nascimento.split('-').reverse().join('/') : ''].filter(Boolean).join(' · ')}</div>` : ''}
+          ${i.cidade || i.telefone ? `<div style="font-size:11.5px;color:var(--ink-3);">${i.cidade ? i.cidade + (i.telefone ? ' · ' : '') : ''}${i.telefone ? `<span onclick="event.stopPropagation();copiarTexto('${i.telefone}','Telefone')" style="text-decoration:underline dotted;cursor:pointer;">${i.telefone} 📋</span>` : ''}</div>` : ''}
+          ${(i.cpf || i.nascimento) ? `<div style="font-size:11.5px;color:var(--ink-3);display:flex;gap:10px;flex-wrap:wrap;margin-top:1px;">${i.cpf ? `<span onclick="event.stopPropagation();copiarTexto('${i.cpf}','CPF')" style="text-decoration:underline dotted;cursor:pointer;">${i.cpf} 📋</span>` : ''}${i.nascimento ? `<span onclick="event.stopPropagation();copiarTexto('${i.nascimento.split('-').reverse().join('/')}','Data de nascimento')" style="text-decoration:underline dotted;cursor:pointer;">${i.nascimento.split('-').reverse().join('/')} 📋</span>` : ''}</div>` : ''}
         </div>
         <span style="font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:8px;background:${bg};color:${cor};white-space:nowrap;">${txt}</span>
       </div>
@@ -3021,7 +3035,7 @@ function abrirEstrelasDetalhe(chave) {
       <span style="color:var(--amber);">⭐</span>
       <div style="flex:1;">
         <div style="font-size:13px;color:var(--ink);font-weight:600;">${r.liveTitulo} — 1 estrela</div>
-        <div style="font-size:10px;color:var(--ink-3);">${r.programa === 'indicacao' ? '🎁 Indique e Ganhe' : '🎥 Live & Sorteio'}</div>
+        <div style="font-size:10px;color:var(--ink-3);">${r.programa === 'indicacao' ? 'Indique e Ganhe' : (r.programa === 'atendimento' ? 'Acerto completo' : 'Live & Sorteio')}</div>
       </div>
       <div style="font-size:10.5px;color:var(--ink-3);">${dataHoraCurta(r.criadoEm)}</div>
     </div>`;
@@ -5798,6 +5812,10 @@ async function buscarFechamentoGeral(numero) {
       const nomeConfigurado = data.config && data.config.nomeTablet && data.config.nomeTablet.trim();
       if (!nomeConfigurado) return;
 
+      // Cada pessoa vê só o próprio fechamento aqui. A visão de todo mundo junto
+      // fica no Painel do Administrador.
+      if (USER_ID && doc.id !== USER_ID) return;
+
       const semanas = data.semanas || [];
       const sem = semanas.find(s => s.numero === numero);
       const nomeTablet = nomeConfigurado;
@@ -5894,7 +5912,7 @@ function recomputeFechamentoGeral() {
   const tablets = [...auto, ...manuais.map(m => ({ ...m, origem: 'manual', temSemana: true }))];
   window._fgTabletsAll = tablets;
 
-  document.getElementById('fgSubtitulo').textContent = 'Resultado consolidado ' + (tablets.length ? 'dos ' + tablets.length + ' tablet' + (tablets.length > 1 ? 's' : '') : 'dos tablets');
+  document.getElementById('fgSubtitulo').textContent = USER_ID ? 'Seu resultado da semana' : 'Resultado consolidado ' + (tablets.length ? 'dos ' + tablets.length + ' tablet' + (tablets.length > 1 ? 's' : '') : 'dos tablets');
 
   let totVendido = 0, totAPagar = 0, totPix = 0, totDin = 0, totDebito = 0, totMeta = 0;
   let totRemSemana = 0, totRemMes = 0, totParouVender = 0, totVendasCount = 0;
@@ -5921,18 +5939,25 @@ function recomputeFechamentoGeral() {
   document.getElementById('fgMetaPct').textContent = pctMetaGeral + '% da meta';
   document.getElementById('fgMetaFalta').textContent = faltaMetaGeral > 0 ? 'Faltam ' + brl(faltaMetaGeral) : 'Meta batida! ✓';
 
-  const tabletsOrdenadosPct = [...tablets].sort((a,b) => {
-    const pa = (a.meta>0) ? (a.aPagar||0)/a.meta : 0;
-    const pb = (b.meta>0) ? (b.aPagar||0)/b.meta : 0;
-    return pb - pa;
-  });
-  document.getElementById('fgMetaPorTablet').innerHTML = tabletsOrdenadosPct.map(t => {
-    const pct = t.meta > 0 ? Math.round((t.aPagar||0)/t.meta*100) : 0;
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12.5px;">
-      <span style="color:rgba(255,255,255,.8);font-weight:600;">${t.nome}</span>
-      <span style="color:${pct>=100?'#6EF0B0':'rgba(255,255,255,.6)'};font-weight:800;">${pct}%${pct>=100?' 🏆':''}</span>
-    </div>`;
-  }).join('') || '<div style="color:rgba(255,255,255,.4);font-size:12px;">Nenhum tablet com dados nesta semana.</div>';
+  const metaPorTabletBox = document.getElementById('fgMetaPorTablet');
+  if (USER_ID) {
+    // Visão de uma única pessoa: o ranking por tablet não faz sentido aqui
+    metaPorTabletBox.style.display = 'none';
+  } else {
+    metaPorTabletBox.style.display = '';
+    const tabletsOrdenadosPct = [...tablets].sort((a,b) => {
+      const pa = (a.meta>0) ? (a.aPagar||0)/a.meta : 0;
+      const pb = (b.meta>0) ? (b.aPagar||0)/b.meta : 0;
+      return pb - pa;
+    });
+    metaPorTabletBox.innerHTML = tabletsOrdenadosPct.map(t => {
+      const pct = t.meta > 0 ? Math.round((t.aPagar||0)/t.meta*100) : 0;
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12.5px;">
+        <span style="color:rgba(255,255,255,.8);font-weight:600;">${t.nome}</span>
+        <span style="color:${pct>=100?'#6EF0B0':'rgba(255,255,255,.6)'};font-weight:800;">${pct}%${pct>=100?' 🏆':''}</span>
+      </div>`;
+    }).join('') || '<div style="color:rgba(255,255,255,.4);font-size:12px;">Nenhum tablet com dados nesta semana.</div>';
+  }
 
   // Atendimentos
   const pendentesGeral = Math.max(0, totPrevistas - totAtendidas);
@@ -5955,6 +5980,9 @@ function recomputeFechamentoGeral() {
   document.getElementById('fgAtivas').textContent = totAtivas;
   document.getElementById('fgInativas').textContent = totInativas;
   document.getElementById('fgClienteNova').textContent = totClienteNova;
+
+  const btnAddManual = document.getElementById('fgBtnAddManual');
+  if (btnAddManual) btnAddManual.style.display = USER_ID ? 'none' : '';
 
   document.getElementById('fgPorTablet').innerHTML = tablets.map((t, i) => {
     const atendPct = t.previstas > 0 ? Math.round((t.atendidas||0)/t.previstas*100) : 0;
