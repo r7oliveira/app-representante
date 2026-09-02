@@ -4688,6 +4688,11 @@ function toggleCrit(campo) {
         if (outro === 'parouDeVender') desfazerParouDeVender(cons);
       }
     });
+    // Marcar um desfecho negativo não combina com um acerto completo — limpa os positivos
+    cons.atendimentoEmDia = false;
+    cons.pagamentoNaSemana = false;
+    cons.pedidoFavoritaFeito = false;
+    cons.assinaturaDigital = false;
   }
 
   // Quando remarcar próxima semana → muda região para a próxima no ciclo
