@@ -4967,19 +4967,20 @@ function abrirRegistro(tipo) {
         <span style="font-size:11px;color:var(--ink-3);margin-top:2px;">Calculado automaticamente · você pode ajustar</span>
       </label>
 
+      <div style="text-align:center;font-size:12px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Como foi recebido</div>
       <div class="two-col">
-        <label class="field" style="margin-bottom:0;">
-          <span>💚 Recebido via Pix (R$)</span>
-          <input id="regPix" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.recebidoPix)}" oninput="maskMoeda(this);atualizarResumo()">
+        <label class="field" style="margin-bottom:0;text-align:center;">
+          <span style="display:block;text-align:center;">Pix (R$)</span>
+          <input id="regPix" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.recebidoPix)}" oninput="maskMoeda(this);atualizarResumo()" style="text-align:center;">
         </label>
-        <label class="field" style="margin-bottom:0;">
-          <span>💵 Recebido em dinheiro (R$)</span>
-          <input id="regDinheiro" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.recebidoDinheiro)}" oninput="maskMoeda(this);atualizarResumo()">
+        <label class="field" style="margin-bottom:0;text-align:center;">
+          <span style="display:block;text-align:center;">Dinheiro (R$)</span>
+          <input id="regDinheiro" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.recebidoDinheiro)}" oninput="maskMoeda(this);atualizarResumo()" style="text-align:center;">
         </label>
       </div>
-      <div style="font-size:11px;color:var(--ink-3);margin:-8px 0 14px;">Preencha um ou os dois — o total soma automaticamente</div>
+      <div style="font-size:11px;color:var(--ink-3);text-align:center;margin:8px 0 14px;">Preencha um ou os dois — o total soma automaticamente</div>
 
-      <div id="resumoRecebido" style="display:none;background:var(--green-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div id="resumoRecebido" style="display:none;background:var(--green-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;text-align:center;">
         <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Total a receber</div>
         <div style="font-size:20px;font-weight:800;color:var(--green);" id="resumoTotal">R$ 0</div>
       </div>
