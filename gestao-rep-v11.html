@@ -641,11 +641,9 @@ input[type="time"]{max-width:100%;}
         </div>
       </div>
 
-      <!-- Critério: Consultora nova -->
-      <div class="crit-row-atend" onclick="toggleCrit('consultoraNova')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
-        <div class="crit-chk" id="chk-consultoraNova" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
-        <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-consultoraNova">Consultora nova</div>
-        <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+100</div>
+      <!-- Grupo 1: gera o score -->
+      <div style="padding:9px 16px;background:var(--surface);border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-3);">Atendimento normal — gera até 100 pts</div>
       </div>
 
       <!-- Critério: Atendimento em dia -->
@@ -662,6 +660,13 @@ input[type="time"]{max-width:100%;}
         <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+30</div>
       </div>
 
+      <!-- Critério: Assinatura digital -->
+      <div class="crit-row-atend" onclick="toggleCrit('assinaturaDigital')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+        <div class="crit-chk" id="chk-assinaturaDigital" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
+        <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-assinaturaDigital">Assinatura digital feito em loja</div>
+        <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+15</div>
+      </div>
+
       <!-- Critério: Pedido Favorita -->
       <div class="crit-row-atend" onclick="toggleCrit('pedidoFavoritaFeito')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
         <div class="crit-chk" id="chk-pedidoFavoritaFeito" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
@@ -669,11 +674,9 @@ input[type="time"]{max-width:100%;}
         <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+25</div>
       </div>
 
-      <!-- Critério: Assinatura digital -->
-      <div class="crit-row-atend" onclick="toggleCrit('assinaturaDigital')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
-        <div class="crit-chk" id="chk-assinaturaDigital" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
-        <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-assinaturaDigital">Assinatura digital feito em loja</div>
-        <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+15</div>
+      <!-- Grupo 2: baixa o score -->
+      <div style="padding:9px 16px;background:var(--red-bg);border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--red);">Deixa o score mais baixo</div>
       </div>
 
       <!-- Critério: Remarcar semana -->
@@ -690,6 +693,11 @@ input[type="time"]{max-width:100%;}
         <div style="font-size:11px;font-weight:700;color:var(--red);">−25</div>
       </div>
 
+      <!-- Grupo 3: não mexe no score -->
+      <div style="padding:9px 16px;background:var(--surface);border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-3);">Não mexe no score da consultora</div>
+      </div>
+
       <!-- Ação: Pagar débito antigo -->
       <div class="crit-row-atend" onclick="abrirRegistro('debito')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
         <div class="crit-chk" id="chk-pagarDebito" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
@@ -697,11 +705,18 @@ input[type="time"]{max-width:100%;}
         <div style="font-size:11px;font-weight:700;color:var(--ink-3);" id="valorPagarDebito">—</div>
       </div>
 
+      <!-- Critério: Consultora nova -->
+      <div class="crit-row-atend" onclick="toggleCrit('consultoraNova')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+        <div class="crit-chk" id="chk-consultoraNova" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
+        <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-consultoraNova">Consultora nova</div>
+        <div style="font-size:11px;font-weight:700;color:var(--ink-3);">—</div>
+      </div>
+
       <!-- Critério: Parou de vender (inativa) -->
       <div class="crit-row-atend" onclick="toggleCrit('parouDeVender')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;cursor:pointer;">
         <div class="crit-chk" id="chk-parouDeVender" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
         <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-parouDeVender">Parou de vender (colocar como inativa)</div>
-        <div style="font-size:11px;font-weight:700;color:var(--red);">Zera pts</div>
+        <div style="font-size:11px;font-weight:700;color:var(--ink-3);">—</div>
       </div>
     </div>
 
@@ -4213,8 +4228,8 @@ function iniciais(nome) {
 function hora() { return new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
 function dataFmt(d) { return new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}); }
 function calcScore(c) {
-  if (c.parouDeVender) return 0;
-  if (c.consultoraNova) return 100;
+  // "Consultora nova", "Parou de vender" e "Pagar débito antigo" são só marcações/status —
+  // não entram na conta do score do atendimento.
   let s = 0;
   if (c.atendimentoEmDia) s += 30;
   if (c.pagamentoNaSemana) s += 30;
@@ -4222,7 +4237,7 @@ function calcScore(c) {
   if (c.assinaturaDigital) s += 15;
   if (c.remarcarSemana) s -= 15;
   if (c.remarcarMes) s -= 25;
-  return Math.max(0, Math.min(100, s));
+  return Math.min(100, s); // pode ficar negativo, só não passa de 100
 }
 function getSemanaAtiva() {
   if (!DB.semanaAtiva) return null;
@@ -4796,14 +4811,14 @@ function atualizarScoreAtend(cons) {
   document.getElementById('atendScore').textContent = 'Score ' + score;
 
   const crits = [
-    { id:'consultoraNova',      pts:'+100', neg:false },
     { id:'atendimentoEmDia',    pts:'+30', neg:false },
     { id:'pagamentoNaSemana',   pts:'+30', neg:false },
     { id:'pedidoFavoritaFeito', pts:'+25', neg:false },
     { id:'assinaturaDigital',   pts:'+15', neg:false },
     { id:'remarcarSemana',      pts:'−15', neg:true  },
     { id:'remarcarMes',         pts:'−25', neg:true  },
-    { id:'parouDeVender',       pts:'0',   neg:true  },
+    { id:'consultoraNova',      pts:'—',   neg:false },
+    { id:'parouDeVender',       pts:'—',   neg:true  },
   ];
 
   crits.forEach(({ id, neg }) => {
