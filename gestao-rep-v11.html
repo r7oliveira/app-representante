@@ -4967,37 +4967,17 @@ function abrirRegistro(tipo) {
         <span style="font-size:11px;color:var(--ink-3);margin-top:2px;">Calculado automaticamente · você pode ajustar</span>
       </label>
 
-      <label class="field">
-        <span>Forma de recebimento</span>
-        <div style="display:flex;gap:8px;margin-top:2px;">
-          <button type="button" id="frmPix" onclick="selecionarForma('pix')"
-            style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
-             Pix
-          </button>
-          <button type="button" id="frmDinheiro" onclick="selecionarForma('dinheiro')"
-            style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
-             Dinheiro
-          </button>
-          <button type="button" id="frmAmbos" onclick="selecionarForma('ambos')"
-            style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
-             Ambos
-          </button>
-        </div>
-      </label>
-
-      <div id="camposPix" style="display:none;">
-        <label class="field">
-          <span>Valor recebido via Pix (R$)</span>
+      <div class="two-col">
+        <label class="field" style="margin-bottom:0;">
+          <span>💚 Recebido via Pix (R$)</span>
           <input id="regPix" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.recebidoPix)}" oninput="maskMoeda(this);atualizarResumo()">
         </label>
-      </div>
-
-      <div id="camposDinheiro" style="display:none;">
-        <label class="field">
-          <span>Valor recebido em dinheiro (R$)</span>
+        <label class="field" style="margin-bottom:0;">
+          <span>💵 Recebido em dinheiro (R$)</span>
           <input id="regDinheiro" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.recebidoDinheiro)}" oninput="maskMoeda(this);atualizarResumo()">
         </label>
       </div>
+      <div style="font-size:11px;color:var(--ink-3);margin:-8px 0 14px;">Preencha um ou os dois — o total soma automaticamente</div>
 
       <div id="resumoRecebido" style="display:none;background:var(--green-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
         <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Total a receber</div>
@@ -5014,12 +4994,8 @@ function abrirRegistro(tipo) {
         Excluir lançamento
       </button>` : ''}`;
 
-    window._formaRecebimento = (cons && cons.formaPgto) || null;
-    if (cons && cons.formaPgto) {
-      selecionarForma(cons.formaPgto);
-    } else if (cons && cons.recebido > 0) {
+    if (cons && !cons.formaPgto && cons.recebido > 0 && !(cons.recebidoPix > 0) && !(cons.recebidoDinheiro > 0)) {
       // Recebido antigo sem forma registrada: assume dinheiro por padrão
-      selecionarForma('dinheiro');
       document.getElementById('regDinheiro').value = brlInput(cons.recebido);
     }
     atualizarResumo();
@@ -5095,21 +5071,6 @@ function calcValorPagar() {
   atualizarResumo();
 }
 
-function selecionarForma(forma) {
-  window._formaRecebimento = forma;
-  ['pix','dinheiro','ambos'].forEach(f => {
-    const btn = document.getElementById('frm' + f.charAt(0).toUpperCase() + f.slice(1));
-    if (btn) {
-      btn.style.background = f === forma ? 'var(--rose)' : 'white';
-      btn.style.color = f === forma ? 'white' : 'var(--ink-3)';
-      btn.style.borderColor = f === forma ? 'var(--rose)' : 'var(--border)';
-    }
-  });
-  document.getElementById('camposPix').style.display = (forma === 'pix' || forma === 'ambos') ? '' : 'none';
-  document.getElementById('camposDinheiro').style.display = (forma === 'dinheiro' || forma === 'ambos') ? '' : 'none';
-  atualizarResumo();
-}
-
 function atualizarResumo() {
   const pix = parseNum(document.getElementById('regPix')?.value);
   const din = parseNum(document.getElementById('regDinheiro')?.value);
@@ -5129,18 +5090,10 @@ function salvarRegistroVenda() {
 
     const vendido  = parseNum(document.getElementById('regVenda')?.value || '0');
     const aPagar   = parseNum(document.getElementById('regAPagar')?.value || '0');
-    const forma    = window._formaRecebimento || '';
-
-    let pix = 0, din = 0;
-    const pixCampo = document.getElementById('camposPix');
-    const dinCampo = document.getElementById('camposDinheiro');
-    if (pixCampo && pixCampo.style.display !== 'none') {
-      pix = parseNum(document.getElementById('regPix')?.value || '0');
-    }
-    if (dinCampo && dinCampo.style.display !== 'none') {
-      din = parseNum(document.getElementById('regDinheiro')?.value || '0');
-    }
+    const pix = parseNum(document.getElementById('regPix')?.value || '0');
+    const din = parseNum(document.getElementById('regDinheiro')?.value || '0');
     const recebido = pix + din;
+    const forma = (pix > 0 && din > 0) ? 'ambos' : pix > 0 ? 'pix' : din > 0 ? 'dinheiro' : '';
 
     if (vendido === 0 && recebido === 0) {
       alert('Digite pelo menos o valor vendido ou o valor recebido.');
