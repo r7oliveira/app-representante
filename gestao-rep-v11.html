@@ -1119,7 +1119,6 @@ input[type="time"]{max-width:100%;}
     <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">← Voltar</button>
     <div>
       <div class="ph-title">Histórico de Estrelas</div>
-      <div class="ph-sub">Participação nas lives</div>
     </div>
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;">
@@ -3025,6 +3024,21 @@ function renderEstrelasRanking() {
 
 let _estrelaChaveAtual = null, _estrelaNomeAtual = null, _estrelaConsultoraIdAtual = null;
 
+function excluirEstrela(id) {
+  if (!confirm('Excluir esta estrela? Isso reduz o total de estrelas dessa pessoa.')) return;
+  DB.estrelas = (DB.estrelas || []).filter(e => e.id !== id);
+  save();
+  if (_estrelaChaveAtual) {
+    const restantes = (DB.estrelas || []).filter(e => chaveEstrela(e) === _estrelaChaveAtual);
+    if (restantes.length) {
+      abrirEstrelasDetalhe(_estrelaChaveAtual);
+    } else {
+      fecharModal('modalEstrelasDetalhe');
+    }
+  }
+  renderEstrelasRanking();
+}
+
 function abrirEstrelasDetalhe(chave) {
   const registros = (DB.estrelas || []).filter(e => chaveEstrela(e) === chave).sort((a,b) => a.criadoEm.localeCompare(b.criadoEm));
   if (!registros.length) return;
@@ -3069,6 +3083,7 @@ function abrirEstrelasDetalhe(chave) {
         <div style="font-size:10px;color:var(--ink-3);">${r.programa === 'indicacao' ? 'Indique e Ganhe' : (r.programa === 'atendimento' ? 'Acerto completo' : 'Live & Sorteio')}</div>
       </div>
       <div style="font-size:10.5px;color:var(--ink-3);">${dataHoraCurta(r.criadoEm)}</div>
+      <button onclick="excluirEstrela('${r.id}')" style="background:none;border:none;color:var(--ink-3);font-size:15px;cursor:pointer;flex-shrink:0;padding:2px;">✕</button>
     </div>`;
   }).join('');
   document.getElementById('modalEstrelasDetalhe').classList.add('open');
