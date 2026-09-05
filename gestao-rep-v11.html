@@ -850,11 +850,19 @@ input[type="time"]{max-width:100%;}
      TELA: AGENDA (semana inteira)
 ══════════════════════════════════════════ -->
 <div class="view" id="view-agenda">
-  <div class="page-header">
-    <div class="ph-title">Agenda</div>
-    <div class="ph-sub">Tarefas da semana, dia a dia</div>
+  <div class="page-header" style="background:linear-gradient(135deg,var(--rose-deep),var(--rose));border-bottom:none;">
+    <button onclick="goTo('semana')" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
+    <div class="ph-title" style="color:white;">Agenda</div>
+    <div class="ph-sub" style="color:rgba(255,255,255,.7);">Tarefas da semana, dia a dia</div>
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;">
+    <div class="sec-title" style="padding-left:0;">Dias</div>
+    <div id="agendaDiasRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;"></div>
+
+    <div class="sec-title" style="padding-left:0;display:flex;align-items:center;justify-content:space-between;padding-right:0;">
+      <span id="agendaDiaSelecionadoTitulo">Tarefas</span>
+      <button onclick="abrirEscolhaTarefa(_agendaDiaSelecionado)" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">+ Nova tarefa</button>
+    </div>
     <div id="agendaCompletaLista"></div>
   </div>
 </div>
@@ -1725,23 +1733,23 @@ input[type="time"]{max-width:100%;}
      TELA 11: GERENCIAR REGIÃO
 ══════════════════════════════════════════ -->
 <div class="view" id="view-gerenciar">
-  <div style="background:linear-gradient(135deg,var(--rose-deep),var(--rose));padding:calc(16px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
+  <div style="background:linear-gradient(135deg,var(--rose-deep),var(--rose));padding:calc(16px + env(safe-area-inset-top)) 20px 14px;flex-shrink:0;">
     <button onclick="goBack()" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:12px;display:block;">← Voltar</button>
-    <div style="color:rgba(255,255,255,.6);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Configuração</div>
-    <div style="color:white;font-size:26px;font-weight:800;margin-bottom:14px;font-family:var(--font-serif);" id="gerenciarTitulo">Gramado 3</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-      <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px;text-align:center;">
-        <div style="color:rgba(255,255,255,.65);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ativas</div>
-        <div style="color:white;font-size:20px;font-weight:800;" id="gerAtivas">0</div>
-      </div>
-      <button onclick="toggleInativasGerenciar()" style="background:rgba(255,255,255,.15);border:none;border-radius:12px;padding:10px;text-align:center;cursor:pointer;font-family:var(--font);">
-        <div style="color:rgba(255,255,255,.65);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Inativas (<span id="gerInativas">0</span>)</div>
-        <div style="color:white;font-size:12.5px;font-weight:800;">Acessar consultoras inativas</div>
-      </button>
-    </div>
+    <div style="color:white;font-size:26px;font-weight:800;font-family:var(--font-serif);" id="gerenciarTitulo">Gramado 3</div>
   </div>
 
   <div class="scroll-body" style="padding:0 16px 80px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0;">
+      <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;">
+        <div style="color:var(--ink-3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ativas</div>
+        <div style="color:var(--ink);font-size:20px;font-weight:800;" id="gerAtivas">0</div>
+      </div>
+      <button onclick="toggleInativasGerenciar()" style="background:white;border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;cursor:pointer;font-family:var(--font);">
+        <div style="color:var(--ink-3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Inativas (<span id="gerInativas">0</span>)</div>
+        <div style="color:var(--rose-deep);font-size:12.5px;font-weight:800;">Acessar consultoras inativas</div>
+      </button>
+    </div>
+
     <!-- Regiões -->
     <div class="sec-title" style="padding-left:0;">Regiões</div>
     <div id="gerRegioesRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;"></div>
@@ -2437,51 +2445,58 @@ function renderAgendaHoje() {
     </div>`).join('');
 }
 
+let _agendaDiaSelecionado = null;
+
+function selecionarDiaAgenda(diaKey) {
+  _agendaDiaSelecionado = diaKey;
+  renderAgendaCompleta();
+}
+
 function renderAgendaCompleta() {
   resetarTarefasRecorrentes();
   const el = document.getElementById('agendaCompletaLista');
   if (!el) return;
   const hoje = hojeAgendaKey();
   const agenda = DB.agenda || blankAgenda();
+  if (!_agendaDiaSelecionado) _agendaDiaSelecionado = hoje;
+  const diaAtual = _agendaDiaSelecionado;
 
-  // Mostra primeiro hoje, depois o resto da semana na ordem normal
-  const hojeIdx = DIAS_AGENDA.findIndex(d => d.key === hoje);
-  const diasOrdenados = hojeIdx >= 0 ? [...DIAS_AGENDA.slice(hojeIdx), ...DIAS_AGENDA.slice(0, hojeIdx)] : DIAS_AGENDA;
-
-  el.innerHTML = diasOrdenados.map(d => {
+  // Pills dos 7 dias, com contagem de tarefas em cada um
+  document.getElementById('agendaDiasRow').innerHTML = DIAS_AGENDA.map(d => {
+    const qtd = (agenda[d.key] || []).length;
+    const ativo = d.key === diaAtual;
     const isHoje = d.key === hoje;
-    const tarefas = [...(agenda[d.key] || [])].sort((a,b) => (a.feito?1:0) - (b.feito?1:0));
-    const feitas = tarefas.filter(t => t.feito).length;
-
-    return `
-    <div style="background:white;border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:16px;${isHoje?'box-shadow:0 4px 16px rgba(184,103,122,.18);':''}">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:${isHoje?'linear-gradient(135deg,var(--rose-deep),var(--rose))':'var(--surface-2)'};">
-        <div style="display:flex;align-items:center;gap:9px;">
-          <div style="font-size:13.5px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:${isHoje?'white':'var(--ink-2)'};">${d.label}</div>
-          ${isHoje ? '<span style="background:rgba(255,255,255,.25);color:white;font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:.4px;">Hoje</span>' : ''}
-          ${tarefas.length ? `<span style="font-size:10.5px;font-weight:700;color:${isHoje?'rgba(255,255,255,.85)':'var(--ink-3)'};">${feitas}/${tarefas.length}</span>` : ''}
-        </div>
-        <button onclick="abrirEscolhaTarefa('${d.key}')" style="width:26px;height:26px;border-radius:50%;background:${isHoje?'rgba(255,255,255,.22)':'white'};color:${isHoje?'white':'var(--rose-deep)'};border:none;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">+</button>
-      </div>
-      <div style="padding:${tarefas.length?'4px 16px 8px':'12px 16px'};">
-      ${tarefas.length ? `<div>${tarefas.map((t,i) => `
-        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;${i < tarefas.length-1 ? 'border-bottom:1px solid var(--surface-2);' : ''}">
-          <div onclick="toggleTarefa('${t.id}','${d.key}')" style="width:21px;height:21px;border-radius:50%;border:1.5px solid ${t.feito?'var(--green)':'var(--border)'};background:${t.feito?'var(--green)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:11px;font-weight:800;margin-top:1px;">${t.feito?'✓':''}</div>
-          <div style="flex:1;cursor:pointer;min-width:0;" onclick="abrirNovaTarefa('${t.id}','${d.key}')">
-            <div style="font-size:13.5px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};line-height:1.4;word-break:break-word;">${t.texto}</div>
-            ${(t.horario || t.diaTodo || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
-              ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
-              ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
-            </div>` : ''}
-            ${(isHoje && t.consultoraId) ? `<button onclick="event.stopPropagation();enviarWhatsappConfirmacao('${t.consultoraId}','${t.horario||''}')" style="margin-top:8px;width:100%;background:#25D366;border:none;border-radius:10px;padding:9px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0012.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 012.41 5.83c0 4.55-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.42-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.23.89 2.41 1.02 2.58.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
-              <span style="color:white;font-size:12px;font-weight:800;font-family:var(--font);">Enviar WhatsApp para confirmar seu horário</span>
-            </button>` : ''}
-          </div>
-        </div>`).join('')}</div>` : '<div style="font-size:12.5px;color:var(--ink-3);padding:8px 0;">Nenhuma tarefa por aqui.</div>'}
-      </div>
-    </div>`;
+    const rotulo = d.label.replace('-feira', '');
+    return `<button onclick="selecionarDiaAgenda('${d.key}')" style="flex-shrink:0;position:relative;background:${ativo?'var(--rose)':'white'};color:${ativo?'white':'var(--ink-2)'};border:1.5px solid ${ativo?'var(--rose)':'var(--border)'};border-radius:20px;padding:8px 14px;font-size:12.5px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;">${rotulo}${qtd?` <span style="opacity:.75;">(${qtd})</span>`:''}${isHoje?`<span style="position:absolute;top:-4px;right:-4px;width:8px;height:8px;border-radius:50%;background:${ativo?'white':'var(--rose)'};"></span>`:''}</button>`;
   }).join('');
+
+  const diaInfo = DIAS_AGENDA.find(d => d.key === diaAtual);
+  const isHojeSel = diaAtual === hoje;
+  document.getElementById('agendaDiaSelecionadoTitulo').textContent =
+    'Tarefas de ' + (diaInfo ? diaInfo.label : '') + (isHojeSel ? ' · Hoje' : '');
+
+  const tarefas = [...(agenda[diaAtual] || [])].sort((a,b) => (a.feito?1:0) - (b.feito?1:0));
+
+  if (!tarefas.length) {
+    el.innerHTML = '<div class="card" style="text-align:center;padding:24px 16px;color:var(--ink-3);font-size:13px;">Nenhuma tarefa por aqui.</div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="card" style="margin-bottom:12px;">' + tarefas.map((t,i) => `
+    <div class="card-row" style="align-items:flex-start;${i < tarefas.length-1 ? '' : ''}">
+      <div onclick="toggleTarefa('${t.id}','${diaAtual}')" style="width:21px;height:21px;border-radius:50%;border:1.5px solid ${t.feito?'var(--green)':'var(--border)'};background:${t.feito?'var(--green)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:11px;font-weight:800;margin-top:1px;">${t.feito?'✓':''}</div>
+      <div style="flex:1;cursor:pointer;min-width:0;" onclick="abrirNovaTarefa('${t.id}','${diaAtual}')">
+        <div style="font-size:13.5px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};line-height:1.4;word-break:break-word;">${t.texto}</div>
+        ${(t.horario || t.diaTodo || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
+          ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
+          ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
+        </div>` : ''}
+        ${(isHojeSel && t.consultoraId) ? `<button onclick="event.stopPropagation();enviarWhatsappConfirmacao('${t.consultoraId}','${t.horario||''}')" style="margin-top:8px;width:100%;background:#25D366;border:none;border-radius:10px;padding:9px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0012.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 012.41 5.83c0 4.55-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.42-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.23.89 2.41 1.02 2.58.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
+          <span style="color:white;font-size:12px;font-weight:800;font-family:var(--font);">Enviar WhatsApp para confirmar seu horário</span>
+        </button>` : ''}
+      </div>
+    </div>`).join('') + '</div>';
 }
 
 /* ════════════════════════════════════════════
@@ -6506,6 +6521,11 @@ function renderGerenciar() {
 
   // Lista ativas
   const listaAt = document.getElementById('gerListaAtivas');
+  const semAtivaGer = getSemanaAtiva();
+  const scoreAtualDe = (c) => {
+    const naSemana = semAtivaGer ? semAtivaGer.consultoras.find(x => x.id === c.id) : null;
+    return naSemana ? calcScore(naSemana) : calcScore(c);
+  };
   if (!ativas.length) {
     listaAt.innerHTML = '<div style="text-align:center;padding:16px;color:var(--ink-3);font-size:13px;">Nenhuma consultora ativa nesta região.</div>';
   } else {
@@ -6515,7 +6535,7 @@ function renderGerenciar() {
           <div style="width:28px;height:28px;background:var(--rose-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--rose);flex-shrink:0;">${i+1}</div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nome}</div>
-            <div style="font-size:11px;color:var(--ink-3);margin-top:1px;">${c.cidade||''} · Score ${calcScore(c)}</div>
+            <div style="font-size:11px;color:var(--ink-3);margin-top:1px;">${c.cidade||''} · Score ${scoreAtualDe(c)}</div>
           </div>
           <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
             <button onclick="editarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;">✎</button>
