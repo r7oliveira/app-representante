@@ -4504,15 +4504,15 @@ function renderSemana() {
     const grupoAtual = grupoStatus(c);
     const grupoAnterior = idx > 0 ? grupoStatus(sem.consultoras[idx-1]) : -1;
     const tituloGrupo = grupoAtual === grupoAnterior ? '' :
-      grupoAtual === 1 ? '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--amber);margin:14px 2px 6px;">Remarcadas</div>' :
+      grupoAtual === 1 ? '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin:14px 2px 6px;">Remarcadas</div>' :
       grupoAtual === 2 ? '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin:14px 2px 6px;">Concluídas</div>' : '';
 
-    const cls = especial === 'inativa' ? 'inativa' : especial ? 'alert' : st === 'concluida' ? 'done' : isNext ? 'next' : c.debito > 0 ? 'alert' : '';
-    const avCls = especial === 'inativa' ? 'av-inativa' : especial ? 'av-alert' : st === 'concluida' ? 'av-done' : c.debito > 0 ? 'av-alert' : 'av-default';
+    const cls = especial === 'inativa' ? 'inativa' : (especial === 'mes' || especial === 'semana') ? 'done' : st === 'concluida' ? 'done' : isNext ? 'next' : c.debito > 0 ? 'alert' : '';
+    const avCls = especial === 'inativa' ? 'av-inativa' : (especial === 'mes' || especial === 'semana') ? 'av-done' : st === 'concluida' ? 'av-done' : c.debito > 0 ? 'av-alert' : 'av-default';
     const avTxt = especial === 'inativa' ? '✕' : especial ? '↻' : st === 'concluida' ? '✓' : c.debito > 0 ? '!' : iniciais(c.nome);
     const badge = especial === 'inativa' ? '<div class="c-badge b-inativa">Inativa</div>'
-                : especial === 'mes' ? '<div class="c-badge b-alert">Remarcada · mês</div>'
-                : especial === 'semana' ? '<div class="c-badge b-alert">Remarcada · semana</div>'
+                : especial === 'mes' ? '<div class="c-badge b-done">Remarcada · mês</div>'
+                : especial === 'semana' ? '<div class="c-badge b-done">Remarcada · semana</div>'
                 : st === 'concluida' ? '<div class="c-badge b-done">Concluída</div>'
                 : isNext ? '<div class="c-badge b-next">Próxima</div>'
                 : c.debito > 0 ? '<div class="c-badge b-alert">Cobrança</div>'
