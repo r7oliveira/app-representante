@@ -4407,9 +4407,9 @@ function renderSemana() {
     return a + Math.max(0, aPagarC - (c.recebido||0));
   }, 0);
   const meta = sem.meta || DB.config.metaPadrao || 15000;
-  const aPagarTotal = Math.round(vendido * 0.70 * 100) / 100;
-  const pctM = Math.min(100, Math.round(aPagarTotal/meta*100));
-  const faltaMeta = Math.max(0, meta - aPagarTotal);
+  const aPagarTotal = sem.consultoras.reduce((a,c) => a + (c.aPagar||0), 0);
+  const pctM = Math.min(100, Math.round(vendido/meta*100));
+  const faltaMeta = Math.max(0, meta - vendido);
 
   // Ordena por status (pendente → remarcada → concluída) e, dentro de cada grupo, por dia + horário
   const diasOrd = {'Segunda-feira':1,'Terça-feira':2,'Quarta-feira':3,'Quinta-feira':4,'Sexta-feira':5,'Sábado':6};
@@ -5996,9 +5996,9 @@ function recomputeFechamentoGeral() {
   const ticketMedio = totVendasCount > 0 ? totVendido / totVendasCount : 0;
 
   // Meta geral
-  const pctMetaGeral = totMeta > 0 ? Math.round(totAPagar/totMeta*100) : 0;
-  const faltaMetaGeral = Math.max(0, totMeta - totAPagar);
-  document.getElementById('fgMetaResultado').textContent = brl(totAPagar);
+  const pctMetaGeral = totMeta > 0 ? Math.round(totVendido/totMeta*100) : 0;
+  const faltaMetaGeral = Math.max(0, totMeta - totVendido);
+  document.getElementById('fgMetaResultado').textContent = brl(totVendido);
   document.getElementById('fgMetaTotal').textContent = brl(totMeta);
   document.getElementById('fgMetaBar').style.width = Math.min(100, pctMetaGeral) + '%';
   document.getElementById('fgMetaPct').textContent = pctMetaGeral + '% da meta';
@@ -6011,12 +6011,12 @@ function recomputeFechamentoGeral() {
   } else {
     metaPorTabletBox.style.display = '';
     const tabletsOrdenadosPct = [...tablets].sort((a,b) => {
-      const pa = (a.meta>0) ? (a.aPagar||0)/a.meta : 0;
-      const pb = (b.meta>0) ? (b.aPagar||0)/b.meta : 0;
+      const pa = (a.meta>0) ? (a.vendido||0)/a.meta : 0;
+      const pb = (b.meta>0) ? (b.vendido||0)/b.meta : 0;
       return pb - pa;
     });
     metaPorTabletBox.innerHTML = tabletsOrdenadosPct.map(t => {
-      const pct = t.meta > 0 ? Math.round((t.aPagar||0)/t.meta*100) : 0;
+      const pct = t.meta > 0 ? Math.round((t.vendido||0)/t.meta*100) : 0;
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12.5px;">
         <span style="color:rgba(255,255,255,.8);font-weight:600;">${t.nome}</span>
         <span style="color:${pct>=100?'#6EF0B0':'rgba(255,255,255,.6)'};font-weight:800;">${pct}%${pct>=100?' 🏆':''}</span>
@@ -6082,10 +6082,10 @@ function abrirFechDetalhe(index) {
   document.getElementById('fdAtendPct').textContent = (t.atendidas||0) + '/' + (t.previstas||0);
   document.getElementById('fdAtendBar').style.width = Math.min(100, atendPct) + '%';
 
-  const metaPct = t.meta > 0 ? Math.round((t.aPagar||0)/t.meta*100) : 0;
+  const metaPct = t.meta > 0 ? Math.round((t.vendido||0)/t.meta*100) : 0;
   document.getElementById('fdMetaPct').textContent = metaPct + '%';
   document.getElementById('fdMetaBar').style.width = Math.min(100, metaPct) + '%';
-  document.getElementById('fdMetaValores').textContent = brl(t.aPagar||0) + ' / ' + brl(t.meta||0);
+  document.getElementById('fdMetaValores').textContent = brl(t.vendido||0) + ' / ' + brl(t.meta||0);
 
   document.getElementById('fdVendido').textContent = brl(t.vendido||0);
   document.getElementById('fdRecebido').textContent = brl((t.pix||0)+(t.dinheiro||0));
