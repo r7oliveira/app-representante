@@ -4453,7 +4453,7 @@ function renderSemana() {
   const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
   const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
   const nComDebito   = sem.consultoras.filter(c => c.debito > 0).length;
-  const nSemFavorita = sem.consultoras.filter(c => !c.pedidoFavoritaUltimo).length;
+  const nSemFavorita = sem.consultoras.filter(c => !c.pedidoFavoritaFeito).length;
   const nInativas    = sem.consultoras.filter(c => c.parouDeVender).length;
   document.getElementById('cntAtendidas').textContent   = nAtendidas;
   document.getElementById('cntRemSemana').textContent   = nRemSemana;
@@ -6324,7 +6324,7 @@ function renderDomingo() {
   if (sem) {
     const pend = sem.consultoras.filter(c=>c.status!=='concluida');
     const comDeb = pend.filter(c=>c.debito>0);
-    const semFav = pend.filter(c=>!c.pedidoFavoritaUltimo);
+    const semFav = pend.filter(c=>!c.pedidoFavoritaFeito);
     radarEl.innerHTML = `
       <div class="card-row" style="background:var(--red-bg);cursor:pointer;" onclick="goTo('semana')">
         <span style="font-size:18px;">●</span>
@@ -6384,7 +6384,7 @@ function gerarIniciativas(sem) {
   const meta = sem.meta || DB.config.metaPadrao || 15000;
   const pct = meta > 0 ? Math.round(vendido/meta*100) : 0;
   const comDebito = pendentes.filter(c => c.debito > 0);
-  const semFav = pendentes.filter(c => !c.pedidoFavoritaUltimo);
+  const semFav = pendentes.filter(c => !c.pedidoFavoritaFeito);
   const atendidas = sem.consultoras.filter(c=>c.status==='concluida').length;
   const total = sem.consultoras.length;
 
