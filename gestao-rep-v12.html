@@ -4452,8 +4452,8 @@ function renderSemana() {
   const nAtendidas   = sem.consultoras.filter(c => c.status === 'concluida' && !c.remarcarSemana && !c.remarcarMes).length;
   const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
   const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
-  const nComDebito   = pendentesAgora.filter(c => c.debito > 0).length;
-  const nSemFavorita = pendentesAgora.filter(c => !c.pedidoFavoritaUltimo).length;
+  const nComDebito   = sem.consultoras.filter(c => c.debito > 0).length;
+  const nSemFavorita = sem.consultoras.filter(c => !c.pedidoFavoritaUltimo).length;
   const nInativas    = sem.consultoras.filter(c => c.parouDeVender).length;
   document.getElementById('cntAtendidas').textContent   = nAtendidas;
   document.getElementById('cntRemSemana').textContent   = nRemSemana;
