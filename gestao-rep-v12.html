@@ -510,6 +510,10 @@ input[type="time"]{max-width:100%;}
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Sem favorita</div>
           <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntSemFavorita">0</div>
         </div>
+        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
+          <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Inativas</div>
+          <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntInativas">0</div>
+        </div>
       </div>
     </div>
     <div class="ia-strip">
@@ -4383,6 +4387,7 @@ function renderSemana() {
     document.getElementById('heroPendentes').textContent = '0';
     document.getElementById('cntComDebito').textContent = '0';
     document.getElementById('cntSemFavorita').textContent = '0';
+    document.getElementById('cntInativas').textContent = '0';
     document.getElementById('listaConsultoras').innerHTML = `
       <div style="text-align:center;padding:40px 20px;">
         <div style="font-size:48px;margin-bottom:12px;"></div>
@@ -4449,11 +4454,13 @@ function renderSemana() {
   const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
   const nComDebito   = pendentesAgora.filter(c => c.debito > 0).length;
   const nSemFavorita = pendentesAgora.filter(c => !c.pedidoFavoritaUltimo).length;
+  const nInativas    = sem.consultoras.filter(c => c.parouDeVender).length;
   document.getElementById('cntAtendidas').textContent   = nAtendidas;
   document.getElementById('cntRemSemana').textContent   = nRemSemana;
   document.getElementById('cntRemMes').textContent      = nRemMes;
   document.getElementById('cntComDebito').textContent   = nComDebito;
   document.getElementById('cntSemFavorita').textContent = nSemFavorita;
+  document.getElementById('cntInativas').textContent    = nInativas;
 
   // Sugestão do assistente: quem atender primeiro (e depois), como antes no Radar
   const segunda = pendentesAgora[1];
