@@ -467,14 +467,14 @@ input[type="time"]{max-width:100%;}
       </div>
       <div class="hero-grid">
         <div class="hero-box" onclick="abrirDetalheAPagar()" style="cursor:pointer;">
-          <div class="hero-box-label">A Pagar</div>
+          <div class="hero-box-label">Vendido</div>
           <div class="hero-box-val" id="heroVendido">R$ 0</div>
-          <div class="hero-box-sub" id="heroMetaSub">Vendido: —</div>
+          <div class="hero-box-sub" id="heroMetaSub">A pagar: —</div>
         </div>
         <div class="hero-box" onclick="abrirDetalheRecebido()" style="cursor:pointer;">
-          <div class="hero-box-label">Recebido</div>
+          <div class="hero-box-label">A Pagar</div>
           <div class="hero-box-val" id="heroRecebido">R$ 0</div>
-          <div class="hero-box-sub">Esta semana</div>
+          <div class="hero-box-sub" id="heroRecebidoSub">Recebido: —</div>
         </div>
         <div class="hero-box" onclick="abrirDetalheCobrancas()" style="cursor:pointer;">
           <div class="hero-box-label">Cobranças</div>
@@ -482,14 +482,14 @@ input[type="time"]{max-width:100%;}
           <div class="hero-box-sub">Pendentes</div>
         </div>
         <div class="hero-box">
-          <div class="hero-box-label">Consultoras</div>
+          <div class="hero-box-label">Pendentes</div>
           <div class="hero-box-val" id="heroPendentes">0</div>
-          <div class="hero-box-sub">Pendentes</div>
+          <div class="hero-box-sub">Consultoras</div>
         </div>
       </div>
 
       <!-- Contadores de status -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:16px;">
         <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Atendidas</div>
           <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntAtendidas">0</div>
@@ -502,8 +502,6 @@ input[type="time"]{max-width:100%;}
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Rem. Mês</div>
           <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntRemMes">0</div>
         </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;">
         <div onclick="abrirDetalheCobrancas()" style="cursor:pointer;background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Com débito</div>
           <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntComDebito">0</div>
@@ -4380,6 +4378,7 @@ function renderSemana() {
     document.getElementById('heroVendido').textContent = 'R$ 0';
     document.getElementById('heroMetaSub').textContent = 'Meta: —';
     document.getElementById('heroRecebido').textContent = 'R$ 0';
+    document.getElementById('heroRecebidoSub').textContent = 'Recebido: —';
     document.getElementById('heroCobrancas').textContent = 'R$ 0';
     document.getElementById('heroPendentes').textContent = '0';
     document.getElementById('cntComDebito').textContent = '0';
@@ -4415,8 +4414,9 @@ function renderSemana() {
   const diasOrd = {'Segunda-feira':1,'Terça-feira':2,'Quarta-feira':3,'Quinta-feira':4,'Sexta-feira':5,'Sábado':6};
   function hM(h) { if (!h) return 9999; const [hh,mm] = h.split(':').map(Number); return hh*60+mm; }
   function grupoStatus(c) {
-    if (c.parouDeVender || c.remarcarSemana || c.remarcarMes) return 1;
-    if (c.status === 'concluida') return 2;
+    if (c.remarcarSemana || c.remarcarMes) return 1;
+    if (c.parouDeVender) return 2;
+    if (c.status === 'concluida') return 3;
     return 0;
   }
   sem.consultoras.sort((a,b) => {
@@ -4435,9 +4435,10 @@ function renderSemana() {
   document.getElementById('progConsultorasVal').textContent = atendidas + '/' + total;
   document.getElementById('progMetaVal').textContent = pctM + '% · ' + brl(meta).replace(' ', '\u00A0');
 
-  document.getElementById('heroVendido').textContent = brl(aPagarTotal);
-  document.getElementById('heroMetaSub').textContent = 'Vendido: ' + brl(vendido);
-  document.getElementById('heroRecebido').textContent = brl(recebido);
+  document.getElementById('heroVendido').textContent = brl(vendido);
+  document.getElementById('heroMetaSub').textContent = 'A pagar: ' + brl(aPagarTotal);
+  document.getElementById('heroRecebido').textContent = brl(aPagarTotal);
+  document.getElementById('heroRecebidoSub').textContent = 'Recebido: ' + brl(recebido);
   document.getElementById('heroCobrancas').textContent = brl(cobrancas);
   document.getElementById('heroPendentes').textContent = total - atendidas;
 
@@ -4505,12 +4506,13 @@ function renderSemana() {
     const grupoAnterior = idx > 0 ? grupoStatus(sem.consultoras[idx-1]) : -1;
     const tituloGrupo = grupoAtual === grupoAnterior ? '' :
       grupoAtual === 1 ? '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin:14px 2px 6px;">Remarcadas</div>' :
-      grupoAtual === 2 ? '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin:14px 2px 6px;">Concluídas</div>' : '';
+      grupoAtual === 2 ? '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin:14px 2px 6px;">Inativas</div>' :
+      grupoAtual === 3 ? '<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin:14px 2px 6px;">Concluídas</div>' : '';
 
-    const cls = especial === 'inativa' ? 'inativa' : (especial === 'mes' || especial === 'semana') ? 'done' : st === 'concluida' ? 'done' : isNext ? 'next' : c.debito > 0 ? 'alert' : '';
-    const avCls = especial === 'inativa' ? 'av-inativa' : (especial === 'mes' || especial === 'semana') ? 'av-done' : st === 'concluida' ? 'av-done' : c.debito > 0 ? 'av-alert' : 'av-default';
+    const cls = (especial === 'inativa' || especial === 'mes' || especial === 'semana') ? 'done' : st === 'concluida' ? 'done' : isNext ? 'next' : c.debito > 0 ? 'alert' : '';
+    const avCls = (especial === 'inativa' || especial === 'mes' || especial === 'semana') ? 'av-done' : st === 'concluida' ? 'av-done' : c.debito > 0 ? 'av-alert' : 'av-default';
     const avTxt = especial === 'inativa' ? '✕' : especial ? '↻' : st === 'concluida' ? '✓' : c.debito > 0 ? '!' : iniciais(c.nome);
-    const badge = especial === 'inativa' ? '<div class="c-badge b-inativa">Inativa</div>'
+    const badge = especial === 'inativa' ? '<div class="c-badge b-done">Inativa</div>'
                 : especial === 'mes' ? '<div class="c-badge b-done">Remarcada · mês</div>'
                 : especial === 'semana' ? '<div class="c-badge b-done">Remarcada · semana</div>'
                 : st === 'concluida' ? '<div class="c-badge b-done">Concluída</div>'
