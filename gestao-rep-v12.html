@@ -1209,7 +1209,10 @@ input[type="time"]{max-width:100%;}
     <div id="adminPessoaStatus" style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Carregando...</div>
     <div id="adminPessoaConteudo" style="display:none;">
 
-      <select id="apSemanaSelect" onchange="adminMudarSemanaSelecionada(this.value)" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;font-family:var(--font);font-weight:700;color:var(--ink);margin-bottom:12px;background:white;"></select>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <select id="apSemanaSelect" onchange="adminMudarSemanaSelecionada(this.value)" style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;font-family:var(--font);font-weight:700;color:var(--ink);background:white;"></select>
+        <button onclick="adminExcluirSemana()" title="Excluir semana" style="flex-shrink:0;width:44px;border:1.5px solid var(--border);border-radius:12px;background:white;color:var(--red);font-size:16px;cursor:pointer;">🗑</button>
+      </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
         <div class="card" style="padding:12px 14px;">
@@ -3828,6 +3831,28 @@ function abrirAdminPessoa(id) {
 function adminMudarSemanaSelecionada(valor) {
   _adminPessoaSemanaSel = valor ? Number(valor) : null;
   renderAdminPessoa();
+}
+
+function adminExcluirSemana() {
+  const id = _adminPessoaAtual;
+  const data = _adminDB[id];
+  if (!data) return;
+  const semanas = data.semanas || [];
+  const defaultNumero = data.semanaAtiva != null ? data.semanaAtiva : (semanas.length ? semanas[semanas.length-1].numero : null);
+  const numeroEscolhido = _adminPessoaSemanaSel !== null ? _adminPessoaSemanaSel : defaultNumero;
+  const sem = semanas.find(s => s.numero === numeroEscolhido);
+  if (!sem) return;
+
+  if (!confirm(`Excluir a Semana ${sem.numero}${sem.regiao ? ' · ' + sem.regiao : ''}? Essa ação não pode ser desfeita.`)) return;
+
+  data.semanas = semanas.filter(s => s.numero !== numeroEscolhido);
+  if (data.semanaAtiva === numeroEscolhido) data.semanaAtiva = null;
+  data.seq = (data.seq || 1) + 1;
+  _adminPessoaSemanaSel = null;
+
+  _adminRefs[id].set(data).then(() => {
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao excluir: ' + e.message));
 }
 
 function renderAdminPessoa() {
