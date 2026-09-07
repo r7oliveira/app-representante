@@ -1753,7 +1753,7 @@ input[type="time"]{max-width:100%;}
         <div style="color:var(--ink-3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ativas</div>
         <div style="color:var(--ink);font-size:20px;font-weight:800;" id="gerAtivas">0</div>
       </div>
-      <button onclick="toggleInativasGerenciar()" style="background:white;border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;cursor:pointer;font-family:var(--font);">
+      <button onclick="abrirInativasTodas()" style="background:white;border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;cursor:pointer;font-family:var(--font);">
         <div style="color:var(--ink-3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Inativas (<span id="gerInativas">0</span>)</div>
         <div style="color:var(--rose-deep);font-size:12.5px;font-weight:800;">Acessar consultoras inativas</div>
       </button>
@@ -1775,6 +1775,20 @@ input[type="time"]{max-width:100%;}
       <div class="sec-title" style="padding-left:0;" id="gerInativasTitle">Inativas</div>
       <div id="gerListaInativas"></div>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: TODAS AS CONSULTORAS INATIVAS (todas as regiões)
+══════════════════════════════════════════ -->
+<div class="view" id="view-inativas-todas">
+  <div style="background:linear-gradient(135deg,var(--rose-deep),var(--rose));padding:calc(16px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;">
+    <button onclick="goBack()" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
+    <div style="color:white;font-size:26px;font-weight:800;font-family:var(--font-serif);">Consultoras inativas</div>
+    <div style="color:rgba(255,255,255,.75);font-size:12.5px;margin-top:2px;" id="inativasTodasSub">Todas as regiões</div>
+  </div>
+  <div class="scroll-body" style="padding:16px 16px 80px;">
+    <div id="listaInativasTodas"></div>
   </div>
 </div>
 
@@ -6605,6 +6619,38 @@ function trocarRegiaoGerenciar(regiao) {
   renderGerenciar();
 }
 
+function abrirInativasTodas() {
+  renderInativasTodas();
+  goTo('inativas-todas');
+}
+
+function renderInativasTodas() {
+  const inativas = DB.consultoras.filter(c => c.status === 'inativa');
+  document.getElementById('inativasTodasSub').textContent = inativas.length + (inativas.length === 1 ? ' consultora inativa' : ' consultoras inativas') + ' · todas as regiões';
+  const el = document.getElementById('listaInativasTodas');
+  if (!inativas.length) {
+    el.innerHTML = '<div style="text-align:center;padding:30px 16px;color:var(--ink-3);font-size:13px;">Nenhuma consultora inativa no momento.</div>';
+    return;
+  }
+  const porRegiao = {};
+  inativas.forEach(c => {
+    const r = c.regiao || 'Sem região';
+    (porRegiao[r] = porRegiao[r] || []).push(c);
+  });
+  el.innerHTML = Object.keys(porRegiao).sort().map(r => `
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin:16px 2px 8px;">${r} (${porRegiao[r].length})</div>
+    <div class="card" style="margin-bottom:4px;">
+      ${porRegiao[r].map(c => `
+        <div class="card-row" style="opacity:.65;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:700;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nome}</div>
+            <div style="font-size:11px;color:var(--ink-3);">${c.cidade||''}</div>
+          </div>
+          <button onclick="reativarConsultora('${c.id}');renderInativasTodas();" style="font-size:12px;font-weight:700;color:var(--green);background:none;border:none;cursor:pointer;flex-shrink:0;">Reativar</button>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
 function toggleInativasGerenciar() {
   const el = document.getElementById('gerInativasSection');
   const aberto = el.style.display !== 'none';
@@ -6619,7 +6665,7 @@ function renderGerenciar() {
 
   document.getElementById('gerenciarTitulo').textContent = regiao;
   document.getElementById('gerAtivas').textContent = ativas.length;
-  document.getElementById('gerInativas').textContent = inativas.length;
+  document.getElementById('gerInativas').textContent = DB.consultoras.filter(c => c.status === 'inativa').length;
 
   // Botões das 6 regiões, com a quantidade de consultoras ativas em cada uma
   const regs = regioesAtuais();
