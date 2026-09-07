@@ -2403,8 +2403,7 @@ function fazerLogout() {
 function inicioSemanaAtual() {
   const agora = new Date();
   const diaSemana = agora.getDay(); // 0=domingo
-  const diasDesdeSegunda = diaSemana === 0 ? 6 : diaSemana - 1;
-  const inicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() - diasDesdeSegunda);
+  const inicio = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate() - diaSemana);
   inicio.setHours(0, 0, 0, 0);
   return inicio;
 }
