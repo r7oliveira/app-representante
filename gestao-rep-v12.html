@@ -1891,9 +1891,9 @@ input[type="time"]{max-width:100%;}
 ══════════════════════════════════════════ -->
 <div class="view" id="view-fechamento-geral">
   <div style="background:linear-gradient(160deg,#3D2029,#6B4552);padding:calc(20px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
-    <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Fechamento da Semana</div>
+    <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Dashboard Gerencial</div>
     <div style="color:white;font-size:24px;font-weight:800;margin-bottom:3px;" id="fgTituloSemana">Semana —</div>
-    <div style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500;margin-bottom:14px;" id="fgSubtitulo">Resultado consolidado dos tablets</div>
+    <div style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500;margin-bottom:14px;" id="fgSubtitulo">Visão geral da operação</div>
 
     <div style="display:flex;align-items:center;justify-content:center;gap:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:10px;">
       <button onclick="fgMudarSemana(-1)" style="background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;font-weight:800;cursor:pointer;padding:4px 10px;">‹</button>
@@ -1911,9 +1911,9 @@ input[type="time"]{max-width:100%;}
     <div id="fgStatus" style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Carregando dados dos tablets...</div>
     <div id="fgConteudo" style="display:none;">
 
-      <!-- META GERAL -->
+      <!-- ═══ 1. KPIs PRINCIPAIS ═══ -->
       <div style="background:linear-gradient(135deg,#3D2029,#6B4552);border-radius:18px;padding:16px 18px;margin-bottom:12px;">
-        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Resultado da Semana</div>
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Faturamento da Semana</div>
         <div style="font-size:24px;font-weight:800;color:white;margin-bottom:2px;"><span id="fgMetaResultado">R$ 0</span> <span style="font-size:15px;font-weight:600;color:rgba(255,255,255,.4);">/ <span id="fgMetaTotal">R$ 0</span></span></div>
         <div style="height:8px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin:10px 0 6px;">
           <div id="fgMetaBar" style="height:100%;background:linear-gradient(90deg,#9C4C5E,#B8677A);border-radius:6px;width:0%;"></div>
@@ -1925,8 +1925,24 @@ input[type="time"]{max-width:100%;}
         <div id="fgMetaPorTablet" style="border-top:1px solid rgba(255,255,255,.1);padding-top:10px;"></div>
       </div>
 
-      <!-- ATENDIMENTOS -->
-      <div style="background:white;border:1px solid var(--border);border-radius:18px;padding:14px 16px;margin-bottom:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+        <div class="card" style="padding:10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ticket Médio</div>
+          <div style="font-size:15px;font-weight:800;color:var(--ink);" id="fgTicket">R$ 0</div>
+        </div>
+        <div class="card" style="padding:10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Base Ativa</div>
+          <div style="font-size:15px;font-weight:800;color:var(--ink);" id="fgAtivas">0</div>
+        </div>
+        <div class="card" style="padding:10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Recebimentos</div>
+          <div style="font-size:15px;font-weight:800;color:var(--green);" id="fgRecebidoTotalKpi">R$ 0</div>
+        </div>
+      </div>
+
+      <!-- ═══ 2. PERFORMANCE COMERCIAL ═══ -->
+      <div style="font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;">Performance Comercial</div>
+      <div style="background:white;border:1px solid var(--border);border-radius:18px;padding:14px 16px;margin-bottom:10px;">
         <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Atendimentos</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <div>
@@ -1935,79 +1951,121 @@ input[type="time"]{max-width:100%;}
           </div>
           <div>
             <div style="font-size:22px;font-weight:800;color:var(--green);" id="fgAtendidas">0</div>
-            <div style="font-size:11px;color:var(--ink-3);font-weight:600;">Atendidas</div>
+            <div style="font-size:11px;color:var(--ink-3);font-weight:600;">Atendimentos Realizados</div>
           </div>
           <div>
             <div style="font-size:22px;font-weight:800;color:var(--amber);" id="fgPendentes">0</div>
-            <div style="font-size:11px;color:var(--ink-3);font-weight:600;">Pendentes</div>
+            <div style="font-size:11px;color:var(--ink-3);font-weight:600;">Atendimentos Pendentes</div>
           </div>
           <div>
             <div style="font-size:22px;font-weight:800;color:var(--rose);" id="fgCobertura">0%</div>
-            <div style="font-size:11px;color:var(--ink-3);font-weight:600;">Cobertura</div>
+            <div style="font-size:11px;color:var(--ink-3);font-weight:600;">Índice de Cobertura</div>
           </div>
         </div>
       </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Nº de Vendas</div>
+          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgNumVendas">0</div>
+        </div>
+        <div class="card" style="padding:12px 14px;">
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Média por Consultora</div>
+          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgMediaConsultora">R$ 0</div>
+        </div>
+      </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-        <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total vendido</div>
-          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgVendido">R$ 0</div>
+      <!-- ═══ 3. GESTÃO FINANCEIRA ═══ -->
+      <div style="font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;">Gestão Financeira</div>
+      <div class="card" style="padding:14px 16px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;color:var(--ink-3);text-align:center;">
+          <div style="flex:1;">
+            <div style="font-size:16px;font-weight:800;color:var(--ink);" id="fgVendido">R$ 0</div>
+            <div>Faturamento</div>
+          </div>
+          <div style="color:var(--ink-3);font-size:16px;padding:0 6px;">→</div>
+          <div style="flex:1;">
+            <div style="font-size:16px;font-weight:800;color:var(--green);" id="fgRecebidoTotal">R$ 0</div>
+            <div>Recebimentos</div>
+          </div>
+          <div style="color:var(--ink-3);font-size:16px;padding:0 6px;">→</div>
+          <div style="flex:1;">
+            <div style="font-size:16px;font-weight:800;color:var(--amber);" id="fgDebito">R$ 0</div>
+            <div>Em Aberto</div>
+          </div>
         </div>
-        <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total a pagar</div>
-          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgAPagar">R$ 0</div>
+        <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:10px;display:flex;justify-content:space-between;font-size:12px;color:var(--ink-3);font-weight:700;">
+          <span>Índice de Recebimento</span>
+          <span id="fgIndiceRecebimento" style="color:var(--ink);">0%</span>
         </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
         <div class="card" style="padding:12px 14px;">
           <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Recebido (Pix)</div>
-          <div style="font-size:18px;font-weight:800;color:var(--green);" id="fgPix">R$ 0</div>
+          <div style="font-size:16px;font-weight:800;color:var(--green);" id="fgPix">R$ 0</div>
         </div>
         <div class="card" style="padding:12px 14px;">
           <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Recebido (Dinheiro)</div>
-          <div style="font-size:18px;font-weight:800;color:var(--green);" id="fgDinheiro">R$ 0</div>
-        </div>
-        <div class="card" style="padding:12px 14px;grid-column:span 2;background:var(--green-bg);border-color:transparent;">
-          <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total recebido (Pix + Dinheiro)</div>
-          <div style="font-size:22px;font-weight:800;color:var(--green);" id="fgRecebidoTotal">R$ 0</div>
-        </div>
-        <div class="card" style="padding:12px 14px;grid-column:span 2;background:var(--amber-bg);border-color:transparent;">
-          <div style="font-size:10px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Total débito</div>
-          <div style="font-size:22px;font-weight:800;color:var(--amber);" id="fgDebito">R$ 0</div>
+          <div style="font-size:16px;font-weight:800;color:var(--green);" id="fgDinheiro">R$ 0</div>
         </div>
         <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Ticket médio</div>
-          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgTicket">R$ 0</div>
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Contas a Receber</div>
+          <div style="font-size:16px;font-weight:800;color:var(--ink);" id="fgAPagar">R$ 0</div>
         </div>
         <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Consultoras ativas</div>
-          <div style="font-size:18px;font-weight:800;color:var(--green);" id="fgAtivas">0</div>
-        </div>
-        <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Consultoras inativas</div>
-          <div style="font-size:18px;font-weight:800;color:var(--red);" id="fgInativas">0</div>
-        </div>
-        <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Novas consultoras</div>
-          <div style="font-size:18px;font-weight:800;color:var(--ink);" id="fgClienteNova">0</div>
+          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Novas Consultoras</div>
+          <div style="font-size:16px;font-weight:800;color:var(--ink);" id="fgClienteNova">0</div>
         </div>
       </div>
 
-      <!-- Indicadores secundários (alimentados no atendimento) -->
+      <!-- ═══ 4. FUNIL DE CONSULTORAS ═══ -->
+      <div style="font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;">Funil de Consultoras</div>
+      <div class="card" style="padding:14px 16px;margin-bottom:16px;" id="fgFunil"></div>
+
+      <!-- ═══ 5. SAÚDE DA REDE ═══ -->
+      <div style="font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;">Saúde da Rede</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:16px;">
         <div class="card" style="padding:9px 10px;text-align:center;">
-          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Rem. Semana</div>
+          <div style="font-size:8px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Ativas</div>
+          <div style="font-size:15px;font-weight:800;color:var(--green);" id="fgAtivasSaude">0</div>
+        </div>
+        <div class="card" style="padding:9px 10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Em Risco</div>
+          <div style="font-size:15px;font-weight:800;color:var(--amber);" id="fgEmRisco">0</div>
+        </div>
+        <div class="card" style="padding:9px 10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Churn / Inativas</div>
+          <div style="font-size:15px;font-weight:800;color:var(--red);" id="fgInativas">0</div>
+        </div>
+        <div class="card" style="padding:9px 10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Novas</div>
+          <div style="font-size:15px;font-weight:800;color:var(--ink);" id="fgNovasSaude">0</div>
+        </div>
+        <div class="card" style="padding:9px 10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Sem Venda</div>
+          <div style="font-size:15px;font-weight:800;color:var(--ink);" id="fgSemVenda">0</div>
+        </div>
+        <div class="card" style="padding:9px 10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Remarcadas</div>
+          <div style="font-size:15px;font-weight:800;color:var(--ink);" id="fgRemarcadasSaude">0</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px;">
+        <div class="card" style="padding:9px 10px;text-align:center;">
+          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Remarcadas p/ semana</div>
           <div style="font-size:15px;font-weight:800;color:var(--ink);" id="fgRemSemana">0</div>
         </div>
         <div class="card" style="padding:9px 10px;text-align:center;">
-          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Rem. Mês</div>
+          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Remarcadas p/ mês</div>
           <div style="font-size:15px;font-weight:800;color:var(--ink);" id="fgRemMes">0</div>
-        </div>
-        <div class="card" style="padding:9px 10px;text-align:center;">
-          <div style="font-size:8px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">Parou vender</div>
-          <div style="font-size:15px;font-weight:800;color:var(--red);" id="fgParouVender">0</div>
         </div>
       </div>
 
-      <div style="font-size:13px;font-weight:700;color:var(--ink);margin:8px 0 8px;">Por tablet</div>
+      <!-- ═══ 6. EVOLUÇÃO DE VENDAS ═══ -->
+      <div style="font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;">Evolução de Vendas</div>
+      <div class="card" style="padding:14px 16px;margin-bottom:16px;" id="fgEvolucao"></div>
+
+      <!-- ═══ 7. PERFORMANCE POR TABLET ═══ -->
+      <div style="font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;">Performance por Tablet</div>
       <div id="fgPorTablet"></div>
       <button class="btn-ghost" id="fgBtnAddManual" onclick="abrirModalFechManual()" style="margin-top:4px;">+ Adicionar tablet manualmente</button>
     </div>
@@ -2072,7 +2130,7 @@ input[type="time"]{max-width:100%;}
 
     <div style="background:var(--surface);border-radius:14px;padding:12px 14px;margin-bottom:14px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;">Atendimentos</span>
+        <span style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;">Índice de Cobertura</span>
         <span style="font-size:13px;font-weight:800;color:var(--ink);" id="fdAtendPct">0/0</span>
       </div>
       <div style="height:7px;background:var(--border);border-radius:5px;overflow:hidden;">
@@ -2082,7 +2140,7 @@ input[type="time"]{max-width:100%;}
 
     <div style="background:var(--surface);border-radius:14px;padding:12px 14px;margin-bottom:14px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;">Meta</span>
+        <span style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;">Atingimento da Meta</span>
         <span style="font-size:13px;font-weight:800;color:var(--ink);" id="fdMetaPct">0%</span>
       </div>
       <div style="height:7px;background:var(--border);border-radius:5px;overflow:hidden;margin-bottom:4px;">
@@ -2092,11 +2150,11 @@ input[type="time"]{max-width:100%;}
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-      <div class="card" style="padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:3px;">Vendido</div><div style="font-size:15px;font-weight:800;" id="fdVendido">R$ 0</div></div>
-      <div class="card" style="padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:3px;">Recebido</div><div style="font-size:15px;font-weight:800;color:var(--green);" id="fdRecebido">R$ 0</div></div>
+      <div class="card" style="padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:3px;">Faturamento</div><div style="font-size:15px;font-weight:800;" id="fdVendido">R$ 0</div></div>
+      <div class="card" style="padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:3px;">Recebimentos</div><div style="font-size:15px;font-weight:800;color:var(--green);" id="fdRecebido">R$ 0</div></div>
       <div class="card" style="padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:3px;">Pix</div><div style="font-size:15px;font-weight:800;" id="fdPix">R$ 0</div></div>
       <div class="card" style="padding:10px 12px;"><div style="font-size:9px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:3px;">Dinheiro</div><div style="font-size:15px;font-weight:800;" id="fdDinheiro">R$ 0</div></div>
-      <div class="card" style="padding:10px 12px;grid-column:span 2;background:var(--amber-bg);border-color:transparent;"><div style="font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;margin-bottom:3px;">Débito</div><div style="font-size:17px;font-weight:800;color:var(--amber);" id="fdDebito">R$ 0</div></div>
+      <div class="card" style="padding:10px 12px;grid-column:span 2;background:var(--amber-bg);border-color:transparent;"><div style="font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;margin-bottom:3px;">Saldo em Aberto</div><div style="font-size:17px;font-weight:800;color:var(--amber);" id="fdDebito">R$ 0</div></div>
     </div>
 
     <div style="font-size:12px;color:var(--ink-2);line-height:1.8;background:var(--surface);border-radius:14px;padding:12px 14px;">
@@ -6072,7 +6130,7 @@ function recomputeFechamentoGeral() {
   const tablets = [...auto, ...manuais.map(m => ({ ...m, origem: 'manual', temSemana: true }))];
   window._fgTabletsAll = tablets;
 
-  document.getElementById('fgSubtitulo').textContent = USER_ID ? 'Seu resultado da semana' : 'Resultado consolidado ' + (tablets.length ? 'dos ' + tablets.length + ' tablet' + (tablets.length > 1 ? 's' : '') : 'dos tablets');
+  document.getElementById('fgSubtitulo').textContent = USER_ID ? 'Visão geral da operação' : 'Consolidado ' + (tablets.length ? 'de ' + tablets.length + ' tablet' + (tablets.length > 1 ? 's' : '') : 'dos tablets');
 
   let totVendido = 0, totAPagar = 0, totPix = 0, totDin = 0, totDebito = 0, totMeta = 0;
   let totRemSemana = 0, totRemMes = 0, totParouVender = 0, totVendasCount = 0;
@@ -6132,14 +6190,74 @@ function recomputeFechamentoGeral() {
   document.getElementById('fgPix').textContent = brl(totPix);
   document.getElementById('fgDinheiro').textContent = brl(totDin);
   document.getElementById('fgRecebidoTotal').textContent = brl(totPix + totDin);
+  document.getElementById('fgRecebidoTotalKpi').textContent = brl(totPix + totDin);
   document.getElementById('fgDebito').textContent = brl(totDebito);
   document.getElementById('fgRemSemana').textContent = totRemSemana;
   document.getElementById('fgRemMes').textContent = totRemMes;
-  document.getElementById('fgParouVender').textContent = totParouVender;
   document.getElementById('fgTicket').textContent = brl(ticketMedio);
   document.getElementById('fgAtivas').textContent = totAtivas;
   document.getElementById('fgInativas').textContent = totInativas;
   document.getElementById('fgClienteNova').textContent = totClienteNova;
+  document.getElementById('fgNumVendas').textContent = totVendasCount;
+  document.getElementById('fgMediaConsultora').textContent = brl(totAtivas > 0 ? totVendido / totAtivas : 0);
+
+  // Índice de Recebimento: quanto do faturamento já foi efetivamente recebido
+  const indiceRecebimento = totVendido > 0 ? Math.round((totPix + totDin) / totVendido * 100) : 0;
+  document.getElementById('fgIndiceRecebimento').textContent = indiceRecebimento + '%';
+
+  // Saúde da Rede
+  const emRisco = totRemSemana + totRemMes; // consultoras que remarcaram (sinal de queda)
+  const semVenda = Math.max(0, totPrevistas - totVendasCount); // previstas que não geraram venda
+  document.getElementById('fgAtivasSaude').textContent = totAtivas;
+  document.getElementById('fgEmRisco').textContent = emRisco;
+  document.getElementById('fgNovasSaude').textContent = totClienteNova;
+  document.getElementById('fgSemVenda').textContent = semVenda;
+  document.getElementById('fgRemarcadasSaude').textContent = emRisco;
+
+  // Funil de Consultoras: Novas → Base Ativa → Atendimentos → Vendas → Faturamento
+  const funilEtapas = [
+    { label: 'Novas Consultoras', valor: totClienteNova, cor: 'var(--ink-3)' },
+    { label: 'Base Ativa', valor: totAtivas, cor: 'var(--ink)' },
+    { label: 'Atendimentos Realizados', valor: totAtendidas, cor: 'var(--rose)' },
+    { label: 'Vendas', valor: totVendasCount, cor: 'var(--rose-deep)' },
+  ];
+  const maxFunil = Math.max(1, ...funilEtapas.map(e => e.valor));
+  document.getElementById('fgFunil').innerHTML = funilEtapas.map(e => `
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:4px;">
+        <span>${e.label}</span><span>${e.valor}</span>
+      </div>
+      <div style="height:8px;background:var(--surface);border-radius:6px;overflow:hidden;">
+        <div style="height:100%;width:${Math.max(4, Math.round(e.valor/maxFunil*100))}%;background:${e.cor};border-radius:6px;"></div>
+      </div>
+    </div>`).join('') + `
+    <div style="text-align:right;font-size:12px;font-weight:800;color:var(--ink);margin-top:2px;">Faturamento: ${brl(totVendido)}</div>`;
+
+  // Evolução de Vendas: últimas semanas registradas localmente (semana atual + anteriores)
+  const historico = [...(DB.semanas || [])]
+    .filter(s => s.numero <= numero)
+    .sort((a,b) => a.numero - b.numero)
+    .slice(-4);
+  if (!historico.length) {
+    document.getElementById('fgEvolucao').innerHTML = '<div style="font-size:12px;color:var(--ink-3);text-align:center;padding:6px 0;">Sem histórico de semanas suficiente ainda.</div>';
+  } else {
+    const valores = historico.map(s => (s.consultoras||[]).reduce((a,c) => a + (c.vendido||0), 0));
+    const maxV = Math.max(1, ...valores);
+    let variacaoTxt = '';
+    if (valores.length >= 2) {
+      const anterior = valores[valores.length-2], atualV = valores[valores.length-1];
+      const variacao = anterior > 0 ? Math.round((atualV-anterior)/anterior*100) : (atualV>0?100:0);
+      variacaoTxt = `<div style="text-align:right;font-size:12px;font-weight:800;color:${variacao>=0?'var(--green)':'var(--red)'};margin-top:2px;">${variacao>=0?'▲':'▼'} ${Math.abs(variacao)}% vs semana anterior</div>`;
+    }
+    document.getElementById('fgEvolucao').innerHTML = historico.map((s,i) => `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:52px;flex-shrink:0;font-size:11px;font-weight:700;color:var(--ink-3);">Sem. ${s.numero}</div>
+        <div style="flex:1;height:10px;background:var(--surface);border-radius:6px;overflow:hidden;">
+          <div style="height:100%;width:${Math.max(4, Math.round(valores[i]/maxV*100))}%;background:${s.numero===numero?'var(--rose)':'var(--ink-3)'};border-radius:6px;"></div>
+        </div>
+        <div style="width:78px;flex-shrink:0;text-align:right;font-size:11px;font-weight:800;color:var(--ink);">${brl(valores[i])}</div>
+      </div>`).join('') + variacaoTxt;
+  }
 
   const btnAddManual = document.getElementById('fgBtnAddManual');
   if (btnAddManual) btnAddManual.style.display = USER_ID ? 'none' : '';
@@ -6155,9 +6273,9 @@ function recomputeFechamentoGeral() {
       ${t.temSemana ? `
       <div style="display:flex;justify-content:space-between;align-items:flex-end;">
         <div>
-          <div style="font-size:13px;font-weight:800;color:var(--ink);">Atendidas ${t.atendidas||0}/${t.previstas||0}</div>
-          <div style="font-size:11px;color:var(--ink-3);margin-top:2px;">Vendido ${brl(t.vendido)} · Recebido ${brl((t.pix||0)+(t.dinheiro||0))}</div>
-          <div style="font-size:11px;color:var(--amber);font-weight:700;margin-top:1px;">${t.debito>0 ? 'Débito ' + brl(t.debito) : 'Sem débito'}</div>
+          <div style="font-size:13px;font-weight:800;color:var(--ink);">Atendimentos ${t.atendidas||0}/${t.previstas||0}</div>
+          <div style="font-size:11px;color:var(--ink-3);margin-top:2px;">Faturamento ${brl(t.vendido)} · Recebimentos ${brl((t.pix||0)+(t.dinheiro||0))}</div>
+          <div style="font-size:11px;color:var(--amber);font-weight:700;margin-top:1px;">${t.debito>0 ? 'Saldo em aberto ' + brl(t.debito) : 'Sem saldo em aberto'}</div>
         </div>
         <div style="font-size:18px;font-weight:800;color:${atendPct>=100?'var(--green)':'var(--ink)'};">${atendPct}%</div>
       </div>` : '<div style="font-size:12px;color:var(--ink-3);">Sem dados na semana ' + numero + '</div>'}
