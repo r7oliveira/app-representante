@@ -6641,12 +6641,12 @@ function renderInativasTodas() {
     <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin:16px 2px 8px;">${r} (${porRegiao[r].length})</div>
     <div class="card" style="margin-bottom:4px;">
       ${porRegiao[r].map(c => `
-        <div class="card-row" style="opacity:.65;">
+        <div class="card-row" style="opacity:.65;cursor:pointer;" onclick="editarConsultora('${c.id}')">
           <div style="flex:1;min-width:0;">
             <div style="font-size:14px;font-weight:700;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nome}</div>
             <div style="font-size:11px;color:var(--ink-3);">${c.cidade||''}</div>
           </div>
-          <button onclick="reativarConsultora('${c.id}');renderInativasTodas();" style="font-size:12px;font-weight:700;color:var(--green);background:none;border:none;cursor:pointer;flex-shrink:0;">Reativar</button>
+          <button onclick="event.stopPropagation();reativarConsultora('${c.id}');renderInativasTodas();" style="font-size:12px;font-weight:700;color:var(--green);background:none;border:none;cursor:pointer;flex-shrink:0;">Reativar</button>
         </div>`).join('')}
     </div>`).join('');
 }
