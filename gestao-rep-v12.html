@@ -2413,13 +2413,21 @@ function resetarTarefasRecorrentesEm(agenda) {
   const inicio = inicioSemanaAtual();
   let mudou = false;
   DIAS_AGENDA.forEach(d => {
-    (agenda[d.key] || []).forEach(t => {
+    const lista = agenda[d.key] || [];
+    // Tarefas recorrentes: desmarca como feito se foram concluídas antes desta semana
+    lista.forEach(t => {
       if (t.recorrente && t.feito && t.feitoEm && new Date(t.feitoEm) < inicio) {
         t.feito = false;
         t.feitoEm = null;
         mudou = true;
       }
     });
+    // Tarefas não recorrentes: somem quando a semana renova (foram criadas antes desta semana)
+    const filtrada = lista.filter(t => t.recorrente || !t.criadoEm || new Date(t.criadoEm) >= inicio);
+    if (filtrada.length !== lista.length) {
+      agenda[d.key] = filtrada;
+      mudou = true;
+    }
   });
   return mudou;
 }
