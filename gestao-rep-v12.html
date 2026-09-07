@@ -1209,6 +1209,8 @@ input[type="time"]{max-width:100%;}
     <div id="adminPessoaStatus" style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Carregando...</div>
     <div id="adminPessoaConteudo" style="display:none;">
 
+      <select id="apSemanaSelect" onchange="adminMudarSemanaSelecionada(this.value)" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;font-family:var(--font);font-weight:700;color:var(--ink);margin-bottom:12px;background:white;"></select>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
         <div class="card" style="padding:12px 14px;">
           <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;">Semana</div>
@@ -3744,6 +3746,7 @@ function adminUid() { return 'a' + Date.now().toString(36) + Math.random().toStr
 let _adminDB = {};
 let _adminRefs = {};
 let _adminPessoaAtual = null;
+let _adminPessoaSemanaSel = null;
 
 function initFirebaseAdmin() {
   try {
@@ -3766,17 +3769,20 @@ function initFirebaseAdmin() {
   }
 }
 
-function _statsSemanaPessoa(data) {
-  if (!data) return null;
-  const semanas = data.semanas || [];
-  const sem = (data.semanaAtiva != null ? semanas.find(s => s.numero === data.semanaAtiva) : semanas[semanas.length-1]) || null;
-  if (!sem) return { sem: null, previstas:0, atendidas:0, vendido:0, recebido:0, meta: (data.config && data.config.metaPadrao) || 15000 };
+function _statsFromSemana(sem, metaPadrao) {
+  if (!sem) return { sem: null, previstas:0, atendidas:0, vendido:0, recebido:0, meta: metaPadrao || 15000 };
   let vendido = 0, recebido = 0;
   (sem.consultoras || []).forEach(c => { vendido += (c.vendido||0); recebido += (c.recebido||0); });
   const previstas = (sem.consultoras || []).length;
   const atendidas = (sem.consultoras || []).filter(c => c.status === 'concluida').length;
-  const meta = sem.meta || (data.config && data.config.metaPadrao) || 15000;
+  const meta = sem.meta || metaPadrao || 15000;
   return { sem, previstas, atendidas, vendido, recebido, meta };
+}
+function _statsSemanaPessoa(data) {
+  if (!data) return null;
+  const semanas = data.semanas || [];
+  const sem = (data.semanaAtiva != null ? semanas.find(s => s.numero === data.semanaAtiva) : semanas[semanas.length-1]) || null;
+  return _statsFromSemana(sem, data.config && data.config.metaPadrao);
 }
 
 function renderAdminHome() {
@@ -3814,7 +3820,13 @@ function renderAdminHome() {
 
 function abrirAdminPessoa(id) {
   _adminPessoaAtual = id;
+  _adminPessoaSemanaSel = null;
   goTo('admin-pessoa');
+  renderAdminPessoa();
+}
+
+function adminMudarSemanaSelecionada(valor) {
+  _adminPessoaSemanaSel = valor ? Number(valor) : null;
   renderAdminPessoa();
 }
 
@@ -3833,7 +3845,22 @@ function renderAdminPessoa() {
   document.getElementById('adminPessoaStatus').style.display = 'none';
   document.getElementById('adminPessoaConteudo').style.display = '';
 
-  const st = _statsSemanaPessoa(data);
+  const semanas = data.semanas || [];
+  const defaultNumero = data.semanaAtiva != null ? data.semanaAtiva : (semanas.length ? semanas[semanas.length-1].numero : null);
+  const numeroEscolhido = _adminPessoaSemanaSel !== null ? _adminPessoaSemanaSel : defaultNumero;
+
+  const selEl = document.getElementById('apSemanaSelect');
+  if (!semanas.length) {
+    selEl.innerHTML = '<option>Nenhuma semana registrada</option>';
+  } else {
+    selEl.innerHTML = [...semanas].reverse().map(s => {
+      const ativa = s.numero === data.semanaAtiva;
+      return `<option value="${s.numero}"${s.numero===numeroEscolhido?' selected':''}>Semana ${s.numero}${s.regiao ? ' · ' + s.regiao : ''}${ativa ? ' (ativa)' : ' (concluída)'}</option>`;
+    }).join('');
+  }
+
+  const semanaEscolhida = semanas.find(s => s.numero === numeroEscolhido) || null;
+  const st = _statsFromSemana(semanaEscolhida, data.config && data.config.metaPadrao);
   document.getElementById('apSemana').textContent = st.sem ? 'Semana ' + st.sem.numero : '—';
   document.getElementById('apAtendimentos').textContent = st.atendidas + '/' + st.previstas;
   document.getElementById('apVendido').textContent = brl(st.vendido);
