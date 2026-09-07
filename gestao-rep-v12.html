@@ -484,7 +484,7 @@ input[type="time"]{max-width:100%;}
         <div class="hero-box">
           <div class="hero-box-label">Consultoras pendentes</div>
           <div class="hero-box-val" id="heroPendentes">0</div>
-          <div class="hero-box-sub">Aguardando atendimento</div>
+          <div class="hero-box-sub">Não pagaram</div>
         </div>
       </div>
 
@@ -4385,6 +4385,9 @@ function renderSemana() {
     document.getElementById('heroRecebidoSub').textContent = 'Recebido: —';
     document.getElementById('heroCobrancas').textContent = 'R$ 0';
     document.getElementById('heroPendentes').textContent = '0';
+    document.getElementById('cntAtendidas').textContent = '0';
+    document.getElementById('cntRemSemana').textContent = '0';
+    document.getElementById('cntRemMes').textContent = '0';
     document.getElementById('cntComDebito').textContent = '0';
     document.getElementById('cntSemFavorita').textContent = '0';
     document.getElementById('cntInativas').textContent = '0';
@@ -4445,7 +4448,7 @@ function renderSemana() {
   document.getElementById('heroRecebido').textContent = brl(aPagarTotal);
   document.getElementById('heroRecebidoSub').textContent = 'Recebido: ' + brl(recebido);
   document.getElementById('heroCobrancas').textContent = brl(cobrancas);
-  document.getElementById('heroPendentes').textContent = total - atendidas;
+  document.getElementById('heroPendentes').textContent = sem.consultoras.filter(c => c.debito > 0).length;
 
   // Contadores de status
   const pendentesAgora = sem.consultoras.filter(c => c.status !== 'concluida');
