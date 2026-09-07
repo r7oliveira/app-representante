@@ -2408,12 +2408,12 @@ function inicioSemanaAtual() {
   return inicio;
 }
 
-function resetarTarefasRecorrentes() {
-  if (!DB.agenda) return;
+function resetarTarefasRecorrentesEm(agenda) {
+  if (!agenda) return false;
   const inicio = inicioSemanaAtual();
   let mudou = false;
   DIAS_AGENDA.forEach(d => {
-    (DB.agenda[d.key] || []).forEach(t => {
+    (agenda[d.key] || []).forEach(t => {
       if (t.recorrente && t.feito && t.feitoEm && new Date(t.feitoEm) < inicio) {
         t.feito = false;
         t.feitoEm = null;
@@ -2421,7 +2421,12 @@ function resetarTarefasRecorrentes() {
       }
     });
   });
-  if (mudou) save();
+  return mudou;
+}
+
+function resetarTarefasRecorrentes() {
+  if (!DB.agenda) return;
+  if (resetarTarefasRecorrentesEm(DB.agenda)) save();
 }
 
 function renderAgendaHoje() {
@@ -3903,6 +3908,10 @@ function renderAdminPessoa() {
 
   // Agenda por dia
   const agenda = data.agenda || blankAgenda();
+  if (resetarTarefasRecorrentesEm(agenda)) {
+    data.seq = (data.seq || 1) + 1;
+    _adminRefs[id].set(data).catch(() => {});
+  }
   document.getElementById('apAgendaDias').innerHTML = DIAS_AGENDA.map(d => {
     const tarefas = agenda[d.key] || [];
     return `
