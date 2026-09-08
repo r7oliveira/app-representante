@@ -2686,7 +2686,6 @@ function horarioParaMinutos(t) {
   if (!m) return 9999;
   return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
 }
-restaurarSessaoGoogle();
 
 function renderAgendaHoje() {
   resetarTarefasRecorrentes();
@@ -3951,6 +3950,7 @@ if (ACTIVE_PROFILE && ACTIVE_PROFILE.role === 'op') {
   DB.config = DB.config || {};
   DB.config.nomeTablet = ACTIVE_PROFILE.nome;
 }
+try { restaurarSessaoGoogle(); } catch(e) {}
 
 // Firebase refs
 let _db = null;
