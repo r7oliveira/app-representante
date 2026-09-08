@@ -4971,13 +4971,16 @@ function renderSemana() {
     }
 
     return tituloGrupo + '<div class="cons-card ' + cls + '" style="flex-direction:column;align-items:stretch;">'
-      + '<div style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;" onclick="abrirAtendimento(\'' + c.id + '\')">'
-        + '<div class="c-av ' + avCls + '" style="margin-top:1px;">' + avTxt + '</div>'
-        + '<div class="c-info">'
-          + '<div class="c-name" style="white-space:normal;overflow:visible;text-overflow:clip;">' + c.nome + '</div>'
-          + '<div class="c-sub">' + sub + '</div>'
+      + '<div style="display:flex;align-items:flex-start;gap:12px;">'
+        + '<div style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;flex:1;min-width:0;" onclick="abrirAtendimento(\'' + c.id + '\')">'
+          + '<div class="c-av ' + avCls + '" style="margin-top:1px;">' + avTxt + '</div>'
+          + '<div class="c-info">'
+            + '<div class="c-name" style="white-space:normal;overflow:visible;text-overflow:clip;">' + c.nome + '</div>'
+            + '<div class="c-sub">' + sub + '</div>'
+          + '</div>'
         + '</div>'
         + badge
+        + '<button onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')" style="flex-shrink:0;background:none;border:none;color:var(--ink-3);font-size:15px;cursor:pointer;padding:2px 4px;">✕</button>'
       + '</div>'
       + '<div style="display:flex;gap:8px;margin-top:12px;">'
         + (c.telefone ? '<button onclick="enviarWhatsappHorario(\'' + c.id + '\')" style="flex:1;background:#25D366;border:none;border-radius:12px;padding:11px 8px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;min-width:0;">'
@@ -4993,6 +4996,17 @@ function renderSemana() {
   }).join('')
   + '<button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-top:4px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>'
   + '<div style="height:16px;"></div>';
+}
+
+function removerConsultoraDaSemana(consultoraId) {
+  const sem = getSemanaAtiva();
+  if (!sem) return;
+  const c = sem.consultoras.find(x => x.id === consultoraId);
+  if (!c) return;
+  if (!confirm('Remover "' + c.nome + '" desta semana? O cadastro dela continua existindo, só sai da lista desta semana.')) return;
+  sem.consultoras = sem.consultoras.filter(x => x.id !== consultoraId);
+  save();
+  renderSemana();
 }
 
 function abrirModalAdicionarConsultora() {
