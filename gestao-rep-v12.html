@@ -364,6 +364,7 @@ input[type="time"]{max-width:100%;}
 .dia-chip.active{background:var(--rose);border-color:var(--rose);color:white;}
 #adminTopBar{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 20px 12px;background:linear-gradient(160deg,#3D2029,#6B4552);}
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <div id="app">
@@ -1365,6 +1366,7 @@ input[type="time"]{max-width:100%;}
     <div style="font-size:13px;color:var(--ink-3);font-weight:600;margin-bottom:16px;" id="arPessoaLabel">—</div>
 
     <label class="field"><span>Chave da IA (Gemini)</span><input type="password" id="arGemini" placeholder="AIza..."></label>
+    <label class="field"><span>Google Client ID (para conectar a Google Agenda)</span><input type="text" id="arGoogleClientId" placeholder="xxxx.apps.googleusercontent.com"></label>
     <label class="field"><span>Meta padrão semanal (R$)</span><input type="number" id="arMeta" placeholder="15000"></label>
     <label class="field"><span>Link do site "Indique e Ganhe"</span><input type="text" id="arLink" placeholder="https://..."></label>
     <label class="field"><span>Valor padrão do Pix por indicação</span><input type="text" id="arPixValor" inputmode="decimal" placeholder="R$ 20,00" oninput="maskMoeda(this)"></label>
@@ -1863,6 +1865,16 @@ input[type="time"]{max-width:100%;}
           <div style="font-size:15px;font-weight:800;color:var(--ink);" id="cfgNomePessoa">—</div>
         </div>
         <button class="btn-ghost" style="width:auto;padding:9px 16px;color:var(--red);" onclick="fazerLogout()">Sair</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="padding:14px 16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+          <div style="font-size:15px;font-weight:800;color:var(--ink);">Google Agenda</div>
+          <span id="cfgGoogleStatus" style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:8px;background:var(--surface);color:var(--ink-3);text-transform:uppercase;">Não conectado</span>
+        </div>
+        <div style="font-size:12px;color:var(--ink-3);margin-bottom:10px;">Conecte sua conta para os atendimentos agendados irem direto para o seu Google Agenda.</div>
+        <button class="btn-ghost" id="cfgGoogleBtn" onclick="conectarGoogleAgenda()" style="margin-bottom:0;">Conectar Google Agenda</button>
       </div>
     </div>
     <div id="cfgApenasAdminBox" style="display:none;">
@@ -2561,12 +2573,120 @@ function googleCalendarLink(t, diaKey) {
     '&dates=' + fmt(ini) + '/' + fmt(fim);
 }
 
+/* ════════════════════════════════════════════
+   GOOGLE AGENDA (OAuth + Calendar API)
+════════════════════════════════════════════ */
+let _googleTokenClient = null;
+let _googleAccessToken = null;
+let _googleTokenExpiraEm = 0;
+
+function googleClientId() {
+  return (DB.config && DB.config.googleClientId) || '';
+}
+
+function atualizarStatusGoogleAgenda() {
+  const st = document.getElementById('cfgGoogleStatus');
+  const btn = document.getElementById('cfgGoogleBtn');
+  if (!st || !btn) return;
+  if (!googleClientId()) {
+    st.textContent = 'Não configurado';
+    btn.textContent = 'Peça ao administrador para configurar';
+    btn.disabled = true;
+    return;
+  }
+  btn.disabled = false;
+  if (googleAgendaConectado()) {
+    st.textContent = 'Conectado';
+    st.style.background = 'var(--green-bg)';
+    st.style.color = 'var(--green)';
+    btn.textContent = 'Reconectar Google Agenda';
+  } else {
+    st.textContent = 'Não conectado';
+    st.style.background = 'var(--surface)';
+    st.style.color = 'var(--ink-3)';
+    btn.textContent = 'Conectar Google Agenda';
+  }
+}
+
+function googleAgendaConectado() {
+  return !!_googleAccessToken && Date.now() < _googleTokenExpiraEm;
+}
+
+function conectarGoogleAgenda() {
+  const clientId = googleClientId();
+  if (!clientId) { alert('Peça para o administrador configurar o Google Client ID primeiro (em Configurações da pessoa).'); return; }
+  if (typeof google === 'undefined' || !google.accounts) { alert('Ainda carregando o Google. Tente de novo em alguns segundos.'); return; }
+
+  if (!_googleTokenClient) {
+    _googleTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: clientId,
+      scope: 'https://www.googleapis.com/auth/calendar.events',
+      callback: (resp) => {
+        if (resp.error) { alert('Não foi possível conectar: ' + resp.error); return; }
+        _googleAccessToken = resp.access_token;
+        _googleTokenExpiraEm = Date.now() + (resp.expires_in || 3500) * 1000;
+        sessionStorage.setItem('googleAccessToken', _googleAccessToken);
+        sessionStorage.setItem('googleTokenExpiraEm', String(_googleTokenExpiraEm));
+        atualizarStatusGoogleAgenda();
+        alert('Google Agenda conectado! A partir de agora, os atendimentos agendados vão automaticamente para sua agenda do Google.');
+      }
+    });
+  }
+  _googleTokenClient.requestAccessToken();
+}
+
+function restaurarSessaoGoogle() {
+  const tok = sessionStorage.getItem('googleAccessToken');
+  const exp = Number(sessionStorage.getItem('googleTokenExpiraEm') || 0);
+  if (tok && Date.now() < exp) {
+    _googleAccessToken = tok;
+    _googleTokenExpiraEm = exp;
+  }
+  atualizarStatusGoogleAgenda();
+}
+
+// Cria (ou atualiza) o evento no Google Agenda do usuário conectado.
+// Retorna uma Promise que resolve com o eventId, ou null se não estiver conectado / der erro.
+async function sincronizarEventoGoogleAgenda(t, diaKey) {
+  if (!googleAgendaConectado()) return null;
+  const data = diaKeyParaData(diaKey);
+  let hh = 9, mm = 0;
+  if (t.horario) {
+    const m = /^(\d{1,2}):(\d{2})/.exec(t.horario);
+    if (m) { hh = parseInt(m[1], 10); mm = parseInt(m[2], 10); }
+  }
+  const ini = new Date(data.getFullYear(), data.getMonth(), data.getDate(), hh, mm);
+  const fim = new Date(ini.getTime() + 60 * 60 * 1000);
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const body = {
+    summary: t.texto,
+    start: { dateTime: ini.toISOString(), timeZone: tz },
+    end: { dateTime: fim.toISOString(), timeZone: tz },
+  };
+  try {
+    const url = t.googleEventId
+      ? `https://www.googleapis.com/calendar/v3/calendars/primary/events/${t.googleEventId}`
+      : `https://www.googleapis.com/calendar/v3/calendars/primary/events`;
+    const res = await fetch(url, {
+      method: t.googleEventId ? 'PATCH' : 'POST',
+      headers: { 'Authorization': 'Bearer ' + _googleAccessToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.id || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 function horarioParaMinutos(t) {
   if (!t.horario) return t.diaTodo ? -1 : 9999;
   const m = /^(\d{1,2}):(\d{2})/.exec(t.horario);
   if (!m) return 9999;
   return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
 }
+restaurarSessaoGoogle();
 
 function renderAgendaHoje() {
   resetarTarefasRecorrentes();
@@ -2589,7 +2709,7 @@ function renderAgendaHoje() {
           ${t.consultoraId ? '<span style="background:var(--rose-light);color:var(--rose-deep);font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Atendimento</span>' : ''}
           ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
           ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
-          ${t.consultoraId ? `<a href="${googleCalendarLink(t, hojeAgendaKey())}" target="_blank" onclick="event.stopPropagation();" style="font-size:10px;font-weight:700;color:var(--rose-deep);text-decoration:none;">📆 Google Agenda</a>` : ''}
+          ${(t.consultoraId && t.googleEventId) ? '<span style="font-size:10px;font-weight:700;color:var(--green);">✓ No Google Agenda</span>' : ''}
         </div>` : ''}
         ${t.consultoraId ? `<button onclick="event.stopPropagation();enviarWhatsappConfirmacao('${t.consultoraId}','${t.horario||''}')" style="margin-top:8px;width:100%;background:#25D366;border:none;border-radius:10px;padding:9px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0012.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 012.41 5.83c0 4.55-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.42-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.23.89 2.41 1.02 2.58.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
@@ -2645,7 +2765,7 @@ function renderAgendaCompleta() {
           ${t.consultoraId ? '<span style="background:var(--rose-light);color:var(--rose-deep);font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Atendimento</span>' : ''}
           ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
           ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
-          ${t.consultoraId ? `<a href="${googleCalendarLink(t, diaAtual)}" target="_blank" onclick="event.stopPropagation();" style="font-size:10px;font-weight:700;color:var(--rose-deep);text-decoration:none;">📆 Google Agenda</a>` : ''}
+          ${(t.consultoraId && t.googleEventId) ? '<span style="font-size:10px;font-weight:700;color:var(--green);">✓ No Google Agenda</span>' : ''}
         </div>` : ''}
         ${(isHojeSel && t.consultoraId) ? `<button onclick="event.stopPropagation();enviarWhatsappConfirmacao('${t.consultoraId}','${t.horario||''}')" style="margin-top:8px;width:100%;background:#25D366;border:none;border-radius:10px;padding:9px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0012.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 012.41 5.83c0 4.55-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.42-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.23.89 2.41 1.02 2.58.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
@@ -3553,14 +3673,21 @@ function confirmarAgendarCliente() {
 
   DB.agenda = DB.agenda || blankAgenda();
   DB.agenda[diaKey] = DB.agenda[diaKey] || [];
-  DB.agenda[diaKey].push({
+  const novaTarefa = {
     id: uid(),
     texto: 'Atendimento: ' + c.nome + (c.cidade ? ' · ' + c.cidade : ''),
     horario, diaTodo: !horario, recorrente: false,
     consultoraId: c.id,
     prioridade: 'normal', feito: false, autor: 'self', criadoEm: agoraISO(),
-  });
+  };
+  DB.agenda[diaKey].push(novaTarefa);
   save();
+
+  if (googleAgendaConectado()) {
+    sincronizarEventoGoogleAgenda(novaTarefa, diaKey).then(eventId => {
+      if (eventId) { novaTarefa.googleEventId = eventId; save(); renderAgendaHoje(); renderAgendaCompleta(); }
+    });
+  }
 
   fecharModal('modalAgendarCliente');
   renderAgendaHoje();
@@ -3675,7 +3802,25 @@ function salvarTarefa() {
 
   if (id) {
     const t = DB.agenda[diaKey].find(x => x.id === id);
-    if (t) { t.texto = texto; t.horario = horario; t.diaTodo = diaTodo; t.recorrente = recorrente; t.prioridade = prioridade; }
+    if (t) {
+      t.texto = texto; t.horario = horario; t.diaTodo = diaTodo; t.recorrente = recorrente; t.prioridade = prioridade;
+
+      // Se é um atendimento vinculado a uma consultora, mantém o cadastro dela em dia
+      if (t.consultoraId) {
+        const sem = getSemanaAtiva();
+        const c = sem ? sem.consultoras.find(x => x.id === t.consultoraId) : null;
+        if (c) {
+          const diaInfo = DIAS_AGENDA.find(d => d.key === diaKey);
+          if (diaInfo) c.diaMelhor = diaInfo.label;
+          c.horarioMelhor = horario;
+        }
+        if (googleAgendaConectado()) {
+          sincronizarEventoGoogleAgenda(t, diaKey).then(eventId => {
+            if (eventId) { t.googleEventId = eventId; save(); renderAgendaHoje(); renderAgendaCompleta(); }
+          });
+        }
+      }
+    }
   } else {
     DB.agenda[diaKey].push({
       id: uid(), texto, horario, diaTodo, recorrente, prioridade,
@@ -3694,6 +3839,7 @@ function salvarTarefa() {
   fecharModal('modalNovaTarefa');
   renderAgendaHoje();
   renderAgendaCompleta();
+  if (typeof renderSemana === 'function') renderSemana();
 }
 
 function excluirTarefa() {
@@ -4249,6 +4395,7 @@ function abrirAdminRegioes() {
 
   document.getElementById('arPessoaLabel').textContent = 'Para ' + (pessoa ? pessoa.nome : '—');
   document.getElementById('arGemini').value = data.config.geminiKey || '';
+  document.getElementById('arGoogleClientId').value = data.config.googleClientId || '';
   document.getElementById('arMeta').value = data.config.metaPadrao || 15000;
   document.getElementById('arLink').value = data.config.linkIndiqueGanhe || '';
   document.getElementById('arPixValor').value = brlInput(data.config.valorPixIndicacao || 20);
@@ -4275,6 +4422,7 @@ function confirmarAdminRegioes() {
 
   data.config = data.config || {};
   data.config.geminiKey = document.getElementById('arGemini').value.trim();
+  data.config.googleClientId = document.getElementById('arGoogleClientId').value.trim();
   data.config.metaPadrao = parseNum(document.getElementById('arMeta').value) || 15000;
   data.config.linkIndiqueGanhe = document.getElementById('arLink').value.trim();
   data.config.valorPixIndicacao = parseNum(document.getElementById('arPixValor').value) || 20;
@@ -6064,6 +6212,7 @@ async function enviarAssistNew() {
 ════════════════════════════════════════════ */
 function renderConfig() {
   document.getElementById('cfgNomePessoa').textContent = ACTIVE_PROFILE ? ACTIVE_PROFILE.nome : '—';
+  atualizarStatusGoogleAgenda();
 
   const souAdmin = ACTIVE_PROFILE && ACTIVE_PROFILE.role === 'admin';
   const box = document.getElementById('cfgApenasAdminBox');
