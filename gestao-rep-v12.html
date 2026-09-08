@@ -2510,6 +2510,13 @@ function resetarTarefasRecorrentes() {
   if (resetarTarefasRecorrentesEm(DB.agenda)) save();
 }
 
+function horarioParaMinutos(t) {
+  if (!t.horario) return t.diaTodo ? -1 : 9999;
+  const m = /^(\d{1,2}):(\d{2})/.exec(t.horario);
+  if (!m) return 9999;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+
 function renderAgendaHoje() {
   resetarTarefasRecorrentes();
   const el = document.getElementById('agendaHojeLista');
@@ -2521,13 +2528,14 @@ function renderAgendaHoje() {
     el.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:16px 0;">Nenhuma tarefa para hoje.</div>';
     return;
   }
-  const ordenadas = [...tarefas].sort((a,b) => (a.feito?1:0) - (b.feito?1:0));
+  const ordenadas = [...tarefas].sort((a,b) => (a.feito?1:0) - (b.feito?1:0) || horarioParaMinutos(a) - horarioParaMinutos(b));
   el.innerHTML = ordenadas.map((t,i) => `
-    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;${i < ordenadas.length-1 ? 'border-bottom:1px solid var(--surface-2);' : ''}">
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0 10px ${t.consultoraId?'8px':'0'};${t.consultoraId?'border-left:3px solid var(--rose);':''}${i < ordenadas.length-1 ? 'border-bottom:1px solid var(--surface-2);' : ''}">
       <div onclick="toggleTarefa('${t.id}')" style="width:21px;height:21px;border-radius:50%;border:1.5px solid ${t.feito?'var(--green)':'var(--border)'};background:${t.feito?'var(--green)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:11px;font-weight:800;margin-top:1px;">${t.feito?'✓':''}</div>
       <div style="flex:1;cursor:pointer;min-width:0;" onclick="abrirNovaTarefa('${t.id}')">
-        <div style="font-size:13.5px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};line-height:1.4;word-break:break-word;">${t.texto}</div>
+        <div style="font-size:13.5px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};line-height:1.4;word-break:break-word;">${t.consultoraId?'<span style="color:var(--rose);">📅 </span>':''}${t.texto}</div>
         ${(t.horario || t.diaTodo || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
+          ${t.consultoraId ? '<span style="background:var(--rose-light);color:var(--rose-deep);font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Atendimento</span>' : ''}
           ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
           ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
         </div>` : ''}
@@ -2569,7 +2577,7 @@ function renderAgendaCompleta() {
   document.getElementById('agendaDiaSelecionadoTitulo').textContent = diaInfo ? diaInfo.label : '';
   document.getElementById('agendaDiaSelecionadoHoje').style.display = isHojeSel ? '' : 'none';
 
-  const tarefas = [...(agenda[diaAtual] || [])].sort((a,b) => (a.feito?1:0) - (b.feito?1:0));
+  const tarefas = [...(agenda[diaAtual] || [])].sort((a,b) => (a.feito?1:0) - (b.feito?1:0) || horarioParaMinutos(a) - horarioParaMinutos(b));
 
   if (!tarefas.length) {
     el.innerHTML = '<div class="card" style="text-align:center;padding:24px 16px;color:var(--ink-3);font-size:13px;">Nenhuma tarefa por aqui.</div>';
@@ -2577,11 +2585,12 @@ function renderAgendaCompleta() {
   }
 
   el.innerHTML = '<div class="card" style="margin-bottom:12px;">' + tarefas.map((t,i) => `
-    <div class="card-row" style="align-items:flex-start;${i < tarefas.length-1 ? '' : ''}">
+    <div class="card-row" style="align-items:flex-start;padding-left:${t.consultoraId?'13px':'16px'};${t.consultoraId?'border-left:3px solid var(--rose);':''}${i < tarefas.length-1 ? '' : ''}">
       <div onclick="toggleTarefa('${t.id}','${diaAtual}')" style="width:21px;height:21px;border-radius:50%;border:1.5px solid ${t.feito?'var(--green)':'var(--border)'};background:${t.feito?'var(--green)':'white'};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:11px;font-weight:800;margin-top:1px;">${t.feito?'✓':''}</div>
       <div style="flex:1;cursor:pointer;min-width:0;" onclick="abrirNovaTarefa('${t.id}','${diaAtual}')">
-        <div style="font-size:13.5px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};line-height:1.4;word-break:break-word;">${t.texto}</div>
+        <div style="font-size:13.5px;font-weight:600;color:${t.feito?'var(--ink-3)':'var(--ink)'};text-decoration:${t.feito?'line-through':'none'};line-height:1.4;word-break:break-word;">${t.consultoraId?'<span style="color:var(--rose);">📅 </span>':''}${t.texto}</div>
         ${(t.horario || t.diaTodo || t.autor==='admin' || (t.prioridade==='importante' && !t.feito)) ? `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
+          ${t.consultoraId ? '<span style="background:var(--rose-light);color:var(--rose-deep);font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Atendimento</span>' : ''}
           ${(t.horario || t.diaTodo || t.autor==='admin') ? `<span style="font-size:10.5px;color:var(--ink-3);">${[t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin'?'da administração':''].filter(Boolean).join(' · ')}</span>` : ''}
           ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
         </div>` : ''}
@@ -5096,6 +5105,18 @@ function finalizarAtendimento() {
   }
 
   concederEstrelaAtendimento(cons, sem);
+
+  // Marca como concluída a tarefa de agenda correspondente a este atendimento, se existir
+  if (DB.agenda) {
+    Object.keys(DB.agenda).forEach(diaKey => {
+      (DB.agenda[diaKey] || []).forEach(t => {
+        if (t.consultoraId === atendConsId && !t.feito) {
+          t.feito = true;
+          t.feitoEm = new Date().toISOString();
+        }
+      });
+    });
+  }
 
   save();
 
