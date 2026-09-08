@@ -2716,6 +2716,7 @@ function renderAgendaHoje() {
           <span style="color:white;font-size:12px;font-weight:800;font-family:var(--font);">Enviar WhatsApp para confirmar seu horário</span>
         </button>` : ''}
       </div>
+      <button onclick="event.stopPropagation();excluirTarefaDireta('${hojeAgendaKey()}','${t.id}')" style="flex-shrink:0;background:none;border:none;color:var(--ink-3);font-size:15px;cursor:pointer;padding:2px 4px;margin-top:1px;">✕</button>
     </div>`).join('');
 }
 
@@ -2773,6 +2774,7 @@ function renderAgendaCompleta() {
           <span style="color:white;font-size:12px;font-weight:800;font-family:var(--font);">Enviar WhatsApp para confirmar seu horário</span>
         </button>` : ''}
       </div>
+      <button onclick="event.stopPropagation();excluirTarefaDireta('${diaAtual}','${t.id}')" style="flex-shrink:0;background:none;border:none;color:var(--ink-3);font-size:15px;cursor:pointer;padding:2px 4px;margin-top:1px;">✕</button>
     </div>`).join('') + '</div>';
 }
 
@@ -3843,6 +3845,14 @@ function salvarTarefa() {
   renderAgendaHoje();
   renderAgendaCompleta();
   if (typeof renderSemana === 'function') renderSemana();
+}
+
+function excluirTarefaDireta(diaKey, id) {
+  if (!confirm('Excluir esta tarefa?')) return;
+  DB.agenda[diaKey] = (DB.agenda[diaKey] || []).filter(x => x.id !== id);
+  save();
+  renderAgendaHoje();
+  renderAgendaCompleta();
 }
 
 function excluirTarefa() {
@@ -5981,6 +5991,11 @@ function salvarConsultora() {
   if (window._editConsId) {
     const c = DB.consultoras.find(x => x.id === window._editConsId);
     if (c) {
+      const cpfEdit = document.getElementById('cCpf').value.trim();
+      if (cpfEdit) {
+        const cpfDupEdit = DB.consultoras.find(x => x.id !== c.id && x.cpf && x.cpf.replace(/\D/g,'') === cpfEdit.replace(/\D/g,''));
+        if (cpfDupEdit) { alert('Já existe uma consultora cadastrada com esse CPF: ' + cpfDupEdit.nome + '. Não é possível salvar com CPF duplicado.'); return; }
+      }
       c.nome = nome;
       c.telefone = document.getElementById('cTel').value.trim();
       c.cpf = document.getElementById('cCpf').value.trim();
@@ -6030,6 +6045,12 @@ function salvarConsultora() {
     status: 'ativa', score: 0,
     criadoEm: new Date().toISOString()
   };
+
+  const cpfNovo = document.getElementById('cCpf').value.trim();
+  if (cpfNovo) {
+    const cpfDup = DB.consultoras.find(x => x.cpf && x.cpf.replace(/\D/g,'') === cpfNovo.replace(/\D/g,''));
+    if (cpfDup) { alert('Já existe uma consultora cadastrada com esse CPF: ' + cpfDup.nome + '. Não é possível cadastrar duplicado.'); return; }
+  }
 
   const dup = DB.consultoras.find(x => x.nome.toLowerCase() === nome.toLowerCase());
   if (dup) { if (!confirm('Já existe uma consultora com este nome. Salvar mesmo assim?')) return; }
