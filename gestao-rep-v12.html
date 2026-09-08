@@ -1270,7 +1270,7 @@ input[type="time"]{max-width:100%;}
         <div id="apObsHistorico" style="margin-bottom:22px;"></div>
 
         <div class="sec-title" style="padding:0;margin-bottom:4px;">Mensagens prontas do WhatsApp</div>
-        <div style="font-size:11.5px;color:var(--ink-3);margin-bottom:12px;">Editáveis só para esta pessoa. Deixe em branco para usar o texto padrão do app.</div>
+        <div style="font-size:11.5px;color:var(--ink-3);margin-bottom:12px;">Editáveis só para esta pessoa. Deixe em branco para usar o texto padrão do app. Use <strong>{horario}</strong> e <strong>{dia}</strong> no texto — o app troca automaticamente pelo horário e dia agendados de cada cliente.</div>
 
         <label class="field">
           <span>Mensagem: Agendar horário</span>
@@ -4427,9 +4427,13 @@ function telefoneWa(tel) {
   if (!n) return '';
   return '55' + n;
 }
-function mensagemAgendarHorario() {
+function mensagemAgendarHorario(horario, dia) {
   const custom = DB.config && DB.config.mensagensProntas && DB.config.mensagensProntas.agendarHorario;
-  if (custom) return custom;
+  if (custom) {
+    return custom
+      .replace(/\{horario\}/gi, horario || '')
+      .replace(/\{dia\}/gi, dia || '');
+  }
   return 'Oi tudo, como está?\n\n' +
     'Essa semana teremos nosso atendimento para retirada de _novidades e encomendas_. 🙋🏻‍♀️\n\n' +
     'Já estou organizando os horários.\n' +
@@ -4446,7 +4450,7 @@ function enviarWhatsappHorario(consultoraId) {
   const c = sem ? sem.consultoras.find(x => x.id === consultoraId) : null;
   if (!c || !c.telefone) { alert('Essa consultora não tem telefone cadastrado.'); return; }
   const numero = telefoneWa(c.telefone);
-  window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(mensagemAgendarHorario()), '_blank');
+  window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(mensagemAgendarHorario(c.horarioMelhor, c.diaMelhor)), '_blank');
 }
 function mensagemConfirmarHorario(horario) {
   const custom = DB.config && DB.config.mensagensProntas && DB.config.mensagensProntas.confirmarHorario;
