@@ -2220,7 +2220,6 @@ input[type="time"]{max-width:100%;}
     </button>
     <input type="file" id="consPhotoInput" accept="image/*" style="display:none" onchange="extrairFotoConsultora(this)">
     <div class="ai-loading" id="consAiLoading"><span class="spinner"></span>Lendo dados da imagem...</div>
-    <button type="button" onclick="fecharModal('modalConsultora');goTo('importacao')" style="width:100%;background:none;border:none;color:var(--rose);font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;margin:-6px 0 14px;text-align:center;">Importar várias de uma vez (fotos em lote) →</button>
 
     <label class="field"><span>Nome completo *</span><input id="cNome" placeholder="Ex: Ana Leticia de Oliveira"></label>
     <label class="field"><span>Telefone</span><input id="cTel" inputmode="tel" placeholder="(51) 99999-9999"></label>
@@ -2238,10 +2237,6 @@ input[type="time"]{max-width:100%;}
         <option>Gramado 1</option><option>Gramado 2</option><option>Gramado 3</option>
         <option>Gramado 4</option><option>Gramado 5</option><option>Cambará do Sul</option>
       </select>
-    </label>
-    <label class="field">
-      <span>Pedido Favorita</span>
-      <input id="cFavorita" placeholder="Ex: Perfume Essencial, Hidratante...">
     </label>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
@@ -4977,32 +4972,32 @@ function renderSemana() {
     const passo2Feito = !!c.confirmouHorario;
     const passo3Feito = st === 'concluida';
     function corPasso(feito, atual) {
-      if (feito) return { bg: 'var(--green-bg)', border: 'var(--green)', color: 'var(--green)' };
-      if (atual) return { bg: 'var(--rose-light)', border: 'var(--rose)', color: 'var(--rose-deep)' };
-      return { bg: 'var(--surface)', border: 'var(--border)', color: 'var(--ink-3)' };
+      if (feito) return { bg: 'var(--surface)', border: 'var(--border)', color: 'var(--ink-3)' };
+      if (atual) return { bg: 'linear-gradient(135deg,var(--rose-deep),var(--rose))', border: 'var(--rose-deep)', color: 'white' };
+      return { bg: 'white', border: 'var(--border)', color: 'var(--border)' };
     }
     const c1 = corPasso(passo1Feito, !passo1Feito);
     const c2 = corPasso(passo2Feito, passo1Feito && !passo2Feito);
     const c3 = corPasso(passo3Feito, passo2Feito && !passo3Feito);
-    const linha = (feito) => 'flex:1;height:2px;background:' + (feito ? 'var(--green)' : 'var(--border)') + ';margin:0 2px;';
+    const linha = (feito) => 'flex:1;height:2px;background:' + (feito ? 'var(--rose-mid)' : 'var(--border)') + ';margin:0 2px;';
     const trilha = c.telefone ? (
       '<div style="display:flex;align-items:flex-start;padding:14px 14px 12px;">'
         + '<div onclick="event.stopPropagation();enviarWhatsappHorario(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:64px;">'
-          + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:#25D366;min-height:20px;display:flex;align-items:flex-end;justify-content:center;">Enviar pelo WhatsApp</div>'
+          + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:#25D366;min-height:20px;display:flex;align-items:flex-end;justify-content:center;opacity:' + (passo1Feito ? '0' : '1') + ';">Enviar pelo WhatsApp</div>'
           + '<div style="width:30px;height:30px;border-radius:50%;background:' + c1.bg + ';border:1.5px solid ' + c1.border + ';color:' + c1.color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">' + (passo1Feito ? '✓' : '') + '</div>'
-          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo1Feito ? 'var(--green)' : (!passo1Feito ? 'var(--rose-deep)' : 'var(--ink-3)')) + ';">Marcar<br>horário</div>'
+          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo1Feito ? 'var(--ink-3)' : 'var(--rose-deep)') + ';">Marcar<br>horário</div>'
         + '</div>'
         + '<div style="' + linha(passo1Feito) + 'margin-top:34px;"></div>'
         + '<div onclick="event.stopPropagation();toggleConfirmouHorario(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:64px;">'
-          + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:#2196F3;min-height:20px;display:flex;align-items:flex-end;justify-content:center;">Clique para confirmar</div>'
+          + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:#2196F3;min-height:20px;display:flex;align-items:flex-end;justify-content:center;opacity:' + ((passo1Feito && !passo2Feito) ? '1' : '0') + ';">Clique para confirmar</div>'
           + '<div style="width:30px;height:30px;border-radius:50%;background:' + c2.bg + ';border:1.5px solid ' + c2.border + ';color:' + c2.color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">' + (passo2Feito ? '✓' : '') + '</div>'
-          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo2Feito ? 'var(--green)' : (passo1Feito && !passo2Feito ? 'var(--rose-deep)' : 'var(--ink-3)')) + ';">Horário<br>confirmado</div>'
+          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo2Feito ? 'var(--ink-3)' : (passo1Feito ? 'var(--rose-deep)' : 'var(--border)')) + ';">Horário<br>confirmado</div>'
         + '</div>'
         + '<div style="' + linha(passo2Feito) + 'margin-top:34px;"></div>'
         + '<div onclick="event.stopPropagation();abrirAtendimento(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:64px;">'
-          + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:var(--rose-deep);min-height:20px;display:flex;align-items:flex-end;justify-content:center;">Iniciar atendimento</div>'
+          + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:var(--rose-deep);min-height:20px;display:flex;align-items:flex-end;justify-content:center;opacity:' + ((passo2Feito && !passo3Feito) ? '1' : '0') + ';">Iniciar atendimento</div>'
           + '<div style="width:30px;height:30px;border-radius:50%;background:' + c3.bg + ';border:1.5px solid ' + c3.border + ';color:' + c3.color + ';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;">' + (passo3Feito ? '✓' : '') + '</div>'
-          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo3Feito ? 'var(--green)' : (passo2Feito && !passo3Feito ? 'var(--rose-deep)' : 'var(--ink-3)')) + ';">Lançar<br>atendimento</div>'
+          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo3Feito ? 'var(--ink-3)' : (passo2Feito ? 'var(--rose-deep)' : 'var(--border)')) + ';">Lançar<br>atendimento</div>'
         + '</div>'
       + '</div>'
     ) : (
@@ -6032,7 +6027,7 @@ function confirmarCriarSemana() {
    CONSULTORAS
 ════════════════════════════════════════════ */
 function abrirModalConsultora() {
-  ['cNome','cTel','cCpf','cBairro','cCidade','cFavorita','cRotaObs'].forEach(id => {
+  ['cNome','cTel','cCpf','cBairro','cCidade','cRotaObs'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
   document.getElementById('cDia').value = '';
@@ -6060,7 +6055,6 @@ function salvarConsultora() {
       c.bairro = document.getElementById('cBairro').value.trim();
       c.cidade = document.getElementById('cCidade').value.trim();
       c.regiao = document.getElementById('cRegiao').value;
-      c.pedidoFavorita = document.getElementById('cFavorita').value.trim();
       c.diaMelhor = document.getElementById('cDia').value;
       c.horarioMelhor = document.getElementById('cHorario').value;
       c.rotaObs = document.getElementById('cRotaObs').value.trim();
@@ -6076,7 +6070,6 @@ function salvarConsultora() {
           cSem.bairro = c.bairro;
           cSem.diaMelhor = c.diaMelhor;
           cSem.horarioMelhor = c.horarioMelhor;
-          cSem.pedidoFavorita = c.pedidoFavorita;
           cSem.rotaObs = c.rotaObs;
         }
       }
@@ -6096,7 +6089,6 @@ function salvarConsultora() {
     bairro: document.getElementById('cBairro').value.trim(),
     cidade: document.getElementById('cCidade').value.trim(),
     regiao: document.getElementById('cRegiao').value,
-    pedidoFavorita: document.getElementById('cFavorita').value.trim(),
     diaMelhor: document.getElementById('cDia').value,
     horarioMelhor: document.getElementById('cHorario').value,
     rotaObs: document.getElementById('cRotaObs').value.trim(),
@@ -7214,7 +7206,6 @@ function editarConsultora(id) {
   document.getElementById('cCpf').value = c.cpf || '';
   document.getElementById('cBairro').value = c.bairro || '';
   document.getElementById('cCidade').value = c.cidade || '';
-  document.getElementById('cFavorita').value = c.pedidoFavorita || '';
   document.getElementById('cDia').value = c.diaMelhor || '';
   document.getElementById('cHorario').value = c.horarioMelhor || '';
   document.getElementById('cRotaObs').value = c.rotaObs || '';
