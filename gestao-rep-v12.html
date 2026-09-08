@@ -4973,13 +4973,16 @@ function renderSemana() {
     return tituloGrupo + '<div class="cons-card ' + cls + '" style="flex-direction:column;align-items:stretch;">'
       + '<div style="display:flex;align-items:flex-start;gap:12px;">'
         + '<div style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;flex:1;min-width:0;" onclick="abrirAtendimento(\'' + c.id + '\')">'
-          + '<div class="c-av ' + avCls + '" style="margin-top:1px;">' + avTxt + '</div>'
+          + '<div class="c-av ' + avCls + '" style="margin-top:1px;position:relative;">' + avTxt
+            + (c.confirmouHorario ? '<span style="position:absolute;bottom:-2px;right:-2px;background:#2196F3;color:white;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;border:2px solid white;">✓</span>' : '')
+          + '</div>'
           + '<div class="c-info">'
-            + '<div class="c-name" style="white-space:normal;overflow:visible;text-overflow:clip;">' + c.nome + '</div>'
+            + '<div class="c-name" style="white-space:normal;overflow:visible;text-overflow:clip;">' + c.nome + (c.confirmouHorario ? ' <span style="color:#2196F3;font-size:11px;font-weight:800;">✓ Confirmado</span>' : '') + '</div>'
             + '<div class="c-sub">' + sub + '</div>'
           + '</div>'
         + '</div>'
         + badge
+        + '<button onclick="event.stopPropagation();toggleConfirmouHorario(\'' + c.id + '\')" title="Marcar que ela confirmou o horário" style="flex-shrink:0;background:' + (c.confirmouHorario ? '#2196F3' : 'none') + ';border:1.5px solid #2196F3;border-radius:50%;width:26px;height:26px;color:' + (c.confirmouHorario ? 'white' : '#2196F3') + ';font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;">✓</button>'
         + '<button onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')" style="flex-shrink:0;background:none;border:none;color:var(--ink-3);font-size:15px;cursor:pointer;padding:2px 4px;">✕</button>'
       + '</div>'
       + '<div style="display:flex;gap:8px;margin-top:12px;">'
@@ -4996,6 +4999,16 @@ function renderSemana() {
   }).join('')
   + '<button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-top:4px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>'
   + '<div style="height:16px;"></div>';
+}
+
+function toggleConfirmouHorario(consultoraId) {
+  const sem = getSemanaAtiva();
+  if (!sem) return;
+  const c = sem.consultoras.find(x => x.id === consultoraId);
+  if (!c) return;
+  c.confirmouHorario = !c.confirmouHorario;
+  save();
+  renderSemana();
 }
 
 function removerConsultoraDaSemana(consultoraId) {
