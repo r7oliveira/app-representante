@@ -1210,50 +1210,78 @@ input[type="time"]{max-width:100%;}
     <div id="adminPessoaStatus" style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Carregando...</div>
     <div id="adminPessoaConteudo" style="display:none;">
 
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <select id="apSemanaSelect" onchange="adminMudarSemanaSelecionada(this.value)" style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;font-family:var(--font);font-weight:700;color:var(--ink);background:white;"></select>
-        <button onclick="adminExcluirSemana()" title="Excluir semana" style="flex-shrink:0;width:44px;border:1.5px solid var(--border);border-radius:12px;background:white;color:var(--red);font-size:16px;cursor:pointer;">🗑</button>
+      <!-- Abas -->
+      <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;">
+        <button class="ap-tab-btn" data-tab="resumo" onclick="adminPessoaTab('resumo')" style="flex-shrink:0;background:var(--rose);color:white;border:none;border-radius:12px;padding:9px 14px;font-size:12.5px;font-weight:800;font-family:var(--font);cursor:pointer;">Resumo</button>
+        <button class="ap-tab-btn" data-tab="agenda" onclick="adminPessoaTab('agenda')" style="flex-shrink:0;background:white;color:var(--ink-2);border:1.5px solid var(--border);border-radius:12px;padding:9px 14px;font-size:12.5px;font-weight:800;font-family:var(--font);cursor:pointer;">Agenda</button>
+        <button class="ap-tab-btn" data-tab="consultoras" onclick="adminPessoaTab('consultoras')" style="flex-shrink:0;background:white;color:var(--ink-2);border:1.5px solid var(--border);border-radius:12px;padding:9px 14px;font-size:12.5px;font-weight:800;font-family:var(--font);cursor:pointer;">Consultoras</button>
+        <button class="ap-tab-btn" data-tab="mensagens" onclick="adminPessoaTab('mensagens')" style="flex-shrink:0;background:white;color:var(--ink-2);border:1.5px solid var(--border);border-radius:12px;padding:9px 14px;font-size:12.5px;font-weight:800;font-family:var(--font);cursor:pointer;">Mensagens</button>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
-        <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;">Semana</div>
-          <div style="font-size:16px;font-weight:800;" id="apSemana">—</div>
+      <!-- ═══ ABA: RESUMO ═══ -->
+      <div id="apTabResumo">
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <select id="apSemanaSelect" onchange="adminMudarSemanaSelecionada(this.value)" style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;font-family:var(--font);font-weight:700;color:var(--ink);background:white;"></select>
+          <button onclick="adminExcluirSemana()" title="Excluir semana" style="flex-shrink:0;width:44px;border:1.5px solid var(--border);border-radius:12px;background:white;color:var(--red);font-size:16px;cursor:pointer;">🗑</button>
         </div>
-        <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;">Atendimentos</div>
-          <div style="font-size:16px;font-weight:800;" id="apAtendimentos">0/0</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+          <div class="card" style="padding:12px 14px;">
+            <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;">Semana</div>
+            <div style="font-size:16px;font-weight:800;" id="apSemana">—</div>
+          </div>
+          <div class="card" style="padding:12px 14px;">
+            <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;">Atendimentos</div>
+            <div style="font-size:16px;font-weight:800;" id="apAtendimentos">0/0</div>
+          </div>
+          <div class="card" style="padding:12px 14px;">
+            <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;">Vendido</div>
+            <div style="font-size:16px;font-weight:800;" id="apVendido">R$ 0</div>
+          </div>
+          <div class="card" style="padding:12px 14px;">
+            <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:4px;">Recebido</div>
+            <div style="font-size:16px;font-weight:800;color:var(--green);" id="apRecebido">R$ 0</div>
+          </div>
         </div>
-        <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;">Vendido</div>
-          <div style="font-size:16px;font-weight:800;" id="apVendido">R$ 0</div>
-        </div>
-        <div class="card" style="padding:12px 14px;">
-          <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:4px;">Recebido</div>
-          <div style="font-size:16px;font-weight:800;color:var(--green);" id="apRecebido">R$ 0</div>
-        </div>
+
+        <button class="btn-primary" style="width:100%;margin-bottom:8px;" onclick="abrirAdminCriarSemana()">+ Criar Semana para esta pessoa</button>
+        <button class="btn-ghost" style="width:100%;" onclick="abrirAdminRegioes()">⚙️ Configurações desta pessoa</button>
       </div>
 
-      <button class="btn-primary" style="width:100%;margin-bottom:8px;" onclick="abrirAdminCriarSemana()">+ Criar Semana para esta pessoa</button>
-      <button class="btn-ghost" style="width:100%;margin-bottom:18px;" onclick="abrirAdminRegioes()">⚙️ Configurações desta pessoa</button>
-
-      <!-- Nova observação -->
-      <div class="sec-title" style="padding:0;margin-bottom:8px;">Enviar observação</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px;">
-        <input id="apNovaObs" placeholder="Ex: Priorize as consultoras de Canela hoje" style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;font-family:var(--font);">
-        <button class="btn-primary" style="width:auto;padding:0 16px;" onclick="adminEnviarObservacao()">Enviar</button>
+      <!-- ═══ ABA: AGENDA ═══ -->
+      <div id="apTabAgenda" style="display:none;">
+        <div class="sec-title" style="padding:0;margin-bottom:8px;">Agenda da semana</div>
+        <div id="apAgendaDias"></div>
       </div>
-      <div id="apObsHistorico" style="margin-bottom:20px;"></div>
 
-      <!-- Agenda -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div class="sec-title" style="padding:0;margin:0;">Agenda da semana</div>
+      <!-- ═══ ABA: CONSULTORAS ═══ -->
+      <div id="apTabConsultoras" style="display:none;">
+        <div class="sec-title" style="padding:0;margin-bottom:8px;">Consultoras da semana</div>
+        <div id="apConsultorasLista"></div>
       </div>
-      <div id="apAgendaDias"></div>
 
-      <!-- Consultoras da semana -->
-      <div class="sec-title" style="padding:0;margin:20px 0 8px;">Consultoras da semana</div>
-      <div id="apConsultorasLista"></div>
+      <!-- ═══ ABA: MENSAGENS ═══ -->
+      <div id="apTabMensagens" style="display:none;">
+        <div class="sec-title" style="padding:0;margin-bottom:8px;">Enviar observação</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <input id="apNovaObs" placeholder="Ex: Priorize as consultoras de Canela hoje" style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;font-family:var(--font);">
+          <button class="btn-primary" style="width:auto;padding:0 16px;" onclick="adminEnviarObservacao()">Enviar</button>
+        </div>
+        <div id="apObsHistorico" style="margin-bottom:22px;"></div>
+
+        <div class="sec-title" style="padding:0;margin-bottom:4px;">Mensagens prontas do WhatsApp</div>
+        <div style="font-size:11.5px;color:var(--ink-3);margin-bottom:12px;">Editáveis só para esta pessoa. Deixe em branco para usar o texto padrão do app.</div>
+
+        <label class="field">
+          <span>Mensagem: Agendar horário</span>
+          <textarea id="apMsgAgendar" rows="6" placeholder="Texto padrão do app será usado se deixar em branco" style="font-family:var(--font);"></textarea>
+        </label>
+        <label class="field">
+          <span>Mensagem: Confirmar horário</span>
+          <textarea id="apMsgConfirmar" rows="5" placeholder="Texto padrão do app será usado se deixar em branco" style="font-family:var(--font);"></textarea>
+        </label>
+        <button class="btn-primary" style="width:100%;" onclick="adminSalvarMensagensProntas()">Salvar mensagens</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3927,6 +3955,34 @@ function adminMudarSemanaSelecionada(valor) {
   renderAdminPessoa();
 }
 
+function adminPessoaTab(tab) {
+  ['resumo','agenda','consultoras','mensagens'].forEach(t => {
+    const el = document.getElementById('apTab' + t.charAt(0).toUpperCase() + t.slice(1));
+    if (el) el.style.display = t === tab ? '' : 'none';
+    const btn = document.querySelector('.ap-tab-btn[data-tab="' + t + '"]');
+    if (btn) {
+      btn.style.background = t === tab ? 'var(--rose)' : 'white';
+      btn.style.color = t === tab ? 'white' : 'var(--ink-2)';
+      btn.style.borderColor = t === tab ? 'var(--rose)' : 'var(--border)';
+    }
+  });
+}
+
+function adminSalvarMensagensProntas() {
+  const id = _adminPessoaAtual;
+  const data = _adminDB[id];
+  if (!data) return;
+  data.config = data.config || {};
+  data.config.mensagensProntas = {
+    agendarHorario: document.getElementById('apMsgAgendar').value.trim(),
+    confirmarHorario: document.getElementById('apMsgConfirmar').value.trim(),
+  };
+  data.seq = (data.seq || 1) + 1;
+  _adminRefs[id].set(data).then(() => {
+    alert('Mensagens salvas!');
+  }).catch(e => alert('Erro ao salvar: ' + e.message));
+}
+
 function adminExcluirSemana() {
   const id = _adminPessoaAtual;
   const data = _adminDB[id];
@@ -3963,6 +4019,11 @@ function renderAdminPessoa() {
   }
   document.getElementById('adminPessoaStatus').style.display = 'none';
   document.getElementById('adminPessoaConteudo').style.display = '';
+  adminPessoaTab('resumo');
+
+  const msgs = (data.config && data.config.mensagensProntas) || {};
+  document.getElementById('apMsgAgendar').value = msgs.agendarHorario || '';
+  document.getElementById('apMsgConfirmar').value = msgs.confirmarHorario || '';
 
   const semanas = data.semanas || [];
   const defaultNumero = data.semanaAtiva != null ? data.semanaAtiva : (semanas.length ? semanas[semanas.length-1].numero : null);
@@ -4367,6 +4428,8 @@ function telefoneWa(tel) {
   return '55' + n;
 }
 function mensagemAgendarHorario() {
+  const custom = DB.config && DB.config.mensagensProntas && DB.config.mensagensProntas.agendarHorario;
+  if (custom) return custom;
   return 'Oi tudo, como está?\n\n' +
     'Essa semana teremos nosso atendimento para retirada de _novidades e encomendas_. 🙋🏻‍♀️\n\n' +
     'Já estou organizando os horários.\n' +
@@ -4386,6 +4449,8 @@ function enviarWhatsappHorario(consultoraId) {
   window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(mensagemAgendarHorario()), '_blank');
 }
 function mensagemConfirmarHorario(horario) {
+  const custom = DB.config && DB.config.mensagensProntas && DB.config.mensagensProntas.confirmarHorario;
+  if (custom) return custom.replace(/\{horario\}/gi, horario || '');
   return 'Oi tudo 😍\n\n' +
     'chegou o dia do seu atendimento, vou estar aguardando você' + (horario ? ' às ' + horario : '') + ' como combinado.\n\n' +
     '_Aaaah e não esqueci de trazer o seu documento com foto, pois agora precisamos para retirada da sacola nova_\n\n' +
