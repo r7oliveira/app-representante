@@ -4986,7 +4986,7 @@ function renderSemana() {
     const c3 = corPasso(passo3Feito, passo2Feito && !passo3Feito);
     const linha = (feito) => 'flex:1;height:2px;background:' + (feito ? 'var(--green)' : 'var(--border)') + ';margin:0 2px;';
     const trilha = c.telefone ? (
-      '<div style="display:flex;align-items:flex-start;margin-top:14px;">'
+      '<div style="display:flex;align-items:flex-start;padding:14px 14px 12px;">'
         + '<div onclick="event.stopPropagation();enviarWhatsappHorario(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:64px;">'
           + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:#25D366;min-height:20px;display:flex;align-items:flex-end;justify-content:center;">Enviar pelo WhatsApp</div>'
           + '<div style="width:30px;height:30px;border-radius:50%;background:' + c1.bg + ';border:1.5px solid ' + c1.border + ';color:' + c1.color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">' + (passo1Feito ? '✓' : '') + '</div>'
@@ -5006,13 +5006,15 @@ function renderSemana() {
         + '</div>'
       + '</div>'
     ) : (
-      '<button onclick="abrirAtendimento(\'' + c.id + '\')" style="width:100%;margin-top:12px;background:var(--rose-deep);border:none;border-radius:12px;padding:11px 8px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;">'
+      '<div style="padding:0 14px 14px;">'
+      + '<button onclick="abrirAtendimento(\'' + c.id + '\')" style="width:100%;margin-top:12px;background:var(--rose-deep);border:none;border-radius:12px;padding:11px 8px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;">'
         + '<span style="color:white;font-size:12.5px;font-weight:800;font-family:var(--font);">Lançar atendimento</span>'
       + '</button>'
+      + '</div>'
     );
 
-    return tituloGrupo + '<div class="cons-card ' + cls + '" style="flex-direction:column;align-items:stretch;">'
-      + '<div style="display:flex;align-items:flex-start;gap:12px;">'
+    return tituloGrupo + '<div class="cons-card ' + cls + '" style="flex-direction:column;align-items:stretch;padding:0;overflow:hidden;">'
+      + '<div style="display:flex;align-items:flex-start;gap:12px;background:var(--surface);padding:12px 14px;">'
         + '<div style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;flex:1;min-width:0;" onclick="abrirAtendimento(\'' + c.id + '\')">'
           + '<div class="c-av ' + avCls + '" style="margin-top:1px;">' + avTxt + '</div>'
           + '<div class="c-info">'
