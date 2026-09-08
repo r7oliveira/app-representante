@@ -4650,6 +4650,9 @@ function enviarWhatsappHorario(consultoraId) {
   const c = sem ? sem.consultoras.find(x => x.id === consultoraId) : null;
   if (!c || !c.telefone) { alert('Essa consultora não tem telefone cadastrado.'); return; }
   const numero = telefoneWa(c.telefone);
+  c.horarioEnviado = true;
+  save();
+  if (typeof renderSemana === 'function') renderSemana();
   window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(mensagemAgendarHorario(c.horarioMelhor, c.diaMelhor)), '_blank');
 }
 function mensagemConfirmarHorario(horario) {
@@ -4970,31 +4973,54 @@ function renderSemana() {
       sub = partes.join(' · ');
     }
 
+    const passo1Feito = !!c.horarioEnviado;
+    const passo2Feito = !!c.confirmouHorario;
+    const passo3Feito = st === 'concluida';
+    function corPasso(feito, atual) {
+      if (feito) return { bg: 'var(--green)', border: 'var(--green)', color: 'white' };
+      if (atual) return { bg: 'var(--rose-deep)', border: 'var(--rose-deep)', color: 'white' };
+      return { bg: 'white', border: 'var(--border)', color: 'var(--ink-3)' };
+    }
+    const c1 = corPasso(passo1Feito, !passo1Feito);
+    const c2 = corPasso(passo2Feito, passo1Feito && !passo2Feito);
+    const c3 = corPasso(passo3Feito, passo2Feito && !passo3Feito);
+    const linha = (feito) => 'flex:1;height:2px;background:' + (feito ? 'var(--green)' : 'var(--border)') + ';margin:0 2px;';
+    const trilha = c.telefone ? (
+      '<div style="display:flex;align-items:center;margin-top:14px;">'
+        + '<div onclick="event.stopPropagation();enviarWhatsappHorario(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:64px;">'
+          + '<div style="width:30px;height:30px;border-radius:50%;background:' + c1.bg + ';border:1.5px solid ' + c1.border + ';color:' + c1.color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">' + (passo1Feito ? '✓' : '1') + '</div>'
+          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo1Feito ? 'var(--green)' : (!passo1Feito ? 'var(--rose-deep)' : 'var(--ink-3)')) + ';">Marcar<br>horário</div>'
+        + '</div>'
+        + '<div style="' + linha(passo1Feito) + '"></div>'
+        + '<div onclick="event.stopPropagation();toggleConfirmouHorario(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:64px;">'
+          + '<div style="width:30px;height:30px;border-radius:50%;background:' + c2.bg + ';border:1.5px solid ' + c2.border + ';color:' + c2.color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">✓</div>'
+          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo2Feito ? 'var(--green)' : (passo1Feito && !passo2Feito ? 'var(--rose-deep)' : 'var(--ink-3)')) + ';">Horário<br>confirmado</div>'
+        + '</div>'
+        + '<div style="' + linha(passo2Feito) + '"></div>'
+        + '<div onclick="event.stopPropagation();abrirAtendimento(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:64px;">'
+          + '<div style="width:30px;height:30px;border-radius:50%;background:' + c3.bg + ';border:1.5px solid ' + c3.border + ';color:' + c3.color + ';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;">' + (passo3Feito ? '✓' : '→') + '</div>'
+          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo3Feito ? 'var(--green)' : (passo2Feito && !passo3Feito ? 'var(--rose-deep)' : 'var(--ink-3)')) + ';">Lançar<br>atendimento</div>'
+        + '</div>'
+      + '</div>'
+    ) : (
+      '<button onclick="abrirAtendimento(\'' + c.id + '\')" style="width:100%;margin-top:12px;background:var(--rose-deep);border:none;border-radius:12px;padding:11px 8px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;">'
+        + '<span style="color:white;font-size:12.5px;font-weight:800;font-family:var(--font);">Lançar atendimento</span>'
+      + '</button>'
+    );
+
     return tituloGrupo + '<div class="cons-card ' + cls + '" style="flex-direction:column;align-items:stretch;">'
       + '<div style="display:flex;align-items:flex-start;gap:12px;">'
         + '<div style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;flex:1;min-width:0;" onclick="abrirAtendimento(\'' + c.id + '\')">'
-          + '<div class="c-av ' + avCls + '" style="margin-top:1px;position:relative;">' + avTxt
-            + (c.confirmouHorario ? '<span style="position:absolute;bottom:-2px;right:-2px;background:#2196F3;color:white;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;border:2px solid white;">✓</span>' : '')
-          + '</div>'
+          + '<div class="c-av ' + avCls + '" style="margin-top:1px;">' + avTxt + '</div>'
           + '<div class="c-info">'
-            + '<div class="c-name" style="white-space:normal;overflow:visible;text-overflow:clip;">' + c.nome + (c.confirmouHorario ? ' <span style="color:#2196F3;font-size:11px;font-weight:800;">✓ Confirmado</span>' : '') + '</div>'
+            + '<div class="c-name" style="white-space:normal;overflow:visible;text-overflow:clip;">' + c.nome + '</div>'
             + '<div class="c-sub">' + sub + '</div>'
           + '</div>'
         + '</div>'
         + badge
-        + '<button onclick="event.stopPropagation();toggleConfirmouHorario(\'' + c.id + '\')" title="Marcar que ela confirmou o horário" style="flex-shrink:0;background:' + (c.confirmouHorario ? '#2196F3' : 'none') + ';border:1.5px solid #2196F3;border-radius:50%;width:26px;height:26px;color:' + (c.confirmouHorario ? 'white' : '#2196F3') + ';font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;">✓</button>'
         + '<button onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')" style="flex-shrink:0;background:none;border:none;color:var(--ink-3);font-size:15px;cursor:pointer;padding:2px 4px;">✕</button>'
       + '</div>'
-      + '<div style="display:flex;gap:8px;margin-top:12px;">'
-        + (c.telefone ? '<button onclick="enviarWhatsappHorario(\'' + c.id + '\')" style="flex:1;background:#25D366;border:none;border-radius:12px;padding:11px 8px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;min-width:0;">'
-            + '<svg width="17" height="17" viewBox="0 0 24 24" fill="white" style="flex-shrink:0;"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0012.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 012.41 5.83c0 4.55-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.42-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.23.89 2.41 1.02 2.58.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg>'
-            + '<span style="color:white;font-size:12.5px;font-weight:800;font-family:var(--font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">WhatsApp</span>'
-          + '</button>' : '')
-        + '<button onclick="abrirAtendimento(\'' + c.id + '\')" style="flex:1;background:var(--rose-deep);border:none;border-radius:12px;padding:11px 8px;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;min-width:0;">'
-          + '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M9 18l6-6-6-6"/></svg>'
-          + '<span style="color:white;font-size:12.5px;font-weight:800;font-family:var(--font);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Lançar atendimento</span>'
-        + '</button>'
-      + '</div>'
+      + trilha
     + '</div>';
   }).join('')
   + '<button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-top:4px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>'
