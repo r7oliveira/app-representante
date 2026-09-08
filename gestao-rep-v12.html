@@ -4977,9 +4977,9 @@ function renderSemana() {
     const passo2Feito = !!c.confirmouHorario;
     const passo3Feito = st === 'concluida';
     function corPasso(feito, atual) {
-      if (feito) return { bg: 'var(--green)', border: 'var(--green)', color: 'white' };
-      if (atual) return { bg: 'var(--rose-deep)', border: 'var(--rose-deep)', color: 'white' };
-      return { bg: 'white', border: 'var(--border)', color: 'var(--ink-3)' };
+      if (feito) return { bg: 'var(--green-bg)', border: 'var(--green)', color: 'var(--green)' };
+      if (atual) return { bg: 'var(--rose-light)', border: 'var(--rose)', color: 'var(--rose-deep)' };
+      return { bg: 'var(--surface)', border: 'var(--border)', color: 'var(--ink-3)' };
     }
     const c1 = corPasso(passo1Feito, !passo1Feito);
     const c2 = corPasso(passo2Feito, passo1Feito && !passo2Feito);
