@@ -4604,12 +4604,25 @@ function telefoneWa(tel) {
   if (!n) return '';
   return '55' + n;
 }
+function diaLabelOuAmanha(diaLabel) {
+  if (!diaLabel) return diaLabel;
+  const diaInfo = DIAS_AGENDA.find(d => d.label === diaLabel);
+  if (!diaInfo) return diaLabel;
+  const dataAtendimento = diaKeyParaData(diaInfo.key);
+  const amanha = new Date();
+  amanha.setDate(amanha.getDate() + 1);
+  const mesmodia = dataAtendimento.getFullYear() === amanha.getFullYear()
+    && dataAtendimento.getMonth() === amanha.getMonth()
+    && dataAtendimento.getDate() === amanha.getDate();
+  return mesmodia ? 'amanhã' : diaLabel;
+}
+
 function mensagemAgendarHorario(horario, dia) {
   const custom = DB.config && DB.config.mensagensProntas && DB.config.mensagensProntas.agendarHorario;
   if (custom) {
     return custom
       .replace(/\{horario\}/gi, horario || '')
-      .replace(/\{dia\}/gi, dia || '');
+      .replace(/\{dia\}/gi, diaLabelOuAmanha(dia) || '');
   }
   return 'Oi tudo, como está?\n\n' +
     'Essa semana teremos nosso atendimento para retirada de _novidades e encomendas_. 🙋🏻‍♀️\n\n' +
