@@ -366,6 +366,7 @@ input[type="time"]{max-width:100%;}
 #adminTopBar{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 20px 12px;background:linear-gradient(160deg,#171717,#2E2E2E);}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="manifest" href="/app-representante/manifest.json">
 </head>
 <body>
 <div id="app">
@@ -8173,6 +8174,14 @@ if (!ACTIVE_PROFILE) {
     </div>
   </div>
 </div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/app-representante/sw.js')
+    .then(reg => console.log('Service worker registrado:', reg.scope))
+    .catch(err => console.error('Falha ao registrar service worker:', err));
+}
+</script>
 
 </body>
 </html>
