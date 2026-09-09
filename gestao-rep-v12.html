@@ -543,30 +543,38 @@ input[type="time"]{max-width:100%;}
     <!-- Acesso Rápido -->
     <div style="padding:14px 16px 4px;">
       <div style="font-size:11.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-2);margin-bottom:10px;">Acesso rápido</div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="abrirModalConsultora()" style="flex:1;min-width:0;background:white;border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:left;cursor:pointer;font-family:var(--font);">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <button onclick="abrirModalConsultora()" style="flex:1 1 calc(50% - 4px);min-width:0;background:white;border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:left;cursor:pointer;font-family:var(--font);">
           <div style="width:38px;height:38px;border-radius:12px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rose-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
           </div>
           <div style="font-size:12.5px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Nova Consultora</div>
           <div style="font-size:10.5px;color:var(--ink-3);font-weight:600;margin-top:1px;">Cadastro com foto</div>
         </button>
-        <button onclick="goTo('agenda')" style="flex:1;min-width:0;background:white;border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:left;cursor:pointer;font-family:var(--font);">
+        <button onclick="goTo('agenda')" style="flex:1 1 calc(50% - 4px);min-width:0;background:white;border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:left;cursor:pointer;font-family:var(--font);">
           <div style="width:38px;height:38px;border-radius:12px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rose-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
           </div>
           <div style="font-size:12.5px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Agenda</div>
           <div style="font-size:10.5px;color:var(--ink-3);font-weight:600;margin-top:1px;">Compromissos</div>
         </button>
-        <button onclick="irListaConsultoras()" style="flex:1;min-width:0;background:white;border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:left;cursor:pointer;font-family:var(--font);">
+        <button onclick="irListaConsultoras()" style="flex:1 1 calc(50% - 4px);min-width:0;background:white;border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:left;cursor:pointer;font-family:var(--font);">
           <div style="width:38px;height:38px;border-radius:12px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rose-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
           </div>
           <div style="font-size:12.5px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Atendimentos</div>
           <div style="font-size:10.5px;color:var(--ink-3);font-weight:600;margin-top:1px;">Iniciar rota</div>
         </button>
+        <button onclick="abrirPagarDebitos()" style="flex:1 1 calc(50% - 4px);min-width:0;background:white;border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:left;cursor:pointer;font-family:var(--font);">
+          <div style="width:38px;height:38px;border-radius:12px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rose-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2M9.5 10h3a1.5 1.5 0 010 3h-2a1.5 1.5 0 000 3H14"/></svg>
+          </div>
+          <div style="font-size:12.5px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Pagar Débitos</div>
+          <div style="font-size:10.5px;color:var(--ink-3);font-weight:600;margin-top:1px;">Cobranças pendentes</div>
+        </button>
       </div>
     </div>
+
 
     <!-- Agenda de hoje -->
     <div style="margin:0 16px 12px;background:white;border-radius:16px;border:1px solid var(--border);overflow:hidden;">
@@ -606,6 +614,31 @@ input[type="time"]{max-width:100%;}
         <button onclick="goTo('criar-semana')" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">Criar semana →</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: PAGAR DÉBITOS (todas as semanas)
+══════════════════════════════════════════ -->
+<div class="view" id="view-pagar-debitos">
+  <div class="page-header" style="background:linear-gradient(135deg,#171717,#2E2E2E);border-bottom:none;">
+    <button onclick="goTo('semana')" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
+    <div class="ph-title" style="color:white;">Pagar Débitos</div>
+    <div class="ph-sub" style="color:rgba(255,255,255,.7);">Cobranças pendentes de todas as semanas</div>
+  </div>
+  <div class="scroll-body" style="padding:14px 16px 80px;">
+    <button onclick="toggleBuscaConsultoraDebito()" style="width:100%;background:white;border:1.5px dashed var(--rose);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;font-family:var(--font);margin-bottom:14px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rose-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <span style="font-size:13px;font-weight:800;color:var(--rose-deep);">Buscar consultora (qualquer região)</span>
+    </button>
+
+    <div id="buscaConsultoraDebitoBox" style="display:none;margin-bottom:16px;">
+      <input id="buscaConsultoraDebitoInput" type="text" placeholder="Digite o nome da consultora..." oninput="filtrarConsultoraDebito(this.value)"
+        style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:14px;font-family:var(--font);margin-bottom:10px;box-sizing:border-box;">
+      <div id="resultadoBuscaConsultoraDebito"></div>
+    </div>
+
+    <div id="listaPagarDebitos"></div>
   </div>
 </div>
 
@@ -4852,6 +4885,251 @@ function irListaConsultoras() {
   goTo('atendimentos-lista');
 }
 
+function abrirPagarDebitos() {
+  goTo('pagar-debitos');
+}
+
+function renderPagarDebitos() {
+  const lista = document.getElementById('listaPagarDebitos');
+  if (!lista) return;
+
+  const itens = [];
+  (DB.semanas || []).forEach(sem => {
+    (sem.consultoras || []).forEach(c => {
+      if ((c.debito || 0) > 0) {
+        itens.push({ semId: sem.id, semNumero: sem.numero, semRegiao: sem.regiao, cons: c });
+      }
+    });
+  });
+  itens.sort((a, b) => (b.cons.debito || 0) - (a.cons.debito || 0));
+
+  if (!itens.length) {
+    lista.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--ink-3);font-size:14px;">Nenhum débito pendente. 🎉</div>';
+    return;
+  }
+
+  const totalGeral = itens.reduce((a, it) => a + (it.cons.debito || 0), 0);
+
+  lista.innerHTML = '<div style="background:var(--red-bg);border-radius:14px;padding:14px 16px;margin-bottom:14px;text-align:center;">'
+      + '<div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Total pendente · ' + itens.length + (itens.length > 1 ? ' consultoras' : ' consultora') + '</div>'
+      + '<div style="font-size:22px;font-weight:800;color:var(--red);">' + brl(totalGeral) + '</div>'
+    + '</div>'
+    + itens.map(it => {
+      const c = it.cons;
+      const partes = [c.cidade, 'Semana ' + it.semNumero + (it.semRegiao ? ' · ' + it.semRegiao : '')].filter(Boolean);
+      return '<div style="background:white;border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">'
+          + '<div style="min-width:0;">'
+            + '<div style="font-size:14px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + c.nome + '</div>'
+            + '<div style="font-size:11.5px;color:var(--ink-3);margin-top:1px;">' + partes.join(' · ') + '</div>'
+          + '</div>'
+          + '<div style="text-align:right;flex-shrink:0;">'
+            + '<div style="font-size:15px;font-weight:800;color:var(--red);">' + brl(c.debito) + '</div>'
+          + '</div>'
+        + '</div>'
+        + '<button onclick="abrirPagarDebitoGeral(\'' + it.semId + '\',\'' + c.id + '\')" style="width:100%;margin-top:10px;background:var(--rose-deep);border:none;border-radius:10px;padding:10px;color:white;font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;">Pagar débito</button>'
+      + '</div>';
+    }).join('');
+}
+
+function abrirPagarDebitoGeral(semId, consId) {
+  const sem = (DB.semanas || []).find(s => s.id === semId);
+  const cons = sem && sem.consultoras.find(c => c.id === consId);
+  if (!cons) return;
+
+  window._pagarDebitoCtx = { semId, consId };
+  window._formaDebito = 'dinheiro';
+  const debAtual = cons.debito || 0;
+
+  document.getElementById('modalRegTitulo').textContent = 'Pagar Débito';
+  document.getElementById('modalRegConteudo').innerHTML = `
+    <div style="background:var(--amber-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">${cons.nome}</div>
+      <div style="font-size:20px;font-weight:800;color:var(--amber);">${brl(debAtual)}</div>
+    </div>
+
+    <label class="field">
+      <span>Valor pago (R$)</span>
+      <input id="regDebitoGeral" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(debAtual)}" oninput="maskMoeda(this)">
+    </label>
+
+    <label class="field">
+      <span>Forma de recebimento</span>
+      <div style="display:flex;gap:8px;margin-top:2px;">
+        <button type="button" id="frmDebPix" onclick="selecionarFormaDeb('pix')"
+          style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
+           Pix
+        </button>
+        <button type="button" id="frmDebDinheiro" onclick="selecionarFormaDeb('dinheiro')"
+          style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
+           Dinheiro
+        </button>
+      </div>
+    </label>
+
+    <div class="btn-row">
+      <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
+      <button class="btn-primary" style="flex:1;" onclick="salvarPagarDebitoGeral()">Salvar</button>
+    </div>`;
+
+  selecionarFormaDeb('dinheiro');
+  document.getElementById('modalRegistro').classList.add('open');
+}
+
+function salvarPagarDebitoGeral() {
+  const ctx = window._pagarDebitoCtx;
+  if (!ctx) return;
+  const sem = (DB.semanas || []).find(s => s.id === ctx.semId);
+  const cons = sem && sem.consultoras.find(c => c.id === ctx.consId);
+  if (!cons) return;
+
+  const val = parseNum(document.getElementById('regDebitoGeral').value);
+  if (!val || val <= 0) { fecharModal('modalRegistro'); return; }
+  const forma = window._formaDebito || 'dinheiro';
+
+  cons.recebido = (cons.recebido || 0) + val;
+  cons.ultimoPgto = val;
+  if (forma === 'pix') cons.recebidoPix = (cons.recebidoPix || 0) + val;
+  else cons.recebidoDinheiro = (cons.recebidoDinheiro || 0) + val;
+  cons.debitoPagoAntigo = (cons.debitoPagoAntigo || 0) + val;
+
+  const debAnterior = cons.debito || 0;
+  cons.debito = Math.max(0, Math.round((debAnterior - val) * 100) / 100);
+
+  save();
+  fecharModal('modalRegistro');
+  renderPagarDebitos();
+
+  // Se essa consultora for da semana ativa, atualiza também a tela de início
+  const semAtiva = getSemanaAtiva();
+  if (semAtiva && semAtiva.id === ctx.semId) renderSemana();
+}
+
+function toggleBuscaConsultoraDebito() {
+  const box = document.getElementById('buscaConsultoraDebitoBox');
+  if (!box) return;
+  const abrindo = box.style.display === 'none';
+  box.style.display = abrindo ? '' : 'none';
+  if (abrindo) {
+    document.getElementById('buscaConsultoraDebitoInput').value = '';
+    document.getElementById('resultadoBuscaConsultoraDebito').innerHTML = '';
+    document.getElementById('buscaConsultoraDebitoInput').focus();
+  }
+}
+
+function filtrarConsultoraDebito(termo) {
+  const box = document.getElementById('resultadoBuscaConsultoraDebito');
+  const q = (termo || '').trim().toLowerCase();
+  if (!q) { box.innerHTML = ''; return; }
+
+  const resultados = (DB.consultoras || [])
+    .filter(c => c.nome && c.nome.toLowerCase().includes(q))
+    .slice(0, 15);
+
+  if (!resultados.length) {
+    box.innerHTML = '<div style="text-align:center;padding:16px;color:var(--ink-3);font-size:13px;">Nenhuma consultora encontrada.</div>';
+    return;
+  }
+
+  box.innerHTML = resultados.map(c => {
+    const partes = [c.cidade, c.regiao].filter(Boolean);
+    return '<button onclick="abrirDebitoAvulso(\'' + c.id + '\')" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:12px;padding:11px 14px;margin-bottom:8px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:space-between;gap:10px;">'
+      + '<div style="min-width:0;">'
+        + '<div style="font-size:13.5px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + c.nome + '</div>'
+        + '<div style="font-size:11.5px;color:var(--ink-3);margin-top:1px;">' + (partes.join(' · ') || '—') + '</div>'
+      + '</div>'
+      + '<span style="color:var(--rose-deep);font-size:12px;font-weight:800;flex-shrink:0;">Selecionar ›</span>'
+    + '</button>';
+  }).join('');
+}
+
+function abrirDebitoAvulso(consultoraId) {
+  const cons = (DB.consultoras || []).find(c => c.id === consultoraId);
+  if (!cons) return;
+
+  window._debitoAvulsoCtx = { consultoraId };
+  window._formaDebito = 'dinheiro';
+
+  document.getElementById('modalRegTitulo').textContent = 'Registrar Débito Pago';
+  document.getElementById('modalRegConteudo').innerHTML = `
+    <div style="background:var(--amber-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">${cons.nome}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--ink-3);">${[cons.cidade, cons.regiao].filter(Boolean).join(' · ') || 'Sem região cadastrada'}</div>
+    </div>
+
+    <label class="field">
+      <span>Valor do débito pago (R$)</span>
+      <input id="regDebitoAvulso" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)">
+    </label>
+
+    <label class="field">
+      <span>Forma de recebimento</span>
+      <div style="display:flex;gap:8px;margin-top:2px;">
+        <button type="button" id="frmDebPix" onclick="selecionarFormaDeb('pix')"
+          style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
+           Pix
+        </button>
+        <button type="button" id="frmDebDinheiro" onclick="selecionarFormaDeb('dinheiro')"
+          style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
+           Dinheiro
+        </button>
+      </div>
+    </label>
+
+    <div style="font-size:11px;color:var(--ink-3);margin:-4px 0 14px;">Entra no fechamento da semana ativa como débito pago, mesmo que ela não esteja na rota desta semana.</div>
+
+    <div class="btn-row">
+      <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
+      <button class="btn-primary" style="flex:1;" onclick="salvarDebitoAvulso()">Salvar</button>
+    </div>`;
+
+  selecionarFormaDeb('dinheiro');
+  document.getElementById('modalRegistro').classList.add('open');
+}
+
+function salvarDebitoAvulso() {
+  const ctx = window._debitoAvulsoCtx;
+  if (!ctx) return;
+  const mestre = (DB.consultoras || []).find(c => c.id === ctx.consultoraId);
+  if (!mestre) return;
+
+  const val = parseNum(document.getElementById('regDebitoAvulso').value);
+  if (!val || val <= 0) { fecharModal('modalRegistro'); return; }
+  const forma = window._formaDebito || 'dinheiro';
+
+  const sem = getSemanaAtiva();
+  if (!sem) {
+    alert('Crie ou ative uma semana antes de registrar este pagamento, para que ele entre no fechamento.');
+    return;
+  }
+
+  let cons = sem.consultoras.find(c => c.id === mestre.id);
+  if (!cons) {
+    cons = {
+      ...mestre,
+      id: mestre.id,
+      status: 'concluida',
+      vendido: 0, recebido: 0, recebidoPix: 0, recebidoDinheiro: 0,
+      debito: 0, debitoPagoAntigo: 0,
+      avulso: true,
+    };
+    sem.consultoras.push(cons);
+  }
+
+  cons.recebido = (cons.recebido || 0) + val;
+  cons.ultimoPgto = val;
+  if (forma === 'pix') cons.recebidoPix = (cons.recebidoPix || 0) + val;
+  else cons.recebidoDinheiro = (cons.recebidoDinheiro || 0) + val;
+  cons.debitoPagoAntigo = (cons.debitoPagoAntigo || 0) + val;
+  cons.debito = Math.max(0, Math.round(((cons.debito || 0) - val) * 100) / 100);
+
+  save();
+  fecharModal('modalRegistro');
+  toggleBuscaConsultoraDebito();
+  renderPagarDebitos();
+  renderSemana();
+}
+
 function goTo(v) {
   // Remove active de TODAS as views
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
@@ -4875,6 +5153,7 @@ function goTo(v) {
   // Renderizar
   if (v === 'semana')       renderSemana();
   if (v === 'atendimentos-lista') renderSemana();
+  if (v === 'pagar-debitos') renderPagarDebitos();
   if (v === 'motor')        renderMotor();
   if (v === 'criar-semana') renderCriarSemana();
   if (v === 'config')       renderConfig();
@@ -5045,16 +5324,17 @@ function renderSemana() {
 
   // Lista
   const lista = document.getElementById('listaConsultoras');
-  if (!sem.consultoras.length) { lista.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);">Nenhuma consultora nesta semana.</div>'; return; }
+  const visiveis = sem.consultoras.filter(c => !c.avulso);
+  if (!visiveis.length) { lista.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);">Nenhuma consultora nesta semana.</div>'; return; }
 
-  lista.innerHTML = sem.consultoras.map((c, idx) => {
+  lista.innerHTML = visiveis.map((c, idx) => {
     const st = c.status || 'pendente';
     const isNext = proxima && c.id === proxima.id;
     const especial = c.parouDeVender ? 'inativa' : c.remarcarMes ? 'mes' : c.remarcarSemana ? 'semana' : null;
 
     // Cabeçalho de grupo quando muda de pendente → remarcada → concluída
     const grupoAtual = grupoStatus(c);
-    const grupoAnterior = idx > 0 ? grupoStatus(sem.consultoras[idx-1]) : -1;
+    const grupoAnterior = idx > 0 ? grupoStatus(visiveis[idx-1]) : -1;
     const tituloGrupo = grupoAtual === grupoAnterior ? '' :
       grupoAtual === 1 ? '<div style="font-size:14px;font-weight:800;letter-spacing:.3px;color:var(--ink);margin:22px 2px 10px;padding-top:14px;border-top:1px solid var(--border);">Remarcadas</div>' :
       grupoAtual === 2 ? '<div style="font-size:14px;font-weight:800;letter-spacing:.3px;color:var(--ink);margin:22px 2px 10px;padding-top:14px;border-top:1px solid var(--border);">Inativas</div>' :
