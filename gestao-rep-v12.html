@@ -5050,11 +5050,16 @@ function abrirDebitoAvulso(consultoraId) {
   window._debitoAvulsoCtx = { consultoraId };
   window._formaDebito = 'dinheiro';
 
+  const semAtiva = getSemanaAtiva();
+  const consNaSemana = semAtiva && semAtiva.consultoras.find(c => c.id === consultoraId);
+  const temDebitoNaSemana = !!(consNaSemana && (consNaSemana.debito || 0) > 0);
+
   document.getElementById('modalRegTitulo').textContent = 'Registrar Débito Pago';
   document.getElementById('modalRegConteudo').innerHTML = `
     <div style="background:var(--amber-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
       <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">${cons.nome}</div>
       <div style="font-size:13px;font-weight:600;color:var(--ink-3);">${[cons.cidade, cons.regiao].filter(Boolean).join(' · ') || 'Sem região cadastrada'}</div>
+      ${temDebitoNaSemana ? '<div style="font-size:12px;font-weight:700;color:var(--amber);margin-top:6px;">Débito já registrado nesta semana: ' + brl(consNaSemana.debito) + '</div>' : ''}
     </div>
 
     <label class="field">
@@ -5081,13 +5086,20 @@ function abrirDebitoAvulso(consultoraId) {
     <div class="btn-row">
       <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
       <button class="btn-primary" style="flex:1;" onclick="salvarDebitoAvulso()">Salvar</button>
-    </div>`;
+    </div>
+    ${temDebitoNaSemana ? `
+    <button type="button" onclick="salvarDebitoAvulso(true)"
+      style="width:100%;margin-top:10px;padding:12px;border-radius:12px;border:1.5px dashed var(--rose);background:white;color:var(--rose-deep);font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;">
+      Débito de outra nota
+    </button>
+    <div style="font-size:11px;color:var(--ink-3);margin-top:6px;text-align:center;">Registra este pagamento à parte, sem abater o débito de ${brl(consNaSemana.debito)} já lançado na semana ativa.</div>
+    ` : ''}`;
 
   selecionarFormaDeb('dinheiro');
   document.getElementById('modalRegistro').classList.add('open');
 }
 
-function salvarDebitoAvulso() {
+function salvarDebitoAvulso(outraNota) {
   const ctx = window._debitoAvulsoCtx;
   if (!ctx) return;
   const mestre = (DB.consultoras || []).find(c => c.id === ctx.consultoraId);
@@ -5104,6 +5116,7 @@ function salvarDebitoAvulso() {
   }
 
   let cons = sem.consultoras.find(c => c.id === mestre.id);
+  const jaExistiaNaSemana = !!cons;
   if (!cons) {
     cons = {
       ...mestre,
@@ -5120,8 +5133,17 @@ function salvarDebitoAvulso() {
   cons.ultimoPgto = val;
   if (forma === 'pix') cons.recebidoPix = (cons.recebidoPix || 0) + val;
   else cons.recebidoDinheiro = (cons.recebidoDinheiro || 0) + val;
-  cons.debitoPagoAntigo = (cons.debitoPagoAntigo || 0) + val;
-  cons.debito = Math.max(0, Math.round(((cons.debito || 0) - val) * 100) / 100);
+
+  if (outraNota) {
+    // Pagamento de uma nota separada: não abate o débito já lançado na semana ativa
+    cons.debitoOutrasNotasPago = (cons.debitoOutrasNotasPago || 0) + val;
+  } else {
+    cons.debitoPagoAntigo = (cons.debitoPagoAntigo || 0) + val;
+    // Só abate o débito da semana se esse registro já existia antes (débito rastreado nela)
+    if (jaExistiaNaSemana) {
+      cons.debito = Math.max(0, Math.round(((cons.debito || 0) - val) * 100) / 100);
+    }
+  }
 
   save();
   fecharModal('modalRegistro');
