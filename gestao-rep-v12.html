@@ -16,6 +16,7 @@
 <!-- Firebase via CDN compatível com Safari -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 <style>
 :root {
   /* Luxury Tech — grafite / off-white / champagne */
@@ -1395,6 +1396,7 @@ input[type="time"]{max-width:100%;}
 
     <label class="field"><span>Chave da IA (Gemini)</span><input type="password" id="arGemini" placeholder="AIza..."></label>
     <label class="field"><span>Google Client ID (para conectar a Google Agenda)</span><input type="text" id="arGoogleClientId" placeholder="xxxx.apps.googleusercontent.com"></label>
+    <label class="field"><span>VAPID Key (para notificações push)</span><input type="text" id="arVapidKey" placeholder="Cole a chave gerada no Firebase"></label>
     <label class="field"><span>Meta padrão semanal (R$)</span><input type="number" id="arMeta" placeholder="15000"></label>
     <label class="field"><span>Link do site "Indique e Ganhe"</span><input type="text" id="arLink" placeholder="https://..."></label>
     <label class="field"><span>Valor padrão do Pix por indicação</span><input type="text" id="arPixValor" inputmode="decimal" placeholder="R$ 20,00" oninput="maskMoeda(this)"></label>
@@ -1893,6 +1895,16 @@ input[type="time"]{max-width:100%;}
           <div style="font-size:15px;font-weight:800;color:var(--ink);" id="cfgNomePessoa">—</div>
         </div>
         <button class="btn-ghost" style="width:auto;padding:9px 16px;color:var(--red);" onclick="fazerLogout()">Sair</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div style="padding:14px 16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+          <div style="font-size:15px;font-weight:800;color:var(--ink);">Notificações de atendimento</div>
+          <span id="cfgNotifStatus" style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:8px;background:var(--surface);color:var(--ink-3);text-transform:uppercase;">Não ativado</span>
+        </div>
+        <div style="font-size:12px;color:var(--ink-3);margin-bottom:10px;">Receba um aviso no celular 1 hora antes de cada atendimento agendado.</div>
+        <button class="btn-ghost" id="cfgNotifBtn" onclick="ativarNotificacoes()" style="margin-bottom:0;">Ativar notificações</button>
       </div>
     </div>
     <div class="card" style="margin-bottom:16px;">
@@ -2701,6 +2713,48 @@ async function sincronizarEventoGoogleAgenda(t, diaKey) {
   } catch (e) {
     return null;
   }
+}
+
+/* ════════════════════════════════════════════
+   NOTIFICAÇÕES PUSH (Firebase Cloud Messaging)
+════════════════════════════════════════════ */
+async function ativarNotificacoes() {
+  const vapidKey = DB.config && DB.config.vapidKey;
+  if (!vapidKey) { alert('Peça ao administrador para configurar a chave VAPID primeiro (em Configurações da pessoa).'); return; }
+  if (!('Notification' in window)) { alert('Este navegador não suporta notificações.'); return; }
+
+  try {
+    const permissao = await Notification.requestPermission();
+    if (permissao !== 'granted') { alert('Permissão de notificação não concedida.'); return; }
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
+    const reg = await navigator.serviceWorker.getRegistration();
+    const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: reg });
+
+    if (token) {
+      DB.fcmTokens = DB.fcmTokens || [];
+      if (!DB.fcmTokens.includes(token)) {
+        DB.fcmTokens.push(token);
+        save();
+      }
+      atualizarStatusNotificacoes();
+      alert('Notificações ativadas! Você vai receber um aviso 1 hora antes de cada atendimento.');
+    }
+  } catch (e) {
+    alert('Não foi possível ativar as notificações: ' + e.message);
+  }
+}
+
+function atualizarStatusNotificacoes() {
+  const st = document.getElementById('cfgNotifStatus');
+  const btn = document.getElementById('cfgNotifBtn');
+  if (!st || !btn) return;
+  const ativado = DB.fcmTokens && DB.fcmTokens.length > 0 && Notification.permission === 'granted';
+  st.textContent = ativado ? 'Ativado' : 'Não ativado';
+  st.style.background = ativado ? 'var(--green-bg)' : 'var(--surface)';
+  st.style.color = ativado ? 'var(--green)' : 'var(--ink-3)';
+  btn.textContent = ativado ? 'Reativar notificações' : 'Ativar notificações';
 }
 
 function horarioParaMinutos(t) {
@@ -4433,6 +4487,7 @@ function abrirAdminRegioes() {
   document.getElementById('arPessoaLabel').textContent = 'Para ' + (pessoa ? pessoa.nome : '—');
   document.getElementById('arGemini').value = data.config.geminiKey || '';
   document.getElementById('arGoogleClientId').value = data.config.googleClientId || '';
+  document.getElementById('arVapidKey').value = data.config.vapidKey || '';
   document.getElementById('arMeta').value = data.config.metaPadrao || 15000;
   document.getElementById('arLink').value = data.config.linkIndiqueGanhe || '';
   document.getElementById('arPixValor').value = brlInput(data.config.valorPixIndicacao || 20);
@@ -4460,6 +4515,7 @@ function confirmarAdminRegioes() {
   data.config = data.config || {};
   data.config.geminiKey = document.getElementById('arGemini').value.trim();
   data.config.googleClientId = document.getElementById('arGoogleClientId').value.trim();
+  data.config.vapidKey = document.getElementById('arVapidKey').value.trim();
   data.config.metaPadrao = parseNum(document.getElementById('arMeta').value) || 15000;
   data.config.linkIndiqueGanhe = document.getElementById('arLink').value.trim();
   data.config.valorPixIndicacao = parseNum(document.getElementById('arPixValor').value) || 20;
@@ -6329,6 +6385,7 @@ async function enviarAssistNew() {
 function renderConfig() {
   document.getElementById('cfgNomePessoa').textContent = ACTIVE_PROFILE ? ACTIVE_PROFILE.nome : '—';
   atualizarStatusGoogleAgenda();
+  if (typeof Notification !== 'undefined') atualizarStatusNotificacoes();
 
   const souAdmin = ACTIVE_PROFILE && ACTIVE_PROFILE.role === 'admin';
   const box = document.getElementById('cfgApenasAdminBox');
