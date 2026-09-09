@@ -551,14 +551,14 @@ input[type="time"]{max-width:100%;}
           <div style="font-size:12.5px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Nova Consultora</div>
           <div style="font-size:10.5px;color:var(--ink-3);font-weight:600;margin-top:1px;">Cadastro com foto</div>
         </button>
-        <button onclick="irListaConsultoras()" style="flex:1;min-width:0;background:white;border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:left;cursor:pointer;font-family:var(--font);">
+        <button onclick="goTo('agenda')" style="flex:1;min-width:0;background:white;border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:left;cursor:pointer;font-family:var(--font);">
           <div style="width:38px;height:38px;border-radius:12px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rose-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
           </div>
           <div style="font-size:12.5px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Agenda</div>
           <div style="font-size:10.5px;color:var(--ink-3);font-weight:600;margin-top:1px;">Compromissos</div>
         </button>
-        <button onclick="abrirAtendimento()" style="flex:1;min-width:0;background:white;border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:left;cursor:pointer;font-family:var(--font);">
+        <button onclick="irListaConsultoras()" style="flex:1;min-width:0;background:white;border:1px solid var(--border);border-radius:16px;padding:14px 10px;text-align:left;cursor:pointer;font-family:var(--font);">
           <div style="width:38px;height:38px;border-radius:12px;background:var(--rose-light);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rose-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
           </div>
@@ -4906,6 +4906,8 @@ function renderSemana() {
   atualizarObsBanner();
 
   if (!sem) {
+    const ctaWrapEl0 = document.querySelector('.cta-wrap');
+    if (ctaWrapEl0) ctaWrapEl0.style.display = '';
     document.getElementById('semanaNumero').textContent = 'Semana —';
     document.getElementById('semanaRegiao').textContent = 'Nenhuma semana ativa';
     document.getElementById('iaStrip').innerHTML = 'É hora de criar a próxima semana.';
@@ -5022,18 +5024,18 @@ function renderSemana() {
   document.getElementById('iaStrip').innerHTML =
     '<strong>Dica de hoje:</strong> ' + fraseMotivacional();
   const ctaBtnEl = document.getElementById('ctaBtn');
+  const ctaWrapEl = document.querySelector('.cta-wrap');
   if (proxima) {
-    ctaBtnEl.className = 'cta-plain';
-    ctaBtnEl.innerHTML = 'Continuar Semana <span style="font-size:18px;">↓</span>';
-    ctaBtnEl.onclick = () => abrirAtendimento(proxima.id);
-    document.getElementById('ctaSub').textContent = '';
+    if (ctaWrapEl) ctaWrapEl.style.display = 'none';
   } else if (total === 0) {
+    if (ctaWrapEl) ctaWrapEl.style.display = '';
     ctaBtnEl.className = 'cta-btn';
     ctaBtnEl.style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
     ctaBtnEl.innerHTML = '+ Adicionar Consultoras';
     ctaBtnEl.onclick = () => adicionarConsultorasSemana();
     document.getElementById('ctaSub').textContent = 'Nenhuma consultora nesta semana ainda.';
   } else {
+    if (ctaWrapEl) ctaWrapEl.style.display = '';
     ctaBtnEl.className = 'cta-btn';
     ctaBtnEl.style.background = 'linear-gradient(135deg,#0A5C3A,#0D9E6E)';
     ctaBtnEl.innerHTML = '✓ Finalizar Semana';
