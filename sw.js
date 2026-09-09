@@ -14,17 +14,13 @@ messaging.onBackgroundMessage((payload) => {
   const titulo = (payload.notification && payload.notification.title) || 'Atendimento em breve';
   const corpo = (payload.notification && payload.notification.body) || '';
   self.registration.showNotification(titulo, {
-    body: corpo,
-    icon: '/app-representante/icon.png',
-    badge: '/app-representante/icon.png'
+    body: corpo
   });
 });
 
-const CACHE = 'gestao-v2';
-const FILES = ['/app-representante/gestao-rep-v12.html'];
+const CACHE = 'gestao-v3';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
   self.skipWaiting();
 });
 
