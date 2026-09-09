@@ -2729,7 +2729,8 @@ async function ativarNotificacoes() {
 
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const messaging = firebase.messaging();
-    const reg = await navigator.serviceWorker.getRegistration();
+    if (!navigator.serviceWorker.controller) { alert('Aguarde alguns segundos após abrir o app e tente novamente (o app ainda está carregando em segundo plano).'); return; }
+    const reg = await navigator.serviceWorker.ready;
     const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: reg });
 
     if (token) {
