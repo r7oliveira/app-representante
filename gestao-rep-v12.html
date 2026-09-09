@@ -4971,19 +4971,34 @@ function renderSemana() {
     const passo1Feito = !!c.horarioEnviado;
     const passo2Feito = !!c.confirmouHorario;
     const passo3Feito = st === 'concluida';
-    function chipEstilo(feito, atual) {
-      if (feito) return 'background:var(--green-bg);color:var(--green);border:1px solid transparent;';
-      if (atual) return 'background:var(--rose-deep);color:white;border:1px solid transparent;box-shadow:0 3px 10px rgba(156,76,94,.28);';
-      return 'background:white;color:var(--ink-3);border:1px solid var(--border);';
+    function corPasso(feito, atual) {
+      if (feito) return { bg: 'var(--green-bg)', border: 'var(--green)', color: 'var(--green)' };
+      if (atual) return { bg: 'var(--rose-light)', border: 'var(--rose)', color: 'var(--rose-deep)' };
+      return { bg: 'var(--surface)', border: 'var(--border)', color: 'var(--ink-3)' };
     }
-    const chip1 = chipEstilo(passo1Feito, !passo1Feito);
-    const chip2 = chipEstilo(passo2Feito, passo1Feito && !passo2Feito);
-    const chip3 = chipEstilo(passo3Feito, passo2Feito && !passo3Feito);
+    const c1 = corPasso(passo1Feito, !passo1Feito);
+    const c2 = corPasso(passo2Feito, passo1Feito && !passo2Feito);
+    const c3 = corPasso(passo3Feito, passo2Feito && !passo3Feito);
+    const linha = (feito) => 'flex:1;height:2px;background:' + (feito ? 'var(--green)' : 'var(--border)') + ';margin:0 2px;';
     const trilha = c.telefone ? (
-      '<div style="display:flex;gap:6px;padding:0 14px 14px;">'
-        + '<button onclick="event.stopPropagation();enviarWhatsappHorario(\'' + c.id + '\')" style="flex:1;min-width:0;' + chip1 + 'border-radius:10px;padding:8px 6px;font-family:var(--font);font-size:10.5px;font-weight:800;cursor:pointer;text-align:center;line-height:1.3;">' + (passo1Feito ? '✓ Marcar horário' : 'Marcar horário') + '</button>'
-        + '<button onclick="event.stopPropagation();toggleConfirmouHorario(\'' + c.id + '\')" style="flex:1;min-width:0;' + chip2 + 'border-radius:10px;padding:8px 6px;font-family:var(--font);font-size:10.5px;font-weight:800;cursor:pointer;text-align:center;line-height:1.3;">' + (passo2Feito ? '✓ Confirmado' : 'Confirmar horário') + '</button>'
-        + '<button onclick="event.stopPropagation();abrirAtendimento(\'' + c.id + '\')" style="flex:1;min-width:0;' + chip3 + 'border-radius:10px;padding:8px 6px;font-family:var(--font);font-size:10.5px;font-weight:800;cursor:pointer;text-align:center;line-height:1.3;">' + (passo3Feito ? '✓ Atendida' : 'Lançar atendimento') + '</button>'
+      '<div style="display:flex;align-items:flex-start;padding:14px 14px 12px;">'
+        + '<div onclick="event.stopPropagation();enviarWhatsappHorario(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:64px;">'
+          + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:#25D366;min-height:20px;display:flex;align-items:flex-end;justify-content:center;">Enviar pelo WhatsApp</div>'
+          + '<div style="width:30px;height:30px;border-radius:50%;background:' + c1.bg + ';border:1.5px solid ' + c1.border + ';color:' + c1.color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">' + (passo1Feito ? '✓' : '') + '</div>'
+          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo1Feito ? 'var(--green)' : 'var(--rose-deep)') + ';">Marcar<br>horário</div>'
+        + '</div>'
+        + '<div style="' + linha(passo1Feito) + 'margin-top:34px;"></div>'
+        + '<div onclick="event.stopPropagation();toggleConfirmouHorario(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:64px;">'
+          + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:#2196F3;min-height:20px;display:flex;align-items:flex-end;justify-content:center;">Clique para confirmar</div>'
+          + '<div style="width:30px;height:30px;border-radius:50%;background:' + c2.bg + ';border:1.5px solid ' + c2.border + ';color:' + c2.color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">' + (passo2Feito ? '✓' : '') + '</div>'
+          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo2Feito ? 'var(--green)' : (passo1Feito ? 'var(--rose-deep)' : 'var(--ink-3)')) + ';">Horário<br>confirmado</div>'
+        + '</div>'
+        + '<div style="' + linha(passo2Feito) + 'margin-top:34px;"></div>'
+        + '<div onclick="event.stopPropagation();abrirAtendimento(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:64px;">'
+          + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:var(--rose-deep);min-height:20px;display:flex;align-items:flex-end;justify-content:center;">Iniciar atendimento</div>'
+          + '<div style="width:30px;height:30px;border-radius:50%;background:' + c3.bg + ';border:1.5px solid ' + c3.border + ';color:' + c3.color + ';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;">' + (passo3Feito ? '✓' : '') + '</div>'
+          + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo3Feito ? 'var(--green)' : (passo2Feito ? 'var(--rose-deep)' : 'var(--ink-3)')) + ';">Lançar<br>atendimento</div>'
+        + '</div>'
       + '</div>'
     ) : (
       '<div style="padding:0 14px 14px;">'
@@ -4994,7 +5009,7 @@ function renderSemana() {
     );
 
     return tituloGrupo + '<div class="cons-card ' + cls + '" style="flex-direction:column;align-items:stretch;padding:0;overflow:hidden;">'
-      + '<div style="display:flex;align-items:flex-start;gap:12px;background:white;padding:14px 16px 10px;">'
+      + '<div style="display:flex;align-items:flex-start;gap:12px;background:var(--rose-light);padding:14px 16px 10px;">'
         + '<div style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;flex:1;min-width:0;" onclick="abrirAtendimento(\'' + c.id + '\')">'
           + '<div class="c-av ' + avCls + '" style="margin-top:1px;">' + avTxt + '</div>'
           + '<div class="c-info">'
