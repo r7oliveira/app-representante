@@ -2718,19 +2718,35 @@ async function sincronizarEventoGoogleAgenda(t, diaKey) {
 /* ════════════════════════════════════════════
    NOTIFICAÇÕES PUSH (Firebase Cloud Messaging)
 ════════════════════════════════════════════ */
+function comTimeout(promessa, ms, rotulo) {
+  return Promise.race([
+    promessa,
+    new Promise((_, rej) => setTimeout(() => rej(new Error('Tempo esgotado em: ' + rotulo)), ms)),
+  ]);
+}
+
 async function ativarNotificacoes() {
   const vapidKey = DB.config && DB.config.vapidKey;
   if (!vapidKey) { alert('Peça ao administrador para configurar a chave VAPID primeiro (em Configurações da pessoa).'); return; }
   if (!('Notification' in window)) { alert('Este navegador não suporta notificações.'); return; }
+  if (!('serviceWorker' in navigator)) { alert('Este navegador não suporta service worker.'); return; }
 
   try {
     const permissao = await Notification.requestPermission();
-    if (permissao !== 'granted') { alert('Permissão de notificação não concedida.'); return; }
+    if (permissao !== 'granted') { alert('Permissão de notificação não concedida (' + permissao + ').'); return; }
 
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+    const suportado = await comTimeout(firebase.messaging.isSupported(), 5000, 'verificar suporte');
+    if (!suportado) { alert('Este navegador/contexto não suporta Firebase Messaging (isSupported = false).'); return; }
+
     const messaging = firebase.messaging();
-    const reg = await navigator.serviceWorker.ready;
-    const token = await messaging.getToken({ vapidKey, serviceWorkerRegistration: reg });
+    const reg = await comTimeout(navigator.serviceWorker.ready, 8000, 'service worker ficar pronto');
+    const token = await comTimeout(
+      messaging.getToken({ vapidKey, serviceWorkerRegistration: reg }),
+      15000,
+      'obter token do FCM'
+    );
 
     if (token) {
       DB.fcmTokens = DB.fcmTokens || [];
@@ -2740,9 +2756,11 @@ async function ativarNotificacoes() {
       }
       atualizarStatusNotificacoes();
       alert('Notificações ativadas! Você vai receber um aviso 1 hora antes de cada atendimento.');
+    } else {
+      alert('Não foi possível obter o token (getToken retornou vazio).');
     }
   } catch (e) {
-    alert('Não foi possível ativar as notificações: ' + e.message);
+    alert('Não foi possível ativar as notificações: ' + (e && e.message ? e.message : e));
   }
 }
 
