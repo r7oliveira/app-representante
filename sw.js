@@ -1,3 +1,25 @@
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
+
+firebase.initializeApp({
+  apiKey: "AIzaSyD7FjlCtIZNL7YT6DU7P5FBM2AI7Qx2z1o",
+  projectId: "romance-indicacoes",
+  messagingSenderId: "1000995187899",
+  appId: "1:1000995187899:web:af4c97957e8f10bb42cd9e"
+});
+
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage((payload) => {
+  const titulo = (payload.notification && payload.notification.title) || 'Atendimento em breve';
+  const corpo = (payload.notification && payload.notification.body) || '';
+  self.registration.showNotification(titulo, {
+    body: corpo,
+    icon: '/app-representante/icon.png',
+    badge: '/app-representante/icon.png'
+  });
+});
+
 const CACHE = 'gestao-v2';
 const FILES = ['/app-representante/gestao-rep-v12.html'];
 
