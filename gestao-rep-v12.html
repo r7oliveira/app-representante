@@ -382,7 +382,7 @@ input[type="time"]{max-width:100%;}
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
     Agenda
   </button>
-  <button class="nav-item" onclick="abrirAtendimento()">
+  <button class="nav-item" onclick="irListaConsultoras()">
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
     Atendimentos
   </button>
@@ -584,8 +584,19 @@ input[type="time"]{max-width:100%;}
       </div>
       <div class="cta-sub" id="ctaSub"></div>
     </div>
+  </div>
+</div>
 
-    <!-- Lista consultoras -->
+<!-- ══════════════════════════════════════════
+     TELA: ATENDIMENTOS (Consultoras da semana)
+══════════════════════════════════════════ -->
+<div class="view" id="view-atendimentos-lista">
+  <div class="page-header" style="background:linear-gradient(135deg,#171717,#2E2E2E);border-bottom:none;">
+    <button onclick="goTo('semana')" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
+    <div class="ph-title" style="color:white;">Atendimentos</div>
+    <div class="ph-sub" style="color:rgba(255,255,255,.7);">Consultoras da semana</div>
+  </div>
+  <div class="scroll-body" style="padding:14px 0 80px;">
     <div style="margin:0 16px 8px;background:white;border-radius:16px;border:1px solid var(--border);padding:12px 16px;">
       <div style="font-size:11.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-2);">Consultoras da semana</div>
     </div>
@@ -4838,11 +4849,7 @@ let viewHistory = ['semana'];
 let timerInterval = null;
 
 function irListaConsultoras() {
-  goTo('semana');
-  setTimeout(function() {
-    const el = document.getElementById('listaConsultoras');
-    if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
-  }, 120);
+  goTo('atendimentos-lista');
 }
 
 function goTo(v) {
@@ -4860,13 +4867,14 @@ function goTo(v) {
   // Marca aba ativa
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const navItems = document.querySelectorAll('.nav-item');
-  const navIdx = { semana:0, agenda:1, gerenciar:3, 'fechamento-geral':4, programas:5 };
+  const navIdx = { semana:0, agenda:1, 'atendimentos-lista':2, gerenciar:3, 'fechamento-geral':4, programas:5 };
   if (navIdx[v] !== undefined) navItems[navIdx[v]]?.classList.add('active');
 
   viewHistory.push(v);
 
   // Renderizar
   if (v === 'semana')       renderSemana();
+  if (v === 'atendimentos-lista') renderSemana();
   if (v === 'motor')        renderMotor();
   if (v === 'criar-semana') renderCriarSemana();
   if (v === 'config')       renderConfig();
