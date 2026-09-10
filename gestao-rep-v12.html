@@ -2916,7 +2916,7 @@ function renderAgendaCompleta() {
     <div class="card-row" style="align-items:flex-start;">
       <div onclick="toggleTarefa('${t.id}','${diaAtual}')" style="width:28px;height:28px;border-radius:50%;background:${feito?'var(--green)':'var(--rose-light)'};color:${feito?'white':'var(--rose)'};border:${feito?'none':'1px solid var(--rose-mid)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;cursor:pointer;margin-top:1px;">${feito?'✓':''}</div>
       <div style="flex:1;min-width:0;cursor:pointer;" onclick="abrirNovaTarefa('${t.id}','${diaAtual}')">
-        <div style="font-size:14px;font-weight:700;color:${feito?'var(--ink-3)':'var(--ink)'};text-decoration:${feito?'line-through':'none'};line-height:1.35;word-break:break-word;">${t.consultoraId?'📅 ':''}${t.texto}</div>
+        <div style="font-size:14px;font-weight:700;color:${feito?'var(--ink-3)':'var(--ink)'};text-decoration:${feito?'line-through':'none'};line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.texto}</div>
         <div style="font-size:11px;color:var(--ink-3);margin-top:1px;">${[tagTxt, ...metaPartes].filter(Boolean).join(' · ')}</div>
         ${t.observacoes ? `<div style="font-size:11px;color:var(--ink-3);font-style:italic;margin-top:2px;">💬 ${t.observacoes}</div>` : ''}
         ${(t.consultoraId && t.googleEventId) ? '<div style="font-size:10.5px;font-weight:700;color:var(--green);margin-top:2px;">✓ No Google Agenda</div>' : ''}
