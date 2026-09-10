@@ -5814,6 +5814,16 @@ function toggleCrit(campo) {
     }
   }
 
+  // Marcar/desmarcar "Pedido Favorita" muda a comissão da consultora (30% → 40%).
+  // Se a venda já tinha sido lançada com a outra porcentagem, recalcula o valor a pagar
+  // e o débito para não sobrar uma diferença de 10% marcada como débito por engano.
+  if ((cons.vendido || 0) > 0) {
+    const comissaoPctAtual = cons.pedidoFavoritaFeito ? 40 : 30;
+    const novoAPagar = Math.round(cons.vendido * (100 - comissaoPctAtual) / 100 * 100) / 100;
+    cons.aPagar = novoAPagar;
+    cons.debito = Math.max(0, Math.round((novoAPagar - (cons.recebido || 0)) * 100) / 100);
+  }
+
   save();
   atualizarScoreAtend(cons);
 }
