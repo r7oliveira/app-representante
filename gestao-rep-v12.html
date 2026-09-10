@@ -2908,40 +2908,26 @@ function renderAgendaCompleta() {
     return;
   }
 
-  el.innerHTML = tarefas.map((t) => {
+  el.innerHTML = '<div class="card" style="margin-bottom:12px;">' + tarefas.map((t) => {
     const feito = !!t.feito;
-    const av = feito
-      ? { bg: 'var(--green)', border: 'var(--green)', content: '✓' }
-      : { bg: 'white', border: 'var(--rose-mid)', content: '' };
-    const badge = feito
-      ? '<span style="background:var(--green-bg);color:var(--green);font-size:10px;font-weight:800;padding:5px 11px;border-radius:99px;flex-shrink:0;letter-spacing:.2px;">Concluída</span>'
-      : (t.prioridade === 'importante'
-        ? '<span style="background:var(--rose-deep);color:white;font-size:10px;font-weight:800;padding:5px 11px;border-radius:99px;flex-shrink:0;letter-spacing:.2px;">Importante</span>'
-        : (t.consultoraId
-          ? '<span style="background:white;color:var(--rose);border:1px solid var(--rose-mid);font-size:10px;font-weight:800;padding:4px 10px;border-radius:99px;flex-shrink:0;letter-spacing:.2px;">Atendimento</span>'
-          : ''));
     const metaPartes = [t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin' ? 'da administração' : ''].filter(Boolean);
+    const tagTxt = feito ? 'Concluída' : (t.prioridade === 'importante' ? 'Importante' : (t.consultoraId ? 'Atendimento' : ''));
     return `
-    <div style="background:white;border-radius:16px;overflow:hidden;margin-bottom:12px;border:1px solid var(--border);box-shadow:0 2px 10px rgba(23,23,23,.06);">
-      <div style="display:flex;align-items:flex-start;gap:12px;background:linear-gradient(135deg,var(--rose-mid),var(--rose-light));padding:14px 16px 12px;">
-        <div onclick="toggleTarefa('${t.id}','${diaAtual}')" style="width:26px;height:26px;border-radius:50%;border:1.5px solid ${av.border};background:${av.bg};flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;font-size:13px;font-weight:800;margin-top:1px;">${av.content}</div>
-        <div style="flex:1;min-width:0;cursor:pointer;" onclick="abrirNovaTarefa('${t.id}','${diaAtual}')">
-          <div style="color:${feito?'var(--ink-3)':'var(--ink)'};font-size:14px;font-weight:700;line-height:1.35;text-decoration:${feito?'line-through':'none'};word-break:break-word;">${t.consultoraId?'📅 ':''}${t.texto}</div>
-          ${metaPartes.length ? `<div style="color:var(--ink-2);font-size:11.5px;margin-top:3px;">${metaPartes.join(' · ')}</div>` : ''}
-          ${t.observacoes ? `<div style="color:var(--ink-3);font-size:11px;font-style:italic;margin-top:3px;">💬 ${t.observacoes}</div>` : ''}
-          ${(t.consultoraId && t.googleEventId) ? '<div style="font-size:10.5px;font-weight:700;color:var(--green);margin-top:3px;">✓ No Google Agenda</div>' : ''}
-        </div>
-        ${badge}
-        <button onclick="event.stopPropagation();excluirTarefaDireta('${diaAtual}','${t.id}')" style="flex-shrink:0;background:rgba(23,23,23,.08);border:none;color:var(--ink-2);font-size:13px;cursor:pointer;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:2px;">✕</button>
-      </div>
-      ${(isHojeSel && t.consultoraId) ? `<div style="padding:12px 16px;">
-        <button onclick="event.stopPropagation();enviarWhatsappConfirmacao('${t.consultoraId}','${t.horario||''}')" style="width:100%;background:#7A2E3A;border:none;border-radius:10px;padding:9px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;">
+    <div class="card-row" style="align-items:flex-start;">
+      <div onclick="toggleTarefa('${t.id}','${diaAtual}')" style="width:28px;height:28px;border-radius:50%;background:${feito?'var(--green)':'var(--rose-light)'};color:${feito?'white':'var(--rose)'};border:${feito?'none':'1px solid var(--rose-mid)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;cursor:pointer;margin-top:1px;">${feito?'✓':''}</div>
+      <div style="flex:1;min-width:0;cursor:pointer;" onclick="abrirNovaTarefa('${t.id}','${diaAtual}')">
+        <div style="font-size:14px;font-weight:700;color:${feito?'var(--ink-3)':'var(--ink)'};text-decoration:${feito?'line-through':'none'};line-height:1.35;word-break:break-word;">${t.consultoraId?'📅 ':''}${t.texto}</div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:1px;">${[tagTxt, ...metaPartes].filter(Boolean).join(' · ')}</div>
+        ${t.observacoes ? `<div style="font-size:11px;color:var(--ink-3);font-style:italic;margin-top:2px;">💬 ${t.observacoes}</div>` : ''}
+        ${(t.consultoraId && t.googleEventId) ? '<div style="font-size:10.5px;font-weight:700;color:var(--green);margin-top:2px;">✓ No Google Agenda</div>' : ''}
+        ${(isHojeSel && t.consultoraId) ? `<button onclick="event.stopPropagation();enviarWhatsappConfirmacao('${t.consultoraId}','${t.horario||''}')" style="margin-top:8px;width:100%;background:#7A2E3A;border:none;border-radius:10px;padding:9px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0012.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 012.41 5.83c0 4.55-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.42-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.23.89 2.41 1.02 2.58.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
           <span style="color:white;font-size:12px;font-weight:800;font-family:var(--font);">Enviar WhatsApp para confirmar seu horário</span>
-        </button>
-      </div>` : ''}
+        </button>` : ''}
+      </div>
+      <button onclick="event.stopPropagation();excluirTarefaDireta('${diaAtual}','${t.id}')" style="flex-shrink:0;background:none;border:none;color:var(--ink-3);font-size:15px;cursor:pointer;padding:2px 4px;margin-top:1px;">✕</button>
     </div>`;
-  }).join('');
+  }).join('') + '</div>';
 }
 
 /* ════════════════════════════════════════════
