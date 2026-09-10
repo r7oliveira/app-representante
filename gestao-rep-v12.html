@@ -5063,24 +5063,23 @@ function abrirDebitoAvulso(consultoraId) {
       ${temDebitoNaSemana ? '<div style="font-size:12px;font-weight:700;color:var(--amber);margin-top:6px;">Débito já registrado nesta semana: ' + brl(consNaSemana.debito) + '</div>' : ''}
     </div>
 
-    <label class="field">
-      <span>Valor do débito pago (R$)</span>
-      <input id="regDebitoAvulso" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)">
-    </label>
+    <div style="text-align:center;font-size:12px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Como foi recebido</div>
+    <div class="two-col">
+      <label class="field" style="margin-bottom:0;text-align:center;">
+        <span style="display:block;text-align:center;">Pix (R$)</span>
+        <input id="regDebitoPix" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this);atualizarResumoDebitoAvulso()" style="text-align:center;">
+      </label>
+      <label class="field" style="margin-bottom:0;text-align:center;">
+        <span style="display:block;text-align:center;">Dinheiro (R$)</span>
+        <input id="regDebitoDinheiro" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this);atualizarResumoDebitoAvulso()" style="text-align:center;">
+      </label>
+    </div>
+    <div style="font-size:11px;color:var(--ink-3);text-align:center;margin:8px 0 14px;">Preencha um ou os dois — o total soma automaticamente</div>
 
-    <label class="field">
-      <span>Forma de recebimento</span>
-      <div style="display:flex;gap:8px;margin-top:2px;">
-        <button type="button" id="frmDebPix" onclick="selecionarFormaDeb('pix')"
-          style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
-           Pix
-        </button>
-        <button type="button" id="frmDebDinheiro" onclick="selecionarFormaDeb('dinheiro')"
-          style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">
-           Dinheiro
-        </button>
-      </div>
-    </label>
+    <div id="resumoDebitoAvulso" style="display:none;background:var(--green-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;text-align:center;">
+      <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Total pago</div>
+      <div style="font-size:20px;font-weight:800;color:var(--green);" id="resumoDebitoAvulsoTotal">R$ 0</div>
+    </div>
 
     <div style="font-size:11px;color:var(--ink-3);margin:-4px 0 14px;">Entra no fechamento da semana ativa como débito pago, mesmo que ela não esteja na rota desta semana.</div>
 
@@ -5090,15 +5089,31 @@ function abrirDebitoAvulso(consultoraId) {
       Débito de outra nota
     </button>
     <div style="font-size:11px;color:var(--ink-3);margin-top:6px;margin-bottom:14px;text-align:center;">Registra este pagamento à parte, sem abater o débito de ${brl(consNaSemana.debito)} já lançado na semana ativa.</div>
-    ` : ''}
+    ` : `
+    <button type="button" id="btnOutraNota" onclick="toggleOutraNota()"
+      style="width:100%;padding:12px;border-radius:12px;border:1.5px dashed var(--rose);background:white;color:var(--rose-deep);font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;">
+      Débito de outra nota
+    </button>
+    <div style="font-size:11px;color:var(--ink-3);margin-top:6px;margin-bottom:14px;text-align:center;">Marque se esse pagamento é de uma cobrança separada, à parte de qualquer débito desta semana.</div>
+    `}
 
     <div class="btn-row">
       <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
       <button class="btn-primary" style="flex:1;" onclick="salvarDebitoAvulso()">Salvar</button>
     </div>`;
 
-  selecionarFormaDeb('dinheiro');
   document.getElementById('modalRegistro').classList.add('open');
+}
+
+function atualizarResumoDebitoAvulso() {
+  const pix = parseNum(document.getElementById('regDebitoPix')?.value);
+  const din = parseNum(document.getElementById('regDebitoDinheiro')?.value);
+  const total = pix + din;
+  const resumo = document.getElementById('resumoDebitoAvulso');
+  if (resumo) {
+    resumo.style.display = total > 0 ? '' : 'none';
+    document.getElementById('resumoDebitoAvulsoTotal').textContent = brl(total);
+  }
 }
 
 function toggleOutraNota() {
@@ -5126,9 +5141,10 @@ function salvarDebitoAvulso() {
   const mestre = (DB.consultoras || []).find(c => c.id === ctx.consultoraId);
   if (!mestre) return;
 
-  const val = parseNum(document.getElementById('regDebitoAvulso').value);
+  const pix = parseNum(document.getElementById('regDebitoPix')?.value || '0');
+  const din = parseNum(document.getElementById('regDebitoDinheiro')?.value || '0');
+  const val = pix + din;
   if (!val || val <= 0) { fecharModal('modalRegistro'); return; }
-  const forma = window._formaDebito || 'dinheiro';
 
   const sem = getSemanaAtiva();
   if (!sem) {
@@ -5152,8 +5168,8 @@ function salvarDebitoAvulso() {
 
   cons.recebido = (cons.recebido || 0) + val;
   cons.ultimoPgto = val;
-  if (forma === 'pix') cons.recebidoPix = (cons.recebidoPix || 0) + val;
-  else cons.recebidoDinheiro = (cons.recebidoDinheiro || 0) + val;
+  cons.recebidoPix = (cons.recebidoPix || 0) + pix;
+  cons.recebidoDinheiro = (cons.recebidoDinheiro || 0) + din;
 
   if (outraNota) {
     // Pagamento de uma nota separada: não abate o débito já lançado na semana ativa
