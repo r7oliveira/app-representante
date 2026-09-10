@@ -1930,6 +1930,13 @@ input[type="time"]{max-width:100%;}
     <span style="font-size:13px;font-weight:600;color:var(--ink-3);">Semana:</span>
     <select id="relSemanaSelect" onchange="renderRelatorio()" style="flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-weight:700;font-family:var(--font);color:var(--ink);background:white;outline:none;"></select>
   </div>
+  <div style="padding:10px 16px 0;background:white;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <div style="position:relative;margin-bottom:10px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="relBuscaNome" type="text" placeholder="Buscar consultora por nome..." oninput="filtrarRelatorio(this.value)"
+        style="width:100%;padding:9px 12px 9px 34px;border:1.5px solid var(--border);border-radius:10px;font-size:13.5px;font-family:var(--font);box-sizing:border-box;outline:none;">
+    </div>
+  </div>
 
   <div class="scroll-body" style="padding:12px 16px 80px;" id="relConteudo">
   </div>
@@ -8000,9 +8007,22 @@ function finalizarSemana() {
 /* ════════════════════════════════════════════
    RELATÓRIO DA SEMANA
 ════════════════════════════════════════════ */
+function filtrarRelatorio(valor) {
+  window._relatorioBusca = valor || '';
+  renderRelatorio();
+  // Mantém o foco e o cursor no campo de busca após o re-render
+  const input = document.getElementById('relBuscaNome');
+  if (input) {
+    input.focus();
+    const len = input.value.length;
+    input.setSelectionRange(len, len);
+  }
+}
+
 function renderRelatorio() {
-  // Preenche o select de semanas
+  // Preenche o select de semanas (preservando a semana já selecionada)
   const sel = document.getElementById('relSemanaSelect');
+  const valorAnterior = sel.value;
   const semanas = [...DB.semanas].reverse(); // mais recente primeiro
   if (!semanas.length) {
     document.getElementById('relConteudo').innerHTML = '<div style="text-align:center;padding:40px;color:var(--ink-3);">Nenhuma semana registrada ainda.</div>';
@@ -8011,6 +8031,7 @@ function renderRelatorio() {
   sel.innerHTML = semanas.map(s =>
     `<option value="${s.id}">Semana ${s.numero} · ${s.regiao}</option>`
   ).join('');
+  if (valorAnterior && semanas.some(s => s.id === valorAnterior)) sel.value = valorAnterior;
 
   // Renderiza a semana selecionada
   const id = sel.value;
@@ -8019,7 +8040,9 @@ function renderRelatorio() {
 
   document.getElementById('relSubtitulo').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
 
-  const atendidas  = sem.consultoras.filter(c => c.status === 'concluida');
+  const busca = (window._relatorioBusca || '').trim().toLowerCase();
+  const elegiveis = sem.consultoras.filter(c => c.status === 'concluida' || c.remarcarSemana || c.remarcarMes);
+  const atendidas  = elegiveis.filter(c => !busca || (c.nome||'').toLowerCase().includes(busca));
   const pendentes  = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido    = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
   const recebido   = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
@@ -8066,7 +8089,7 @@ function renderRelatorio() {
 
   // Consultoras atendidas
   html += `<div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-3);margin:14px 0 8px;">
-    Atendidas (${atendidas.length} de ${sem.consultoras.length})
+    Atendidas e remarcadas (${atendidas.length}${busca ? ' encontradas' : ' de ' + elegiveis.length})
   </div>`;
 
   if (atendidas.length) {
@@ -8078,9 +8101,13 @@ function renderRelatorio() {
       const pixC = c.recebidoPix || 0;
       const dinC = c.recebidoDinheiro || 0;
       return `<div class="card-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-          <div style="font-size:14px;font-weight:700;color:var(--ink);">${c.nome}</div>
-          <div style="font-size:12px;font-weight:700;color:var(--green);">Score ${calcScore(c)}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px;">
+          <div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;min-width:0;">
+            <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nome}</span>
+            ${c.status !== 'concluida' && c.remarcarMes ? '<span style="background:var(--amber-bg);color:var(--amber);font-size:9px;font-weight:800;padding:3px 7px;border-radius:99px;flex-shrink:0;">Remarcada · mês</span>' : ''}
+            ${c.status !== 'concluida' && c.remarcarSemana ? '<span style="background:var(--amber-bg);color:var(--amber);font-size:9px;font-weight:800;padding:3px 7px;border-radius:99px;flex-shrink:0;">Remarcada · semana</span>' : ''}
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--green);flex-shrink:0;">Score ${calcScore(c)}</div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%;">
           <div style="background:var(--surface);border-radius:8px;padding:6px 8px;">
