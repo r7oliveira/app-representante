@@ -8100,13 +8100,12 @@ function renderRelatorio() {
       const lucroC  = Math.round((c.vendido||0) * (100-comissaoPctC)/100 * 0.18 * 100) / 100;
       const pixC = c.recebidoPix || 0;
       const dinC = c.recebidoDinheiro || 0;
+      const isRemarcada = c.status !== 'concluida' && (c.remarcarMes || c.remarcarSemana);
+      const remarcadaTxt = c.remarcarMes ? 'Remarcada · mês' : c.remarcarSemana ? 'Remarcada · semana' : '';
       return `<div class="card-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+        ${isRemarcada ? `<div style="background:var(--amber-bg);color:var(--amber);font-size:9.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:4px 9px;border-radius:8px;">${remarcadaTxt}</div>` : ''}
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px;">
-          <div style="font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px;min-width:0;">
-            <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nome}</span>
-            ${c.status !== 'concluida' && c.remarcarMes ? '<span style="background:var(--amber-bg);color:var(--amber);font-size:9px;font-weight:800;padding:3px 7px;border-radius:99px;flex-shrink:0;">Remarcada · mês</span>' : ''}
-            ${c.status !== 'concluida' && c.remarcarSemana ? '<span style="background:var(--amber-bg);color:var(--amber);font-size:9px;font-weight:800;padding:3px 7px;border-radius:99px;flex-shrink:0;">Remarcada · semana</span>' : ''}
-          </div>
+          <div style="font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">${c.nome}</div>
           <div style="font-size:12px;font-weight:700;color:var(--green);flex-shrink:0;">Score ${calcScore(c)}</div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;width:100%;">
