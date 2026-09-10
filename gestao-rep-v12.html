@@ -5049,6 +5049,7 @@ function abrirDebitoAvulso(consultoraId) {
 
   window._debitoAvulsoCtx = { consultoraId };
   window._formaDebito = 'dinheiro';
+  window._outraNotaSelecionada = false;
 
   const semAtiva = getSemanaAtiva();
   const consNaSemana = semAtiva && semAtiva.consultoras.find(c => c.id === consultoraId);
@@ -5083,23 +5084,43 @@ function abrirDebitoAvulso(consultoraId) {
 
     <div style="font-size:11px;color:var(--ink-3);margin:-4px 0 14px;">Entra no fechamento da semana ativa como débito pago, mesmo que ela não esteja na rota desta semana.</div>
 
+    ${temDebitoNaSemana ? `
+    <button type="button" id="btnOutraNota" onclick="toggleOutraNota()"
+      style="width:100%;padding:12px;border-radius:12px;border:1.5px dashed var(--rose);background:white;color:var(--rose-deep);font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;">
+      Débito de outra nota
+    </button>
+    <div style="font-size:11px;color:var(--ink-3);margin-top:6px;margin-bottom:14px;text-align:center;">Registra este pagamento à parte, sem abater o débito de ${brl(consNaSemana.debito)} já lançado na semana ativa.</div>
+    ` : ''}
+
     <div class="btn-row">
       <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
       <button class="btn-primary" style="flex:1;" onclick="salvarDebitoAvulso()">Salvar</button>
-    </div>
-    ${temDebitoNaSemana ? `
-    <button type="button" onclick="salvarDebitoAvulso(true)"
-      style="width:100%;margin-top:10px;padding:12px;border-radius:12px;border:1.5px dashed var(--rose);background:white;color:var(--rose-deep);font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;">
-      Débito de outra nota
-    </button>
-    <div style="font-size:11px;color:var(--ink-3);margin-top:6px;text-align:center;">Registra este pagamento à parte, sem abater o débito de ${brl(consNaSemana.debito)} já lançado na semana ativa.</div>
-    ` : ''}`;
+    </div>`;
 
   selecionarFormaDeb('dinheiro');
   document.getElementById('modalRegistro').classList.add('open');
 }
 
-function salvarDebitoAvulso(outraNota) {
+function toggleOutraNota() {
+  window._outraNotaSelecionada = !window._outraNotaSelecionada;
+  const btn = document.getElementById('btnOutraNota');
+  if (!btn) return;
+  if (window._outraNotaSelecionada) {
+    btn.style.background = 'var(--rose)';
+    btn.style.color = 'white';
+    btn.style.borderStyle = 'solid';
+    btn.textContent = '✓ Débito de outra nota';
+  } else {
+    btn.style.background = 'white';
+    btn.style.color = 'var(--rose-deep)';
+    btn.style.borderStyle = 'dashed';
+    btn.textContent = 'Débito de outra nota';
+  }
+}
+
+
+function salvarDebitoAvulso() {
+  const outraNota = !!window._outraNotaSelecionada;
   const ctx = window._debitoAvulsoCtx;
   if (!ctx) return;
   const mestre = (DB.consultoras || []).find(c => c.id === ctx.consultoraId);
