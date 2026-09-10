@@ -4830,6 +4830,12 @@ function parseNum(s) {
   s = String(s).replace(/[^\d,.-]/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.');
   const n = parseFloat(s); return isNaN(n) ? 0 : n;
 }
+// Calcula o débito restante (a pagar - recebido) tolerando diferenças de até 1 centavo,
+// que costumam ser só resíduo de arredondamento e não uma dívida real.
+function debitoRestante(aPagar, recebido) {
+  const diff = Math.round(((aPagar||0) - (recebido||0)) * 100) / 100;
+  return diff <= 0.01 ? 0 : diff;
+}
 function iniciais(nome) {
   const p = String(nome||'').trim().split(' ');
   if (p.length < 2) return p[0].substring(0,2).toUpperCase();
@@ -5026,7 +5032,7 @@ function salvarPagarDebitoGeral() {
   cons.debitoPagoAntigo = (cons.debitoPagoAntigo || 0) + val;
 
   const debAnterior = cons.debito || 0;
-  cons.debito = Math.max(0, Math.round((debAnterior - val) * 100) / 100);
+  cons.debito = debitoRestante(debAnterior, val);
 
   save();
   fecharModal('modalRegistro');
@@ -5210,7 +5216,7 @@ function salvarDebitoAvulso() {
     cons.debitoPagoAntigo = (cons.debitoPagoAntigo || 0) + val;
     // Só abate o débito da semana se esse registro já existia antes (débito rastreado nela)
     if (jaExistiaNaSemana) {
-      cons.debito = Math.max(0, Math.round(((cons.debito || 0) - val) * 100) / 100);
+      cons.debito = debitoRestante(cons.debito || 0, val);
     }
   }
 
@@ -5323,7 +5329,7 @@ function renderSemana() {
     if ((c.vendido||0) > 0) {
       const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
       const aPagarC = Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
-      return a + Math.max(0, aPagarC - (c.recebido||0));
+      return a + debitoRestante(aPagarC, c.recebido);
     }
     // Senão, usa o débito registrado manualmente (ex: débito de outra nota)
     return a + (c.debito || 0);
@@ -5825,7 +5831,7 @@ function toggleCrit(campo) {
     const comissaoPctAtual = cons.pedidoFavoritaFeito ? 40 : 30;
     const novoAPagar = Math.round(cons.vendido * (100 - comissaoPctAtual) / 100 * 100) / 100;
     cons.aPagar = novoAPagar;
-    cons.debito = Math.max(0, Math.round((novoAPagar - (cons.recebido || 0)) * 100) / 100);
+    cons.debito = debitoRestante(novoAPagar, cons.recebido);
   }
 
   save();
@@ -6149,7 +6155,7 @@ function atualizarResumo() {
   }
 
   const aPagar = parseNum(document.getElementById('regAPagar')?.value);
-  const debito = Math.max(0, Math.round((aPagar - total) * 100) / 100);
+  const debito = debitoRestante(aPagar, total);
   const resumoDeb = document.getElementById('resumoDebito');
   if (resumoDeb) {
     resumoDeb.style.display = (aPagar > 0 && debito > 0) ? '' : 'none';
@@ -6189,7 +6195,7 @@ function salvarRegistroVenda() {
     if (recebido > 0) cons.ultimoPgto = recebido;
     cons.recebidoPix = pix;
     cons.recebidoDinheiro = din;
-    cons.debito = aPagarFinal > 0 ? Math.max(0, aPagarFinal - recebido) : 0;
+    cons.debito = aPagarFinal > 0 ? debitoRestante(aPagarFinal, recebido) : 0;
     cons.aPagar = aPagarFinal;
     if (forma) cons.formaPgto = forma;
 
@@ -7947,7 +7953,7 @@ function abrirDetalheCobrancas() {
     if ((c.vendido||0) > 0) {
       const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
       const aPagarC = Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
-      return Math.max(0, aPagarC - (c.recebido||0));
+      return debitoRestante(aPagarC, c.recebido);
     }
     return c.debito || 0;
   }
@@ -8019,7 +8025,7 @@ function renderRelatorio() {
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
     if ((c.vendido||0) > 0) {
       const aPagarC = Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
-      return a + Math.max(0, aPagarC - (c.recebido||0));
+      return a + debitoRestante(aPagarC, c.recebido);
     }
     return a + (c.debito || 0);
   }, 0);
@@ -8121,7 +8127,7 @@ async function gerarRelatorioIA() {
     if (c.status !== 'concluida') return a;
     if ((c.debito||0) > 0) return a + c.debito;
     const ap = Math.round((c.vendido||0) * 0.70 * 100) / 100;
-    return a + Math.max(0, ap - (c.recebido||0));
+    return a + debitoRestante(ap, c.recebido);
   }, 0);
   const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
   const meta      = sem.meta || 15000;
@@ -8181,7 +8187,7 @@ function compartilharRelatorio() {
     if (c.status !== 'concluida') return a;
     if ((c.debito||0) > 0) return a + c.debito;
     const ap = Math.round((c.vendido||0) * 0.70 * 100) / 100;
-    return a + Math.max(0, ap - (c.recebido||0));
+    return a + debitoRestante(ap, c.recebido);
   }, 0);
   const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
 
@@ -8253,7 +8259,7 @@ async function gerarPDF() {
   const debitos = sem.consultoras.reduce((a,c)=>{
     if(c.status!=='concluida') return a;
     if((c.debito||0)>0) return a+c.debito;
-    return a+Math.max(0,Math.round((c.vendido||0)*0.70*100)/100-(c.recebido||0));
+    return a+debitoRestante(Math.round((c.vendido||0)*0.70*100)/100, c.recebido);
   },0);
   const meta = sem.meta||15000;
   const pct  = Math.min(100,Math.round(vendido/meta*100));
