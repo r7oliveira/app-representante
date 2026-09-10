@@ -8072,8 +8072,11 @@ function renderRelatorio() {
   if (atendidas.length) {
     html += '<div class="card" style="margin-bottom:12px;">';
     html += atendidas.map(c => {
-      const aPagarC = Math.round((c.vendido||0) * 0.70 * 100) / 100;
-      const lucroC  = Math.round((c.vendido||0) * 0.70 * 0.18 * 100) / 100;
+      const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
+      const aPagarC = (c.aPagar||0) > 0 ? c.aPagar : Math.round((c.vendido||0) * (100-comissaoPctC)/100 * 100) / 100;
+      const lucroC  = Math.round((c.vendido||0) * (100-comissaoPctC)/100 * 0.18 * 100) / 100;
+      const pixC = c.recebidoPix || 0;
+      const dinC = c.recebidoDinheiro || 0;
       return `<div class="card-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
         <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
           <div style="font-size:14px;font-weight:700;color:var(--ink);">${c.nome}</div>
@@ -8093,6 +8096,16 @@ function renderRelatorio() {
             <div style="font-size:13px;font-weight:800;color:${(c.debito||0)>0?'var(--red)':'var(--ink-3)'};">${brl(c.debito||0)}</div>
           </div>
         </div>
+        ${(pixC>0 || dinC>0) ? `<div style="display:flex;gap:6px;width:100%;">
+          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;background:var(--rose-light);border-radius:8px;padding:5px 9px;">
+            <span style="font-size:9.5px;color:var(--rose-deep);font-weight:700;text-transform:uppercase;">Pix</span>
+            <span style="font-size:12px;font-weight:800;color:var(--ink);">${brl(pixC)}</span>
+          </div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:space-between;background:var(--rose-light);border-radius:8px;padding:5px 9px;">
+            <span style="font-size:9.5px;color:var(--rose-deep);font-weight:700;text-transform:uppercase;">Dinheiro</span>
+            <span style="font-size:12px;font-weight:800;color:var(--ink);">${brl(dinC)}</span>
+          </div>
+        </div>` : ''}
         <div style="font-size:11px;color:var(--ink-3);">Vendido: ${brl(c.vendido||0)} · Lucro: <strong style="color:var(--green);">${brl(lucroC)}</strong>${c.cidade?' · '+c.cidade:''}</div>
       </div>`;
     }).join('');
