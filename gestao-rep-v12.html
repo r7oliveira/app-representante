@@ -5318,11 +5318,15 @@ function renderSemana() {
   const vendido = sem.consultoras.reduce((a,c) => a + (c.vendido||0), 0);
   const recebido = sem.consultoras.reduce((a,c) => a + (c.recebido||0), 0);
   const cobrancas = sem.consultoras.reduce((a,c) => {
-    // Se tem débito registrado, usa ele (independente do atendimento já ter sido finalizado)
-    if ((c.debito||0) > 0) return a + c.debito;
-    // Senão calcula: 70% do vendido menos o que já recebeu
-    const aPagarC = Math.round((c.vendido||0) * 0.70 * 100) / 100;
-    return a + Math.max(0, aPagarC - (c.recebido||0));
+    // Se teve venda, recalcula sempre com a comissão correta (30% ou 40% se for favorita),
+    // assim um débito salvo com a % antiga se autocorrige sozinho, sem precisar reeditar nada.
+    if ((c.vendido||0) > 0) {
+      const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
+      const aPagarC = Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
+      return a + Math.max(0, aPagarC - (c.recebido||0));
+    }
+    // Senão, usa o débito registrado manualmente (ex: débito de outra nota)
+    return a + (c.debito || 0);
   }, 0);
   const meta = sem.meta || DB.config.metaPadrao || 15000;
   const aPagarTotal = sem.consultoras.reduce((a,c) => a + (c.aPagar||0), 0);
@@ -7940,9 +7944,12 @@ function abrirDetalheCobrancas() {
   if (!sem) return;
 
   function debitoDe(c) {
-    if ((c.debito||0) > 0) return c.debito;
-    const aPagarC = Math.round((c.vendido||0) * 0.70 * 100) / 100;
-    return Math.max(0, aPagarC - (c.recebido||0));
+    if ((c.vendido||0) > 0) {
+      const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
+      const aPagarC = Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
+      return Math.max(0, aPagarC - (c.recebido||0));
+    }
+    return c.debito || 0;
   }
 
   const comCobranca = sem.consultoras.filter(c => debitoDe(c) > 0);
@@ -8009,9 +8016,12 @@ function renderRelatorio() {
   const recebido   = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
   const debitos    = sem.consultoras.reduce((a,c) => {
     if (c.status !== 'concluida') return a;
-    if ((c.debito||0) > 0) return a + c.debito;
-    const aPagarC = Math.round((c.vendido||0) * 0.70 * 100) / 100;
-    return a + Math.max(0, aPagarC - (c.recebido||0));
+    const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
+    if ((c.vendido||0) > 0) {
+      const aPagarC = Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
+      return a + Math.max(0, aPagarC - (c.recebido||0));
+    }
+    return a + (c.debito || 0);
   }, 0);
   const lucro      = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
   const meta       = sem.meta || 15000;
