@@ -7960,6 +7960,7 @@ function abrirDetalheRecebido() {
       const partes = [];
       if (c.debitoOutrasNotasPix) partes.push('Pix: ' + brl(c.debitoOutrasNotasPix));
       if (c.debitoOutrasNotasDinheiro) partes.push('Dinheiro: ' + brl(c.debitoOutrasNotasDinheiro));
+      if (!partes.length) partes.push('Forma não registrada');
       return `
         <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
           <div style="flex:1;">
@@ -7967,12 +7968,70 @@ function abrirDetalheRecebido() {
             <div style="font-size:11px;color:var(--ink-3);">${partes.join(' · ')}</div>
           </div>
           <div style="font-size:14px;font-weight:800;color:var(--green);">${brl(c.debitoOutrasNotasPago||0)}</div>
+          <button onclick="abrirCorrigirDebitoAntigo('${sem.id}','${c.id}')" style="flex-shrink:0;background:none;border:none;padding:4px;cursor:pointer;color:var(--ink-3);font-size:14px;">✎</button>
         </div>`;
     }).join('');
     lista.innerHTML = html;
   }
 
   document.getElementById('modalRecebido').classList.add('open');
+}
+
+function abrirCorrigirDebitoAntigo(semId, consId) {
+  const sem = (DB.semanas || []).find(s => s.id === semId);
+  const cons = sem && sem.consultoras.find(c => c.id === consId);
+  if (!cons) return;
+
+  document.getElementById('modalRegTitulo').textContent = 'Corrigir Débito Antigo';
+  document.getElementById('modalRegConteudo').innerHTML = `
+    <div style="background:var(--amber-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+      <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">${cons.nome}</div>
+      <div style="font-size:12px;color:var(--ink-3);">Valor atual registrado: <strong>${brl(cons.debitoOutrasNotasPago||0)}</strong></div>
+    </div>
+    <div style="text-align:center;font-size:12px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Corrigir para</div>
+    <div class="two-col">
+      <label class="field" style="margin-bottom:0;text-align:center;">
+        <span style="display:block;text-align:center;">Pix (R$)</span>
+        <input id="corrDebPix" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons.debitoOutrasNotasPix||0)}" oninput="maskMoeda(this)" style="text-align:center;">
+      </label>
+      <label class="field" style="margin-bottom:0;text-align:center;">
+        <span style="display:block;text-align:center;">Dinheiro (R$)</span>
+        <input id="corrDebDinheiro" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons.debitoOutrasNotasDinheiro||0)}" oninput="maskMoeda(this)" style="text-align:center;">
+      </label>
+    </div>
+    <div style="font-size:11px;color:var(--ink-3);text-align:center;margin:8px 0 14px;">Isso substitui (não soma) o valor registrado como débito antigo.</div>
+    <div class="btn-row">
+      <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
+      <button class="btn-primary" style="flex:1;" onclick="salvarCorrecaoDebitoAntigo('${semId}','${consId}')">Salvar</button>
+    </div>
+    <button type="button" onclick="if(confirm('Remover totalmente este débito antigo?')) { salvarCorrecaoDebitoAntigo('${semId}','${consId}', true); }"
+      style="width:100%;margin-top:10px;padding:10px;border-radius:10px;border:none;background:none;color:var(--red);font-size:12.5px;font-weight:700;font-family:var(--font);cursor:pointer;">
+      Remover débito antigo
+    </button>`;
+
+  document.getElementById('modalRegistro').classList.add('open');
+}
+
+function salvarCorrecaoDebitoAntigo(semId, consId, remover) {
+  const sem = (DB.semanas || []).find(s => s.id === semId);
+  const cons = sem && sem.consultoras.find(c => c.id === consId);
+  if (!cons) return;
+
+  if (remover) {
+    cons.debitoOutrasNotasPago = 0;
+    cons.debitoOutrasNotasPix = 0;
+    cons.debitoOutrasNotasDinheiro = 0;
+  } else {
+    const pix = parseNum(document.getElementById('corrDebPix')?.value || '0');
+    const din = parseNum(document.getElementById('corrDebDinheiro')?.value || '0');
+    cons.debitoOutrasNotasPix = pix;
+    cons.debitoOutrasNotasDinheiro = din;
+    cons.debitoOutrasNotasPago = pix + din;
+  }
+
+  save();
+  fecharModal('modalRegistro');
+  abrirDetalheRecebido();
 }
 
 function abrirDetalheAPagar() {
