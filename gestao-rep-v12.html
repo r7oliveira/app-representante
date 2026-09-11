@@ -7916,6 +7916,7 @@ function abrirDetalheRecebido() {
   }
 
   const comRecebido = sem.consultoras.filter(c => (c.recebido||0) > 0);
+  const comDebitoAntigo = sem.consultoras.filter(c => (c.debitoOutrasNotasPago||0) > 0);
   let totalPix = 0, totalDin = 0;
   const splits = new Map();
   comRecebido.forEach(c => {
@@ -7924,7 +7925,12 @@ function abrirDetalheRecebido() {
     totalPix += s.pix;
     totalDin += s.din;
   });
-  const totalGeral  = comRecebido.reduce((a,c) => a+(c.recebido||0), 0);
+  comDebitoAntigo.forEach(c => {
+    totalPix += c.debitoOutrasNotasPix || 0;
+    totalDin += c.debitoOutrasNotasDinheiro || 0;
+  });
+  const totalGeral  = comRecebido.reduce((a,c) => a+(c.recebido||0), 0)
+                     + comDebitoAntigo.reduce((a,c) => a+(c.debitoOutrasNotasPago||0), 0);
 
   document.getElementById('recebSemanaLabel').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
   document.getElementById('recebTotalPix').textContent = brl(totalPix);
@@ -7932,11 +7938,11 @@ function abrirDetalheRecebido() {
   document.getElementById('recebTotalGeral').textContent = brl(totalGeral);
 
   const lista = document.getElementById('recebLista');
-  if (comRecebido.length === 0) {
+  if (comRecebido.length === 0 && comDebitoAntigo.length === 0) {
     lista.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Nenhum recebimento registrado ainda.</div>';
   } else {
     const ordenada = [...comRecebido].sort((a,b) => (b.recebido||0) - (a.recebido||0));
-    lista.innerHTML = ordenada.map(c => {
+    let html = ordenada.map(c => {
       const s = splits.get(c.id);
       const partes = [];
       if (s.pix) partes.push('Pix: ' + brl(s.pix));
@@ -7950,6 +7956,20 @@ function abrirDetalheRecebido() {
           <div style="font-size:14px;font-weight:800;color:var(--green);">${brl(c.recebido||0)}</div>
         </div>`;
     }).join('');
+    html += comDebitoAntigo.map(c => {
+      const partes = [];
+      if (c.debitoOutrasNotasPix) partes.push('Pix: ' + brl(c.debitoOutrasNotasPix));
+      if (c.debitoOutrasNotasDinheiro) partes.push('Dinheiro: ' + brl(c.debitoOutrasNotasDinheiro));
+      return `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome} <span style="font-weight:700;color:var(--amber);">— Débito antigo</span></div>
+            <div style="font-size:11px;color:var(--ink-3);">${partes.join(' · ')}</div>
+          </div>
+          <div style="font-size:14px;font-weight:800;color:var(--green);">${brl(c.debitoOutrasNotasPago||0)}</div>
+        </div>`;
+    }).join('');
+    lista.innerHTML = html;
   }
 
   document.getElementById('modalRecebido').classList.add('open');
