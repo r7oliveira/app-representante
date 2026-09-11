@@ -19,19 +19,26 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
 <style>
 :root {
-  /* Luxury Tech — grafite / off-white / champagne */
-  --rose:#A67C52; --rose-deep:#171717; --rose-light:#F1E9DD; --rose-mid:#D8C4A8;
-  --ink:#171717; --ink-2:#3A3A3A; --ink-3:#777777;
-  --surface:#F7F7F5; --surface-2:#EFEEEB; --white:#FFFFFF;
-  --green:#2F7D5B; --green-bg:#E4EFE9;
-  --amber:#B88932; --amber-bg:#F3EBDA;
-  --red:#B85450; --red-bg:#F6E5E4;
-  --purple:#A67C52; --purple-bg:#F1E9DD;
-  --border:#E7E5E1;
+  /* Design System — grafite / off-white / champagne (Luxury Tech) */
+  --rose:#A67C52; --rose-deep:#181818; --rose-light:#E8DCCB; --rose-mid:#D8C4A8;
+  --ink:#181818; --ink-2:#6B6B6B; --ink-3:#969696;
+  --surface:#F6F6F3; --surface-2:#F0F0ED; --white:#FFFFFF;
+  --green:#2E7D5B; --green-bg:#E5F0EA;
+  --amber:#B7872F; --amber-bg:#F4EDDC;
+  --red:#B6534F; --red-bg:#F6E7E5;
+  --purple:#A67C52; --purple-bg:#E8DCCB;
+  --border:#E6E6E2;
   --r:14px; --r-sm:10px;
   --font:'Plus Jakarta Sans',sans-serif;
   --font-serif:'Plus Jakarta Sans',sans-serif;
   --gold:#A67C52;
+  /* Aliases do design system (mesmas cores, nomes semânticos) */
+  --bg:var(--surface); --surface-alt:var(--surface-2); --card:var(--white);
+  --text:var(--ink); --text-secondary:var(--ink-2); --text-muted:var(--ink-3);
+  --accent:var(--rose); --accent-light:var(--rose-light);
+  --success:var(--green); --success-bg:var(--green-bg);
+  --warning:var(--amber); --warning-bg:var(--amber-bg);
+  --danger:var(--red); --danger-bg:var(--red-bg);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
@@ -76,7 +83,7 @@ input,textarea,select{font-family:var(--font);}
 .card-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);}
 .card-row:last-child{border-bottom:none;}
 
-.btn-primary{width:100%;background:linear-gradient(135deg,var(--rose-deep),var(--rose));color:white;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 24px rgba(23,23,23,.3);}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--rose-deep),var(--rose));color:white;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(24,24,24,.18);}
 .btn-ghost{width:100%;background:white;border:2px solid var(--border);border-radius:16px;padding:13px;font-size:14px;font-weight:700;color:var(--ink-2);display:flex;align-items:center;justify-content:center;gap:8px;}
 
 .pill{font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;flex-shrink:0;}
@@ -114,7 +121,7 @@ input[type="time"]{max-width:100%;}
 .hero-box-sub{color:rgba(255,255,255,.4);font-size:10px;font-weight:500;margin-top:3px;}
 
 /* ── IA ORB ── */
-.ia-orb{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#B98B3E,#D8C4A8);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;flex-shrink:0;box-shadow:0 2px 8px rgba(124,58,237,.3);}
+.ia-orb{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#B98B3E,#D8C4A8);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;flex-shrink:0;box-shadow:0 2px 8px rgba(166,124,82,.25);}
 
 /* ── MODAL ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;}
@@ -137,7 +144,7 @@ input[type="time"]{max-width:100%;}
 .ind-filtro-btn{flex-shrink:0;background:var(--surface-2);border:none;color:var(--ink-3);font-size:12.5px;font-weight:700;font-family:var(--font);padding:8px 14px;border-radius:14px;cursor:pointer;white-space:nowrap;}
 .ind-filtro-btn.active{background:var(--rose);color:white;}
 .modal-overlay.open{display:flex;}
-.modal-box{background:white;border-radius:16px 28px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;}
+.modal-box{background:white;border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;}
 .modal-title{font-size:20px;font-weight:800;margin-bottom:18px;}
 .modal-close{float:right;background:var(--surface-2);border:none;font-size:16px;color:var(--ink-3);cursor:pointer;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:-4px;}
 
@@ -170,7 +177,7 @@ input[type="time"]{max-width:100%;}
 .ia-txt strong{color:var(--ink);font-weight:700;}
 
 .cta-wrap{padding:12px 16px 4px;background:white;flex-shrink:0;}
-.cta-btn{width:100%;background:linear-gradient(135deg,#A67C52,#D8C4A8);color:white;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 28px rgba(107,0,48,.4),0 2px 8px rgba(166,124,82,.2);letter-spacing:.2px;cursor:pointer;}
+.cta-btn{width:100%;background:linear-gradient(135deg,#A67C52,#D8C4A8);color:white;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(166,124,82,.22);letter-spacing:.2px;cursor:pointer;}
 .cta-plain{width:100%;background:none;color:var(--rose-deep);border:none;padding:6px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:var(--font);}
 .cta-sub{text-align:center;font-size:11px;color:var(--ink-3);margin-top:7px;font-weight:500;}
 
@@ -198,13 +205,13 @@ input[type="time"]{max-width:100%;}
    TELA: MODO ATENDIMENTO
 ════════════════════════════════════════ */
 #view-atendimento{z-index:100;background:var(--surface);}
-.atend-header{background:#0A2E1A;padding:calc(14px + env(safe-area-inset-top)) 20px 16px;flex-shrink:0;}
+.atend-header{background:linear-gradient(135deg,var(--ink),#2E2E2E);padding:calc(14px + env(safe-area-inset-top)) 20px 16px;flex-shrink:0;}
 .atend-back{color:rgba(255,255,255,.55);font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;}
 .atend-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
 .atend-av{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:white;flex-shrink:0;}
 .atend-nome{color:white;font-size:18px;font-weight:800;}
 .atend-cidade{color:rgba(255,255,255,.55);font-size:12px;font-weight:500;margin-top:2px;}
-.atend-status-pill{display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:#0D9E6E;color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;}
+.atend-status-pill{display:inline-flex;align-items:center;gap:5px;margin-top:6px;background:var(--green);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;}
 .atend-pos{margin-left:auto;background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;flex-shrink:0;}
 
 .timer-bar{background:rgba(255,255,255,.1);border-radius:14px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,.12);}
@@ -231,7 +238,7 @@ input[type="time"]{max-width:100%;}
 
 .fav-status{background:white;border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);}
 
-.big-action-green{background:linear-gradient(135deg,#0A2E1A,#0D9E6E);color:white;border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:14px;width:100%;text-align:left;overflow:hidden;}
+.big-action-green{background:linear-gradient(135deg,var(--ink),var(--rose));color:white;border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:14px;width:100%;text-align:left;overflow:hidden;}
 .big-action-white{background:white;border:2px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:14px;width:100%;text-align:left;}
 .action-icon{font-size:26px;flex-shrink:0;}
 .action-title{font-size:15px;font-weight:800;margin-bottom:2px;}
@@ -240,10 +247,10 @@ input[type="time"]{max-width:100%;}
 
 .toggle-group{display:flex;gap:8px;flex-shrink:0;}
 .toggle-btn{background:rgba(0,0,0,.2);color:rgba(255,255,255,.7);border-radius:10px;padding:6px 14px;font-size:13px;font-weight:700;border:none;cursor:pointer;}
-.toggle-btn.yes{background:white;color:#0A2E1A;}
+.toggle-btn.yes{background:white;color:var(--ink);}
 .toggle-btn.no{background:rgba(201,38,30,.5);color:white;}
 
-.finalizar-btn{width:100%;background:linear-gradient(135deg,var(--rose-deep),var(--rose));color:white;border:none;border-radius:14px;padding:20px;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 8px 28px rgba(23,23,23,.35);font-size:22px;}
+.finalizar-btn{width:100%;background:linear-gradient(135deg,var(--rose-deep),var(--rose));color:white;border:none;border-radius:14px;padding:20px;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 4px 16px rgba(24,24,24,.2);font-size:22px;}
 .finalizar-title{font-size:17px;font-weight:800;}
 .finalizar-sub{font-size:11px;font-weight:500;opacity:.75;margin-top:2px;}
 
@@ -295,7 +302,7 @@ input[type="time"]{max-width:100%;}
 .chat-msg{margin-bottom:8px;display:flex;flex-direction:column;}
 .chat-msg.user{align-items:flex-end;}
 .chat-msg.ia{align-items:flex-start;}
-.chat-msg.user .bubble{background:#F0D9E5;color:var(--ink);padding:9px 13px;border-radius:16px 16px 4px 16px;font-size:14px;max-width:82%;box-shadow:0 1px 2px rgba(0,0,0,.1);}
+.chat-msg.user .bubble{background:var(--rose-light);color:var(--ink);padding:9px 13px;border-radius:16px 16px 4px 16px;font-size:14px;max-width:82%;box-shadow:0 1px 2px rgba(0,0,0,.1);}
 .chat-msg.ia .bubble{background:white;color:var(--ink);padding:10px 13px;border-radius:16px 16px 16px 4px;font-size:13px;max-width:88%;line-height:1.7;box-shadow:0 1px 2px rgba(0,0,0,.1);}
 .chat-msg.ia .bubble b,.chat-msg.ia .bubble strong{color:var(--rose-deep);}
 .chat-msg .ts{font-size:10px;color:var(--ink-3);margin-top:3px;padding:0 4px;}
@@ -2869,10 +2876,12 @@ function renderAgendaHoje() {
           ${t.prioridade==='importante' && !t.feito ? '<span style="background:var(--rose);color:white;font-size:8.5px;font-weight:800;padding:2px 6px;border-radius:6px;text-transform:uppercase;letter-spacing:.3px;">Importante</span>' : ''}
           ${(t.consultoraId && t.googleEventId) ? '<span style="font-size:10px;font-weight:700;color:var(--green);">✓ No Google Agenda</span>' : ''}
         </div>` : ''}
-        ${t.consultoraId ? `<button onclick="event.stopPropagation();enviarWhatsappConfirmacao('${t.consultoraId}','${t.horario||''}')" style="margin-top:8px;width:100%;background:#7A2E3A;border:none;border-radius:10px;padding:9px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0012.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 012.41 5.83c0 4.55-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.42-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.23.89 2.41 1.02 2.58.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
-          <span style="color:white;font-size:12px;font-weight:800;font-family:var(--font);">Enviar WhatsApp para confirmar seu horário</span>
-        </button>` : ''}
+        ${t.consultoraId ? `<div style="display:flex;justify-content:flex-end;margin-top:8px;">
+        <button onclick="event.stopPropagation();enviarWhatsappConfirmacao('${t.consultoraId}','${t.horario||''}')" style="background:#25D366;border:none;border-radius:20px;padding:7px 12px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0012.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 01-1.26-4.38c0-4.54 3.7-8.24 8.26-8.24 2.2 0 4.27.86 5.83 2.42a8.18 8.18 0 012.41 5.83c0 4.55-3.7 8.23-8.24 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.24-1.47-1.38-1.72-.15-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.16-.25.25-.42.08-.17.04-.31-.02-.44-.06-.12-.56-1.35-.77-1.84-.2-.48-.41-.42-.56-.42-.14-.01-.31-.01-.48-.01-.17 0-.44.06-.67.31-.23.25-.87.85-.87 2.08 0 1.23.89 2.41 1.02 2.58.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.55.1.47-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.14-1.18-.06-.11-.23-.17-.48-.29z"/></svg>
+          <span style="color:white;font-size:11.5px;font-weight:800;font-family:var(--font);">Confirmar horário</span>
+        </button>
+        </div>` : ''}
       </div>
       <button onclick="event.stopPropagation();excluirTarefaDireta('${hojeAgendaKey()}','${t.id}')" style="flex-shrink:0;background:none;border:none;color:var(--ink-3);font-size:15px;cursor:pointer;padding:2px 4px;margin-top:1px;">✕</button>
     </div>`).join('');
@@ -5463,7 +5472,7 @@ function renderSemana() {
   } else {
     if (ctaWrapEl) ctaWrapEl.style.display = '';
     ctaBtnEl.className = 'cta-btn';
-    ctaBtnEl.style.background = 'linear-gradient(135deg,#0A5C3A,#0D9E6E)';
+    ctaBtnEl.style.background = 'linear-gradient(135deg,#245c46,#2E7D5B)';
     ctaBtnEl.innerHTML = '✓ Finalizar Semana';
     ctaBtnEl.onclick = () => mostrarFechamentoSemana();
     document.getElementById('ctaSub').textContent = 'Todas as ' + total + ' consultoras foram atendidas!';
@@ -5549,7 +5558,7 @@ function renderSemana() {
         + '</div>'
         + '<div style="' + linha(passo1Feito) + 'margin-top:34px;"></div>'
         + '<div onclick="event.stopPropagation();toggleConfirmouHorario(\'' + c.id + '\')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;width:64px;">'
-          + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:#2196F3;min-height:20px;display:flex;align-items:flex-end;justify-content:center;">Clique para confirmar</div>'
+          + '<div style="font-size:8.5px;font-weight:800;text-align:center;line-height:1.2;color:var(--rose);min-height:20px;display:flex;align-items:flex-end;justify-content:center;">Clique para confirmar</div>'
           + '<div style="width:30px;height:30px;border-radius:50%;background:' + c2.bg + ';border:1.5px solid ' + c2.border + ';color:' + c2.color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">' + (passo2Feito ? '✓' : '') + '</div>'
           + '<div style="font-size:9px;font-weight:700;text-align:center;line-height:1.2;color:' + (passo2Feito ? 'var(--green)' : (passo1Feito ? 'var(--rose-deep)' : 'var(--ink-3)')) + ';">Horário<br>confirmado</div>'
         + '</div>'
