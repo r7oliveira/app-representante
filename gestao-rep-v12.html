@@ -118,11 +118,6 @@ input[type="time"]{max-width:100%;}
 .prog-track{flex:1;height:3px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden;}
 .prog-fill{height:100%;background:linear-gradient(90deg,rgba(255,255,255,.6),white);border-radius:99px;transition:width .6s ease;}
 .prog-val{color:rgba(255,255,255,.8);font-size:10px;font-weight:700;flex-shrink:0;width:110px;text-align:right;}
-.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px;}
-.hero-box{background:rgba(255,255,255,.07);border-radius:14px;padding:12px 14px;border:1px solid rgba(255,255,255,.08);}
-.hero-box-label{color:rgba(255,255,255,.45);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;}
-.hero-box-val{color:white;font-size:18px;font-weight:800;letter-spacing:-.3px;}
-.hero-box-sub{color:rgba(255,255,255,.4);font-size:10px;font-weight:500;margin-top:3px;}
 
 /* ── IA ORB ── */
 .ia-orb{width:28px;height:28px;border-radius:9px;background:var(--rose);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;flex-shrink:0;box-shadow:none;}
@@ -170,11 +165,12 @@ input[type="time"]{max-width:100%;}
 .prog-track{flex:1;height:5px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden;}
 .prog-fill{height:100%;background:white;border-radius:99px;transition:width .6s ease;}
 .prog-val{color:white;font-size:12px;font-weight:700;flex-shrink:0;width:110px;text-align:right;}
-.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
-.hero-box{background:rgba(255,255,255,.13);border-radius:14px;padding:12px 14px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);}
-.hero-box-label{color:rgba(255,255,255,.6);font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
-.hero-box-val{color:white;font-size:19px;font-weight:800;}
-.hero-box-sub{color:rgba(255,255,255,.55);font-size:10px;font-weight:500;margin-top:2px;}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+.hero-box{background:white;border-radius:16px;padding:18px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.hero-box-label{display:flex;align-items:center;gap:6px;color:var(--ink-2);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.hero-box-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.hero-box-val{color:var(--ink);font-size:26px;font-weight:800;letter-spacing:-.6px;}
+.hero-box-sub{color:var(--ink-2);font-size:12px;font-weight:600;margin-top:4px;}
 
 .ia-strip{background:white;border-bottom:1px solid var(--border);padding:12px 16px;display:flex;gap:10px;align-items:flex-start;flex-shrink:0;}
 .ia-txt{font-size:12.5px;color:var(--ink-2);line-height:1.55;font-weight:500;}
@@ -185,10 +181,10 @@ input[type="time"]{max-width:100%;}
 .cta-plain{width:100%;background:none;color:var(--rose-deep);border:none;padding:6px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:var(--font);}
 .cta-sub{text-align:center;font-size:11px;color:var(--ink-3);margin-top:7px;font-weight:500;}
 
-.cons-card{background:white;border-radius:14px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;border:1px solid rgba(0,0,0,.05);box-shadow:0 2px 10px rgba(23,23,23,.06);cursor:pointer;}
+.cons-card{background:white;border-radius:18px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);cursor:pointer;}
 .cons-card.done{opacity:.5;}
-.cons-card.next{border-color:var(--rose);box-shadow:0 4px 16px rgba(166,124,82,.14);}
-.cons-card.alert{border-color:#E8A000;}
+.cons-card.next{border:1.5px solid var(--rose);box-shadow:0 2px 6px rgba(166,124,82,.08);}
+.cons-card.alert{border-color:var(--amber);}
 .cons-card.inativa{border-color:var(--red);}
 .c-av{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;box-shadow:0 0 0 3px white,0 0 0 4px rgba(0,0,0,.04);}
 .av-default{background:var(--rose-light);color:var(--rose);}
@@ -468,11 +464,7 @@ input[type="time"]{max-width:100%;}
             <span style="font-size:11px;font-weight:700;color:white;">Assistente</span>
           </button>
           <button onclick="abrirMenuRapido()" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:50%;cursor:pointer;color:white;flex-shrink:0;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="hero-region" id="semanaRegiao">Carregando...</div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       <div class="prog-row">
         <div class="prog-label">Consultoras</div>
         <div class="prog-track"><div class="prog-fill" id="progConsultoras" style="width:0%"></div></div>
@@ -485,24 +477,23 @@ input[type="time"]{max-width:100%;}
       </div>
       <div class="hero-grid">
         <div class="hero-box" onclick="abrirDetalheAPagar()" style="cursor:pointer;">
-          <div class="hero-box-label">Vendido</div>
+          <div class="hero-box-label"><span class="hero-box-dot" style="background:var(--ink);"></span>Vendido</div>
           <div class="hero-box-val" id="heroVendido">R$ 0</div>
-          <div class="hero-box-sub" id="heroMetaSub">A pagar: —</div>
+          <div class="hero-box-sub" id="heroMetaSub" style="display:none;">A pagar: —</div>
         </div>
         <div class="hero-box" onclick="abrirDetalheRecebido()" style="cursor:pointer;">
-          <div class="hero-box-label">A Pagar</div>
+          <div class="hero-box-label"><span class="hero-box-dot" style="background:var(--rose);"></span>A Pagar</div>
           <div class="hero-box-val" id="heroRecebido">R$ 0</div>
-          <div class="hero-box-sub" id="heroRecebidoSub">Recebido: —</div>
-        </div>
-        <div class="hero-box" onclick="abrirDetalheCobrancas()" style="cursor:pointer;">
-          <div class="hero-box-label">Débitos</div>
-          <div class="hero-box-val" id="heroCobrancas">R$ 0</div>
-          <div class="hero-box-sub">Pendentes</div>
+          <div class="hero-box-sub" id="heroRecebidoSub" style="display:none;">Recebido: —</div>
         </div>
         <div class="hero-box">
-          <div class="hero-box-label">Consultoras pendentes</div>
-          <div class="hero-box-val" id="heroPendentes">0</div>
-          <div class="hero-box-sub">Não pagaram</div>
+          <div class="hero-box-label"><span class="hero-box-dot" style="background:var(--green);"></span>Recebido</div>
+          <div class="hero-box-val" id="heroRecebidoNovo">R$ 0</div>
+        </div>
+        <div class="hero-box" onclick="abrirDetalheCobrancas()" style="cursor:pointer;">
+          <div class="hero-box-label"><span class="hero-box-dot" style="background:var(--red);"></span>Débitos</div>
+          <div class="hero-box-val" id="heroCobrancas">R$ 0</div>
+          <div class="hero-box-sub"><span id="heroPendentes">0</span> consultoras em aberto</div>
         </div>
       </div>
 
@@ -1097,6 +1088,7 @@ input[type="time"]{max-width:100%;}
 <div class="view" id="view-lives">
   <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
     <div>
+      <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;padding:0;margin-bottom:8px;display:block;">← Voltar</button>
       <div class="ph-title">Lives &amp; Sorteios</div>
       <div class="ph-sub">Organize suas lives do Instagram</div>
     </div>
@@ -5359,6 +5351,7 @@ function renderSemana() {
     document.getElementById('heroMetaSub').textContent = 'Meta: —';
     document.getElementById('heroRecebido').textContent = 'R$ 0';
     document.getElementById('heroRecebidoSub').textContent = 'Recebido: —';
+    document.getElementById('heroRecebidoNovo').textContent = 'R$ 0';
     document.getElementById('heroCobrancas').textContent = 'R$ 0';
     document.getElementById('heroPendentes').textContent = '0';
     document.getElementById('cntAtendidas').textContent = '0';
@@ -5427,6 +5420,7 @@ function renderSemana() {
   document.getElementById('heroMetaSub').textContent = 'A pagar: ' + brl(aPagarTotal);
   document.getElementById('heroRecebido').textContent = brl(aPagarTotal);
   document.getElementById('heroRecebidoSub').textContent = 'Recebido: ' + brl(recebido);
+  document.getElementById('heroRecebidoNovo').textContent = brl(recebido);
   document.getElementById('heroCobrancas').textContent = brl(cobrancas);
   document.getElementById('heroPendentes').textContent = sem.consultoras.filter(c => c.debito > 0).length;
 
@@ -5582,7 +5576,7 @@ function renderSemana() {
     );
 
     return tituloGrupo + '<div class="cons-card ' + cls + '" style="flex-direction:column;align-items:stretch;padding:0;overflow:hidden;">'
-      + '<div style="display:flex;align-items:flex-start;gap:12px;background:linear-gradient(135deg,var(--rose-mid),var(--rose-light));padding:14px 16px 10px;">'
+      + '<div style="display:flex;align-items:flex-start;gap:12px;background:white;border-bottom:1px solid var(--border);padding:14px 16px 10px;">'
         + '<div style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;flex:1;min-width:0;" onclick="abrirAtendimento(\'' + c.id + '\')">'
           + '<div class="c-av ' + avCls + '" style="margin-top:1px;">' + avTxt + '</div>'
           + '<div class="c-info">'
@@ -5591,7 +5585,7 @@ function renderSemana() {
           + '</div>'
         + '</div>'
         + badge
-        + '<button onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')" style="flex-shrink:0;background:rgba(23,23,23,.08);border:none;color:var(--ink-2);font-size:13px;cursor:pointer;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:2px;">✕</button>'
+        + '<button onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')" style="flex-shrink:0;background:var(--surface-2);border:none;color:var(--ink-2);font-size:13px;cursor:pointer;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:2px;">✕</button>'
       + '</div>'
       + trilha
     + '</div>';
