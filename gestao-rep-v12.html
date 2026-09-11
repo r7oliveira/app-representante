@@ -5246,15 +5246,19 @@ function salvarDebitoAvulso() {
     sem.consultoras.push(cons);
   }
 
-  cons.recebido = (cons.recebido || 0) + val;
-  cons.ultimoPgto = val;
-  cons.recebidoPix = (cons.recebidoPix || 0) + pix;
-  cons.recebidoDinheiro = (cons.recebidoDinheiro || 0) + din;
-
   if (outraNota) {
-    // Pagamento de uma nota separada: não abate o débito já lançado na semana ativa
+    // Pagamento de uma nota/região separada: NÃO entra no Pix/Dinheiro/Recebido
+    // da nota de venda da semana ativa — fica registrado à parte.
     cons.debitoOutrasNotasPago = (cons.debitoOutrasNotasPago || 0) + val;
+    cons.debitoOutrasNotasPix = (cons.debitoOutrasNotasPix || 0) + pix;
+    cons.debitoOutrasNotasDinheiro = (cons.debitoOutrasNotasDinheiro || 0) + din;
+    // Mesmo assim, abate o débito real dela (o dinheiro foi pago de fato)
+    cons.debito = debitoRestante(cons.debito || 0, val);
   } else {
+    cons.recebido = (cons.recebido || 0) + val;
+    cons.ultimoPgto = val;
+    cons.recebidoPix = (cons.recebidoPix || 0) + pix;
+    cons.recebidoDinheiro = (cons.recebidoDinheiro || 0) + din;
     cons.debitoPagoAntigo = (cons.debitoPagoAntigo || 0) + val;
     // Só abate o débito da semana se esse registro já existia antes (débito rastreado nela)
     if (jaExistiaNaSemana) {
