@@ -7982,6 +7982,8 @@ function abrirCorrigirDebitoAntigo(semId, consId) {
   const cons = sem && sem.consultoras.find(c => c.id === consId);
   if (!cons) return;
 
+  fecharModal('modalRecebido');
+
   document.getElementById('modalRegTitulo').textContent = 'Corrigir Débito Antigo';
   document.getElementById('modalRegConteudo').innerHTML = `
     <div style="background:var(--amber-bg);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
@@ -8001,7 +8003,7 @@ function abrirCorrigirDebitoAntigo(semId, consId) {
     </div>
     <div style="font-size:11px;color:var(--ink-3);text-align:center;margin:8px 0 14px;">Isso substitui (não soma) o valor registrado como débito antigo.</div>
     <div class="btn-row">
-      <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
+      <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro');abrirDetalheRecebido();">Cancelar</button>
       <button class="btn-primary" style="flex:1;" onclick="salvarCorrecaoDebitoAntigo('${semId}','${consId}')">Salvar</button>
     </div>
     <button type="button" onclick="if(confirm('Remover totalmente este débito antigo?')) { salvarCorrecaoDebitoAntigo('${semId}','${consId}', true); }"
