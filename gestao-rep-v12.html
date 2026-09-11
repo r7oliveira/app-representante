@@ -4987,6 +4987,7 @@ function abrirPagarDebitoGeral(semId, consId) {
 
   window._pagarDebitoCtx = { semId, consId };
   window._formaDebito = 'dinheiro';
+  window._outraNotaPagarGeral = false;
   const debAtual = cons.debito || 0;
 
   document.getElementById('modalRegTitulo').textContent = 'Pagar Débito';
@@ -5015,6 +5016,12 @@ function abrirPagarDebitoGeral(semId, consId) {
       </div>
     </label>
 
+    <button type="button" id="btnOutraNotaGeral" onclick="toggleOutraNotaGeral()"
+      style="width:100%;padding:12px;border-radius:12px;border:1.5px dashed var(--rose);background:white;color:var(--rose-deep);font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;">
+      Débito de outra região/nota
+    </button>
+    <div style="font-size:11px;color:var(--ink-3);margin-top:6px;margin-bottom:14px;text-align:center;">Marque se esse pagamento é separado da venda desta semana (${sem.numero?'Semana '+sem.numero:''}${sem.regiao?' · '+sem.regiao:''}) — assim ele não entra somando no Pix/Dinheiro da nota dela.</div>
+
     <div class="btn-row">
       <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalRegistro')">Cancelar</button>
       <button class="btn-primary" style="flex:1;" onclick="salvarPagarDebitoGeral()">Salvar</button>
@@ -5022,6 +5029,23 @@ function abrirPagarDebitoGeral(semId, consId) {
 
   selecionarFormaDeb('dinheiro');
   document.getElementById('modalRegistro').classList.add('open');
+}
+
+function toggleOutraNotaGeral() {
+  window._outraNotaPagarGeral = !window._outraNotaPagarGeral;
+  const btn = document.getElementById('btnOutraNotaGeral');
+  if (!btn) return;
+  if (window._outraNotaPagarGeral) {
+    btn.style.background = 'var(--rose)';
+    btn.style.color = 'white';
+    btn.style.borderStyle = 'solid';
+    btn.textContent = '✓ Débito de outra região/nota';
+  } else {
+    btn.style.background = 'white';
+    btn.style.color = 'var(--rose-deep)';
+    btn.style.borderStyle = 'dashed';
+    btn.textContent = 'Débito de outra região/nota';
+  }
 }
 
 function salvarPagarDebitoGeral() {
@@ -5034,12 +5058,20 @@ function salvarPagarDebitoGeral() {
   const val = parseNum(document.getElementById('regDebitoGeral').value);
   if (!val || val <= 0) { fecharModal('modalRegistro'); return; }
   const forma = window._formaDebito || 'dinheiro';
+  const outraNota = !!window._outraNotaPagarGeral;
 
-  cons.recebido = (cons.recebido || 0) + val;
-  cons.ultimoPgto = val;
-  if (forma === 'pix') cons.recebidoPix = (cons.recebidoPix || 0) + val;
-  else cons.recebidoDinheiro = (cons.recebidoDinheiro || 0) + val;
-  cons.debitoPagoAntigo = (cons.debitoPagoAntigo || 0) + val;
+  if (outraNota) {
+    // Pagamento separado: NÃO entra no Pix/Dinheiro/Recebido da nota de venda desta semana.
+    cons.debitoOutrasNotasPago = (cons.debitoOutrasNotasPago || 0) + val;
+    if (forma === 'pix') cons.debitoOutrasNotasPix = (cons.debitoOutrasNotasPix || 0) + val;
+    else cons.debitoOutrasNotasDinheiro = (cons.debitoOutrasNotasDinheiro || 0) + val;
+  } else {
+    cons.recebido = (cons.recebido || 0) + val;
+    cons.ultimoPgto = val;
+    if (forma === 'pix') cons.recebidoPix = (cons.recebidoPix || 0) + val;
+    else cons.recebidoDinheiro = (cons.recebidoDinheiro || 0) + val;
+    cons.debitoPagoAntigo = (cons.debitoPagoAntigo || 0) + val;
+  }
 
   const debAnterior = cons.debito || 0;
   cons.debito = debitoRestante(debAnterior, val);
