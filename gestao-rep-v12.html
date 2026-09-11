@@ -20,25 +20,29 @@
 <style>
 :root {
   /* Design System — grafite / off-white / champagne (Luxury Tech) */
-  --rose:#A67C52; --rose-deep:#181818; --rose-light:#E8DCCB; --rose-mid:#D8C4A8;
-  --ink:#181818; --ink-2:#6B6B6B; --ink-3:#969696;
-  --surface:#F6F6F3; --surface-2:#F0F0ED; --white:#FFFFFF;
-  --green:#2E7D5B; --green-bg:#E5F0EA;
-  --amber:#B7872F; --amber-bg:#F4EDDC;
-  --red:#B6534F; --red-bg:#F6E7E5;
-  --purple:#A67C52; --purple-bg:#E8DCCB;
-  --border:#E6E6E2;
-  --r:14px; --r-sm:10px;
+  --rose:#A67C52; --rose-deep:#181818; --rose-light:#EFE6DA; --rose-mid:#D8C4A8;
+  --ink:#181818; --ink-2:#686868; --ink-3:#969696;
+  --surface:#F7F7F5; --surface-2:#F2F1EE; --white:#FFFFFF;
+  --green:#3C8064; --green-bg:#E7F1EB;
+  --amber:#B78A3B; --amber-bg:#F5EDDD;
+  --red:#B85A55; --red-bg:#F7E9E7;
+  --purple:#A67C52; --purple-bg:#EFE6DA;
+  --border:#E5E3DF;
+  --r:16px; --r-sm:12px;
   --font:'Plus Jakarta Sans',sans-serif;
   --font-serif:'Plus Jakarta Sans',sans-serif;
   --gold:#A67C52;
+  --shadow-card:0 1px 3px rgba(0,0,0,.04);
   /* Aliases do design system (mesmas cores, nomes semânticos) */
   --bg:var(--surface); --surface-alt:var(--surface-2); --card:var(--white);
-  --text:var(--ink); --text-secondary:var(--ink-2); --text-muted:var(--ink-3);
+  --text:var(--ink); --text-2:var(--ink-2); --text-3:var(--ink-3);
+  --text-secondary:var(--ink-2); --text-muted:var(--ink-3);
+  --graphite:var(--ink); --champagne:var(--rose); --champagne-light:var(--rose-light);
   --accent:var(--rose); --accent-light:var(--rose-light);
-  --success:var(--green); --success-bg:var(--green-bg);
-  --warning:var(--amber); --warning-bg:var(--amber-bg);
-  --danger:var(--red); --danger-bg:var(--red-bg);
+  --success:var(--green); --success-bg:var(--green-bg); --green-light:var(--green-bg);
+  --warning:var(--amber); --warning-bg:var(--amber-bg); --amber-light:var(--amber-bg);
+  --danger:var(--red); --danger-bg:var(--red-bg); --red-light:var(--red-bg);
+  --radius-sm:10px; --radius-md:12px; --radius-lg:16px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
@@ -73,9 +77,9 @@ input,textarea,select{font-family:var(--font);}
 .nav-item.active{color:var(--rose-deep);background:var(--rose-light);}
 
 /* ── SHARED COMPONENTS ── */
-.page-header{background:white;padding:calc(16px + env(safe-area-inset-top)) 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.ph-title{font-size:20px;font-weight:800;color:var(--ink);}
-.ph-sub{font-size:12px;color:var(--ink-3);font-weight:500;margin-top:2px;}
+.page-header{background:var(--ink);padding:calc(16px + env(safe-area-inset-top)) 20px 14px;flex-shrink:0;}
+.ph-title{font-size:20px;font-weight:800;color:white;}
+.ph-sub{font-size:12px;color:rgba(255,255,255,.6);font-weight:500;margin-top:2px;}
 
 .sec-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-3);padding:16px 16px 8px;}
 
@@ -83,7 +87,7 @@ input,textarea,select{font-family:var(--font);}
 .card-row{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);}
 .card-row:last-child{border-bottom:none;}
 
-.btn-primary{width:100%;background:linear-gradient(135deg,var(--rose-deep),var(--rose));color:white;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(24,24,24,.18);}
+.btn-primary{width:100%;background:var(--ink);color:white;border-radius:12px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--shadow-card);}
 .btn-ghost{width:100%;background:white;border:2px solid var(--border);border-radius:16px;padding:13px;font-size:14px;font-weight:700;color:var(--ink-2);display:flex;align-items:center;justify-content:center;gap:8px;}
 
 .pill{font-size:10px;font-weight:700;padding:3px 9px;border-radius:99px;flex-shrink:0;}
@@ -103,7 +107,7 @@ input[type="time"]{max-width:100%;}
 .btn-row{display:flex;gap:10px;}
 
 /* ── HERO GRADIENT ── */
-.hero-grad{background:linear-gradient(135deg,#171717,#2E2E2E);position:relative;overflow:hidden;}
+.hero-grad{background:var(--ink);position:relative;overflow:hidden;}
 .hero-grad::before{content:'';position:absolute;top:-80px;right:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(166,124,82,.25) 0%,transparent 70%);pointer-events:none;}
 .hero-grad::after{content:'';position:absolute;bottom:-40px;left:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.08) 0%,transparent 70%);pointer-events:none;}
 
@@ -121,13 +125,13 @@ input[type="time"]{max-width:100%;}
 .hero-box-sub{color:rgba(255,255,255,.4);font-size:10px;font-weight:500;margin-top:3px;}
 
 /* ── IA ORB ── */
-.ia-orb{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#B98B3E,#D8C4A8);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;flex-shrink:0;box-shadow:0 2px 8px rgba(166,124,82,.25);}
+.ia-orb{width:28px;height:28px;border-radius:9px;background:var(--rose);display:flex;align-items:center;justify-content:center;font-size:13px;color:white;flex-shrink:0;box-shadow:none;}
 
 /* ── MODAL ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;}
 
 /* ── SORTEIO EM TELA CHEIA ── */
-#sorteioOverlay{display:none;position:fixed;inset:0;z-index:500;background:linear-gradient(160deg,#2A1620,#171717 40%,#2E2E2E 100%);align-items:center;justify-content:center;flex-direction:column;padding:24px;text-align:center;overflow:hidden;}
+#sorteioOverlay{display:none;position:fixed;inset:0;z-index:500;background:var(--ink);align-items:center;justify-content:center;flex-direction:column;padding:24px;text-align:center;overflow:hidden;}
 #sorteioConfetes{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
 #sorteioOverlay.open{display:flex;}
 .sorteio-die{font-size:64px;margin-bottom:18px;display:inline-block;}
@@ -177,7 +181,7 @@ input[type="time"]{max-width:100%;}
 .ia-txt strong{color:var(--ink);font-weight:700;}
 
 .cta-wrap{padding:12px 16px 4px;background:white;flex-shrink:0;}
-.cta-btn{width:100%;background:linear-gradient(135deg,#A67C52,#D8C4A8);color:white;border:none;border-radius:16px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(166,124,82,.22);letter-spacing:.2px;cursor:pointer;}
+.cta-btn{width:100%;background:var(--rose);color:white;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--shadow-card);letter-spacing:.2px;cursor:pointer;}
 .cta-plain{width:100%;background:none;color:var(--rose-deep);border:none;padding:6px;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:var(--font);}
 .cta-sub{text-align:center;font-size:11px;color:var(--ink-3);margin-top:7px;font-weight:500;}
 
@@ -195,7 +199,7 @@ input[type="time"]{max-width:100%;}
 .c-name{font-size:14px;font-weight:700;font-family:var(--font);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:normal;}
 .c-sub{font-size:12px;color:var(--ink-3);margin-top:3px;font-weight:600;}
 .c-badge{font-size:10px;font-weight:800;padding:5px 11px;border-radius:99px;flex-shrink:0;letter-spacing:.2px;}
-.b-next{background:linear-gradient(135deg,var(--rose-deep),var(--rose));color:white;box-shadow:0 2px 8px rgba(166,124,82,.35);}
+.b-next{background:var(--rose);color:white;box-shadow:none;}
 .b-done{background:var(--green-bg);color:var(--green);}
 .b-pending{background:white;color:var(--ink-3);border:1px solid var(--border);}
 .b-alert{background:var(--amber-bg);color:var(--amber);}
@@ -205,7 +209,7 @@ input[type="time"]{max-width:100%;}
    TELA: MODO ATENDIMENTO
 ════════════════════════════════════════ */
 #view-atendimento{z-index:100;background:var(--surface);}
-.atend-header{background:linear-gradient(135deg,var(--ink),#2E2E2E);padding:calc(14px + env(safe-area-inset-top)) 20px 16px;flex-shrink:0;}
+.atend-header{background:var(--ink);padding:calc(14px + env(safe-area-inset-top)) 20px 16px;flex-shrink:0;}
 .atend-back{color:rgba(255,255,255,.55);font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;}
 .atend-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;}
 .atend-av{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:white;flex-shrink:0;}
@@ -250,7 +254,7 @@ input[type="time"]{max-width:100%;}
 .toggle-btn.yes{background:white;color:var(--ink);}
 .toggle-btn.no{background:rgba(201,38,30,.5);color:white;}
 
-.finalizar-btn{width:100%;background:linear-gradient(135deg,var(--rose-deep),var(--rose));color:white;border:none;border-radius:14px;padding:20px;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 4px 16px rgba(24,24,24,.2);font-size:22px;}
+.finalizar-btn{width:100%;background:var(--ink);color:white;border:none;border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:var(--shadow-card);font-size:22px;}
 .finalizar-title{font-size:17px;font-weight:800;}
 .finalizar-sub{font-size:11px;font-weight:500;opacity:.75;margin-top:2px;}
 
@@ -277,7 +281,7 @@ input[type="time"]{max-width:100%;}
 /* ════════════════════════════════════════
    TELA: RADAR DA SEMANA
 ════════════════════════════════════════ */
-.radar-header{background:linear-gradient(160deg,#171717,#2E2E2E);padding:calc(20px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;}
+.radar-header{background:var(--ink);padding:calc(20px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;}
 .radar-nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:16px;}
 .radar-num-box{background:rgba(255,255,255,.08);border-radius:12px;padding:10px;text-align:center;border:1px solid rgba(255,255,255,.08);}
 .radar-num-label{color:rgba(255,255,255,.5);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
@@ -370,7 +374,7 @@ input[type="time"]{max-width:100%;}
 .login-pin-key:active{background:var(--rose-light);border-color:var(--rose);}
 .dia-chip{background:var(--surface);border:1.5px solid var(--border);color:var(--ink-2);font-size:12.5px;font-weight:700;font-family:var(--font);padding:8px 13px;border-radius:14px;cursor:pointer;}
 .dia-chip.active{background:var(--rose);border-color:var(--rose);color:white;}
-#adminTopBar{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 20px 12px;background:linear-gradient(160deg,#171717,#2E2E2E);}
+#adminTopBar{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 20px 12px;background:var(--ink);}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -606,7 +610,7 @@ input[type="time"]{max-width:100%;}
      TELA: ATENDIMENTOS (Consultoras da semana)
 ══════════════════════════════════════════ -->
 <div class="view" id="view-atendimentos-lista">
-  <div class="page-header" style="background:linear-gradient(135deg,#171717,#2E2E2E);border-bottom:none;">
+  <div class="page-header">
     <button onclick="goTo('semana')" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div class="ph-title" style="color:white;">Atendimentos</div>
     <div class="ph-sub" style="color:rgba(255,255,255,.7);">Consultoras da semana</div>
@@ -636,7 +640,7 @@ input[type="time"]{max-width:100%;}
      TELA: PAGAR DÉBITOS (todas as semanas)
 ══════════════════════════════════════════ -->
 <div class="view" id="view-pagar-debitos">
-  <div class="page-header" style="background:linear-gradient(135deg,#171717,#2E2E2E);border-bottom:none;">
+  <div class="page-header">
     <button onclick="goTo('semana')" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div class="ph-title" style="color:white;">Pagar Débitos</div>
     <div class="ph-sub" style="color:rgba(255,255,255,.7);">Cobranças pendentes de todas as semanas</div>
@@ -946,7 +950,7 @@ input[type="time"]{max-width:100%;}
      TELA: AGENDA (semana inteira)
 ══════════════════════════════════════════ -->
 <div class="view" id="view-agenda">
-  <div class="page-header" style="background:linear-gradient(135deg,#171717,#2E2E2E);border-bottom:none;">
+  <div class="page-header">
     <button onclick="goTo('semana')" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div class="ph-title" style="color:white;">Agenda</div>
     <div class="ph-sub" style="color:rgba(255,255,255,.7);">Tarefas da semana, dia a dia</div>
@@ -1143,7 +1147,7 @@ input[type="time"]{max-width:100%;}
 
     <!-- Sorteio -->
     <button class="btn-primary" style="width:100%;font-size:16px;padding:16px;margin-bottom:8px;" onclick="realizarSorteio()">🎲 Sortear vencedora</button>
-    <div id="liveResultado" style="display:none;background:linear-gradient(135deg,#171717,#2E2E2E);border-radius:16px;padding:18px;text-align:center;margin-bottom:20px;">
+    <div id="liveResultado" style="display:none;background:var(--ink);border-radius:16px;padding:18px;text-align:center;margin-bottom:20px;">
       <div style="color:rgba(255,255,255,.6);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🎉 Vencedora do sorteio</div>
       <div id="liveVencedoraNome" style="color:white;font-size:22px;font-weight:800;">—</div>
     </div>
@@ -1537,7 +1541,7 @@ input[type="time"]{max-width:100%;}
   <div class="scroll-body">
     <!-- Passo 1: Região -->
     <div id="criarStep1">
-      <div style="background:linear-gradient(135deg,#171717,#2E2E2E);padding:20px;margin-bottom:12px;">
+      <div style="background:var(--ink);padding:20px;margin-bottom:12px;">
         <div style="color:rgba(255,255,255,.65);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;" id="criarDataLabel">Domingo</div>
         <div style="color:white;font-size:22px;font-weight:800;margin-bottom:10px;" id="criarSemanaTitle">Criar Semana</div>
         <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 14px;display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.2);">
@@ -1591,7 +1595,7 @@ input[type="time"]{max-width:100%;}
 
     <!-- Passo 3: Confirmar -->
     <div id="criarStep3" style="display:none;">
-      <div style="background:linear-gradient(135deg,#171717,#2E2E2E);padding:22px 20px 26px;">
+      <div style="background:var(--ink);padding:22px 20px 26px;">
         <div style="color:rgba(255,255,255,.65);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Pronta para iniciar</div>
         <div style="color:white;font-size:26px;font-weight:800;margin-bottom:16px;" id="step3Title">Semana —</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -1760,7 +1764,7 @@ input[type="time"]{max-width:100%;}
 <div class="view" id="view-domingo">
   <div class="scroll-body">
     <!-- Header escuro -->
-    <div style="background:linear-gradient(160deg,#171717,#2E2E2E);padding:calc(20px + env(safe-area-inset-top)) 20px 24px;position:relative;overflow:hidden;flex-shrink:0;">
+    <div style="background:var(--ink);padding:calc(20px + env(safe-area-inset-top)) 20px 24px;position:relative;overflow:hidden;flex-shrink:0;">
       <div style="position:absolute;top:-50px;right:-30px;width:200px;height:200px;border-radius:50%;background:rgba(124,58,237,.15);"></div>
       <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;" id="domingoData">Domingo</div>
       <div style="color:white;font-size:24px;font-weight:800;margin-bottom:3px;">Bom dia, Rogério.</div>
@@ -1815,7 +1819,7 @@ input[type="time"]{max-width:100%;}
       </div>
 
       <!-- Assistente Comercial insight -->
-      <div style="background:linear-gradient(135deg,#F3EFFE,#FFF0F5);border-radius:14px;padding:14px 16px;border:1px solid rgba(124,58,237,.12);margin-bottom:16px;" id="domingoIA" style="display:none;">
+      <div style="background:var(--rose-light);border-radius:14px;padding:14px 16px;border:1px solid rgba(166,124,82,.2);margin-bottom:16px;" id="domingoIA" style="display:none;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
           <div class="ia-orb">✦</div>
           <div style="font-size:11px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.8px;">Assistente Comercial</div>
@@ -1832,7 +1836,7 @@ input[type="time"]{max-width:100%;}
      TELA 10: ASSISTENTE COMERCIAL PROATIVO
 ══════════════════════════════════════════ -->
 <div class="view" id="view-iniciativas" style="background:var(--surface);">
-  <div style="background:linear-gradient(160deg,#1A0A2E,#2D1060);padding:calc(52px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
+  <div style="background:var(--ink);padding:calc(52px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
       <button onclick="fecharIniciativas()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:white;border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
         <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M15 18l-6-6 6-6"/></svg>
@@ -1866,7 +1870,7 @@ input[type="time"]{max-width:100%;}
      TELA 11: GERENCIAR REGIÃO
 ══════════════════════════════════════════ -->
 <div class="view" id="view-gerenciar">
-  <div style="background:linear-gradient(135deg,#171717,#2E2E2E);padding:calc(16px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;">
+  <div style="background:var(--ink);padding:calc(16px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;">
     <button onclick="goBack()" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div style="color:white;font-size:26px;font-weight:800;font-family:var(--font-serif);" id="gerenciarTitulo">Gramado 3</div>
   </div>
@@ -1906,7 +1910,7 @@ input[type="time"]{max-width:100%;}
      TELA: TODAS AS CONSULTORAS INATIVAS (todas as regiões)
 ══════════════════════════════════════════ -->
 <div class="view" id="view-inativas-todas">
-  <div style="background:linear-gradient(135deg,#171717,#2E2E2E);padding:calc(16px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;">
+  <div style="background:var(--ink);padding:calc(16px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;">
     <button onclick="goBack()" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div style="color:white;font-size:26px;font-weight:800;font-family:var(--font-serif);">Consultoras inativas</div>
     <div style="color:rgba(255,255,255,.75);font-size:12.5px;margin-top:2px;" id="inativasTodasSub">Todas as regiões</div>
@@ -1927,7 +1931,7 @@ input[type="time"]{max-width:100%;}
       <div class="ph-sub" id="relSubtitulo">Semana —</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button onclick="gerarRelatorioIA()" style="background:linear-gradient(135deg,#B98B3E,#D8C4A8);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">✦ Gerar com IA</button>
+      <button onclick="gerarRelatorioIA()" style="background:var(--rose);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">✦ Gerar com IA</button>
       <button onclick="gerarPDF()" style="background:var(--rose);color:white;border:none;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;">PDF</button>
     </div>
   </div>
@@ -2040,7 +2044,7 @@ input[type="time"]{max-width:100%;}
      TELA 13: FECHAMENTO GERAL (consolidado dos tablets)
 ══════════════════════════════════════════ -->
 <div class="view" id="view-fechamento-geral">
-  <div style="background:linear-gradient(160deg,#171717,#2E2E2E);padding:calc(20px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
+  <div style="background:var(--ink);padding:calc(20px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
     <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Dashboard Gerencial</div>
     <div style="color:white;font-size:24px;font-weight:800;margin-bottom:3px;" id="fgTituloSemana">Semana —</div>
     <div style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500;margin-bottom:14px;" id="fgSubtitulo">Visão geral da operação</div>
@@ -2062,11 +2066,11 @@ input[type="time"]{max-width:100%;}
     <div id="fgConteudo" style="display:none;">
 
       <!-- ═══ 1. KPIs PRINCIPAIS ═══ -->
-      <div style="background:linear-gradient(135deg,#171717,#2E2E2E);border-radius:14px;padding:16px 18px;margin-bottom:12px;">
+      <div style="background:var(--ink);border-radius:14px;padding:16px 18px;margin-bottom:12px;">
         <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Faturamento da Semana</div>
         <div style="font-size:24px;font-weight:800;color:white;margin-bottom:2px;"><span id="fgMetaResultado">R$ 0</span> <span style="font-size:15px;font-weight:600;color:rgba(255,255,255,.4);">/ <span id="fgMetaTotal">R$ 0</span></span></div>
         <div style="height:8px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin:10px 0 6px;">
-          <div id="fgMetaBar" style="height:100%;background:linear-gradient(90deg,#A67C52,#D8C4A8);border-radius:6px;width:0%;"></div>
+          <div id="fgMetaBar" style="height:100%;background:var(--rose);border-radius:6px;width:0%;"></div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.6);font-weight:600;margin-bottom:12px;">
           <span id="fgMetaPct">0% da meta</span>
@@ -2543,7 +2547,7 @@ function renderLoginPessoas() {
   if (!el) return;
   el.innerHTML = PESSOAS.map(p => `
     <button class="login-pessoa-card" onclick="selecionarPessoaLogin('${p.id}')">
-      <div class="login-pessoa-av" style="background:linear-gradient(135deg,#171717,#2E2E2E);">${p.nome.charAt(0)}</div>
+      <div class="login-pessoa-av" style="background:var(--ink);">${p.nome.charAt(0)}</div>
       <div>
         <div style="color:var(--ink);font-size:16px;font-weight:800;font-family:var(--font);">${p.nome}</div>
         <div style="color:var(--ink-3);font-size:12px;font-weight:600;">${p.cargo}</div>
@@ -5368,7 +5372,7 @@ function renderSemana() {
         <div style="font-size:48px;margin-bottom:12px;"></div>
         <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:6px;">Nenhuma semana ativa</div>
         <div style="font-size:13px;color:var(--ink-3);margin-bottom:20px;">A semana anterior foi finalizada.<br>Crie uma nova para continuar.</div>
-        <button onclick="goTo('criar-semana')" style="background:linear-gradient(135deg,var(--rose-deep),var(--rose));color:white;border:none;border-radius:14px;padding:14px 28px;font-size:15px;font-weight:800;font-family:var(--font);cursor:pointer;">Criar Nova Semana →</button>
+        <button onclick="goTo('criar-semana')" style="background:var(--ink);color:white;border:none;border-radius:14px;padding:14px 28px;font-size:15px;font-weight:800;font-family:var(--font);cursor:pointer;">Criar Nova Semana →</button>
       </div>`;
     return;
   }
@@ -5465,14 +5469,14 @@ function renderSemana() {
   } else if (total === 0) {
     if (ctaWrapEl) ctaWrapEl.style.display = '';
     ctaBtnEl.className = 'cta-btn';
-    ctaBtnEl.style.background = 'linear-gradient(135deg,var(--rose-deep),var(--rose))';
+    ctaBtnEl.style.background = 'var(--ink)';
     ctaBtnEl.innerHTML = '+ Adicionar Consultoras';
     ctaBtnEl.onclick = () => adicionarConsultorasSemana();
     document.getElementById('ctaSub').textContent = 'Nenhuma consultora nesta semana ainda.';
   } else {
     if (ctaWrapEl) ctaWrapEl.style.display = '';
     ctaBtnEl.className = 'cta-btn';
-    ctaBtnEl.style.background = 'linear-gradient(135deg,#245c46,#2E7D5B)';
+    ctaBtnEl.style.background = 'var(--green)';
     ctaBtnEl.innerHTML = '✓ Finalizar Semana';
     ctaBtnEl.onclick = () => mostrarFechamentoSemana();
     document.getElementById('ctaSub').textContent = 'Todas as ' + total + ' consultoras foram atendidas!';
@@ -8190,7 +8194,7 @@ function renderRelatorio() {
   let html = '';
 
   // Resumo geral
-  html += `<div style="background:linear-gradient(135deg,var(--rose-deep),var(--rose));border-radius:14px;padding:18px;margin-bottom:12px;">
+  html += `<div style="background:var(--ink);border-radius:14px;padding:18px;margin-bottom:12px;">
     <div style="color:rgba(255,255,255,.65);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">Resumo · Semana ${sem.numero}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
       <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 12px;">
