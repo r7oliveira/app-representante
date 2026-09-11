@@ -2067,7 +2067,7 @@ input[type="time"]{max-width:100%;}
 
       <!-- ═══ 1. KPIs PRINCIPAIS ═══ -->
       <div style="background:var(--ink);border-radius:14px;padding:16px 18px;margin-bottom:12px;">
-        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Faturamento da Semana</div>
+        <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Recebido da Semana</div>
         <div style="font-size:24px;font-weight:800;color:white;margin-bottom:2px;"><span id="fgMetaResultado">R$ 0</span> <span style="font-size:15px;font-weight:600;color:rgba(255,255,255,.4);">/ <span id="fgMetaTotal">R$ 0</span></span></div>
         <div style="height:8px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden;margin:10px 0 6px;">
           <div id="fgMetaBar" style="height:100%;background:var(--rose);border-radius:6px;width:0%;"></div>
@@ -7098,11 +7098,12 @@ function recomputeFechamentoGeral() {
   });
 
   const ticketMedio = totVendasCount > 0 ? totVendido / totVendasCount : 0;
+  const totRecebido = totPix + totDin;
 
-  // Meta geral
-  const pctMetaGeral = totMeta > 0 ? Math.round(totVendido/totMeta*100) : 0;
-  const faltaMetaGeral = Math.max(0, totMeta - totVendido);
-  document.getElementById('fgMetaResultado').textContent = brl(totVendido);
+  // Meta geral (referente ao recebimento, não ao faturamento vendido)
+  const pctMetaGeral = totMeta > 0 ? Math.round(totRecebido/totMeta*100) : 0;
+  const faltaMetaGeral = Math.max(0, totMeta - totRecebido);
+  document.getElementById('fgMetaResultado').textContent = brl(totRecebido);
   document.getElementById('fgMetaTotal').textContent = brl(totMeta);
   document.getElementById('fgMetaBar').style.width = Math.min(100, pctMetaGeral) + '%';
   document.getElementById('fgMetaPct').textContent = pctMetaGeral + '% da meta';
