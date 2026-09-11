@@ -166,10 +166,10 @@ input[type="time"]{max-width:100%;}
 .prog-fill{height:100%;background:white;border-radius:99px;transition:width .6s ease;}
 .prog-val{color:white;font-size:12px;font-weight:700;flex-shrink:0;width:110px;text-align:right;}
 .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
-.hero-box{background:white;border-radius:16px;padding:18px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.hero-box{background:white;border-radius:16px;padding:14px 16px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);}
 .hero-box-label{display:flex;align-items:center;gap:6px;color:var(--ink-2);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
 .hero-box-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.hero-box-val{color:var(--ink);font-size:26px;font-weight:800;letter-spacing:-.6px;}
+.hero-box-val{color:var(--ink);font-size:19px;font-weight:800;letter-spacing:-.3px;white-space:nowrap;}
 .hero-box-sub{color:var(--ink-2);font-size:12px;font-weight:600;margin-top:4px;}
 
 .ia-strip{background:white;border-bottom:1px solid var(--border);padding:12px 16px;display:flex;gap:10px;align-items:flex-start;flex-shrink:0;}
@@ -482,21 +482,21 @@ input[type="time"]{max-width:100%;}
       <div class="hero-grid">
         <div class="hero-box" onclick="abrirDetalheAPagar()" style="cursor:pointer;">
           <div class="hero-box-label"><span class="hero-box-dot" style="background:var(--ink);"></span>Vendido</div>
-          <div class="hero-box-val" id="heroVendido">R$ 0</div>
+          <div class="hero-box-val" id="heroVendido" style="color:var(--ink);">R$ 0</div>
           <div class="hero-box-sub" id="heroMetaSub" style="display:none;">A pagar: —</div>
         </div>
         <div class="hero-box" onclick="abrirDetalheRecebido()" style="cursor:pointer;">
           <div class="hero-box-label"><span class="hero-box-dot" style="background:var(--rose);"></span>A Pagar</div>
-          <div class="hero-box-val" id="heroRecebido">R$ 0</div>
+          <div class="hero-box-val" id="heroRecebido" style="color:var(--rose);">R$ 0</div>
           <div class="hero-box-sub" id="heroRecebidoSub" style="display:none;">Recebido: —</div>
         </div>
         <div class="hero-box">
           <div class="hero-box-label"><span class="hero-box-dot" style="background:var(--green);"></span>Recebido</div>
-          <div class="hero-box-val" id="heroRecebidoNovo">R$ 0</div>
+          <div class="hero-box-val" id="heroRecebidoNovo" style="color:var(--green);">R$ 0</div>
         </div>
         <div class="hero-box" onclick="abrirDetalheCobrancas()" style="cursor:pointer;">
           <div class="hero-box-label"><span class="hero-box-dot" style="background:var(--red);"></span>Débitos</div>
-          <div class="hero-box-val" id="heroCobrancas">R$ 0</div>
+          <div class="hero-box-val" id="heroCobrancas" style="color:var(--red);">R$ 0</div>
           <div class="hero-box-sub"><span id="heroPendentes">0</span> consultoras em aberto</div>
         </div>
       </div>
