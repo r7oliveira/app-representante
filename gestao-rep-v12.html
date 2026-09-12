@@ -1917,6 +1917,8 @@ input[type="time"]{max-width:100%;}
       <div id="gerListaInativas"></div>
     </div>
   </div>
+  <button id="btnTopoGerenciar" onclick="document.querySelector('#view-gerenciar .scroll-body').scrollTo({top:0,behavior:'smooth'})"
+    style="display:none;position:absolute;right:16px;bottom:24px;width:48px;height:48px;border-radius:50%;background:var(--ink);color:white;border:none;box-shadow:0 4px 14px rgba(0,0,0,.25);font-size:20px;align-items:center;justify-content:center;z-index:50;cursor:pointer;">↑</button>
 </div>
 
 <!-- ══════════════════════════════════════════
@@ -4947,6 +4949,16 @@ function irListaConsultoras() {
   }
 })();
 
+(function() {
+  const sb = document.querySelector('#view-gerenciar .scroll-body');
+  const btn = document.getElementById('btnTopoGerenciar');
+  if (sb && btn) {
+    sb.addEventListener('scroll', () => {
+      btn.style.display = sb.scrollTop > 400 ? 'flex' : 'none';
+    });
+  }
+})();
+
 function filtrarAtendimentos(tipo) {
   window._filtroAtendimentos = tipo;
   const btns = {
@@ -7786,8 +7798,10 @@ function toggleInativasGerenciar() {
 
 function renderGerenciar() {
   const regiao = gerenciarRegiao;
-  const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa');
-  const inativas = DB.consultoras.filter(c => c.regiao === regiao && c.status === 'inativa');
+  const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa')
+    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+  const inativas = DB.consultoras.filter(c => c.regiao === regiao && c.status === 'inativa')
+    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
 
   document.getElementById('gerenciarTitulo').textContent = regiao;
   document.getElementById('gerAtivas').textContent = ativas.length;
