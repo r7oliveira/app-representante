@@ -5511,6 +5511,15 @@ function renderSemana() {
 
   if (filtroAtend === 'pendentes') visiveis = visiveis.filter(c => c.status !== 'concluida');
   else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(c => c.status === 'concluida');
+
+  // Ordena a exibição em ordem alfabética dentro de cada grupo de status,
+  // sem alterar a ordem real usada para calcular a "Próxima" (que segue dia/horário).
+  visiveis = [...visiveis].sort((a, b) => {
+    const gA = grupoStatus(a), gB = grupoStatus(b);
+    if (gA !== gB) return gA - gB;
+    return (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
+  });
+
   if (!visiveis.length) {
     const msg = filtroAtend === 'pendentes' ? 'Nenhuma consultora falta atender. 🎉'
       : filtroAtend === 'atendidas' ? 'Nenhuma consultora atendida ainda.'
