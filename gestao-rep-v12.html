@@ -606,7 +606,7 @@ input[type="time"]{max-width:100%;}
 ══════════════════════════════════════════ -->
 <div class="view" id="view-atendimentos-lista">
   <div class="page-header">
-    <button onclick="goTo('semana')" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
+    <button onclick="goTo('semana')" style="color:var(--rose);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div class="ph-title" style="color:white;">Atendimentos</div>
     <div class="ph-sub" style="color:rgba(255,255,255,.7);">Consultoras da semana</div>
   </div>
@@ -636,7 +636,7 @@ input[type="time"]{max-width:100%;}
 ══════════════════════════════════════════ -->
 <div class="view" id="view-pagar-debitos">
   <div class="page-header">
-    <button onclick="goTo('semana')" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
+    <button onclick="goTo('semana')" style="color:var(--rose);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div class="ph-title" style="color:white;">Pagar Débitos</div>
     <div class="ph-sub" style="color:rgba(255,255,255,.7);">Cobranças pendentes de todas as semanas</div>
   </div>
@@ -946,7 +946,7 @@ input[type="time"]{max-width:100%;}
 ══════════════════════════════════════════ -->
 <div class="view" id="view-agenda">
   <div class="page-header">
-    <button onclick="goTo('semana')" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
+    <button onclick="goTo('semana')" style="color:var(--rose);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div class="ph-title" style="color:white;">Agenda</div>
     <div class="ph-sub" style="color:rgba(255,255,255,.7);">Tarefas da semana, dia a dia</div>
   </div>
@@ -970,7 +970,7 @@ input[type="time"]{max-width:100%;}
 ══════════════════════════════════════════ -->
 <div class="view" id="view-programas">
   <div class="page-header" style="display:flex;align-items:center;gap:12px;">
-    <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">← Voltar</button>
+    <button onclick="goTo('semana')" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">← Voltar</button>
     <div>
       <div class="ph-title">Programas</div>
       <div class="ph-sub">Tudo que engaja suas consultoras, num só lugar</div>
@@ -1877,7 +1877,7 @@ input[type="time"]{max-width:100%;}
 ══════════════════════════════════════════ -->
 <div class="view" id="view-gerenciar">
   <div style="background:var(--ink);padding:calc(16px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;">
-    <button onclick="goBack()" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
+    <button onclick="goBack()" style="color:var(--rose);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div style="color:white;font-size:26px;font-weight:800;font-family:var(--font-serif);" id="gerenciarTitulo">Gramado 3</div>
   </div>
 
@@ -1917,7 +1917,7 @@ input[type="time"]{max-width:100%;}
 ══════════════════════════════════════════ -->
 <div class="view" id="view-inativas-todas">
   <div style="background:var(--ink);padding:calc(16px + env(safe-area-inset-top)) 20px 24px;flex-shrink:0;">
-    <button onclick="goBack()" style="color:rgba(255,255,255,.7);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
+    <button onclick="goBack()" style="color:var(--rose);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div style="color:white;font-size:26px;font-weight:800;font-family:var(--font-serif);">Consultoras inativas</div>
     <div style="color:rgba(255,255,255,.75);font-size:12.5px;margin-top:2px;" id="inativasTodasSub">Todas as regiões</div>
   </div>
@@ -2051,6 +2051,7 @@ input[type="time"]{max-width:100%;}
 ══════════════════════════════════════════ -->
 <div class="view" id="view-fechamento-geral">
   <div style="background:var(--ink);padding:calc(20px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
+    <button onclick="goTo('semana')" style="color:var(--rose);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;padding:0;">← Voltar</button>
     <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Dashboard Gerencial</div>
     <div style="color:white;font-size:24px;font-weight:800;margin-bottom:3px;" id="fgTituloSemana">Semana —</div>
     <div style="color:rgba(255,255,255,.5);font-size:13px;font-weight:500;margin-bottom:14px;" id="fgSubtitulo">Visão geral da operação</div>
