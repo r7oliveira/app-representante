@@ -1019,15 +1019,15 @@ input[type="time"]{max-width:100%;}
      TELA: INDIQUE E GANHE
 ══════════════════════════════════════════ -->
 <div class="view" id="view-indicacoes">
-  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">← Voltar</button>
-      <div>
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+    <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+      <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;">← Voltar</button>
+      <div style="min-width:0;">
         <div class="ph-title">Indique e Ganhe</div>
         <div class="ph-sub">Cada indicação aprovada vira 1 estrela</div>
       </div>
     </div>
-    <button class="btn-primary" style="width:auto;padding:10px 16px;" onclick="abrirNovaIndicacao()">+ Indicação</button>
+    <button class="btn-primary" style="width:auto;padding:10px 16px;white-space:nowrap;flex-shrink:0;" onclick="abrirNovaIndicacao()">+ Indicação</button>
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;">
 
@@ -1090,13 +1090,15 @@ input[type="time"]{max-width:100%;}
      TELA: LIVES & SORTEIOS (lista)
 ══════════════════════════════════════════ -->
 <div class="view" id="view-lives">
-  <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;">
-    <div>
-      <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;padding:0;margin-bottom:8px;display:block;">← Voltar</button>
-      <div class="ph-title">Lives &amp; Sorteios</div>
-      <div class="ph-sub">Organize suas lives do Instagram</div>
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+    <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+      <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;">← Voltar</button>
+      <div style="min-width:0;">
+        <div class="ph-title">Lives &amp; Sorteios</div>
+        <div class="ph-sub">Organize suas lives do Instagram</div>
+      </div>
     </div>
-    <button class="btn-primary" style="width:auto;padding:10px 16px;" onclick="abrirNovaLive()">+ Live</button>
+    <button class="btn-primary" style="width:auto;padding:10px 16px;white-space:nowrap;flex-shrink:0;" onclick="abrirNovaLive()">+ Live</button>
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;">
     <button onclick="goTo('estrelas')" style="width:100%;display:flex;align-items:center;gap:10px;background:var(--amber-bg);border:1px solid rgba(185,139,62,.25);border-radius:14px;padding:12px 14px;margin-bottom:14px;cursor:pointer;">
@@ -1215,9 +1217,10 @@ input[type="time"]{max-width:100%;}
 ══════════════════════════════════════════ -->
 <div class="view" id="view-estrelas">
   <div class="page-header" style="display:flex;align-items:center;gap:12px;">
-    <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;">← Voltar</button>
+    <button onclick="goBack()" style="color:var(--rose);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;">← Voltar</button>
     <div>
       <div class="ph-title">Histórico de Estrelas</div>
+      <div class="ph-sub">Ranking somando todos os programas</div>
     </div>
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;">
