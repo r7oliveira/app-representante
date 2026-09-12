@@ -2013,6 +2013,11 @@ input[type="time"]{max-width:100%;}
             <span>Chave da IA (Gemini)</span>
             <input type="password" id="cfgGemini" placeholder="AIza..." oninput="salvarConfig()">
           </label>
+          <label class="field">
+            <span>Chave da IA (Groq · reserva)</span>
+            <input type="password" id="cfgGroq" placeholder="gsk_..." oninput="salvarConfig()">
+            <span style="font-size:11px;color:var(--ink-3);margin-top:2px;">Usada automaticamente só se o Gemini atingir o limite ou ficar indisponível.</span>
+          </label>
           <label class="field" style="margin-bottom:0;">
             <span>Meta padrão semanal (R$)</span>
             <input type="number" id="cfgMeta" placeholder="15000" oninput="salvarConfig()">
@@ -2349,7 +2354,7 @@ input[type="time"]{max-width:100%;}
        Preencher com foto do tablet (IA)
     </button>
     <input type="file" id="consPhotoInput" accept="image/*" style="display:none" onchange="extrairFotoConsultora(this)">
-    <div class="ai-loading" id="consAiLoading"><span class="spinner"></span>Lendo dados da imagem...</div>
+    <div class="ai-loading" id="consAiLoading"><span class="spinner"></span><span id="consAiLoadingTxt">Analisando ficha...</span></div>
 
     <label class="field"><span>Nome completo *</span><input id="cNome" placeholder="Ex: Ana Leticia de Oliveira"></label>
     <label class="field"><span>Telefone</span><input id="cTel" inputmode="tel" placeholder="(51) 99999-9999"></label>
@@ -4132,7 +4137,7 @@ let DB = (() => {
             consultoras: parsed.consultoras || [],
             semanas: parsed.semanas || [],
             semanaAtiva: parsed.semanaAtiva || null,
-            config: parsed.config || { geminiKey: '', metaPadrao: 15000 },
+            config: parsed.config || { geminiKey: '', groqKey: '', metaPadrao: 15000 },
             agenda: parsed.agenda || blankAgenda(),
             observacoes: parsed.observacoes || [],
             fcmTokens: parsed.fcmTokens || [],
@@ -4146,7 +4151,7 @@ let DB = (() => {
       }
     }
   } catch(e) {}
-  return { consultoras:[], semanas:[], semanaAtiva:null, config:{geminiKey:'',metaPadrao:15000}, agenda: blankAgenda(), observacoes:[], fcmTokens:[], lives:[], estrelas:[], indicacoes:[], resgates:[], seq:1 };
+  return { consultoras:[], semanas:[], semanaAtiva:null, config:{geminiKey:'',groqKey:'',metaPadrao:15000}, agenda: blankAgenda(), observacoes:[], fcmTokens:[], lives:[], estrelas:[], indicacoes:[], resgates:[], seq:1 };
 })();
 
 // Com login fixo, o nome do tablet é sempre o nome da pessoa logada (não precisa mais digitar)
@@ -6783,18 +6788,26 @@ function salvarConsultora() {
 async function extrairFotoConsultora(input) {
   const file = input.files[0];
   if (!file) return;
-  const key = DB.config.geminiKey || localStorage.getItem('gemini_key') || '';
-  if (!key) { alert('Configure a chave Gemini em Configurações.'); return; }
+  const geminiKey = DB.config.geminiKey || localStorage.getItem('gemini_key') || '';
+  const groqKey = DB.config.groqKey || localStorage.getItem('groq_key') || '';
+  if (!geminiKey && !groqKey) { alert('Configure a chave Gemini (ou Groq, em Configurações) para usar a leitura por IA.'); return; }
 
-  document.getElementById('consAiLoading').classList.add('show');
+  const loadingEl = document.getElementById('consAiLoading');
+  const loadingTxtEl = document.getElementById('consAiLoadingTxt');
+  loadingEl.classList.add('show');
   try {
-    const b64 = await fileToB64(file);
     const prompt = 'Extraia os dados desta tela de cadastro de consultora. Retorne APENAS um JSON com os campos: nome, telefone, cpf, dataNascimento, endereco, bairro, cidade, observacoes. Para telefone: retorne apenas os dígitos a partir do DDD (ex: se aparecer "Vivo - 15 - 51996733861", retorne "51996733861"). Para dataNascimento: formato DD-MM-AAAA. Use aspas duplas. Não inclua nada além do JSON.';
-    const resp = await geminiCall(key, {
-      contents: [{parts: [{text: prompt},{inlineData:{mimeType:file.type,data:b64}}]}]
+
+    const resultado = await extractConsultantDataFromImage(file, prompt, (status) => {
+      if (loadingTxtEl) loadingTxtEl.textContent = status;
     });
-    const txt = resp.candidates[0].content.parts[0].text;
-    const json = JSON.parse(txt.replace(/```json?/g,'').replace(/```/g,'').trim());
+
+    if (!resultado.ok) {
+      alert('Não foi possível ler a ficha automaticamente. Confira sua conexão ou preencha os dados manualmente.');
+      return;
+    }
+
+    const json = resultado.data;
     if (json.nome) document.getElementById('cNome').value = json.nome;
     if (json.telefone) document.getElementById('cTel').value = fmtTelefone(json.telefone);
     if (json.cpf) document.getElementById('cCpf').value = json.cpf;
@@ -6811,9 +6824,11 @@ async function extrairFotoConsultora(input) {
       }
     }
   } catch(e) {
-    alert('Erro ao ler foto: ' + e.message);
+    console.log('Erro inesperado na leitura da ficha: ' + e.message);
+    alert('Não foi possível ler a ficha automaticamente. Confira sua conexão ou preencha os dados manualmente.');
   } finally {
-    document.getElementById('consAiLoading').classList.remove('show');
+    loadingEl.classList.remove('show');
+    if (loadingTxtEl) loadingTxtEl.textContent = 'Analisando ficha...';
     input.value = '';
   }
 }
@@ -6974,6 +6989,7 @@ function renderConfig() {
   if (!souAdmin) return; // operador não edita mais essas configurações — fica só com o administrador
 
   document.getElementById('cfgGemini').value = DB.config.geminiKey || '';
+  document.getElementById('cfgGroq').value = DB.config.groqKey || '';
   document.getElementById('cfgMeta').value = DB.config.metaPadrao || 15000;
   document.getElementById('cfgLinkIndicacoes').value = DB.config.linkIndiqueGanhe || '';
   document.getElementById('cfgValorPixIndicacao').value = brlInput(DB.config.valorPixIndicacao || 20);
@@ -6986,6 +7002,7 @@ function renderConfig() {
 
 function salvarConfig() {
   DB.config.geminiKey = document.getElementById('cfgGemini').value.trim();
+  DB.config.groqKey = document.getElementById('cfgGroq').value.trim();
   DB.config.metaPadrao = parseNum(document.getElementById('cfgMeta').value) || 15000;
   DB.config.linkIndiqueGanhe = document.getElementById('cfgLinkIndicacoes').value.trim();
   DB.config.valorPixIndicacao = parseNum(document.getElementById('cfgValorPixIndicacao').value) || 20;
@@ -7443,7 +7460,7 @@ function exportarDados() {
 }
 
 function limparTudo() {
-  DB = { consultoras:[], semanas:[], semanaAtiva:null, config:{geminiKey:'',metaPadrao:15000}, seq:1 };
+  DB = { consultoras:[], semanas:[], semanaAtiva:null, config:{geminiKey:'',groqKey:'',metaPadrao:15000}, seq:1 };
   save();
   goTo('semana');
 }
@@ -7497,6 +7514,106 @@ async function fileToB64(file) {
     r.onerror = () => rej(new Error('Erro ao ler arquivo'));
     r.readAsDataURL(file);
   });
+}
+
+/* ════════════════════════════════════════════
+   AI OCR PROVIDER — leitura de imagem com fallback automático
+   Gemini (principal) → Groq/Qwen Vision (reserva) → preenchimento manual
+════════════════════════════════════════════ */
+const GROQ_VISION_MODEL = 'qwen/qwen3.8-27b'; // modelo multimodal Qwen hospedado na Groq
+
+// Detecta erros "recuperáveis" (limite, indisponibilidade) que justificam tentar o próximo provedor
+function isRecoverableAIError(msg) {
+  return /429|quota|RESOURCE_EXHAUSTED|rate.?limit|overloaded|503|indispon[íi]vel|timeout|tempo limite|todos os modelos indispon[íi]veis|servi[çc]o/i.test(msg || '');
+}
+
+// Provedor 1: Gemini (reaproveita a função geminiCall já existente, sem alterar sua lógica)
+async function GeminiProvider(key, file, b64, prompt, timeout) {
+  const resp = await geminiCall(key, {
+    contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: file.type, data: b64 } }] }]
+  }, timeout);
+  return resp.candidates[0].content.parts[0].text;
+}
+
+// Provedor 2: Groq + Qwen Vision (API compatível com OpenAI)
+async function GroqQwenProvider(key, file, b64, prompt, timeout = 90000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeout);
+  try {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      signal: ctrl.signal,
+      body: JSON.stringify({
+        model: GROQ_VISION_MODEL,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: 'data:' + file.type + ';base64,' + b64 } }
+          ]
+        }],
+        temperature: 0.1,
+        max_tokens: 1024
+      })
+    });
+    clearTimeout(t);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error.message || 'Erro Groq');
+    return d.choices[0].message.content;
+  } catch (e) {
+    clearTimeout(t);
+    if (e.name === 'AbortError') throw new Error('Tempo limite excedido (Groq).');
+    throw e;
+  }
+}
+
+// Função principal: decide automaticamente qual provedor usar.
+// Uso: const r = await extractConsultantDataFromImage(file, prompt, statusCb);
+// r = { ok:true, provider:'Gemini'|'Groq/Qwen', data:{...} }  OU  { ok:false }
+async function extractConsultantDataFromImage(file, prompt, onStatus) {
+  const b64 = await fileToB64(file);
+  const geminiKey = DB.config.geminiKey || localStorage.getItem('gemini_key') || '';
+  const groqKey = DB.config.groqKey || localStorage.getItem('groq_key') || '';
+
+  let txt = null;
+  let providerUsado = null;
+  let podeTentarReserva = true; // sem chave Gemini configurada, ainda podemos tentar a Groq diretamente
+
+  // 1) Tentativa principal: Gemini
+  if (geminiKey) {
+    try {
+      if (onStatus) onStatus('Analisando ficha...');
+      txt = await GeminiProvider(geminiKey, file, b64, prompt);
+      providerUsado = 'Gemini';
+      console.log('AI Provider: Gemini\nStatus: Success');
+    } catch (e) {
+      podeTentarReserva = isRecoverableAIError(e.message);
+      console.log('AI Provider: Gemini\nStatus: ' + e.message + (podeTentarReserva ? ' (recuperável — tentando reserva)' : ' (erro de configuração — sem fallback automático)'));
+    }
+  }
+
+  // 2) Fallback automático: Groq/Qwen — só entra se o erro do Gemini foi de limite/indisponibilidade
+  if (!txt && groqKey && podeTentarReserva) {
+    try {
+      if (onStatus) onStatus('Finalizando leitura...');
+      txt = await GroqQwenProvider(groqKey, file, b64, prompt);
+      providerUsado = 'Groq/Qwen';
+      console.log((geminiKey ? 'Fallback: ' : 'AI Provider: ') + 'Groq/Qwen\nStatus: Success');
+    } catch (e) {
+      console.log('AI Provider: Groq/Qwen\nStatus: ' + e.message);
+    }
+  }
+
+  if (!txt) return { ok: false, provider: null };
+
+  try {
+    const json = JSON.parse(txt.replace(/```json?/g, '').replace(/```/g, '').trim());
+    return { ok: true, provider: providerUsado, data: json };
+  } catch (e) {
+    console.log('Erro ao interpretar JSON retornado por ' + providerUsado + ': ' + e.message);
+    return { ok: false, provider: providerUsado };
+  }
 }
 
 /* ════════════════════════════════════════════
