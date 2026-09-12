@@ -618,11 +618,11 @@ input[type="time"]{max-width:100%;}
     </div>
     <div style="display:flex;gap:8px;margin:0 16px 12px;">
       <button type="button" id="filtroAtendTodas" onclick="filtrarAtendimentos('todas')"
-        style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--rose);background:var(--rose);color:white;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Todas</button>
+        style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--rose);background:var(--rose);color:white;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Todas (<span id="cntFiltroTodas">0</span>)</button>
       <button type="button" id="filtroAtendPendentes" onclick="filtrarAtendimentos('pendentes')"
-        style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-3);font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Falta atender</button>
+        style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-3);font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Falta atender (<span id="cntFiltroPendentes">0</span>)</button>
       <button type="button" id="filtroAtendAtendidas" onclick="filtrarAtendimentos('atendidas')"
-        style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-3);font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Já atendidas</button>
+        style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-3);font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Já atendidas (<span id="cntFiltroAtendidas">0</span>)</button>
     </div>
     <div style="padding:0 16px 80px;" id="listaConsultoras">
       <div style="text-align:center;padding:32px;color:var(--ink-3);font-size:14px;">
@@ -5500,6 +5500,15 @@ function renderSemana() {
   const lista = document.getElementById('listaConsultoras');
   const filtroAtend = window._filtroAtendimentos || 'todas';
   let visiveis = sem.consultoras.filter(c => !c.avulso);
+
+  // Contadores dos filtros (sempre com base na lista completa, independente do filtro ativo)
+  const cntTodasEl = document.getElementById('cntFiltroTodas');
+  const cntPendentesEl = document.getElementById('cntFiltroPendentes');
+  const cntAtendidasEl = document.getElementById('cntFiltroAtendidas');
+  if (cntTodasEl) cntTodasEl.textContent = visiveis.length;
+  if (cntPendentesEl) cntPendentesEl.textContent = visiveis.filter(c => c.status !== 'concluida').length;
+  if (cntAtendidasEl) cntAtendidasEl.textContent = visiveis.filter(c => c.status === 'concluida').length;
+
   if (filtroAtend === 'pendentes') visiveis = visiveis.filter(c => c.status !== 'concluida');
   else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(c => c.status === 'concluida');
   if (!visiveis.length) {
