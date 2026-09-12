@@ -6103,7 +6103,7 @@ function abrirRegistro(tipo) {
       <label class="field">
         <span>Valor a pagar <span style="color:var(--ink-3);font-weight:500;">(vendido − ${comissaoPct}% comissão consultora${comissaoPct===40?' · favorita':''})</span></span>
         <input id="regAPagar" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.aPagar)}"
-          oninput="maskMoeda(this);atualizarResumo()" style="background:var(--surface);">
+          oninput="maskMoeda(this);calcVendidoDeAPagar()" style="background:var(--surface);">
         <span style="font-size:11px;color:var(--ink-3);margin-top:2px;">Calculado automaticamente · você pode ajustar</span>
       </label>
 
@@ -6214,6 +6214,16 @@ function calcValorPagar() {
   const pct = (typeof window._payoutPct === 'number') ? window._payoutPct : 0.70;
   const aPagar = Math.round(v * pct * 100) / 100;
   document.getElementById('regAPagar').value = aPagar > 0 ? brlInput(aPagar) : '';
+  atualizarResumo();
+}
+
+function calcVendidoDeAPagar() {
+  const aPagar = parseNum(document.getElementById('regAPagar')?.value);
+  const vendaEl = document.getElementById('regVenda');
+  if (vendaEl) {
+    const vendidoCalc = aPagar > 0 ? Math.ceil((aPagar + 42.85) * 100) / 100 : 0;
+    vendaEl.value = vendidoCalc > 0 ? brlInput(vendidoCalc) : '';
+  }
   atualizarResumo();
 }
 
