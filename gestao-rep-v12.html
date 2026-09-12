@@ -1465,6 +1465,7 @@ input[type="time"]{max-width:100%;}
     <div style="font-size:13px;color:var(--ink-3);font-weight:600;margin-bottom:16px;" id="arPessoaLabel">—</div>
 
     <label class="field"><span>Chave da IA (Gemini)</span><input type="password" id="arGemini" placeholder="AIza..."></label>
+    <label class="field"><span>Chave da IA (Groq · reserva)</span><input type="password" id="arGroq" placeholder="gsk_..."></label>
     <label class="field"><span>Google Client ID (para conectar a Google Agenda)</span><input type="text" id="arGoogleClientId" placeholder="xxxx.apps.googleusercontent.com"></label>
     <label class="field"><span>VAPID Key (para notificações push)</span><input type="text" id="arVapidKey" placeholder="Cole a chave gerada no Firebase"></label>
     <label class="field"><span>Meta padrão semanal (R$)</span><input type="number" id="arMeta" placeholder="15000"></label>
@@ -4604,6 +4605,7 @@ function abrirAdminRegioes() {
 
   document.getElementById('arPessoaLabel').textContent = 'Para ' + (pessoa ? pessoa.nome : '—');
   document.getElementById('arGemini').value = data.config.geminiKey || '';
+  document.getElementById('arGroq').value = data.config.groqKey || '';
   document.getElementById('arGoogleClientId').value = data.config.googleClientId || '';
   document.getElementById('arVapidKey').value = data.config.vapidKey || '';
   document.getElementById('arMeta').value = data.config.metaPadrao || 15000;
@@ -4632,6 +4634,7 @@ function confirmarAdminRegioes() {
 
   data.config = data.config || {};
   data.config.geminiKey = document.getElementById('arGemini').value.trim();
+  data.config.groqKey = document.getElementById('arGroq').value.trim();
   data.config.googleClientId = document.getElementById('arGoogleClientId').value.trim();
   data.config.vapidKey = document.getElementById('arVapidKey').value.trim();
   data.config.metaPadrao = parseNum(document.getElementById('arMeta').value) || 15000;
