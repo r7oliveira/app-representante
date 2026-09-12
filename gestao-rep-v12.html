@@ -6221,7 +6221,8 @@ function calcVendidoDeAPagar() {
   const aPagar = parseNum(document.getElementById('regAPagar')?.value);
   const vendaEl = document.getElementById('regVenda');
   if (vendaEl) {
-    const vendidoCalc = aPagar > 0 ? Math.ceil((aPagar + 42.85) * 100) / 100 : 0;
+    const pct = (typeof window._payoutPct === 'number') ? window._payoutPct : 0.70;
+    const vendidoCalc = aPagar > 0 ? Math.round((aPagar / pct) * 100) / 100 : 0;
     vendaEl.value = vendidoCalc > 0 ? brlInput(vendidoCalc) : '';
   }
   atualizarResumo();
