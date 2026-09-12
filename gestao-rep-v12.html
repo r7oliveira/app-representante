@@ -5510,7 +5510,8 @@ function renderSemana() {
     return;
   }
 
-  lista.innerHTML = visiveis.map((c, idx) => {
+  lista.innerHTML = '<button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-bottom:14px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>'
+  + visiveis.map((c, idx) => {
     const st = c.status || 'pendente';
     const isNext = proxima && c.id === proxima.id;
     const especial = c.parouDeVender ? 'inativa' : c.remarcarMes ? 'mes' : c.remarcarSemana ? 'semana' : null;
@@ -5610,7 +5611,6 @@ function renderSemana() {
       + trilha
     + '</div>';
   }).join('')
-  + '<button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-top:4px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>'
   + '<div style="height:16px;"></div>';
 }
 
