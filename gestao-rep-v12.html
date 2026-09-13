@@ -4311,7 +4311,7 @@ function renderAdminHome() {
         <div style="font-size:12px;color:var(--ink-3);">Ainda não usou o app neste aparelho.</div>
       </div>`;
     const st = _statsSemanaPessoa(data);
-    const pct = st.meta > 0 ? Math.round((st.vendido||0)/st.meta*100) : 0;
+    const pct = st.meta > 0 ? Math.round((st.recebido||0)/st.meta*100) : 0;
     const naoLidas = (data.observacoes || []).filter(o => !o.lida).length;
     return `
     <div class="card" style="padding:14px;margin-bottom:10px;cursor:pointer;" onclick="abrirAdminPessoa('${op.id}')">
@@ -5457,8 +5457,8 @@ function renderSemana() {
   }, 0);
   const meta = sem.meta || DB.config.metaPadrao || 15000;
   const aPagarTotal = sem.consultoras.reduce((a,c) => a + (c.aPagar||0), 0);
-  const pctM = Math.min(100, Math.round(aPagarTotal/meta*100));
-  const faltaMeta = Math.max(0, meta - aPagarTotal);
+  const pctM = Math.min(100, Math.round(recebido/meta*100));
+  const faltaMeta = Math.max(0, meta - recebido);
 
   // Ordena por status (pendente → remarcada → concluída) e, dentro de cada grupo, por dia + horário
   const diasOrd = {'Segunda-feira':1,'Terça-feira':2,'Quarta-feira':3,'Quinta-feira':4,'Sexta-feira':5,'Sábado':6};
@@ -7230,12 +7230,12 @@ function recomputeFechamentoGeral() {
   } else {
     metaPorTabletBox.style.display = '';
     const tabletsOrdenadosPct = [...tablets].sort((a,b) => {
-      const pa = (a.meta>0) ? (a.vendido||0)/a.meta : 0;
-      const pb = (b.meta>0) ? (b.vendido||0)/b.meta : 0;
+      const pa = (a.meta>0) ? ((a.pix||0)+(a.dinheiro||0))/a.meta : 0;
+      const pb = (b.meta>0) ? ((b.pix||0)+(b.dinheiro||0))/b.meta : 0;
       return pb - pa;
     });
     metaPorTabletBox.innerHTML = tabletsOrdenadosPct.map(t => {
-      const pct = t.meta > 0 ? Math.round((t.vendido||0)/t.meta*100) : 0;
+      const pct = t.meta > 0 ? Math.round(((t.pix||0)+(t.dinheiro||0))/t.meta*100) : 0;
       return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12.5px;">
         <span style="color:rgba(255,255,255,.8);font-weight:600;">${t.nome}</span>
         <span style="color:${pct>=100?'#6EF0B0':'rgba(255,255,255,.6)'};font-weight:800;">${pct}%${pct>=100?' 🏆':''}</span>
@@ -7361,10 +7361,11 @@ function abrirFechDetalhe(index) {
   document.getElementById('fdAtendPct').textContent = (t.atendidas||0) + '/' + (t.previstas||0);
   document.getElementById('fdAtendBar').style.width = Math.min(100, atendPct) + '%';
 
-  const metaPct = t.meta > 0 ? Math.round((t.vendido||0)/t.meta*100) : 0;
+  const tRecebidoTotal = (t.pix||0)+(t.dinheiro||0);
+  const metaPct = t.meta > 0 ? Math.round(tRecebidoTotal/t.meta*100) : 0;
   document.getElementById('fdMetaPct').textContent = metaPct + '%';
   document.getElementById('fdMetaBar').style.width = Math.min(100, metaPct) + '%';
-  document.getElementById('fdMetaValores').textContent = brl(t.vendido||0) + ' / ' + brl(t.meta||0);
+  document.getElementById('fdMetaValores').textContent = brl(tRecebidoTotal) + ' / ' + brl(t.meta||0);
 
   document.getElementById('fdVendido').textContent = brl(t.vendido||0);
   document.getElementById('fdRecebido').textContent = brl((t.pix||0)+(t.dinheiro||0));
@@ -7663,8 +7664,7 @@ function renderDomingo() {
     const atendidas = ultimaSem.consultoras.filter(c=>c.status==='concluida').length;
     const vendido = ultimaSem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
     const recebido = ultimaSem.consultoras.reduce((a,c)=>a+(c.recebido||0),0);
-    const aPagarTotalDom = ultimaSem.consultoras.reduce((a,c)=>a+(c.aPagar||0),0);
-    const pct = ultimaSem.meta > 0 ? Math.min(100,Math.round(aPagarTotalDom/ultimaSem.meta*100)) : 0;
+    const pct = ultimaSem.meta > 0 ? Math.min(100,Math.round(recebido/ultimaSem.meta*100)) : 0;
     const pendRec = ultimaSem.consultoras.filter(c=>c.debito>0).reduce((a,c)=>a+(c.debito||0),0);
 
     card.innerHTML = `
@@ -7686,7 +7686,7 @@ function renderDomingo() {
     const iaTxt = document.getElementById('domingoIATxt');
     iaEl.style.display = '';
     const proxReg = proximaRegiao();
-    iaTxt.innerHTML = `Próxima semana sugerida: <strong>${proxReg}</strong>. ${pct>=100?'Meta batida, ótima semana!':'Faltaram '+brl(ultimaSem.meta-vendido)+' para a meta.'} ${pendRec>0?brl(pendRec)+' ainda a receber de semanas anteriores.':''}`;
+    iaTxt.innerHTML = `Próxima semana sugerida: <strong>${proxReg}</strong>. ${pct>=100?'Meta batida, ótima semana!':'Faltaram '+brl(ultimaSem.meta-recebido)+' para a meta.'} ${pendRec>0?brl(pendRec)+' ainda a receber de semanas anteriores.':''}`;
   }
 
   // Radar resumido
@@ -7752,16 +7752,16 @@ function gerarIniciativas(sem) {
   const iniciativas = [];
   const pendentes = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
+  const recebido = sem.consultoras.reduce((a,c)=>a+(c.recebido||0),0);
   const meta = sem.meta || DB.config.metaPadrao || 15000;
-  const aPagarTotalIni = sem.consultoras.reduce((a,c)=>a+(c.aPagar||0),0);
-  const pct = meta > 0 ? Math.round(aPagarTotalIni/meta*100) : 0;
+  const pct = meta > 0 ? Math.round(recebido/meta*100) : 0;
   const comDebito = pendentes.filter(c => c.debito > 0);
   const semFav = pendentes.filter(c => !c.pedidoFavoritaFeito);
   const atendidas = sem.consultoras.filter(c=>c.status==='concluida').length;
   const total = sem.consultoras.length;
 
   if (pct < 80 && total > 0) {
-    const falta = meta - vendido;
+    const falta = meta - recebido;
     iniciativas.push({
       cor:'var(--red)', tag:'Meta em risco', tempo:'agora',
       texto:`Você está <strong>${100-pct}% abaixo da meta</strong> desta semana. Faltam ${brl(falta)} com ${total-atendidas} consultoras ainda para atender.`,
@@ -8056,9 +8056,8 @@ function mostrarFechamentoSemana() {
 
   const vendido  = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
   const recebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
-  const aPagarTotal = sem.consultoras.reduce((a,c) => a + (c.aPagar||0), 0);
   const meta     = sem.meta || 15000;
-  const pct      = Math.min(100, Math.round(aPagarTotal/meta*100));
+  const pct      = Math.min(100, Math.round(recebido/meta*100));
   const comDebito = sem.consultoras.filter(c => (c.debito||0) > 0);
   const totalDeb  = comDebito.reduce((a,c) => a+(c.debito||0), 0);
 
@@ -8466,7 +8465,7 @@ function renderRelatorio() {
   const lucro      = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
   const meta       = sem.meta || 15000;
   const aPagarTotal = sem.consultoras.reduce((a,c) => a + (c.aPagar||0), 0);
-  const pct        = Math.min(100, Math.round(aPagarTotal/meta*100));
+  const pct        = Math.min(100, Math.round(recebido/meta*100));
 
   let html = '';
 
@@ -8580,8 +8579,7 @@ async function gerarRelatorioIA() {
   }, 0);
   const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
   const meta      = sem.meta || 15000;
-  const aPagarTotalRel = sem.consultoras.reduce((a,c) => a+(c.aPagar||0), 0);
-  const pct       = Math.min(100, Math.round(aPagarTotalRel/meta*100));
+  const pct       = Math.min(100, Math.round(recebido/meta*100));
 
   const detalhes = atendidas.map(c =>
     `- ${c.nome} (${c.cidade||''}): Vendido ${brl(c.vendido||0)}, Recebido ${brl(c.recebido||0)}, Débito ${brl(c.debito||0)}, Score ${calcScore(c)}`
@@ -8591,8 +8589,8 @@ async function gerarRelatorioIA() {
 
 Dados da Semana ${sem.numero} — ${sem.regiao}:
 - Meta: ${brl(meta)}
-- Vendido: ${brl(vendido)} (${pct}% da meta)
-- Recebido: ${brl(recebido)}
+- Vendido: ${brl(vendido)}
+- Recebido: ${brl(recebido)} (${pct}% da meta)
 - A receber (débitos): ${brl(debitos)}
 - Seu lucro estimado (18% sobre 70%): ${brl(lucro)}
 - Consultoras atendidas: ${atendidas.length} de ${sem.consultoras.length}
@@ -8712,8 +8710,7 @@ async function gerarPDF() {
     return a+debitoRestante(Math.round((c.vendido||0)*0.70*100)/100, c.recebido);
   },0);
   const meta = sem.meta||15000;
-  const aPagarTotalPdf = sem.consultoras.reduce((a,c)=>a+(c.aPagar||0),0);
-  const pct  = Math.min(100,Math.round(aPagarTotalPdf/meta*100));
+  const pct  = Math.min(100,Math.round(recebido/meta*100));
   const nRSem= sem.consultoras.filter(c=>c.remarcarSemana).length;
   const nRMes= sem.consultoras.filter(c=>c.remarcarMes).length;
 
