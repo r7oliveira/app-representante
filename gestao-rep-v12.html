@@ -5666,6 +5666,7 @@ function renderSemana() {
           + '</div>'
         + '</div>'
         + badge
+        + '<button onclick="event.stopPropagation();editarConsultora(\'' + c.id + '\')" style="flex-shrink:0;background:var(--surface-2);border:none;color:var(--rose);font-size:13px;cursor:pointer;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:2px;">✎</button>'
         + '<button onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')" style="flex-shrink:0;background:var(--surface-2);border:none;color:var(--ink-2);font-size:13px;cursor:pointer;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:2px;">✕</button>'
       + '</div>'
       + trilha
@@ -6764,6 +6765,7 @@ function salvarConsultora() {
       window._editConsId = null;
       document.getElementById('modalConsTitulo').textContent = 'Nova Consultora';
       renderGerenciar();
+      if (getSemanaAtiva()) renderSemana();
       return;
     }
   }
