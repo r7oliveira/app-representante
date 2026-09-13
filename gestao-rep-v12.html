@@ -5389,14 +5389,11 @@ function goBack() {
 /* ════════════════════════════════════════════
    TELA SEMANA
 ════════════════════════════════════════════ */
-// Considera "nova" se marcada explicitamente (na semana ou no cadastro),
-// ou — para dados de antes desta funcionalidade — se o cadastro foi criado durante a semana atual.
+// Nova = esta é a primeira vez que ela aparece em alguma semana já registrada no sistema
+// (não depende de nenhuma marcação manual — puxa direto do histórico real de semanas).
 function ehConsultoraNova(c, sem) {
-  if (c.consultoraNova) return true;
-  const mestre = DB.consultoras.find(m => m.id === c.id);
-  if (!mestre) return false;
-  if (mestre.novaConsultora) return true;
-  return !!(mestre.criadoEm && sem.dataInicio && mestre.criadoEm >= sem.dataInicio);
+  const apareceuEmOutraSemana = DB.semanas.some(s => s.id !== sem.id && s.consultoras.some(x => x.id === c.id));
+  return !apareceuEmOutraSemana;
 }
 
 function renderSemana() {
