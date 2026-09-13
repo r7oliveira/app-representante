@@ -5488,11 +5488,11 @@ function renderSemana() {
 
   // Contadores de status
   const pendentesAgora = sem.consultoras.filter(c => c.status !== 'concluida');
-  const nAtendidas   = sem.consultoras.filter(c => c.status === 'concluida' && !c.remarcarSemana && !c.remarcarMes).length;
+  const nAtendidas   = sem.consultoras.filter(c => c.status === 'concluida' && (c.vendido||0) > 0).length;
   const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
   const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
   const nComDebito   = sem.consultoras.filter(c => c.debito > 0).length;
-  const nSemFavorita = sem.consultoras.filter(c => !c.pedidoFavoritaFeito).length;
+  const nSemFavorita = sem.consultoras.filter(c => c.status === 'concluida' && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito).length;
   const nInativas    = sem.consultoras.filter(c => c.parouDeVender).length;
   document.getElementById('cntAtendidas').textContent   = nAtendidas;
   document.getElementById('cntRemSemana').textContent   = nRemSemana;
