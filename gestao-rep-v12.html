@@ -2483,6 +2483,16 @@ input[type="time"]{max-width:100%;}
       <input id="cRotaObs" placeholder="Ex: Atende só de tarde, mora perto da praça...">
     </label>
 
+    <div id="cStatusBox" style="display:none;margin-bottom:14px;">
+      <span style="font-size:12px;font-weight:700;color:var(--ink-3);display:block;margin-bottom:6px;">Status</span>
+      <div style="display:flex;gap:8px;">
+        <button type="button" id="cStatusAtivaBtn" onclick="setStatusFormConsultora('ativa')"
+          style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">Ativa</button>
+        <button type="button" id="cStatusInativaBtn" onclick="setStatusFormConsultora('inativa')"
+          style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">Inativa</button>
+      </div>
+    </div>
+
     <div class="btn-row" style="margin-top:18px;">
       <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalConsultora')">Cancelar</button>
       <button class="btn-primary" style="flex:1;" onclick="salvarConsultora()">Salvar</button>
@@ -6706,6 +6716,9 @@ function abrirModalConsultora() {
   document.getElementById('cDia').value = '';
   document.getElementById('cHorario').value = '';
   popularSelectRegiao('cRegiao', gerenciarRegiao);
+  document.getElementById('modalConsTitulo').textContent = 'Nova Consultora';
+  document.getElementById('cStatusBox').style.display = 'none';
+  window._editConsId = null;
   document.getElementById('modalConsultora').classList.add('open');
 }
 
@@ -6731,6 +6744,7 @@ function salvarConsultora() {
       c.diaMelhor = document.getElementById('cDia').value;
       c.horarioMelhor = document.getElementById('cHorario').value;
       c.rotaObs = document.getElementById('cRotaObs').value.trim();
+      if (window._editConsStatus) c.status = window._editConsStatus;
 
       // Sincroniza com a semana ativa se a consultora estiver lá
       const sem = getSemanaAtiva();
@@ -8000,9 +8014,22 @@ function editarConsultora(id) {
   document.getElementById('cRotaObs').value = c.rotaObs || '';
   popularSelectRegiao('cRegiao', c.regiao);
   document.getElementById('modalConsTitulo').textContent = 'Editar Consultora';
+  document.getElementById('cStatusBox').style.display = '';
+  setStatusFormConsultora(c.status === 'inativa' ? 'inativa' : 'ativa');
   // Salvar vai criar nova — idealmente atualizaria. Por agora marca para edição:
   window._editConsId = id;
   document.getElementById('modalConsultora').classList.add('open');
+}
+
+function setStatusFormConsultora(status) {
+  window._editConsStatus = status;
+  const ativo = { background: 'var(--ink)', color: 'white', borderColor: 'var(--ink)' };
+  const inativo = { background: 'white', color: 'var(--ink-3)', borderColor: 'var(--border)' };
+  const btnAtiva = document.getElementById('cStatusAtivaBtn');
+  const btnInativa = document.getElementById('cStatusInativaBtn');
+  const aplicar = (btn, s) => { if (!btn) return; btn.style.background = s.background; btn.style.color = s.color; btn.style.borderColor = s.borderColor; };
+  aplicar(btnAtiva, status === 'ativa' ? ativo : inativo);
+  aplicar(btnInativa, status === 'inativa' ? ativo : inativo);
 }
 
 /* ════════════════════════════════════════════
