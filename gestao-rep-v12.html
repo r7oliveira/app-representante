@@ -8144,14 +8144,16 @@ function abrirDetalheRecebido() {
   if (comRecebido.length === 0 && comDebitoAntigo.length === 0) {
     lista.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Nenhum recebimento registrado ainda.</div>';
   } else {
-    const ordenada = [...comRecebido].sort((a,b) => (b.recebido||0) - (a.recebido||0));
-    let html = ordenada.map(c => {
+    const ordenada = [...comRecebido].sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+    const debitoAntigoOrdenado = [...comDebitoAntigo].sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+    let html = ordenada.map((c, idx) => {
       const s = splits.get(c.id);
       const partes = [];
       if (s.pix) partes.push('Pix: ' + brl(s.pix));
       if (s.din) partes.push('Dinheiro: ' + brl(s.din));
       return `
         <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="width:22px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink-3);">${idx+1}</div>
           <div style="flex:1;">
             <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome}</div>
             <div style="font-size:11px;color:var(--ink-3);">${partes.join(' · ')}</div>
@@ -8159,13 +8161,14 @@ function abrirDetalheRecebido() {
           <div style="font-size:14px;font-weight:800;color:var(--green);">${brl(c.recebido||0)}</div>
         </div>`;
     }).join('');
-    html += comDebitoAntigo.map(c => {
+    html += debitoAntigoOrdenado.map((c, idx) => {
       const partes = [];
       if (c.debitoOutrasNotasPix) partes.push('Pix: ' + brl(c.debitoOutrasNotasPix));
       if (c.debitoOutrasNotasDinheiro) partes.push('Dinheiro: ' + brl(c.debitoOutrasNotasDinheiro));
       if (!partes.length) partes.push('Forma não registrada');
       return `
         <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="width:22px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink-3);">${ordenada.length + idx + 1}</div>
           <div style="flex:1;">
             <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome} <span style="font-weight:700;color:var(--amber);">— Débito antigo</span></div>
             <div style="font-size:11px;color:var(--ink-3);">${partes.join(' · ')}</div>
@@ -8261,9 +8264,10 @@ function abrirDetalheAPagar() {
   if (comVenda.length === 0) {
     lista.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Nenhuma venda registrada ainda.</div>';
   } else {
-    const ordenada = [...comVenda].sort((a,b) => aPagarDe(b) - aPagarDe(a));
-    lista.innerHTML = ordenada.map(c => `
+    const ordenada = [...comVenda].sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+    lista.innerHTML = ordenada.map((c, idx) => `
       <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="width:22px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink-3);">${idx+1}</div>
         <div style="flex:1;">
           <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome}</div>
           <div style="font-size:11px;color:var(--ink-3);">Vendido: ${brl(c.vendido||0)}</div>
