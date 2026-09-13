@@ -5392,7 +5392,7 @@ function goBack() {
 // Nova = esta é a primeira vez que ela aparece em alguma semana já registrada no sistema
 // (não depende de nenhuma marcação manual — puxa direto do histórico real de semanas).
 function ehConsultoraNova(c, sem) {
-  const apareceuEmOutraSemana = DB.semanas.some(s => s.id !== sem.id && s.consultoras.some(x => x.id === c.id));
+  const apareceuEmOutraSemana = DB.semanas.some(s => s.id !== sem.id && s.consultoras.some(x => x.id === c.id && !x.avulso));
   return !apareceuEmOutraSemana;
 }
 
