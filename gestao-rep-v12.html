@@ -6806,7 +6806,7 @@ async function extrairFotoConsultora(input) {
     });
 
     if (!resultado.ok) {
-      alert('Não foi possível ler a ficha automaticamente. Confira sua conexão ou preencha os dados manualmente.');
+      alert('Não foi possível ler a ficha automaticamente. Confira os dados e preencha manualmente.');
       return;
     }
 
@@ -6828,7 +6828,7 @@ async function extrairFotoConsultora(input) {
     }
   } catch(e) {
     console.log('Erro inesperado na leitura da ficha: ' + e.message);
-    alert('Não foi possível ler a ficha automaticamente. Confira sua conexão ou preencha os dados manualmente.');
+    alert('Não foi possível ler a ficha automaticamente. Confira os dados e preencha manualmente.');
   } finally {
     loadingEl.classList.remove('show');
     if (loadingTxtEl) loadingTxtEl.textContent = 'Analisando ficha...';
