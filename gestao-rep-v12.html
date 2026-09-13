@@ -5389,6 +5389,16 @@ function goBack() {
 /* ════════════════════════════════════════════
    TELA SEMANA
 ════════════════════════════════════════════ */
+// Considera "nova" se marcada explicitamente (na semana ou no cadastro),
+// ou — para dados de antes desta funcionalidade — se o cadastro foi criado durante a semana atual.
+function ehConsultoraNova(c, sem) {
+  if (c.consultoraNova) return true;
+  const mestre = DB.consultoras.find(m => m.id === c.id);
+  if (!mestre) return false;
+  if (mestre.novaConsultora) return true;
+  return !!(mestre.criadoEm && sem.dataInicio && mestre.criadoEm >= sem.dataInicio);
+}
+
 function renderSemana() {
   const sem = getSemanaAtiva();
   renderAgendaHoje();
@@ -5491,7 +5501,7 @@ function renderSemana() {
   const nAtendidas   = sem.consultoras.filter(c => c.status === 'concluida' && (c.vendido||0) > 0).length;
   const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
   const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
-  const nNovas       = sem.consultoras.filter(c => c.consultoraNova).length;
+  const nNovas       = sem.consultoras.filter(c => ehConsultoraNova(c, sem)).length;
   const nSemFavorita = sem.consultoras.filter(c => c.status === 'concluida' && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito).length;
   const nInativas    = sem.consultoras.filter(c => c.parouDeVender).length;
   document.getElementById('cntAtendidas').textContent   = nAtendidas;
@@ -8324,7 +8334,7 @@ function abrirDetalheStatus(tipo) {
     atendidas:   { titulo: 'Atendidas',    filtro: c => c.status === 'concluida' && (c.vendido||0) > 0, extra: c => 'Vendido: ' + brl(c.vendido||0) },
     remSemana:   { titulo: 'Remarcadas · Semana', filtro: c => !!c.remarcarSemana, extra: c => c.cidade || '' },
     remMes:      { titulo: 'Remarcadas · Mês',    filtro: c => !!c.remarcarMes, extra: c => c.cidade || '' },
-    novas:       { titulo: 'Novas', filtro: c => !!c.consultoraNova, extra: c => c.cidade || '' },
+    novas:       { titulo: 'Novas', filtro: c => ehConsultoraNova(c, sem), extra: c => c.cidade || '' },
     semFavorita: { titulo: 'Sem Favorita', filtro: c => c.status === 'concluida' && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito, extra: c => 'Vendido: ' + brl(c.vendido||0) },
     inativas:    { titulo: 'Parou de Vender', filtro: c => !!c.parouDeVender, extra: c => c.cidade || '' },
   }[tipo];
