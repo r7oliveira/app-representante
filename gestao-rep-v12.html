@@ -7652,7 +7652,8 @@ function renderDomingo() {
     const atendidas = ultimaSem.consultoras.filter(c=>c.status==='concluida').length;
     const vendido = ultimaSem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
     const recebido = ultimaSem.consultoras.reduce((a,c)=>a+(c.recebido||0),0);
-    const pct = ultimaSem.meta > 0 ? Math.min(100,Math.round(vendido/ultimaSem.meta*100)) : 0;
+    const aPagarTotalDom = ultimaSem.consultoras.reduce((a,c)=>a+(c.aPagar||0),0);
+    const pct = ultimaSem.meta > 0 ? Math.min(100,Math.round(aPagarTotalDom/ultimaSem.meta*100)) : 0;
     const pendRec = ultimaSem.consultoras.filter(c=>c.debito>0).reduce((a,c)=>a+(c.debito||0),0);
 
     card.innerHTML = `
@@ -7741,7 +7742,8 @@ function gerarIniciativas(sem) {
   const pendentes = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
   const meta = sem.meta || DB.config.metaPadrao || 15000;
-  const pct = meta > 0 ? Math.round(vendido/meta*100) : 0;
+  const aPagarTotalIni = sem.consultoras.reduce((a,c)=>a+(c.aPagar||0),0);
+  const pct = meta > 0 ? Math.round(aPagarTotalIni/meta*100) : 0;
   const comDebito = pendentes.filter(c => c.debito > 0);
   const semFav = pendentes.filter(c => !c.pedidoFavoritaFeito);
   const atendidas = sem.consultoras.filter(c=>c.status==='concluida').length;
@@ -8043,8 +8045,9 @@ function mostrarFechamentoSemana() {
 
   const vendido  = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
   const recebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
+  const aPagarTotal = sem.consultoras.reduce((a,c) => a + (c.aPagar||0), 0);
   const meta     = sem.meta || 15000;
-  const pct      = Math.min(100, Math.round(vendido/meta*100));
+  const pct      = Math.min(100, Math.round(aPagarTotal/meta*100));
   const comDebito = sem.consultoras.filter(c => (c.debito||0) > 0);
   const totalDeb  = comDebito.reduce((a,c) => a+(c.debito||0), 0);
 
@@ -8447,9 +8450,8 @@ function renderRelatorio() {
   }, 0);
   const lucro      = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
   const meta       = sem.meta || 15000;
-  const pct        = Math.min(100, Math.round(vendido/meta*100));
-
-  const aPagarTotal = Math.round(vendido * 0.70 * 100) / 100;
+  const aPagarTotal = sem.consultoras.reduce((a,c) => a + (c.aPagar||0), 0);
+  const pct        = Math.min(100, Math.round(aPagarTotal/meta*100));
 
   let html = '';
 
@@ -8563,7 +8565,8 @@ async function gerarRelatorioIA() {
   }, 0);
   const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
   const meta      = sem.meta || 15000;
-  const pct       = Math.min(100, Math.round(vendido/meta*100));
+  const aPagarTotalRel = sem.consultoras.reduce((a,c) => a+(c.aPagar||0), 0);
+  const pct       = Math.min(100, Math.round(aPagarTotalRel/meta*100));
 
   const detalhes = atendidas.map(c =>
     `- ${c.nome} (${c.cidade||''}): Vendido ${brl(c.vendido||0)}, Recebido ${brl(c.recebido||0)}, Débito ${brl(c.debito||0)}, Score ${calcScore(c)}`
@@ -8694,7 +8697,8 @@ async function gerarPDF() {
     return a+debitoRestante(Math.round((c.vendido||0)*0.70*100)/100, c.recebido);
   },0);
   const meta = sem.meta||15000;
-  const pct  = Math.min(100,Math.round(vendido/meta*100));
+  const aPagarTotalPdf = sem.consultoras.reduce((a,c)=>a+(c.aPagar||0),0);
+  const pct  = Math.min(100,Math.round(aPagarTotalPdf/meta*100));
   const nRSem= sem.consultoras.filter(c=>c.remarcarSemana).length;
   const nRMes= sem.consultoras.filter(c=>c.remarcarMes).length;
 
