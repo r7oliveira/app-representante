@@ -505,15 +505,15 @@ input[type="time"]{max-width:100%;}
 
       <!-- Contadores de status -->
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:16px;">
-        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
+        <div onclick="abrirDetalheStatus('atendidas')" style="cursor:pointer;background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Atendidas</div>
           <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntAtendidas">0</div>
         </div>
-        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
+        <div onclick="abrirDetalheStatus('remSemana')" style="cursor:pointer;background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Rem. Semana</div>
           <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntRemSemana">0</div>
         </div>
-        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
+        <div onclick="abrirDetalheStatus('remMes')" style="cursor:pointer;background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Rem. Mês</div>
           <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntRemMes">0</div>
         </div>
@@ -521,11 +521,11 @@ input[type="time"]{max-width:100%;}
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Com débito</div>
           <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntComDebito">0</div>
         </div>
-        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
+        <div onclick="abrirDetalheStatus('semFavorita')" style="cursor:pointer;background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Sem favorita</div>
           <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntSemFavorita">0</div>
         </div>
-        <div style="background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
+        <div onclick="abrirDetalheStatus('inativas')" style="cursor:pointer;background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Inativas</div>
           <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntInativas">0</div>
         </div>
@@ -8306,6 +8306,43 @@ function abrirDetalheAPagar() {
   document.getElementById('modalAPagar').classList.add('open');
 }
 
+// Detalhe genérico para os cards de status do dashboard (Atendidas, Rem. Semana, Rem. Mês, Sem Favorita, Inativas)
+function abrirDetalheStatus(tipo) {
+  const sem = getSemanaAtiva();
+  if (!sem) return;
+
+  const config = {
+    atendidas:   { titulo: 'Atendidas',    filtro: c => c.status === 'concluida' && (c.vendido||0) > 0, extra: c => 'Vendido: ' + brl(c.vendido||0) },
+    remSemana:   { titulo: 'Remarcadas · Semana', filtro: c => !!c.remarcarSemana, extra: c => c.cidade || '' },
+    remMes:      { titulo: 'Remarcadas · Mês',    filtro: c => !!c.remarcarMes, extra: c => c.cidade || '' },
+    semFavorita: { titulo: 'Sem Favorita', filtro: c => c.status === 'concluida' && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito, extra: c => 'Vendido: ' + brl(c.vendido||0) },
+    inativas:    { titulo: 'Parou de Vender', filtro: c => !!c.parouDeVender, extra: c => c.cidade || '' },
+  }[tipo];
+  if (!config) return;
+
+  document.getElementById('statusListaTitulo').textContent = config.titulo;
+  document.getElementById('statusListaSub').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
+
+  const itens = [...sem.consultoras.filter(c => !c.avulso && config.filtro(c))]
+    .sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+
+  const conteudo = document.getElementById('statusListaConteudo');
+  if (!itens.length) {
+    conteudo.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Nenhuma consultora nessa condição.</div>';
+  } else {
+    conteudo.innerHTML = itens.map((c, idx) => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="width:22px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink-3);">${idx+1}</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome}</div>
+          <div style="font-size:11px;color:var(--ink-3);">${config.extra(c)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  document.getElementById('modalStatusLista').classList.add('open');
+}
+
 function abrirDetalheCobrancas() {
   const sem = getSemanaAtiva();
   if (!sem) return;
@@ -8815,6 +8852,19 @@ if (!ACTIVE_PROFILE) {
     <div id="apagarLista"></div>
 
     <button class="btn-ghost" style="width:100%;margin-top:18px;" onclick="fecharModal('modalAPagar')">Fechar</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: DETALHE DE STATUS (Atendidas, Rem. Semana, Rem. Mês, Sem Favorita, Inativas)
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalStatusLista">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalStatusLista')">✕</button>
+    <div class="modal-title" style="margin-bottom:2px;" id="statusListaTitulo">—</div>
+    <div style="font-size:13px;color:var(--ink-3);font-weight:500;margin-bottom:18px;" id="statusListaSub">Semana —</div>
+    <div id="statusListaConteudo"></div>
+    <button class="btn-ghost" style="width:100%;margin-top:18px;" onclick="fecharModal('modalStatusLista')">Fechar</button>
   </div>
 </div>
 
