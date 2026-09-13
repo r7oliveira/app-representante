@@ -5900,7 +5900,6 @@ function toggleCrit(campo) {
     cons.pagamentoNaSemana = false;
     cons.pedidoFavoritaFeito = false;
     cons.assinaturaDigital = false;
-    cons.consultoraNova = false;
   }
 
   // Marcar um critério positivo também não combina com um desfecho negativo já marcado
@@ -5913,7 +5912,6 @@ function toggleCrit(campo) {
         if (neg === 'parouDeVender') desfazerParouDeVender(cons);
       }
     });
-    cons.consultoraNova = false;
   }
 
   // Quando remarcar próxima semana → muda região para a próxima no ciclo
@@ -5940,18 +5938,8 @@ function toggleCrit(campo) {
     desfazerRemarcacaoRegiao(cons, sem);
   }
 
-  // Consultora nova → ainda não tem acerto, então zera os demais critérios (score fica 100 automaticamente)
-  if (campo === 'consultoraNova' && cons.consultoraNova) {
-    cons.atendimentoEmDia = false;
-    cons.pagamentoNaSemana = false;
-    cons.pedidoFavoritaFeito = false;
-    cons.assinaturaDigital = false;
-    if (cons.remarcarSemana) desfazerRemarcacaoRegiao(cons, sem);
-    cons.remarcarSemana = false;
-    cons.remarcarMes = false;
-    if (cons.parouDeVender) desfazerParouDeVender(cons);
-    cons.parouDeVender = false;
-  }
+  // "Consultora nova" é apenas uma marcação informativa — não mexe no score
+  // e não é mais exclusiva com os demais critérios do atendimento.
 
   // Parou de vender → zera todos os pontos e marca como inativa no cadastro mestre
   if (campo === 'parouDeVender') {
