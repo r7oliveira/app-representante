@@ -517,9 +517,9 @@ input[type="time"]{max-width:100%;}
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Rem. Mês</div>
           <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntRemMes">0</div>
         </div>
-        <div onclick="abrirDetalheCobrancas()" style="cursor:pointer;background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
-          <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Com débito</div>
-          <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntComDebito">0</div>
+        <div onclick="abrirDetalheStatus('novas')" style="cursor:pointer;background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
+          <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Novas</div>
+          <div style="color:white;font-size:19px;font-weight:800;letter-spacing:-.5px;" id="cntNovas">0</div>
         </div>
         <div onclick="abrirDetalheStatus('semFavorita')" style="cursor:pointer;background:rgba(255,255,255,.07);border-radius:12px;padding:9px 10px;text-align:center;border:1px solid rgba(255,255,255,.08);">
           <div style="color:rgba(255,255,255,.45);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Sem favorita</div>
@@ -5419,7 +5419,7 @@ function renderSemana() {
     document.getElementById('cntAtendidas').textContent = '0';
     document.getElementById('cntRemSemana').textContent = '0';
     document.getElementById('cntRemMes').textContent = '0';
-    document.getElementById('cntComDebito').textContent = '0';
+    document.getElementById('cntNovas').textContent = '0';
     document.getElementById('cntSemFavorita').textContent = '0';
     document.getElementById('cntInativas').textContent = '0';
     document.getElementById('listaConsultoras').innerHTML = `
@@ -5491,13 +5491,13 @@ function renderSemana() {
   const nAtendidas   = sem.consultoras.filter(c => c.status === 'concluida' && (c.vendido||0) > 0).length;
   const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
   const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
-  const nComDebito   = sem.consultoras.filter(c => c.debito > 0).length;
+  const nNovas       = sem.consultoras.filter(c => c.consultoraNova).length;
   const nSemFavorita = sem.consultoras.filter(c => c.status === 'concluida' && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito).length;
   const nInativas    = sem.consultoras.filter(c => c.parouDeVender).length;
   document.getElementById('cntAtendidas').textContent   = nAtendidas;
   document.getElementById('cntRemSemana').textContent   = nRemSemana;
   document.getElementById('cntRemMes').textContent      = nRemMes;
-  document.getElementById('cntComDebito').textContent   = nComDebito;
+  document.getElementById('cntNovas').textContent       = nNovas;
   document.getElementById('cntSemFavorita').textContent = nSemFavorita;
   document.getElementById('cntInativas').textContent    = nInativas;
 
@@ -8320,6 +8320,7 @@ function abrirDetalheStatus(tipo) {
     atendidas:   { titulo: 'Atendidas',    filtro: c => c.status === 'concluida' && (c.vendido||0) > 0, extra: c => 'Vendido: ' + brl(c.vendido||0) },
     remSemana:   { titulo: 'Remarcadas · Semana', filtro: c => !!c.remarcarSemana, extra: c => c.cidade || '' },
     remMes:      { titulo: 'Remarcadas · Mês',    filtro: c => !!c.remarcarMes, extra: c => c.cidade || '' },
+    novas:       { titulo: 'Novas', filtro: c => !!c.consultoraNova, extra: c => c.cidade || '' },
     semFavorita: { titulo: 'Sem Favorita', filtro: c => c.status === 'concluida' && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito, extra: c => 'Vendido: ' + brl(c.vendido||0) },
     inativas:    { titulo: 'Parou de Vender', filtro: c => !!c.parouDeVender, extra: c => c.cidade || '' },
   }[tipo];
