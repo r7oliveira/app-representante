@@ -5498,7 +5498,7 @@ function renderSemana() {
   const nAtendidas   = sem.consultoras.filter(c => c.status === 'concluida' && (c.vendido||0) > 0).length;
   const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
   const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
-  const nNovas       = sem.consultoras.filter(c => ehConsultoraNova(c, sem)).length;
+  const nNovas       = DB.consultoras.filter(c => c.regiao === sem.regiao && c.status !== 'inativa').length;
   const nSemFavorita = sem.consultoras.filter(c => c.status === 'concluida' && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito).length;
   const nInativas    = sem.consultoras.filter(c => c.parouDeVender).length;
   document.getElementById('cntAtendidas').textContent   = nAtendidas;
@@ -8331,7 +8331,7 @@ function abrirDetalheStatus(tipo) {
     atendidas:   { titulo: 'Atendidas',    filtro: c => c.status === 'concluida' && (c.vendido||0) > 0, extra: c => 'Vendido: ' + brl(c.vendido||0) },
     remSemana:   { titulo: 'Remarcadas · Semana', filtro: c => !!c.remarcarSemana, extra: c => c.cidade || '' },
     remMes:      { titulo: 'Remarcadas · Mês',    filtro: c => !!c.remarcarMes, extra: c => c.cidade || '' },
-    novas:       { titulo: 'Novas', filtro: c => ehConsultoraNova(c, sem), extra: c => c.cidade || '' },
+    novas:       { titulo: 'Novas', filtro: c => true, extra: c => c.cidade || '' },
     semFavorita: { titulo: 'Sem Favorita', filtro: c => c.status === 'concluida' && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito, extra: c => 'Vendido: ' + brl(c.vendido||0) },
     inativas:    { titulo: 'Parou de Vender', filtro: c => !!c.parouDeVender, extra: c => c.cidade || '' },
   }[tipo];
@@ -8340,7 +8340,10 @@ function abrirDetalheStatus(tipo) {
   document.getElementById('statusListaTitulo').textContent = config.titulo;
   document.getElementById('statusListaSub').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
 
-  const itens = [...sem.consultoras.filter(c => !c.avulso && config.filtro(c))]
+  const fonte = tipo === 'novas'
+    ? DB.consultoras.filter(c => c.regiao === sem.regiao && c.status !== 'inativa')
+    : sem.consultoras.filter(c => !c.avulso);
+  const itens = [...fonte.filter(config.filtro)]
     .sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
 
   const conteudo = document.getElementById('statusListaConteudo');
