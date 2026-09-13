@@ -5735,7 +5735,7 @@ function adicionarUmaConsultora(id) {
   const sem = getSemanaAtiva();
   const cons = DB.consultoras.find(c => c.id === id);
   if (!sem || !cons) return;
-  sem.consultoras.push({...cons, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false});
+  sem.consultoras.push({...cons, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!cons.novaConsultora});
   save();
   fecharModal('modalRegistro');
   renderSemana();
@@ -5759,7 +5759,7 @@ function adicionarConsultorasSemana() {
     return;
   }
   novas.forEach(c => {
-    sem.consultoras.push({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false});
+    sem.consultoras.push({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!c.novaConsultora});
   });
   save();
   renderSemana();
@@ -6078,6 +6078,9 @@ function finalizarAtendimento() {
 
   cons.status = 'concluida';
   cons.ultimaVisita = new Date().toISOString();
+  // Depois do primeiro atendimento concluído, ela deixa de contar como "nova" nas próximas semanas
+  const mestreConcluida = DB.consultoras.find(m => m.id === cons.id);
+  if (mestreConcluida) mestreConcluida.novaConsultora = false;
   // critérios já foram salvos via toggleCrit durante o atendimento
   if (atendInicio) {
     const min = Math.round((Date.now() - atendInicio.getTime()) / 60000);
@@ -6588,9 +6591,9 @@ function avancarStep2() {
 
   // Busca consultoras: primeiro da região, depois todas ativas como fallback
   let consBase = ultima
-    ? ultima.consultoras.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false}))
+    ? ultima.consultoras.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}))
     : DB.consultoras.filter(c => c.regiao === criarRegiao && c.status !== 'inativa')
-        .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false}));
+        .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
 
   // Se não achou pela região, pega todas ativas do cadastro
   const todasAtivas = DB.consultoras.filter(c => c.status !== 'inativa');
@@ -6655,7 +6658,7 @@ function toggleConsStep2(id) {
   // Atualiza _criarConsultoras com as selecionadas
   window._criarConsultoras = (window._step2Todas||[])
     .filter(c => sel.has(c.id))
-    .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false}));
+    .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
   document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
 }
 
@@ -6670,7 +6673,7 @@ function selecionarTodasStep2() {
       chk.innerHTML = '<span style="color:white;font-size:11px;font-weight:800;">✓</span>';
     }
   });
-  window._criarConsultoras = todas.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false}));
+  window._criarConsultoras = todas.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
   document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
 }
 
@@ -6782,6 +6785,7 @@ function salvarConsultora() {
     horarioMelhor: document.getElementById('cHorario').value,
     rotaObs: document.getElementById('cRotaObs').value.trim(),
     status: 'ativa', score: 0,
+    novaConsultora: true,
     criadoEm: new Date().toISOString()
   };
 
