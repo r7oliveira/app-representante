@@ -2107,7 +2107,7 @@ input[type="time"]{max-width:100%;}
           <div style="font-size:15px;font-weight:800;color:var(--ink);" id="fgTicket">R$ 0</div>
         </div>
         <div class="card" style="padding:10px;text-align:center;">
-          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Base Ativa</div>
+          <div style="font-size:8px;font-weight:700;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Atendidas</div>
           <div style="font-size:15px;font-weight:800;color:var(--ink);" id="fgAtivas">0</div>
         </div>
         <div class="card" style="padding:10px;text-align:center;">
@@ -7261,7 +7261,7 @@ function recomputeFechamentoGeral() {
   document.getElementById('fgRemSemana').textContent = totRemSemana;
   document.getElementById('fgRemMes').textContent = totRemMes;
   document.getElementById('fgTicket').textContent = brl(ticketMedio);
-  document.getElementById('fgAtivas').textContent = totAtivas;
+  document.getElementById('fgAtivas').textContent = totAtendidas;
   document.getElementById('fgInativas').textContent = totInativas;
   document.getElementById('fgClienteNova').textContent = totClienteNova;
   document.getElementById('fgNumVendas').textContent = totVendasCount;
