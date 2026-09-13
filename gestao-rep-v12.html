@@ -4290,7 +4290,7 @@ function _statsFromSemana(sem, metaPadrao) {
   let vendido = 0, recebido = 0;
   (sem.consultoras || []).forEach(c => { vendido += (c.vendido||0); recebido += (c.recebido||0); });
   const previstas = (sem.consultoras || []).length;
-  const atendidas = (sem.consultoras || []).filter(c => c.status === 'concluida').length;
+  const atendidas = (sem.consultoras || []).filter(foiAtendida).length;
   const meta = sem.meta || metaPadrao || 15000;
   return { sem, previstas, atendidas, vendido, recebido, meta };
 }
@@ -4479,7 +4479,7 @@ function renderAdminPessoa() {
         <div style="font-size:12.5px;font-weight:700;color:var(--ink);">${c.nome}</div>
         <div style="font-size:10.5px;color:var(--ink-3);">${c.cidade||''}</div>
       </div>
-      <span style="font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:8px;background:${c.status==='concluida'?'var(--green-bg)':'var(--surface-2)'};color:${c.status==='concluida'?'var(--green)':'var(--ink-3)'};">${c.status==='concluida'?'Atendida':'Pendente'}</span>
+      <span style="font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:8px;background:${foiAtendida(c)?'var(--green-bg)':(c.remarcarSemana||c.remarcarMes)?'var(--red-bg)':'var(--surface-2)'};color:${foiAtendida(c)?'var(--green)':(c.remarcarSemana||c.remarcarMes)?'var(--red)':'var(--ink-3)'};">${foiAtendida(c)?'Atendida':(c.remarcarSemana||c.remarcarMes)?'Remarcada':'Pendente'}</span>
     </div>`).join('') : '<div style="font-size:12px;color:var(--ink-3);">Nenhuma consultora nesta semana.</div>';
 }
 
@@ -4892,6 +4892,12 @@ function parseNum(s) {
 function debitoRestante(aPagar, recebido) {
   const diff = Math.round(((aPagar||0) - (recebido||0)) * 100) / 100;
   return diff <= 0.01 ? 0 : diff;
+}
+// Uma consultora só conta como "atendida" de fato quando o atendimento foi concluído
+// SEM remarcação. Se ela foi remarcada (semana ou mês), o atendimento ainda está em
+// aberto — ela só volta a contar como atendida quando for visitada de novo.
+function foiAtendida(c) {
+  return c.status === 'concluida' && !c.remarcarSemana && !c.remarcarMes;
 }
 function iniciais(nome) {
   const p = String(nome||'').trim().split(' ');
@@ -5495,11 +5501,11 @@ function renderSemana() {
 
   // Contadores de status
   const pendentesAgora = sem.consultoras.filter(c => c.status !== 'concluida');
-  const nAtendidas   = sem.consultoras.filter(c => c.status === 'concluida' && (c.vendido||0) > 0).length;
+  const nAtendidas   = sem.consultoras.filter(c => foiAtendida(c) && (c.vendido||0) > 0).length;
   const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
   const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
   const nNovas       = DB.consultoras.filter(c => c.regiao === sem.regiao && c.status !== 'inativa').length;
-  const nSemFavorita = sem.consultoras.filter(c => c.status === 'concluida' && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito).length;
+  const nSemFavorita = sem.consultoras.filter(c => foiAtendida(c) && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito).length;
   const nInativas    = sem.consultoras.filter(c => c.parouDeVender).length;
   document.getElementById('cntAtendidas').textContent   = nAtendidas;
   document.getElementById('cntRemSemana').textContent   = nRemSemana;
@@ -5556,10 +5562,10 @@ function renderSemana() {
   const cntAtendidasEl = document.getElementById('cntFiltroAtendidas');
   if (cntTodasEl) cntTodasEl.textContent = visiveis.length;
   if (cntPendentesEl) cntPendentesEl.textContent = visiveis.filter(c => c.status !== 'concluida').length;
-  if (cntAtendidasEl) cntAtendidasEl.textContent = visiveis.filter(c => c.status === 'concluida').length;
+  if (cntAtendidasEl) cntAtendidasEl.textContent = visiveis.filter(foiAtendida).length;
 
   if (filtroAtend === 'pendentes') visiveis = visiveis.filter(c => c.status !== 'concluida');
-  else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(c => c.status === 'concluida');
+  else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(foiAtendida);
 
   // Ordena a exibição em ordem alfabética dentro de cada grupo de status,
   // sem alterar a ordem real usada para calcular a "Próxima" (que segue dia/horário).
@@ -6985,7 +6991,7 @@ async function enviarAssistNew() {
 
   const sem = getSemanaAtiva();
   const ctx = sem
-    ? `Semana ${sem.numero} - Região: ${sem.regiao}. Consultoras: ${sem.consultoras.length}. Atendidas: ${sem.consultoras.filter(c=>c.status==='concluida').length}. Vendido: R$${sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0).toLocaleString('pt-BR')}. Recebido: R$${sem.consultoras.reduce((a,c)=>a+(c.recebido||0),0).toLocaleString('pt-BR')}. Com débito: ${sem.consultoras.filter(c=>c.debito>0).map(c=>c.nome+' R$'+(c.debito||0)).join(', ')}.`
+    ? `Semana ${sem.numero} - Região: ${sem.regiao}. Consultoras: ${sem.consultoras.length}. Atendidas: ${sem.consultoras.filter(foiAtendida).length}. Vendido: R$${sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0).toLocaleString('pt-BR')}. Recebido: R$${sem.consultoras.reduce((a,c)=>a+(c.recebido||0),0).toLocaleString('pt-BR')}. Com débito: ${sem.consultoras.filter(c=>c.debito>0).map(c=>c.nome+' R$'+(c.debito||0)).join(', ')}.`
     : 'Nenhuma semana ativa no momento.';
 
   const system = `Você é o Assistente Comercial de um representante de cosméticos Romance. Responda de forma direta e profissional. Use negrito com ** para destacar. Dados da semana atual: ${ctx}`;
@@ -7110,7 +7116,7 @@ async function buscarFechamentoGeral(numero) {
 
       if (sem) {
         tPrevistas = (sem.consultoras || []).length;
-        tAtendidas = (sem.consultoras || []).filter(c => c.status === 'concluida').length;
+        tAtendidas = (sem.consultoras || []).filter(foiAtendida).length;
         (sem.consultoras || []).forEach(c => {
           tVendido += (c.vendido || 0);
           tAPagar  += (c.aPagar || 0);
@@ -7661,7 +7667,7 @@ function renderDomingo() {
   const card = document.getElementById('domingoFechCard');
 
   if (ultimaSem) {
-    const atendidas = ultimaSem.consultoras.filter(c=>c.status==='concluida').length;
+    const atendidas = ultimaSem.consultoras.filter(foiAtendida).length;
     const vendido = ultimaSem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
     const recebido = ultimaSem.consultoras.reduce((a,c)=>a+(c.recebido||0),0);
     const pct = ultimaSem.meta > 0 ? Math.min(100,Math.round(recebido/ultimaSem.meta*100)) : 0;
@@ -7757,7 +7763,7 @@ function gerarIniciativas(sem) {
   const pct = meta > 0 ? Math.round(recebido/meta*100) : 0;
   const comDebito = pendentes.filter(c => c.debito > 0);
   const semFav = pendentes.filter(c => !c.pedidoFavoritaFeito);
-  const atendidas = sem.consultoras.filter(c=>c.status==='concluida').length;
+  const atendidas = sem.consultoras.filter(foiAtendida).length;
   const total = sem.consultoras.length;
 
   if (pct < 80 && total > 0) {
@@ -7862,7 +7868,7 @@ async function enviarInicChat() {
   document.getElementById('inicBtn').disabled = true;
 
   const sem = getSemanaAtiva();
-  const ctx = sem ? `Semana ${sem.numero} - ${sem.regiao}. Atendidas: ${sem.consultoras.filter(c=>c.status==='concluida').length}/${sem.consultoras.length}. Vendido: ${brl(sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0))}. Com débito: ${sem.consultoras.filter(c=>c.debito>0).map(c=>c.nome+' '+brl(c.debito)).join(', ')}.` : 'Nenhuma semana ativa.';
+  const ctx = sem ? `Semana ${sem.numero} - ${sem.regiao}. Atendidas: ${sem.consultoras.filter(foiAtendida).length}/${sem.consultoras.length}. Vendido: ${brl(sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0))}. Com débito: ${sem.consultoras.filter(c=>c.debito>0).map(c=>c.nome+' '+brl(c.debito)).join(', ')}.` : 'Nenhuma semana ativa.';
 
   const lista = document.getElementById('inicLista');
   const msg = document.createElement('div');
@@ -8327,11 +8333,11 @@ function abrirDetalheStatus(tipo) {
   if (!sem) return;
 
   const config = {
-    atendidas:   { titulo: 'Atendidas',    filtro: c => c.status === 'concluida' && (c.vendido||0) > 0, extra: c => 'Vendido: ' + brl(c.vendido||0) },
+    atendidas:   { titulo: 'Atendidas',    filtro: c => foiAtendida(c) && (c.vendido||0) > 0, extra: c => 'Vendido: ' + brl(c.vendido||0) },
     remSemana:   { titulo: 'Remarcadas · Semana', filtro: c => !!c.remarcarSemana, extra: c => c.cidade || '' },
     remMes:      { titulo: 'Remarcadas · Mês',    filtro: c => !!c.remarcarMes, extra: c => c.cidade || '' },
     novas:       { titulo: 'Novas', filtro: c => true, extra: c => c.cidade || '' },
-    semFavorita: { titulo: 'Sem Favorita', filtro: c => c.status === 'concluida' && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito, extra: c => 'Vendido: ' + brl(c.vendido||0) },
+    semFavorita: { titulo: 'Sem Favorita', filtro: c => foiAtendida(c) && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito, extra: c => 'Vendido: ' + brl(c.vendido||0) },
     inativas:    { titulo: 'Parou de Vender', filtro: c => !!c.parouDeVender, extra: c => c.cidade || '' },
   }[tipo];
   if (!config) return;
@@ -8568,7 +8574,7 @@ async function gerarRelatorioIA() {
   const sem = DB.semanas.find(s => s.id === sel?.value);
   if (!sem) return;
 
-  const atendidas = sem.consultoras.filter(c => c.status === 'concluida');
+  const atendidas = sem.consultoras.filter(foiAtendida);
   const vendido   = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
   const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
   const debitos   = sem.consultoras.reduce((a,c) => {
@@ -8628,7 +8634,7 @@ function compartilharRelatorio() {
   const sem = DB.semanas.find(s => s.id === sel?.value);
   if (!sem) return;
 
-  const atendidas = sem.consultoras.filter(c => c.status === 'concluida');
+  const atendidas = sem.consultoras.filter(foiAtendida);
   const vendido   = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
   const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
   const debitos   = sem.consultoras.reduce((a,c) => {
@@ -8698,7 +8704,7 @@ async function gerarPDF() {
   y = 62;
 
   // ── Cálculos
-  const atend   = sem.consultoras.filter(c=>c.status==='concluida');
+  const atend   = sem.consultoras.filter(foiAtendida);
   const pend    = sem.consultoras.filter(c=>c.status!=='concluida');
   const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
   const recebido= sem.consultoras.reduce((a,c)=>a+(c.recebido||0),0);
