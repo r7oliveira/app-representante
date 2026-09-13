@@ -5450,8 +5450,8 @@ function renderSemana() {
   }, 0);
   const meta = sem.meta || DB.config.metaPadrao || 15000;
   const aPagarTotal = sem.consultoras.reduce((a,c) => a + (c.aPagar||0), 0);
-  const pctM = Math.min(100, Math.round(vendido/meta*100));
-  const faltaMeta = Math.max(0, meta - vendido);
+  const pctM = Math.min(100, Math.round(aPagarTotal/meta*100));
+  const faltaMeta = Math.max(0, meta - aPagarTotal);
 
   // Ordena por status (pendente → remarcada → concluída) e, dentro de cada grupo, por dia + horário
   const diasOrd = {'Segunda-feira':1,'Terça-feira':2,'Quarta-feira':3,'Quinta-feira':4,'Sexta-feira':5,'Sábado':6};
