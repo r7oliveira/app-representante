@@ -7999,7 +7999,6 @@ function renderGerenciar() {
       let header = '';
       if (diaDaConsultora !== diaAtual) {
         diaAtual = diaDaConsultora;
-        cidadeAtual = null; // força reiniciar a contagem também a cada novo dia
         header = `<div style="font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin:${i===0?'0':'14px'} 2px 6px;">${diaDaConsultora}</div>`;
       }
       const cidadeDaConsultora = c.cidade || '';
