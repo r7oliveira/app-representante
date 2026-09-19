@@ -5598,18 +5598,24 @@ function renderSemana() {
   if (filtroAtend === 'pendentes') visiveis = visiveis.filter(c => c.status !== 'concluida');
   else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(foiAtendida);
 
-  // Ordena a exibição por dia da semana, depois cidade e depois em ordem alfabética
-  // dentro de cada grupo de status, sem alterar a ordem real usada para calcular
-  // a "Próxima" (que segue dia/horário).
+  // Ordena a exibição por dia da semana, depois por horário do atendimento e depois
+  // em ordem alfabética dentro de cada grupo de status, sem alterar a ordem real
+  // usada para calcular a "Próxima" (que segue dia/horário).
   const ORDEM_DIAS_ATEND = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
   const ordemDiaAtend = (c) => {
     const i = ORDEM_DIAS_ATEND.indexOf(c.diaMelhor);
     return i === -1 ? ORDEM_DIAS_ATEND.length : i; // sem dia definido vai por último
   };
+  const minutosHorarioAtend = (c) => {
+    if (!c.horarioMelhor) return Infinity; // sem horário definido vai por último no dia
+    const [h, m] = c.horarioMelhor.split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  };
   visiveis = [...visiveis].sort((a, b) => {
     const gA = grupoStatus(a), gB = grupoStatus(b);
     if (gA !== gB) return gA - gB;
     return ordemDiaAtend(a) - ordemDiaAtend(b)
+      || minutosHorarioAtend(a) - minutosHorarioAtend(b)
       || (a.cidade || '').localeCompare(b.cidade || '', 'pt-BR')
       || (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
   });
