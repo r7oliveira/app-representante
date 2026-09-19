@@ -5220,13 +5220,21 @@ function salvarPagarDebitoGeral() {
   const debAnterior = cons.debito || 0;
   cons.debito = debitoRestante(debAnterior, val);
 
+  // Se a dívida é de outra semana/região antiga, o dinheiro ainda assim foi recebido
+  // AGORA — conta como recebido na semana ativa também, pra bater com o caixa do dia.
+  const semAtiva = getSemanaAtiva();
+  if (outraNota && semAtiva && semAtiva.id !== ctx.semId) {
+    semAtiva.recebidoDebitosExternos = (semAtiva.recebidoDebitosExternos || 0) + val;
+    if (forma === 'pix') semAtiva.recebidoDebitosExternosPix = (semAtiva.recebidoDebitosExternosPix || 0) + val;
+    else semAtiva.recebidoDebitosExternosDinheiro = (semAtiva.recebidoDebitosExternosDinheiro || 0) + val;
+  }
+
   save();
   fecharModal('modalRegistro');
   renderPagarDebitos();
 
-  // Se essa consultora for da semana ativa, atualiza também a tela de início
-  const semAtiva = getSemanaAtiva();
-  if (semAtiva && semAtiva.id === ctx.semId) renderSemana();
+  // Atualiza a tela de início se ela estiver mostrando a semana afetada
+  if (semAtiva && (semAtiva.id === ctx.semId || outraNota)) renderSemana();
 }
 
 function toggleBuscaConsultoraDebito() {
@@ -5520,7 +5528,7 @@ function renderSemana() {
   const total = sem.consultoras.length;
   const pctC = total > 0 ? Math.round(atendidas/total*100) : 0;
   const vendido = sem.consultoras.reduce((a,c) => a + (c.vendido||0), 0);
-  const recebido = sem.consultoras.reduce((a,c) => a + (c.recebido||0) + (c.debitoOutrasNotasPago||0), 0);
+  const recebido = sem.consultoras.reduce((a,c) => a + (c.recebido||0) + (c.debitoOutrasNotasPago||0), 0) + (sem.recebidoDebitosExternos||0);
   const cobrancas = sem.consultoras.reduce((a,c) => {
     // Se teve venda, recalcula sempre com a comissão correta (30% ou 40% se for favorita),
     // assim um débito salvo com a % antiga se autocorrige sozinho, sem precisar reeditar nada.
@@ -7133,7 +7141,7 @@ async function enviarAssistNew() {
 
   const sem = getSemanaAtiva();
   const ctx = sem
-    ? `Semana ${sem.numero} - Região: ${sem.regiao}. Consultoras: ${sem.consultoras.length}. Atendidas: ${sem.consultoras.filter(foiAtendida).length}. Vendido: R$${sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0).toLocaleString('pt-BR')}. Recebido: R$${sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0).toLocaleString('pt-BR')}. Com débito: ${sem.consultoras.filter(c=>c.debito>0).map(c=>c.nome+' R$'+(c.debito||0)).join(', ')}.`
+    ? `Semana ${sem.numero} - Região: ${sem.regiao}. Consultoras: ${sem.consultoras.length}. Atendidas: ${sem.consultoras.filter(foiAtendida).length}. Vendido: R$${sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0).toLocaleString('pt-BR')}. Recebido: R$${(sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0)+(sem.recebidoDebitosExternos||0)).toLocaleString('pt-BR')}. Com débito: ${sem.consultoras.filter(c=>c.debito>0).map(c=>c.nome+' R$'+(c.debito||0)).join(', ')}.`
     : 'Nenhuma semana ativa no momento.';
 
   const system = `Você é o Assistente Comercial de um representante de cosméticos Romance. Responda de forma direta e profissional. Use negrito com ** para destacar. Dados da semana atual: ${ctx}`;
@@ -7811,7 +7819,7 @@ function renderDomingo() {
   if (ultimaSem) {
     const atendidas = ultimaSem.consultoras.filter(foiAtendida).length;
     const vendido = ultimaSem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
-    const recebido = ultimaSem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0);
+    const recebido = ultimaSem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0) + (ultimaSem.recebidoDebitosExternos||0);
     const pct = ultimaSem.meta > 0 ? Math.min(100,Math.round(recebido/ultimaSem.meta*100)) : 0;
     const pendRec = ultimaSem.consultoras.filter(c=>c.debito>0).reduce((a,c)=>a+(c.debito||0),0);
 
@@ -7900,7 +7908,7 @@ function gerarIniciativas(sem) {
   const iniciativas = [];
   const pendentes = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
-  const recebido = sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0);
+  const recebido = sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0) + (sem.recebidoDebitosExternos||0);
   const meta = sem.meta || DB.config.metaPadrao || 15000;
   const pct = meta > 0 ? Math.round(recebido/meta*100) : 0;
   const comDebito = pendentes.filter(c => c.debito > 0);
@@ -8228,7 +8236,7 @@ function mostrarFechamentoSemana() {
   if (!sem) return;
 
   const vendido  = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0);
+  const recebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + (sem.recebidoDebitosExternos||0);
   const meta     = sem.meta || 15000;
   const pct      = Math.min(100, Math.round(recebido/meta*100));
   const aPagarDeFech = c => {
@@ -8352,8 +8360,11 @@ function abrirDetalheRecebido() {
     totalPix += c.debitoOutrasNotasPix || 0;
     totalDin += c.debitoOutrasNotasDinheiro || 0;
   });
+  totalPix += sem.recebidoDebitosExternosPix || 0;
+  totalDin += sem.recebidoDebitosExternosDinheiro || 0;
   const totalGeral  = comRecebido.reduce((a,c) => a+(c.recebido||0), 0)
-                     + comDebitoAntigo.reduce((a,c) => a+(c.debitoOutrasNotasPago||0), 0);
+                     + comDebitoAntigo.reduce((a,c) => a+(c.debitoOutrasNotasPago||0), 0)
+                     + (sem.recebidoDebitosExternos||0);
 
   document.getElementById('recebSemanaLabel').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
   document.getElementById('recebTotalPix').textContent = brl(totalPix);
@@ -8361,7 +8372,7 @@ function abrirDetalheRecebido() {
   document.getElementById('recebTotalGeral').textContent = brl(totalGeral);
 
   const lista = document.getElementById('recebLista');
-  if (comRecebido.length === 0 && comDebitoAntigo.length === 0) {
+  if (comRecebido.length === 0 && comDebitoAntigo.length === 0 && !(sem.recebidoDebitosExternos>0)) {
     lista.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Nenhum recebimento registrado ainda.</div>';
   } else {
     const ordenada = [...comRecebido].sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
@@ -8397,6 +8408,21 @@ function abrirDetalheRecebido() {
           <button onclick="abrirCorrigirDebitoAntigo('${sem.id}','${c.id}')" style="flex-shrink:0;background:none;border:none;padding:4px;cursor:pointer;color:var(--ink-3);font-size:14px;">✎</button>
         </div>`;
     }).join('');
+    if ((sem.recebidoDebitosExternos||0) > 0) {
+      const partesExt = [];
+      if (sem.recebidoDebitosExternosPix) partesExt.push('Pix: ' + brl(sem.recebidoDebitosExternosPix));
+      if (sem.recebidoDebitosExternosDinheiro) partesExt.push('Dinheiro: ' + brl(sem.recebidoDebitosExternosDinheiro));
+      if (!partesExt.length) partesExt.push('Forma não registrada');
+      html += `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="width:22px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink-3);">${ordenada.length + debitoAntigoOrdenado.length + 1}</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:var(--ink);">Débitos de semanas/regiões antigas <span style="font-weight:700;color:var(--amber);">— pago nesta semana</span></div>
+            <div style="font-size:11px;color:var(--ink-3);">${partesExt.join(' · ')}</div>
+          </div>
+          <div style="font-size:14px;font-weight:800;color:var(--green);">${brl(sem.recebidoDebitosExternos)}</div>
+        </div>`;
+    }
     lista.innerHTML = html;
   }
 
@@ -8628,7 +8654,7 @@ function renderRelatorio() {
   const atendidas  = elegiveis.filter(c => !busca || (c.nome||'').toLowerCase().includes(busca));
   const pendentes  = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido    = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido   = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0);
+  const recebido   = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + (sem.recebidoDebitosExternos||0);
   const debitos    = sem.consultoras.reduce((a,c) => {
     if (c.status !== 'concluida') return a;
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
@@ -8747,7 +8773,7 @@ async function gerarRelatorioIA() {
 
   const atendidas = sem.consultoras.filter(foiAtendida);
   const vendido   = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0);
+  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + (sem.recebidoDebitosExternos||0);
   const aPagarDeIA = c => {
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
     return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
@@ -8807,7 +8833,7 @@ function compartilharRelatorio() {
 
   const atendidas = sem.consultoras.filter(foiAtendida);
   const vendido   = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0);
+  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + (sem.recebidoDebitosExternos||0);
   const aPagarDeSh = c => {
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
     return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
@@ -8889,7 +8915,7 @@ async function gerarPDF() {
   const inativas = sem.consultoras.filter(c => c.parouDeVender);
   const pend     = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
-  const recebido= sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0);
+  const recebido= sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0) + (sem.recebidoDebitosExternos||0);
   const aPagar  = sem.consultoras.reduce((a,c)=>a+aPagarDe(c),0);
   const lucro   = sem.consultoras.reduce((a,c)=>a+lucroDe(c),0);
   const debitos = sem.consultoras.reduce((a,c)=>a+debitoDe(c),0);
