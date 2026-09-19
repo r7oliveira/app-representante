@@ -5598,12 +5598,19 @@ function renderSemana() {
   if (filtroAtend === 'pendentes') visiveis = visiveis.filter(c => c.status !== 'concluida');
   else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(foiAtendida);
 
-  // Ordena a exibição por cidade e depois em ordem alfabética dentro de cada grupo de status,
-  // sem alterar a ordem real usada para calcular a "Próxima" (que segue dia/horário).
+  // Ordena a exibição por dia da semana, depois cidade e depois em ordem alfabética
+  // dentro de cada grupo de status, sem alterar a ordem real usada para calcular
+  // a "Próxima" (que segue dia/horário).
+  const ORDEM_DIAS_ATEND = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const ordemDiaAtend = (c) => {
+    const i = ORDEM_DIAS_ATEND.indexOf(c.diaMelhor);
+    return i === -1 ? ORDEM_DIAS_ATEND.length : i; // sem dia definido vai por último
+  };
   visiveis = [...visiveis].sort((a, b) => {
     const gA = grupoStatus(a), gB = grupoStatus(b);
     if (gA !== gB) return gA - gB;
-    return (a.cidade || '').localeCompare(b.cidade || '', 'pt-BR')
+    return ordemDiaAtend(a) - ordemDiaAtend(b)
+      || (a.cidade || '').localeCompare(b.cidade || '', 'pt-BR')
       || (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
   });
 
@@ -5628,6 +5635,12 @@ function renderSemana() {
       grupoAtual === 1 ? '<div style="font-size:14px;font-weight:800;letter-spacing:.3px;color:var(--ink);margin:22px 2px 10px;padding-top:14px;border-top:1px solid var(--border);">Remarcadas</div>' :
       grupoAtual === 2 ? '<div style="font-size:14px;font-weight:800;letter-spacing:.3px;color:var(--ink);margin:22px 2px 10px;padding-top:14px;border-top:1px solid var(--border);">Inativas</div>' :
       grupoAtual === 3 ? '<div style="font-size:14px;font-weight:800;letter-spacing:.3px;color:var(--ink);margin:22px 2px 10px;padding-top:14px;border-top:1px solid var(--border);">Concluídas</div>' : '';
+
+    // Cabeçalho de dia da semana (só dentro do mesmo grupo de status)
+    const diaDaConsultora = c.diaMelhor || 'Sem dia definido';
+    const diaAnterior = idx > 0 ? (visiveis[idx-1].diaMelhor || 'Sem dia definido') : null;
+    const tituloDia = (!tituloGrupo && diaDaConsultora === diaAnterior) ? '' :
+      '<div style="font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin:' + (tituloGrupo ? '0' : '16px') + ' 2px 8px;">' + diaDaConsultora + '</div>';
 
     const cls = (especial === 'inativa' || especial === 'mes' || especial === 'semana') ? 'done' : st === 'concluida' ? 'done' : isNext ? 'next' : c.debito > 0 ? 'alert' : '';
     const avCls = (especial === 'inativa' || especial === 'mes' || especial === 'semana') ? 'av-done' : st === 'concluida' ? 'av-done' : c.debito > 0 ? 'av-alert' : 'av-default';
@@ -5697,7 +5710,7 @@ function renderSemana() {
       + '</div>'
     );
 
-    return tituloGrupo + '<div class="cons-card ' + cls + '" style="flex-direction:column;align-items:stretch;padding:0;overflow:hidden;">'
+    return tituloGrupo + tituloDia + '<div class="cons-card ' + cls + '" style="flex-direction:column;align-items:stretch;padding:0;overflow:hidden;">'
       + '<div style="display:flex;align-items:flex-start;gap:12px;background:white;border-bottom:1px solid var(--border);padding:14px 16px 10px;">'
         + '<div style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;flex:1;min-width:0;" onclick="abrirAtendimento(\'' + c.id + '\')">'
           + '<div class="c-av ' + avCls + '" style="margin-top:1px;">' + avTxt + '</div>'
