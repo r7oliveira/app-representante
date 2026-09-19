@@ -5668,7 +5668,6 @@ function renderSemana() {
       sub = 'Débito ' + brl(c.debito);
     } else {
       const partes = [];
-      if (c.diaMelhor) partes.push(c.diaMelhor.replace('-feira',''));
       if (c.cidade) partes.push(c.cidade);
       if (c.horarioMelhor) partes.push(c.horarioMelhor);
       sub = partes.join(' · ');
