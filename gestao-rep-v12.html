@@ -34,6 +34,7 @@
   --font:'Plus Jakarta Sans',sans-serif;
   --font-serif:'Plus Jakarta Sans',sans-serif;
   --gold:#A67C52;
+  --gold-real:#C79A3D; --gold-real-bg:#FBF2DC;
   --shadow-card:0 1px 3px rgba(0,0,0,.04);
   /* Aliases do design system (mesmas cores, nomes semânticos) */
   --bg:var(--surface); --surface-alt:var(--surface-2); --card:var(--white);
@@ -4966,6 +4967,19 @@ function calcScore(c) {
   if (c.remarcarMes) s -= 25;
   return Math.min(100, s); // pode ficar negativo, só não passa de 100
 }
+// Igual ao calcScore, mas sem o teto de 100 — usado só para detectar o "acerto
+// perfeito com favorita para a próxima nota" (soma 150) e destacar em dourado.
+function calcScoreRaw(c) {
+  let s = 0;
+  if (c.atendimentoEmDia) s += 30;
+  if (c.pagamentoNaSemana) s += 30;
+  if (c.pedidoFavoritaFeito) s += 25;
+  if (c.assinaturaDigital) s += 15;
+  if (c.pedidoFavoritaProxima) s += 50;
+  if (c.remarcarSemana) s -= 15;
+  if (c.remarcarMes) s -= 25;
+  return s;
+}
 function getSemanaAtiva() {
   if (!DB.semanaAtiva) return null;
   return DB.semanas.find(s => s.id === DB.semanaAtiva) || null;
@@ -6058,8 +6072,10 @@ function desfazerParouDeVender(cons) {
 
 function atualizarScoreAtend(cons) {
   const score = calcScore(cons);
-  const scoreColor = score >= 80 ? 'var(--green)' : score >= 50 ? 'var(--amber)' : 'var(--red)';
-  const scoreBg    = score >= 80 ? 'var(--green-bg)' : score >= 50 ? 'var(--amber-bg)' : 'var(--red-bg)';
+  const raw = calcScoreRaw(cons);
+  const diferenciada = raw >= 150;
+  const scoreColor = diferenciada ? 'var(--gold-real)' : score >= 80 ? 'var(--green)' : score >= 50 ? 'var(--amber)' : 'var(--red)';
+  const scoreBg    = diferenciada ? 'var(--gold-real-bg)' : score >= 80 ? 'var(--green-bg)' : score >= 50 ? 'var(--amber-bg)' : 'var(--red-bg)';
 
   document.getElementById('atendScoreNum').textContent = score;
   document.getElementById('atendScoreNum').style.color = scoreColor;
@@ -8935,6 +8951,35 @@ async function gerarPDF() {
   doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,10,20);
   doc.text('ATENDIDAS ('+atend.length+')', M, y); y+=5;
   atend.forEach((c,i)=>cardConsultora(c,i));
+
+  // ── DÉBITOS ANTIGOS PAGOS (pagamentos de dívidas de notas/semanas anteriores)
+  const debAntigosPagos = sem.consultoras.filter(c => (c.debitoOutrasNotasPago||0) > 0 || (c.debitoPagoAntigo||0) > 0);
+  if (debAntigosPagos.length) {
+    chk(16);
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,10,20);
+    doc.text('DÉBITOS ANTIGOS PAGOS ('+debAntigosPagos.length+')', M, y); y+=5;
+    let totalDebAntigo = 0;
+    debAntigosPagos.forEach(c=>{
+      chk(13);
+      const outraNotaVal = c.debitoOutrasNotasPago||0;
+      const mesmaNotaVal = c.debitoPagoAntigo||0;
+      const total = outraNotaVal + mesmaNotaVal;
+      totalDebAntigo += total;
+      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(15,10,20);
+      doc.text(c.nome+(c.cidade?' · '+c.cidade:''), M+3, y);
+      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(10,143,92);
+      doc.text(brlP(total), W-M-30, y);
+      y+=5;
+      const detalhes=[];
+      if (outraNotaVal>0) detalhes.push('De outra nota/semana: '+brlP(outraNotaVal)+' (Pix '+brlP(c.debitoOutrasNotasPix||0)+' · Dinheiro '+brlP(c.debitoOutrasNotasDinheiro||0)+')');
+      if (mesmaNotaVal>0) detalhes.push('Junto com esta nota: '+brlP(mesmaNotaVal));
+      doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(107,100,120);
+      doc.text(detalhes.join('   ·   '), M+3, y+4);
+      y+=10;
+    });
+    doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(15,10,20);
+    doc.text('Total pago em débitos antigos: '+brlP(totalDebAntigo), M+3, y); y+=8;
+  }
 
   // ── REMARCADAS
   if (remarc.length) {
