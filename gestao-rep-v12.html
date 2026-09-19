@@ -8871,15 +8871,15 @@ async function gerarPDF() {
 
   // ── Card de uma consultora, com Vendido / A Pagar / Pago (Pix + Dinheiro) / Débito
   const cardConsultora = (c, i) => {
-    chk(32);
+    chk(38);
     const vd=c.vendido||0;
     const ap=Math.round(vd*0.70*100)/100;
     const lc=Math.round(vd*0.70*0.18*100)/100;
     const db=(c.debito||0)>0?c.debito:Math.max(0,ap-(c.recebido||0));
     const pixV=c.recebidoPix||0, dinV=c.recebidoDinheiro||0;
     const pago=c.recebido||(pixV+dinV);
-    fill(M,y,W-M*2,29,...(i%2===0?[252,251,250]:[255,255,255]));
-    doc.setDrawColor(220,215,225);doc.setLineWidth(0.2);doc.rect(M,y,W-M*2,29);
+    fill(M,y,W-M*2,34,...(i%2===0?[252,251,250]:[255,255,255]));
+    doc.setDrawColor(220,215,225);doc.setLineWidth(0.2);doc.rect(M,y,W-M*2,34);
     doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(15,10,20);
     doc.text((i+1)+'. '+c.nome, M+3, y+6);
     doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(10,143,92);
@@ -8893,9 +8893,11 @@ async function gerarPDF() {
       doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(150,150,160); doc.text(lbl,vx,y+16);
       doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...clr); doc.text(brlP(v),vx,y+21);
     });
-    doc.setFont('helvetica','normal');doc.setFontSize(6.3);doc.setTextColor(107,100,120);
-    doc.text('Pix: '+brlP(pixV)+'   ·   Dinheiro: '+brlP(dinV)+'   ·   Lucro: '+brlP(lc), M+3, y+26);
-    y+=31;
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(0,0,0);
+    doc.text('Pix: '+brlP(pixV)+'   ·   Dinheiro: '+brlP(dinV), M+3, y+28);
+    doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(107,100,120);
+    doc.text('Lucro: '+brlP(lc), M+3, y+32.5);
+    y+=36;
   };
 
   // ── ATENDIDAS
