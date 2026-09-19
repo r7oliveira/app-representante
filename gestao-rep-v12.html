@@ -7977,9 +7977,14 @@ function renderGerenciar() {
     const i = ORDEM_DIAS.indexOf(c.diaMelhor);
     return i === -1 ? ORDEM_DIAS.length : i; // sem dia definido vai por último
   };
+  const minutosHorario = (c) => {
+    if (!c.horarioMelhor) return Infinity; // sem horário definido vai por último no dia
+    const [h, m] = c.horarioMelhor.split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+  };
   const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa')
     .sort((a, b) => ordemDia(a) - ordemDia(b)
-      || (a.cidade || '').localeCompare(b.cidade || '', 'pt-BR')
+      || minutosHorario(a) - minutosHorario(b)
       || (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
   const inativas = DB.consultoras.filter(c => c.regiao === regiao && c.status === 'inativa')
     .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
