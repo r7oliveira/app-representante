@@ -5076,22 +5076,31 @@ function renderPagarDebitos() {
   const lista = document.getElementById('listaPagarDebitos');
   if (!lista) return;
 
+  const debitoDePD = c => {
+    if ((c.vendido||0) > 0) {
+      const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
+      const aPagarC = Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
+      return debitoRestante(aPagarC, c.recebido||0);
+    }
+    return c.debito || 0;
+  };
+
   const itens = [];
   (DB.semanas || []).forEach(sem => {
     (sem.consultoras || []).forEach(c => {
-      if ((c.debito || 0) > 0) {
+      if (debitoDePD(c) > 0) {
         itens.push({ semId: sem.id, semNumero: sem.numero, semRegiao: sem.regiao, cons: c });
       }
     });
   });
-  itens.sort((a, b) => (b.cons.debito || 0) - (a.cons.debito || 0));
+  itens.sort((a, b) => debitoDePD(b.cons) - debitoDePD(a.cons));
 
   if (!itens.length) {
     lista.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--ink-3);font-size:14px;">Nenhum débito pendente. 🎉</div>';
     return;
   }
 
-  const totalGeral = itens.reduce((a, it) => a + (it.cons.debito || 0), 0);
+  const totalGeral = itens.reduce((a, it) => a + debitoDePD(it.cons), 0);
 
   lista.innerHTML = '<div style="background:var(--red-bg);border-radius:14px;padding:14px 16px;margin-bottom:14px;text-align:center;">'
       + '<div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Total pendente · ' + itens.length + (itens.length > 1 ? ' consultoras' : ' consultora') + '</div>'
@@ -5107,7 +5116,7 @@ function renderPagarDebitos() {
             + '<div style="font-size:11.5px;color:var(--ink-3);margin-top:1px;">' + partes.join(' · ') + '</div>'
           + '</div>'
           + '<div style="text-align:right;flex-shrink:0;">'
-            + '<div style="font-size:15px;font-weight:800;color:var(--red);">' + brl(c.debito) + '</div>'
+            + '<div style="font-size:15px;font-weight:800;color:var(--red);">' + brl(debitoDePD(c)) + '</div>'
           + '</div>'
         + '</div>'
         + '<button onclick="abrirPagarDebitoGeral(\'' + it.semId + '\',\'' + c.id + '\')" style="width:100%;margin-top:10px;background:var(--rose-deep);border:none;border-radius:10px;padding:10px;color:white;font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;">Pagar débito</button>'
@@ -5511,7 +5520,7 @@ function renderSemana() {
   const total = sem.consultoras.length;
   const pctC = total > 0 ? Math.round(atendidas/total*100) : 0;
   const vendido = sem.consultoras.reduce((a,c) => a + (c.vendido||0), 0);
-  const recebido = sem.consultoras.reduce((a,c) => a + (c.recebido||0), 0);
+  const recebido = sem.consultoras.reduce((a,c) => a + (c.recebido||0) + (c.debitoOutrasNotasPago||0), 0);
   const cobrancas = sem.consultoras.reduce((a,c) => {
     // Se teve venda, recalcula sempre com a comissão correta (30% ou 40% se for favorita),
     // assim um débito salvo com a % antiga se autocorrige sozinho, sem precisar reeditar nada.
@@ -6071,17 +6080,16 @@ function desfazerParouDeVender(cons) {
 }
 
 function atualizarScoreAtend(cons) {
-  const score = calcScore(cons);
   const raw = calcScoreRaw(cons);
   const diferenciada = raw >= 150;
-  const scoreColor = diferenciada ? 'var(--gold-real)' : score >= 80 ? 'var(--green)' : score >= 50 ? 'var(--amber)' : 'var(--red)';
-  const scoreBg    = diferenciada ? 'var(--gold-real-bg)' : score >= 80 ? 'var(--green-bg)' : score >= 50 ? 'var(--amber-bg)' : 'var(--red-bg)';
+  const scoreColor = diferenciada ? 'var(--gold-real)' : raw >= 80 ? 'var(--green)' : raw >= 50 ? 'var(--amber)' : 'var(--red)';
+  const scoreBg    = diferenciada ? 'var(--gold-real-bg)' : raw >= 80 ? 'var(--green-bg)' : raw >= 50 ? 'var(--amber-bg)' : 'var(--red-bg)';
 
-  document.getElementById('atendScoreNum').textContent = score;
+  document.getElementById('atendScoreNum').textContent = raw;
   document.getElementById('atendScoreNum').style.color = scoreColor;
   document.getElementById('atendScoreNum').parentElement.style.background = scoreBg;
-  document.getElementById('atendScoreLabel').textContent = score + ' / 100';
-  document.getElementById('atendScore').textContent = 'Score ' + score;
+  document.getElementById('atendScoreLabel').textContent = raw + ' / 150';
+  document.getElementById('atendScore').textContent = 'Score ' + raw;
 
   const crits = [
     { id:'atendimentoEmDia',    pts:'+30', neg:false },
@@ -7125,7 +7133,7 @@ async function enviarAssistNew() {
 
   const sem = getSemanaAtiva();
   const ctx = sem
-    ? `Semana ${sem.numero} - Região: ${sem.regiao}. Consultoras: ${sem.consultoras.length}. Atendidas: ${sem.consultoras.filter(foiAtendida).length}. Vendido: R$${sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0).toLocaleString('pt-BR')}. Recebido: R$${sem.consultoras.reduce((a,c)=>a+(c.recebido||0),0).toLocaleString('pt-BR')}. Com débito: ${sem.consultoras.filter(c=>c.debito>0).map(c=>c.nome+' R$'+(c.debito||0)).join(', ')}.`
+    ? `Semana ${sem.numero} - Região: ${sem.regiao}. Consultoras: ${sem.consultoras.length}. Atendidas: ${sem.consultoras.filter(foiAtendida).length}. Vendido: R$${sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0).toLocaleString('pt-BR')}. Recebido: R$${sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0).toLocaleString('pt-BR')}. Com débito: ${sem.consultoras.filter(c=>c.debito>0).map(c=>c.nome+' R$'+(c.debito||0)).join(', ')}.`
     : 'Nenhuma semana ativa no momento.';
 
   const system = `Você é o Assistente Comercial de um representante de cosméticos Romance. Responda de forma direta e profissional. Use negrito com ** para destacar. Dados da semana atual: ${ctx}`;
@@ -7803,7 +7811,7 @@ function renderDomingo() {
   if (ultimaSem) {
     const atendidas = ultimaSem.consultoras.filter(foiAtendida).length;
     const vendido = ultimaSem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
-    const recebido = ultimaSem.consultoras.reduce((a,c)=>a+(c.recebido||0),0);
+    const recebido = ultimaSem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0);
     const pct = ultimaSem.meta > 0 ? Math.min(100,Math.round(recebido/ultimaSem.meta*100)) : 0;
     const pendRec = ultimaSem.consultoras.filter(c=>c.debito>0).reduce((a,c)=>a+(c.debito||0),0);
 
@@ -7892,7 +7900,7 @@ function gerarIniciativas(sem) {
   const iniciativas = [];
   const pendentes = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
-  const recebido = sem.consultoras.reduce((a,c)=>a+(c.recebido||0),0);
+  const recebido = sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0);
   const meta = sem.meta || DB.config.metaPadrao || 15000;
   const pct = meta > 0 ? Math.round(recebido/meta*100) : 0;
   const comDebito = pendentes.filter(c => c.debito > 0);
@@ -8220,11 +8228,16 @@ function mostrarFechamentoSemana() {
   if (!sem) return;
 
   const vendido  = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
+  const recebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0);
   const meta     = sem.meta || 15000;
   const pct      = Math.min(100, Math.round(recebido/meta*100));
-  const comDebito = sem.consultoras.filter(c => (c.debito||0) > 0);
-  const totalDeb  = comDebito.reduce((a,c) => a+(c.debito||0), 0);
+  const aPagarDeFech = c => {
+    const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
+    return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
+  };
+  const debitoDeFech = c => (c.vendido||0) > 0 ? debitoRestante(aPagarDeFech(c), c.recebido||0) : (c.debito||0);
+  const comDebito = sem.consultoras.filter(c => debitoDeFech(c) > 0);
+  const totalDeb  = comDebito.reduce((a,c) => a+debitoDeFech(c), 0);
 
   document.getElementById('fechSemanaLabel').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
   document.getElementById('fechVendido').textContent  = brl(vendido);
@@ -8241,7 +8254,7 @@ function mostrarFechamentoSemana() {
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
           <div style="flex:1;">
             <div style="font-size:13px;font-weight:700;color:var(--ink);">${c.nome}</div>
-            <div style="font-size:11px;color:var(--amber);">Débito: ${brl(c.debito||0)}</div>
+            <div style="font-size:11px;color:var(--amber);">Débito: ${brl(debitoDeFech(c))}</div>
           </div>
           <input type="number" inputmode="decimal" placeholder="Valor" id="deb-${c.id}"
             style="width:90px;padding:7px 10px;border:1.5px solid rgba(184,110,0,.3);border-radius:10px;font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink);outline:none;">
@@ -8615,7 +8628,7 @@ function renderRelatorio() {
   const atendidas  = elegiveis.filter(c => !busca || (c.nome||'').toLowerCase().includes(busca));
   const pendentes  = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido    = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido   = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
+  const recebido   = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0);
   const debitos    = sem.consultoras.reduce((a,c) => {
     if (c.status !== 'concluida') return a;
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
@@ -8667,6 +8680,7 @@ function renderRelatorio() {
       const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
       const aPagarC = (c.aPagar||0) > 0 ? c.aPagar : Math.round((c.vendido||0) * (100-comissaoPctC)/100 * 100) / 100;
       const lucroC  = Math.round((c.vendido||0) * (100-comissaoPctC)/100 * 0.18 * 100) / 100;
+      const debitoC = (c.vendido||0) > 0 ? debitoRestante(aPagarC, c.recebido||0) : (c.debito || 0);
       const pixC = c.recebidoPix || 0;
       const dinC = c.recebidoDinheiro || 0;
       const isRemarcada = !!(c.remarcarMes || c.remarcarSemana);
@@ -8686,9 +8700,9 @@ function renderRelatorio() {
             <div style="font-size:9px;color:var(--ink-3);font-weight:600;text-transform:uppercase;margin-bottom:2px;">Recebido</div>
             <div style="font-size:13px;font-weight:800;color:var(--green);">${brl(c.recebido||0)}</div>
           </div>
-          <div style="background:${(c.debito||0)>0?'var(--red-bg)':'var(--surface)'};border-radius:8px;padding:6px 8px;">
+          <div style="background:${debitoC>0?'var(--red-bg)':'var(--surface)'};border-radius:8px;padding:6px 8px;">
             <div style="font-size:9px;color:var(--ink-3);font-weight:600;text-transform:uppercase;margin-bottom:2px;">Débito</div>
-            <div style="font-size:13px;font-weight:800;color:${(c.debito||0)>0?'var(--red)':'var(--ink-3)'};">${brl(c.debito||0)}</div>
+            <div style="font-size:13px;font-weight:800;color:${debitoC>0?'var(--red)':'var(--ink-3)'};">${brl(debitoC)}</div>
           </div>
         </div>
         ${(pixC>0 || dinC>0) ? `<div style="display:flex;gap:6px;width:100%;">
@@ -8733,19 +8747,19 @@ async function gerarRelatorioIA() {
 
   const atendidas = sem.consultoras.filter(foiAtendida);
   const vendido   = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
-  const debitos   = sem.consultoras.reduce((a,c) => {
-    if (c.status !== 'concluida') return a;
-    if ((c.debito||0) > 0) return a + c.debito;
-    const ap = Math.round((c.vendido||0) * 0.70 * 100) / 100;
-    return a + debitoRestante(ap, c.recebido);
-  }, 0);
+  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0);
+  const aPagarDeIA = c => {
+    const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
+    return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
+  };
+  const debitoDeIA = c => (c.vendido||0) > 0 ? debitoRestante(aPagarDeIA(c), c.recebido||0) : (c.debito||0);
+  const debitos   = sem.consultoras.reduce((a,c) => a + debitoDeIA(c), 0);
   const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
   const meta      = sem.meta || 15000;
   const pct       = Math.min(100, Math.round(recebido/meta*100));
 
   const detalhes = atendidas.map(c =>
-    `- ${c.nome} (${c.cidade||''}): Vendido ${brl(c.vendido||0)}, Recebido ${brl(c.recebido||0)}, Débito ${brl(c.debito||0)}, Score ${calcScore(c)}`
+    `- ${c.nome} (${c.cidade||''}): Vendido ${brl(c.vendido||0)}, Recebido ${brl(c.recebido||0)}, Débito ${brl(debitoDeIA(c))}, Score ${calcScore(c)}`
   ).join('\n');
 
   const prompt = `Você é o Assistente Comercial de Rogério, representante de cosméticos Romance. Gere um relatório semanal detalhado, direto e profissional em português, com análise de desempenho.
@@ -8793,13 +8807,13 @@ function compartilharRelatorio() {
 
   const atendidas = sem.consultoras.filter(foiAtendida);
   const vendido   = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0), 0);
-  const debitos   = sem.consultoras.reduce((a,c) => {
-    if (c.status !== 'concluida') return a;
-    if ((c.debito||0) > 0) return a + c.debito;
-    const ap = Math.round((c.vendido||0) * 0.70 * 100) / 100;
-    return a + debitoRestante(ap, c.recebido);
-  }, 0);
+  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0);
+  const aPagarDeSh = c => {
+    const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
+    return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
+  };
+  const debitoDeSh = c => (c.vendido||0) > 0 ? debitoRestante(aPagarDeSh(c), c.recebido||0) : (c.debito||0);
+  const debitos   = sem.consultoras.reduce((a,c) => a + debitoDeSh(c), 0);
   const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
 
   let txt = `RELATÓRIO — Semana ${sem.numero} · ${sem.regiao}\n`;
@@ -8813,7 +8827,8 @@ function compartilharRelatorio() {
   atendidas.forEach(c => {
     txt += `• ${c.nome}\n`;
     txt += `  Vendido: ${brl(c.vendido||0)} | Recebido: ${brl(c.recebido||0)}`;
-    if ((c.debito||0) > 0) txt += ` | Débito: ${brl(c.debito)}`;
+    const debC = debitoDeSh(c);
+    if (debC > 0) txt += ` | Débito: ${brl(debC)}`;
     txt += '\n';
   });
 
@@ -8860,20 +8875,24 @@ async function gerarPDF() {
   doc.line(M,47,W-M,47);
   y = 62;
 
-  // ── Cálculos
+  // ── Cálculos (usando a mesma lógica de comissão/débito da tela de Cobranças do app,
+  // pra o relatório sempre bater com o que o app mostra)
+  const aPagarDe = c => {
+    const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
+    return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
+  };
+  const lucroDe = c => Math.round(aPagarDe(c) * 0.18 * 100) / 100;
+  const debitoDe = c => (c.vendido||0) > 0 ? debitoRestante(aPagarDe(c), c.recebido||0) : (c.debito||0);
+
   const atend    = sem.consultoras.filter(foiAtendida);
   const remarc   = sem.consultoras.filter(c => c.status === 'concluida' && !c.parouDeVender && (c.remarcarSemana || c.remarcarMes));
   const inativas = sem.consultoras.filter(c => c.parouDeVender);
   const pend     = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
-  const recebido= sem.consultoras.reduce((a,c)=>a+(c.recebido||0),0);
-  const aPagar  = Math.round(vendido*0.70*100)/100;
-  const lucro   = Math.round(vendido*0.70*0.18*100)/100;
-  const debitos = sem.consultoras.reduce((a,c)=>{
-    if(c.status!=='concluida') return a;
-    if((c.debito||0)>0) return a+c.debito;
-    return a+debitoRestante(Math.round((c.vendido||0)*0.70*100)/100, c.recebido);
-  },0);
+  const recebido= sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0);
+  const aPagar  = sem.consultoras.reduce((a,c)=>a+aPagarDe(c),0);
+  const lucro   = sem.consultoras.reduce((a,c)=>a+lucroDe(c),0);
+  const debitos = sem.consultoras.reduce((a,c)=>a+debitoDe(c),0);
   const meta = sem.meta||15000;
   const pct  = Math.min(100,Math.round(recebido/meta*100));
   const nRSem= sem.consultoras.filter(c=>c.remarcarSemana).length;
@@ -8919,9 +8938,9 @@ async function gerarPDF() {
   const cardConsultora = (c, i) => {
     chk(38);
     const vd=c.vendido||0;
-    const ap=Math.round(vd*0.70*100)/100;
-    const lc=Math.round(vd*0.70*0.18*100)/100;
-    const db=(c.debito||0)>0?c.debito:Math.max(0,ap-(c.recebido||0));
+    const ap=aPagarDe(c);
+    const lc=lucroDe(c);
+    const db=debitoDe(c);
     const pixV=c.recebidoPix||0, dinV=c.recebidoDinheiro||0;
     const pago=c.recebido||(pixV+dinV);
     fill(M,y,W-M*2,34,...(i%2===0?[252,251,250]:[255,255,255]));
