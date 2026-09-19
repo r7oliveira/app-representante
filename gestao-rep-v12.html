@@ -5532,7 +5532,7 @@ function renderSemana() {
 
   // Contadores de status
   const pendentesAgora = sem.consultoras.filter(c => c.status !== 'concluida');
-  const nAtendidas   = sem.consultoras.filter(c => foiAtendida(c) && (c.vendido||0) > 0).length;
+  const nAtendidas   = sem.consultoras.filter(c => foiAtendida(c)).length;
   const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
   const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
   const nNovas       = sem.consultoras.filter(c => contaComoNova(c, sem)).length;
@@ -8392,7 +8392,7 @@ function abrirDetalheStatus(tipo) {
   if (!sem) return;
 
   const config = {
-    atendidas:   { titulo: 'Atendidas',    filtro: c => foiAtendida(c) && (c.vendido||0) > 0, extra: c => 'Vendido: ' + brl(c.vendido||0) },
+    atendidas:   { titulo: 'Atendidas',    filtro: c => foiAtendida(c), extra: c => 'Vendido: ' + brl(c.vendido||0) },
     remSemana:   { titulo: 'Remarcadas · Semana', filtro: c => !!c.remarcarSemana, extra: c => c.cidade || '' },
     remMes:      { titulo: 'Remarcadas · Mês',    filtro: c => !!c.remarcarMes, extra: c => c.cidade || '' },
     novas:       { titulo: 'Novas', filtro: c => contaComoNova(c, sem), extra: c => c.cidade || '' },
