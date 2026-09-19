@@ -7963,7 +7963,9 @@ function renderGerenciar() {
     return i === -1 ? ORDEM_DIAS.length : i; // sem dia definido vai por último
   };
   const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa')
-    .sort((a, b) => ordemDia(a) - ordemDia(b) || (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+    .sort((a, b) => ordemDia(a) - ordemDia(b)
+      || (a.cidade || '').localeCompare(b.cidade || '', 'pt-BR')
+      || (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
   const inativas = DB.consultoras.filter(c => c.regiao === regiao && c.status === 'inativa')
     .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
 
@@ -7990,19 +7992,29 @@ function renderGerenciar() {
     listaAt.innerHTML = '<div style="text-align:center;padding:16px;color:var(--ink-3);font-size:13px;">Nenhuma consultora ativa nesta região.</div>';
   } else {
     let diaAtual = null;
+    let cidadeAtual = null;
+    let numCidade = 0;
     listaAt.innerHTML = ativas.map((c, i) => {
       const diaDaConsultora = c.diaMelhor || 'Sem dia definido';
       let header = '';
       if (diaDaConsultora !== diaAtual) {
         diaAtual = diaDaConsultora;
+        cidadeAtual = null; // força reiniciar a contagem também a cada novo dia
         header = `<div style="font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin:${i===0?'0':'14px'} 2px 6px;">${diaDaConsultora}</div>`;
+      }
+      const cidadeDaConsultora = c.cidade || '';
+      if (cidadeDaConsultora !== cidadeAtual) {
+        cidadeAtual = cidadeDaConsultora;
+        numCidade = 1;
+      } else {
+        numCidade++;
       }
       const cardOpen = header || i === 0 ? '<div class="card" style="margin-bottom:12px;">' : '';
       const proximaTemHeader = (i + 1 < ativas.length) && ((ativas[i+1].diaMelhor || 'Sem dia definido') !== diaDaConsultora);
       const cardClose = (proximaTemHeader || i === ativas.length - 1) ? '</div>' : '';
       return header + cardOpen +
         `<div class="card-row">
-          <div style="width:28px;height:28px;background:var(--rose-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--rose);flex-shrink:0;">${i+1}</div>
+          <div style="width:28px;height:28px;background:var(--rose-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--rose);flex-shrink:0;">${numCidade}</div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nome}</div>
             <div style="font-size:11px;color:var(--ink-3);margin-top:1px;">${c.cidade||''} · Score ${scoreAtualDe(c)}</div>
