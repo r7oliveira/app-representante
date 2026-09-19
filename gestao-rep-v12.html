@@ -5536,7 +5536,7 @@ function renderSemana() {
   const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
   const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
   const nNovas       = sem.consultoras.filter(c => contaComoNova(c, sem)).length;
-  const nSemFavorita = sem.consultoras.filter(c => foiAtendida(c) && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito).length;
+  const nSemFavorita = sem.consultoras.filter(c => foiAtendida(c) && !c.pedidoFavoritaFeito).length;
   const nInativas    = sem.consultoras.filter(c => c.parouDeVender).length;
   document.getElementById('cntAtendidas').textContent   = nAtendidas;
   document.getElementById('cntRemSemana').textContent   = nRemSemana;
@@ -8396,7 +8396,7 @@ function abrirDetalheStatus(tipo) {
     remSemana:   { titulo: 'Remarcadas · Semana', filtro: c => !!c.remarcarSemana, extra: c => c.cidade || '' },
     remMes:      { titulo: 'Remarcadas · Mês',    filtro: c => !!c.remarcarMes, extra: c => c.cidade || '' },
     novas:       { titulo: 'Novas', filtro: c => contaComoNova(c, sem), extra: c => c.cidade || '' },
-    semFavorita: { titulo: 'Sem Favorita', filtro: c => foiAtendida(c) && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito, extra: c => 'Vendido: ' + brl(c.vendido||0) },
+    semFavorita: { titulo: 'Sem Favorita', filtro: c => foiAtendida(c) && !c.pedidoFavoritaFeito, extra: c => 'Vendido: ' + brl(c.vendido||0) },
     inativas:    { titulo: 'Parou de Vender', filtro: c => !!c.parouDeVender, extra: c => c.cidade || '' },
   }[tipo];
   if (!config) return;
