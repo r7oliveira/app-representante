@@ -6154,14 +6154,68 @@ function finalizarAtendimento() {
 
   if (timerInterval) clearInterval(timerInterval);
 
-  // Abre próxima automaticamente
+  tocarSomSucesso();
+  mostrarMensagemSucesso('Parabéns! Atendimento concluído!');
+
+  // Abre próxima automaticamente (com um pequeno atraso pra dar tempo de ver a mensagem)
   const proxima = sem.consultoras.find(c => c.status !== 'concluida');
-  if (proxima) {
-    goTo('semana');
-  } else {
-    goTo('semana');
-    setTimeout(() => mostrarFechamentoSemana(), 300);
-  }}
+  setTimeout(() => {
+    if (proxima) {
+      goTo('semana');
+    } else {
+      goTo('semana');
+      setTimeout(() => mostrarFechamentoSemana(), 300);
+    }
+  }, 900);
+}
+
+/* ── Toast de sucesso + som ao concluir um atendimento ── */
+function mostrarMensagemSucesso(texto) {
+  const existente = document.getElementById('toastSucesso');
+  if (existente) existente.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'toastSucesso';
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-20px);z-index:9999;background:var(--green);color:white;font-weight:800;font-size:14px;padding:14px 22px;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);display:flex;align-items:center;gap:10px;opacity:0;transition:opacity .25s ease,transform .25s ease;max-width:88vw;text-align:center;';
+  toast.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"></polyline></svg><span>' + texto + '</span>';
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  });
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(-20px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 1800);
+}
+
+function tocarSomSucesso() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AudioCtx();
+    const tocarNota = (freq, inicio, duracao) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + inicio);
+      gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + inicio + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + inicio + duracao);
+      osc.start(ctx.currentTime + inicio);
+      osc.stop(ctx.currentTime + inicio + duracao + 0.02);
+    };
+    // Dois tons subindo, tipo "sino de conquista"
+    tocarNota(659.25, 0, 0.14);
+    tocarNota(987.77, 0.13, 0.22);
+  } catch (e) {
+    // Se o navegador bloquear áudio automático, ignora silenciosamente
+  }
+}
 
 /* ── Acerto perfeito no atendimento vira estrela (dobra se pediu Favorita) ── */
 function concederEstrelaAtendimento(cons, sem) {
