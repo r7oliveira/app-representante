@@ -3881,6 +3881,14 @@ function confirmarAgendarCliente() {
   if (diaInfo2) c.diaMelhor = diaInfo2.label;
   if (horario) c.horarioMelhor = horario;
 
+  // Mantém o cadastro mestre da consultora em dia também (pra já vir preenchido
+  // em "Editar Consultora" na próxima vez, sem precisar editar na mão)
+  const cMestre = DB.consultoras.find(x => x.id === consultoraId);
+  if (cMestre) {
+    if (diaInfo2) cMestre.diaMelhor = diaInfo2.label;
+    if (horario) cMestre.horarioMelhor = horario;
+  }
+
   DB.agenda = DB.agenda || blankAgenda();
   DB.agenda[diaKey] = DB.agenda[diaKey] || [];
   const novaTarefa = {
@@ -4024,6 +4032,13 @@ function salvarTarefa() {
           const diaInfo = DIAS_AGENDA.find(d => d.key === diaKey);
           if (diaInfo) c.diaMelhor = diaInfo.label;
           c.horarioMelhor = horario;
+        }
+        // Também atualiza o cadastro mestre, senão a tela "Editar Consultora" não reflete a mudança
+        const cMestre = DB.consultoras.find(x => x.id === t.consultoraId);
+        if (cMestre) {
+          const diaInfo = DIAS_AGENDA.find(d => d.key === diaKey);
+          if (diaInfo) cMestre.diaMelhor = diaInfo.label;
+          cMestre.horarioMelhor = horario;
         }
         if (googleAgendaConectado()) {
           sincronizarEventoGoogleAgenda(t, diaKey).then(eventId => {
