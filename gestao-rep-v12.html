@@ -5685,8 +5685,8 @@ function renderSemana() {
     const c2 = corPasso(passo2Feito, passo1Feito && !passo2Feito);
     const c3 = corPasso(passo3Feito, passo2Feito && !passo3Feito);
     const linhaTrilha = (feito) => '<div style="flex:0 0 16px;height:2px;background:' + (feito ? 'var(--green)' : 'var(--border)') + ';margin-top:17px;"></div>';
-    const passoTrilha = (onclick, cor, icone, label) =>
-      '<div onclick="event.stopPropagation();' + onclick + '" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex:1;min-width:0;">'
+    const passoTrilha = (onclick, cor, icone, label, bloqueado) =>
+      '<div onclick="event.stopPropagation();' + (bloqueado ? 'alert(\'Confirme o horário com a consultora antes de lançar o atendimento.\')' : onclick) + '" style="display:flex;flex-direction:column;align-items:center;gap:5px;cursor:' + (bloqueado ? 'not-allowed' : 'pointer') + ';flex:1;min-width:0;opacity:' + (bloqueado ? '0.55' : '1') + ';">'
         + '<div style="width:34px;height:34px;border-radius:50%;background:' + cor.bg + ';border:1.5px solid ' + cor.border + ';color:' + cor.color + ';display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;">' + icone + '</div>'
         + '<div style="font-size:10px;font-weight:700;text-align:center;line-height:1.25;color:' + cor.color + ';">' + label + '</div>'
       + '</div>';
@@ -5695,11 +5695,11 @@ function renderSemana() {
     const svgPlay = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21"></polygon></svg>';
     const trilha = c.telefone ? (
       '<div style="display:flex;align-items:flex-start;padding:14px 12px 12px;">'
-        + passoTrilha("enviarWhatsappHorario('" + c.id + "')", c1, passo1Feito ? svgCheck : svgChat, 'Marcar<br>horário')
+        + passoTrilha("enviarWhatsappHorario('" + c.id + "')", c1, passo1Feito ? svgCheck : svgChat, 'Marcar<br>horário', false)
         + linhaTrilha(passo1Feito)
-        + passoTrilha("toggleConfirmouHorario('" + c.id + "')", c2, passo2Feito ? svgCheck : '', 'Confirmar<br>horário')
+        + passoTrilha("toggleConfirmouHorario('" + c.id + "')", c2, passo2Feito ? svgCheck : '', 'Confirmar<br>horário', false)
         + linhaTrilha(passo2Feito)
-        + passoTrilha("abrirAtendimento('" + c.id + "')", c3, passo3Feito ? svgCheck : svgPlay, 'Lançar<br>atendimento')
+        + passoTrilha("abrirAtendimento('" + c.id + "')", c3, passo3Feito ? svgCheck : svgPlay, 'Lançar<br>atendimento', !passo2Feito && !passo3Feito)
       + '</div>'
     ) : (
       '<div style="padding:0 14px 14px;">'
