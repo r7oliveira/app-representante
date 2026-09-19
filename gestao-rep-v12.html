@@ -4899,6 +4899,22 @@ function debitoRestante(aPagar, recebido) {
 function foiAtendida(c) {
   return c.status === 'concluida' && !c.remarcarSemana && !c.remarcarMes;
 }
+// Detecta se este é o primeiro atendimento CONCLUÍDO da consultora em toda a história
+// (nenhuma outra semana já registrada tem ela como concluída). Serve para marcar
+// "Nova" automaticamente, sem precisar do rep clicar na caixinha manual toda vez.
+function primeiroAtendimentoDela(c, semAtual) {
+  return !(DB.semanas || []).some(s =>
+    s.id !== semAtual.id &&
+    (s.consultoras || []).some(o => o.id === c.id && o.status === 'concluida')
+  );
+}
+// Conta como "Nova" quem foi atendida e (a) foi marcada manualmente como nova
+// (ex.: cliente pegou material pela primeira vez) OU (b) este é o primeiro
+// atendimento concluído dela em toda a história — e não foi marcada como inativa.
+function contaComoNova(c, semAtual) {
+  if (!foiAtendida(c) || c.parouDeVender) return false;
+  return !!c.consultoraNova || primeiroAtendimentoDela(c, semAtual);
+}
 function iniciais(nome) {
   const p = String(nome||'').trim().split(' ');
   if (p.length < 2) return p[0].substring(0,2).toUpperCase();
@@ -5504,7 +5520,7 @@ function renderSemana() {
   const nAtendidas   = sem.consultoras.filter(c => foiAtendida(c) && (c.vendido||0) > 0).length;
   const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
   const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
-  const nNovas       = sem.consultoras.filter(c => foiAtendida(c) && c.consultoraNova && !c.parouDeVender).length;
+  const nNovas       = sem.consultoras.filter(c => contaComoNova(c, sem)).length;
   const nSemFavorita = sem.consultoras.filter(c => foiAtendida(c) && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito).length;
   const nInativas    = sem.consultoras.filter(c => c.parouDeVender).length;
   document.getElementById('cntAtendidas').textContent   = nAtendidas;
@@ -7941,8 +7957,13 @@ function toggleInativasGerenciar() {
 
 function renderGerenciar() {
   const regiao = gerenciarRegiao;
+  const ORDEM_DIAS = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  const ordemDia = (c) => {
+    const i = ORDEM_DIAS.indexOf(c.diaMelhor);
+    return i === -1 ? ORDEM_DIAS.length : i; // sem dia definido vai por último
+  };
   const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa')
-    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+    .sort((a, b) => ordemDia(a) - ordemDia(b) || (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
   const inativas = DB.consultoras.filter(c => c.regiao === regiao && c.status === 'inativa')
     .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
 
@@ -7968,8 +7989,18 @@ function renderGerenciar() {
   if (!ativas.length) {
     listaAt.innerHTML = '<div style="text-align:center;padding:16px;color:var(--ink-3);font-size:13px;">Nenhuma consultora ativa nesta região.</div>';
   } else {
-    listaAt.innerHTML = '<div class="card" style="margin-bottom:12px;">' +
-      ativas.map((c, i) =>
+    let diaAtual = null;
+    listaAt.innerHTML = ativas.map((c, i) => {
+      const diaDaConsultora = c.diaMelhor || 'Sem dia definido';
+      let header = '';
+      if (diaDaConsultora !== diaAtual) {
+        diaAtual = diaDaConsultora;
+        header = `<div style="font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin:${i===0?'0':'14px'} 2px 6px;">${diaDaConsultora}</div>`;
+      }
+      const cardOpen = header || i === 0 ? '<div class="card" style="margin-bottom:12px;">' : '';
+      const proximaTemHeader = (i + 1 < ativas.length) && ((ativas[i+1].diaMelhor || 'Sem dia definido') !== diaDaConsultora);
+      const cardClose = (proximaTemHeader || i === ativas.length - 1) ? '</div>' : '';
+      return header + cardOpen +
         `<div class="card-row">
           <div style="width:28px;height:28px;background:var(--rose-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--rose);flex-shrink:0;">${i+1}</div>
           <div style="flex:1;min-width:0;">
@@ -7980,8 +8011,8 @@ function renderGerenciar() {
             <button onclick="editarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;">✎</button>
             <button onclick="inativarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;">×</button>
           </div>
-        </div>`
-      ).join('') + '</div>';
+        </div>` + cardClose;
+    }).join('');
   }
 
   // Lista inativas
@@ -8324,7 +8355,7 @@ function abrirDetalheStatus(tipo) {
     atendidas:   { titulo: 'Atendidas',    filtro: c => foiAtendida(c) && (c.vendido||0) > 0, extra: c => 'Vendido: ' + brl(c.vendido||0) },
     remSemana:   { titulo: 'Remarcadas · Semana', filtro: c => !!c.remarcarSemana, extra: c => c.cidade || '' },
     remMes:      { titulo: 'Remarcadas · Mês',    filtro: c => !!c.remarcarMes, extra: c => c.cidade || '' },
-    novas:       { titulo: 'Novas', filtro: c => foiAtendida(c) && c.consultoraNova && !c.parouDeVender, extra: c => c.cidade || '' },
+    novas:       { titulo: 'Novas', filtro: c => contaComoNova(c, sem), extra: c => c.cidade || '' },
     semFavorita: { titulo: 'Sem Favorita', filtro: c => foiAtendida(c) && (c.vendido||0) > 0 && !c.pedidoFavoritaFeito, extra: c => 'Vendido: ' + brl(c.vendido||0) },
     inativas:    { titulo: 'Parou de Vender', filtro: c => !!c.parouDeVender, extra: c => c.cidade || '' },
   }[tipo];
