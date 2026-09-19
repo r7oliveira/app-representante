@@ -747,6 +747,13 @@ input[type="time"]{max-width:100%;}
         <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+25</div>
       </div>
 
+      <!-- Critério: Pedido Favorita para a próxima nota (fica valendo automaticamente no próximo atendimento) -->
+      <div class="crit-row-atend" onclick="toggleCrit('pedidoFavoritaProxima')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
+        <div class="crit-chk" id="chk-pedidoFavoritaProxima" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
+        <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-pedidoFavoritaProxima">Pedido favorita p/ próxima nota</div>
+        <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+50</div>
+      </div>
+
       <!-- Grupo 2: baixa o score -->
       <div style="padding:9px 16px;background:var(--red-bg);border-bottom:1px solid var(--border);">
         <div style="font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--red);">Deixa o score mais baixo</div>
@@ -4593,11 +4600,20 @@ function confirmarAdminCriarSemana() {
 
   let consultoras;
   if (ultima) {
-    consultoras = (ultima.consultoras || []).map(c => ({ ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: false }));
+    consultoras = (ultima.consultoras || []).map(c => {
+      const mestre = (data.consultoras || []).find(m => m.id === c.id);
+      const favoritaJaPendente = !!(mestre && mestre.favoritaProximaPendente);
+      if (mestre) mestre.favoritaProximaPendente = false;
+      return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false };
+    });
   } else {
     consultoras = (data.consultoras || [])
       .filter(c => c.regiao === regiao && c.status !== 'inativa')
-      .map(c => ({ ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: false }));
+      .map(c => {
+        const favoritaJaPendente = !!c.favoritaProximaPendente;
+        c.favoritaProximaPendente = false;
+        return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false };
+      });
   }
 
   const semana = {
@@ -4945,6 +4961,7 @@ function calcScore(c) {
   if (c.pagamentoNaSemana) s += 30;
   if (c.pedidoFavoritaFeito) s += 25;
   if (c.assinaturaDigital) s += 15;
+  if (c.pedidoFavoritaProxima) s += 50;
   if (c.remarcarSemana) s -= 15;
   if (c.remarcarMes) s -= 25;
   return Math.min(100, s); // pode ficar negativo, só não passa de 100
@@ -5794,7 +5811,9 @@ function adicionarUmaConsultora(id) {
   const sem = getSemanaAtiva();
   const cons = DB.consultoras.find(c => c.id === id);
   if (!sem || !cons) return;
-  sem.consultoras.push({...cons, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!cons.novaConsultora});
+  const favoritaJaPendente = !!cons.favoritaProximaPendente;
+  cons.favoritaProximaPendente = false;
+  sem.consultoras.push({...cons, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:favoritaJaPendente, pedidoFavoritaProxima:false, consultoraNova: !!cons.novaConsultora});
   save();
   fecharModal('modalRegistro');
   renderSemana();
@@ -5818,7 +5837,9 @@ function adicionarConsultorasSemana() {
     return;
   }
   novas.forEach(c => {
-    sem.consultoras.push({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!c.novaConsultora});
+    const favoritaJaPendente = !!c.favoritaProximaPendente;
+    c.favoritaProximaPendente = false;
+    sem.consultoras.push({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:favoritaJaPendente, pedidoFavoritaProxima:false, consultoraNova: !!c.novaConsultora});
   });
   save();
   renderSemana();
@@ -6051,6 +6072,7 @@ function atualizarScoreAtend(cons) {
     { id:'pagamentoNaSemana',   pts:'+30', neg:false },
     { id:'pedidoFavoritaFeito', pts:'+25', neg:false },
     { id:'assinaturaDigital',   pts:'+15', neg:false },
+    { id:'pedidoFavoritaProxima', pts:'+50', neg:false },
     { id:'remarcarSemana',      pts:'−15', neg:true  },
     { id:'remarcarMes',         pts:'−25', neg:true  },
     { id:'consultoraNova',      pts:'—',   neg:false },
@@ -6128,6 +6150,9 @@ function finalizarAtendimento() {
   // Depois do primeiro atendimento concluído, ela deixa de contar como "nova" nas próximas semanas
   const mestreConcluida = DB.consultoras.find(m => m.id === cons.id);
   if (mestreConcluida) mestreConcluida.novaConsultora = false;
+  // Se marcou "Pedido favorita p/ próxima nota", guarda no cadastro mestre para já vir
+  // marcado "Pedido favorita feito p/ essa nota" automaticamente no próximo atendimento dela
+  if (mestreConcluida) mestreConcluida.favoritaProximaPendente = !!cons.pedidoFavoritaProxima;
   // critérios já foram salvos via toggleCrit durante o atendimento
   if (atendInicio) {
     const min = Math.round((Date.now() - atendInicio.getTime()) / 60000);
@@ -6803,7 +6828,12 @@ function confirmarCriarSemana() {
     meta: metaInput,
     dataInicio: new Date().toISOString(),
     status: 'em_andamento',
-    consultoras: (window._criarConsultoras || []).map(c => ({...c, id: c.id || uid()}))
+    consultoras: (window._criarConsultoras || []).map(c => {
+      const mestre = DB.consultoras.find(m => m.id === c.id);
+      const favoritaJaPendente = !!(mestre && mestre.favoritaProximaPendente);
+      if (mestre) mestre.favoritaProximaPendente = false;
+      return {...c, id: c.id || uid(), pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false};
+    })
   };
   DB.semanas.push(semana);
   DB.semanaAtiva = semana.id;
