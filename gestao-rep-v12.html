@@ -8815,8 +8815,10 @@ async function gerarPDF() {
   y = 62;
 
   // ── Cálculos
-  const atend   = sem.consultoras.filter(foiAtendida);
-  const pend    = sem.consultoras.filter(c=>c.status!=='concluida');
+  const atend    = sem.consultoras.filter(foiAtendida);
+  const remarc   = sem.consultoras.filter(c => c.status === 'concluida' && !c.parouDeVender && (c.remarcarSemana || c.remarcarMes));
+  const inativas = sem.consultoras.filter(c => c.parouDeVender);
+  const pend     = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
   const recebido= sem.consultoras.reduce((a,c)=>a+(c.recebido||0),0);
   const aPagar  = Math.round(vendido*0.70*100)/100;
@@ -8867,18 +8869,17 @@ async function gerarPDF() {
   fill(M,y,Math.max(1,(W-M*2)*(pct/100)),4,200,24,90);
   y+=10;
 
-  // ── CONSULTORAS
-  chk(16);
-  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,10,20);
-  doc.text('CONSULTORAS ATENDIDAS ('+atend.length+')', M, y); y+=5;
-
-  atend.forEach((c,i)=>{
-    chk(26);
-    const ap=Math.round((c.vendido||0)*0.70*100)/100;
-    const lc=Math.round((c.vendido||0)*0.70*0.18*100)/100;
+  // ── Card de uma consultora, com Vendido / A Pagar / Pago (Pix + Dinheiro) / Débito
+  const cardConsultora = (c, i) => {
+    chk(32);
+    const vd=c.vendido||0;
+    const ap=Math.round(vd*0.70*100)/100;
+    const lc=Math.round(vd*0.70*0.18*100)/100;
     const db=(c.debito||0)>0?c.debito:Math.max(0,ap-(c.recebido||0));
-    fill(M,y,W-M*2,22,...(i%2===0?[252,251,250]:[255,255,255]));
-    doc.setDrawColor(220,215,225);doc.setLineWidth(0.2);doc.rect(M,y,W-M*2,22);
+    const pixV=c.recebidoPix||0, dinV=c.recebidoDinheiro||0;
+    const pago=c.recebido||(pixV+dinV);
+    fill(M,y,W-M*2,29,...(i%2===0?[252,251,250]:[255,255,255]));
+    doc.setDrawColor(220,215,225);doc.setLineWidth(0.2);doc.rect(M,y,W-M*2,29);
     doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(15,10,20);
     doc.text((i+1)+'. '+c.nome, M+3, y+6);
     doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(10,143,92);
@@ -8886,21 +8887,56 @@ async function gerarPDF() {
     const info=[c.cidade,c.diaMelhor?.replace('-feira',''),c.horarioMelhor].filter(Boolean).join(' · ');
     doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(107,100,120);
     doc.text(info,M+3,y+11);
-    [[ap,'A Pagar',[15,10,20]],[c.recebido||0,'Recebido',[10,143,92]],[db,'Débito',db>0?[201,38,30]:[150,150,160]],[lc,'Lucro',[10,143,92]]]
+    [[vd,'Vendido',[15,10,20]],[ap,'A Pagar',[15,10,20]],[pago,'Pago',[10,143,92]],[db,'Débito',db>0?[201,38,30]:[150,150,160]]]
     .forEach(([v,lbl,clr],vi)=>{
       const vx=M+3+vi*((W-M*2-6)/4);
       doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(150,150,160); doc.text(lbl,vx,y+16);
       doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...clr); doc.text(brlP(v),vx,y+21);
     });
-    y+=24;
-  });
+    doc.setFont('helvetica','normal');doc.setFontSize(6.3);doc.setTextColor(107,100,120);
+    doc.text('Pix: '+brlP(pixV)+'   ·   Dinheiro: '+brlP(dinV)+'   ·   Lucro: '+brlP(lc), M+3, y+26);
+    y+=31;
+  };
 
-  // ── PENDENTES
+  // ── ATENDIDAS
+  chk(16);
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,10,20);
+  doc.text('ATENDIDAS ('+atend.length+')', M, y); y+=5;
+  atend.forEach((c,i)=>cardConsultora(c,i));
+
+  // ── REMARCADAS
+  if (remarc.length) {
+    chk(16);
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,10,20);
+    doc.text('REMARCADAS ('+remarc.length+')', M, y); y+=5;
+    remarc.forEach(c=>{
+      chk(8);
+      const motivo = c.remarcarMes ? 'Remarcada · próximo mês' : 'Remarcada · próxima semana';
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(107,100,120);
+      doc.text('• '+c.nome+(c.cidade?' · '+c.cidade:'')+' — '+motivo, M+3, y); y+=6;
+    });
+    y+=4;
+  }
+
+  // ── PENDENTES (ainda não atendidas)
   if(pend.length){
     chk(14);
     doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,10,20);
-    doc.text('NÃO ATENDIDAS ('+pend.length+')', M, y); y+=5;
+    doc.text('PENDENTES ('+pend.length+')', M, y); y+=5;
     pend.forEach(c=>{
+      chk(7);
+      doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(107,100,120);
+      doc.text('• '+c.nome+(c.cidade?' · '+c.cidade:''), M+3, y); y+=6;
+    });
+    y+=4;
+  }
+
+  // ── PAROU DE VENDER (se houver)
+  if(inativas.length){
+    chk(14);
+    doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,10,20);
+    doc.text('PAROU DE VENDER ('+inativas.length+')', M, y); y+=5;
+    inativas.forEach(c=>{
       chk(7);
       doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(107,100,120);
       doc.text('• '+c.nome+(c.cidade?' · '+c.cidade:''), M+3, y); y+=6;
