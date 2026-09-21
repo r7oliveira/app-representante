@@ -4203,6 +4203,7 @@ function migrarRecebidoExterno() {
     DB.config = DB.config || {};
     if (DB.config.migradoRecebidoExternoV2) return;
     const semAtiva = getSemanaAtiva();
+    let mudou = false;
     if (semAtiva) {
       semAtiva.debitosExternosPagos = semAtiva.debitosExternosPagos || [];
       const jaMigrados = new Set(semAtiva.debitosExternosPagos.map(e => e.migradoDe).filter(Boolean));
@@ -4220,16 +4221,20 @@ function migrarRecebidoExterno() {
               semOrigem: s.numero,
               migradoDe: chave
             });
+            mudou = true;
           }
         });
       });
       // Remove o formato antigo (agregado, sem nome), se ainda existir
-      delete semAtiva.recebidoDebitosExternos;
-      delete semAtiva.recebidoDebitosExternosPix;
-      delete semAtiva.recebidoDebitosExternosDinheiro;
+      if (semAtiva.recebidoDebitosExternos !== undefined) { delete semAtiva.recebidoDebitosExternos; mudou = true; }
+      if (semAtiva.recebidoDebitosExternosPix !== undefined) { delete semAtiva.recebidoDebitosExternosPix; mudou = true; }
+      if (semAtiva.recebidoDebitosExternosDinheiro !== undefined) { delete semAtiva.recebidoDebitosExternosDinheiro; mudou = true; }
     }
     DB.config.migradoRecebidoExternoV1 = true;
     DB.config.migradoRecebidoExternoV2 = true;
+    // Sem isso, essa correção fica com a mesma "versão" (seq) de antes e pode ser
+    // silenciosamente apagada por uma cópia mais antiga vinda do Firebase no próximo sync.
+    if (mudou) DB.seq = (DB.seq || 1) + 1;
     save();
     renderSemana();
   } catch(e) { console.error('Migração recebido externo falhou:', e); }
@@ -4258,7 +4263,7 @@ async function initFirebase() {
     const snap = await _docRef.get();
     if (snap.exists) {
       const remoto = snap.data();
-      if (remoto && (remoto.seq || 0) >= DB.seq) {
+      if (remoto && (remoto.seq || 0) > DB.seq) {
         DB = remoto;
         DB.agenda = DB.agenda || blankAgenda();
         DB.observacoes = DB.observacoes || [];
