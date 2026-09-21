@@ -4201,27 +4201,35 @@ try { restaurarSessaoGoogle(); } catch(e) {}
 function migrarRecebidoExterno() {
   try {
     DB.config = DB.config || {};
-    if (DB.config.migradoRecebidoExternoV1) return;
+    if (DB.config.migradoRecebidoExternoV2) return;
     const semAtiva = getSemanaAtiva();
     if (semAtiva) {
-      let total = 0, totalPix = 0, totalDin = 0;
+      semAtiva.debitosExternosPagos = semAtiva.debitosExternosPagos || [];
+      const jaMigrados = new Set(semAtiva.debitosExternosPagos.map(e => e.migradoDe).filter(Boolean));
       (DB.semanas || []).forEach(s => {
         if (s.id === semAtiva.id) return; // essa já conta certo sozinha
         (s.consultoras || []).forEach(c => {
-          if ((c.debitoOutrasNotasPago||0) > 0) {
-            total    += c.debitoOutrasNotasPago || 0;
-            totalPix += c.debitoOutrasNotasPix || 0;
-            totalDin += c.debitoOutrasNotasDinheiro || 0;
+          const chave = s.id + ':' + c.id;
+          if ((c.debitoOutrasNotasPago||0) > 0 && !jaMigrados.has(chave)) {
+            semAtiva.debitosExternosPagos.push({
+              nome: c.nome,
+              cidade: c.cidade || '',
+              valor: c.debitoOutrasNotasPago || 0,
+              pix: c.debitoOutrasNotasPix || 0,
+              dinheiro: c.debitoOutrasNotasDinheiro || 0,
+              semOrigem: s.numero,
+              migradoDe: chave
+            });
           }
         });
       });
-      if (total > 0) {
-        semAtiva.recebidoDebitosExternos = (semAtiva.recebidoDebitosExternos||0) + total;
-        semAtiva.recebidoDebitosExternosPix = (semAtiva.recebidoDebitosExternosPix||0) + totalPix;
-        semAtiva.recebidoDebitosExternosDinheiro = (semAtiva.recebidoDebitosExternosDinheiro||0) + totalDin;
-      }
+      // Remove o formato antigo (agregado, sem nome), se ainda existir
+      delete semAtiva.recebidoDebitosExternos;
+      delete semAtiva.recebidoDebitosExternosPix;
+      delete semAtiva.recebidoDebitosExternosDinheiro;
     }
     DB.config.migradoRecebidoExternoV1 = true;
+    DB.config.migradoRecebidoExternoV2 = true;
     save();
     renderSemana();
   } catch(e) { console.error('Migração recebido externo falhou:', e); }
@@ -4959,6 +4967,17 @@ function debitoRestante(aPagar, recebido) {
   const diff = Math.round(((aPagar||0) - (recebido||0)) * 100) / 100;
   return diff <= 0.01 ? 0 : diff;
 }
+// Soma dos pagamentos de débitos de semanas/regiões antigas registrados nesta
+// semana (cada item guarda o nome da consultora, pra aparecer no relatório/detalhe).
+function totalDebitosExternos(sem) {
+  return (sem.debitosExternosPagos || []).reduce((a, e) => a + (e.valor || 0), 0);
+}
+function totalDebitosExternosPix(sem) {
+  return (sem.debitosExternosPagos || []).reduce((a, e) => a + (e.pix || 0), 0);
+}
+function totalDebitosExternosDinheiro(sem) {
+  return (sem.debitosExternosPagos || []).reduce((a, e) => a + (e.dinheiro || 0), 0);
+}
 // Uma consultora só conta como "atendida" de fato quando o atendimento foi concluído
 // SEM remarcação. Se ela foi remarcada (semana ou mês), o atendimento ainda está em
 // aberto — ela só volta a contar como atendida quando for visitada de novo.
@@ -5258,9 +5277,15 @@ function salvarPagarDebitoGeral() {
   // AGORA — conta como recebido na semana ativa também, pra bater com o caixa do dia.
   const semAtiva = getSemanaAtiva();
   if (outraNota && semAtiva && semAtiva.id !== ctx.semId) {
-    semAtiva.recebidoDebitosExternos = (semAtiva.recebidoDebitosExternos || 0) + val;
-    if (forma === 'pix') semAtiva.recebidoDebitosExternosPix = (semAtiva.recebidoDebitosExternosPix || 0) + val;
-    else semAtiva.recebidoDebitosExternosDinheiro = (semAtiva.recebidoDebitosExternosDinheiro || 0) + val;
+    semAtiva.debitosExternosPagos = semAtiva.debitosExternosPagos || [];
+    semAtiva.debitosExternosPagos.push({
+      nome: cons.nome,
+      cidade: cons.cidade || '',
+      valor: val,
+      pix: forma === 'pix' ? val : 0,
+      dinheiro: forma === 'pix' ? 0 : val,
+      semOrigem: sem.numero
+    });
   }
 
   save();
@@ -5562,7 +5587,7 @@ function renderSemana() {
   const total = sem.consultoras.length;
   const pctC = total > 0 ? Math.round(atendidas/total*100) : 0;
   const vendido = sem.consultoras.reduce((a,c) => a + (c.vendido||0), 0);
-  const recebido = sem.consultoras.reduce((a,c) => a + (c.recebido||0) + (c.debitoOutrasNotasPago||0), 0) + (sem.recebidoDebitosExternos||0);
+  const recebido = sem.consultoras.reduce((a,c) => a + (c.recebido||0) + (c.debitoOutrasNotasPago||0), 0) + totalDebitosExternos(sem);
   const cobrancas = sem.consultoras.reduce((a,c) => {
     // Se teve venda, recalcula sempre com a comissão correta (30% ou 40% se for favorita),
     // assim um débito salvo com a % antiga se autocorrige sozinho, sem precisar reeditar nada.
@@ -7175,7 +7200,7 @@ async function enviarAssistNew() {
 
   const sem = getSemanaAtiva();
   const ctx = sem
-    ? `Semana ${sem.numero} - Região: ${sem.regiao}. Consultoras: ${sem.consultoras.length}. Atendidas: ${sem.consultoras.filter(foiAtendida).length}. Vendido: R$${sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0).toLocaleString('pt-BR')}. Recebido: R$${(sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0)+(sem.recebidoDebitosExternos||0)).toLocaleString('pt-BR')}. Com débito: ${sem.consultoras.filter(c=>c.debito>0).map(c=>c.nome+' R$'+(c.debito||0)).join(', ')}.`
+    ? `Semana ${sem.numero} - Região: ${sem.regiao}. Consultoras: ${sem.consultoras.length}. Atendidas: ${sem.consultoras.filter(foiAtendida).length}. Vendido: R$${sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0).toLocaleString('pt-BR')}. Recebido: R$${(sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0)+totalDebitosExternos(sem)).toLocaleString('pt-BR')}. Com débito: ${sem.consultoras.filter(c=>c.debito>0).map(c=>c.nome+' R$'+(c.debito||0)).join(', ')}.`
     : 'Nenhuma semana ativa no momento.';
 
   const system = `Você é o Assistente Comercial de um representante de cosméticos Romance. Responda de forma direta e profissional. Use negrito com ** para destacar. Dados da semana atual: ${ctx}`;
@@ -7309,6 +7334,9 @@ async function buscarFechamentoGeral(numero) {
           let din = (c.recebidoDinheiro || 0) + (c.recebidoOutros || 0);
           const naoClass = Math.max(0, (c.recebido || 0) - (pix + din));
           if (naoClass > 0) { if (c.formaPgto === 'pix') pix += naoClass; else din += naoClass; }
+          // Débito antigo pago separado (de outra nota, mesma semana) também conta como recebido
+          pix += c.debitoOutrasNotasPix || 0;
+          din += c.debitoOutrasNotasDinheiro || 0;
           tPix += pix; tDin += din;
           tDebito += (c.debito || 0);
           if (c.remarcarSemana) tRemSemana++;
@@ -7316,6 +7344,9 @@ async function buscarFechamentoGeral(numero) {
           if (c.parouDeVender) tParouVender++;
           if ((c.vendido || 0) > 0) tVendasCount++;
         });
+        // Débitos de semanas/regiões antigas pagos durante esta semana (fora das notas de venda)
+        tPix += totalDebitosExternosPix(sem);
+        tDin += totalDebitosExternosDinheiro(sem);
       }
 
       const cadastro = data.consultoras || [];
@@ -7853,7 +7884,7 @@ function renderDomingo() {
   if (ultimaSem) {
     const atendidas = ultimaSem.consultoras.filter(foiAtendida).length;
     const vendido = ultimaSem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
-    const recebido = ultimaSem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0) + (ultimaSem.recebidoDebitosExternos||0);
+    const recebido = ultimaSem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0) + totalDebitosExternos(ultimaSem);
     const pct = ultimaSem.meta > 0 ? Math.min(100,Math.round(recebido/ultimaSem.meta*100)) : 0;
     const pendRec = ultimaSem.consultoras.filter(c=>c.debito>0).reduce((a,c)=>a+(c.debito||0),0);
 
@@ -7942,7 +7973,7 @@ function gerarIniciativas(sem) {
   const iniciativas = [];
   const pendentes = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
-  const recebido = sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0) + (sem.recebidoDebitosExternos||0);
+  const recebido = sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0) + totalDebitosExternos(sem);
   const meta = sem.meta || DB.config.metaPadrao || 15000;
   const pct = meta > 0 ? Math.round(recebido/meta*100) : 0;
   const comDebito = pendentes.filter(c => c.debito > 0);
@@ -8270,7 +8301,7 @@ function mostrarFechamentoSemana() {
   if (!sem) return;
 
   const vendido  = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + (sem.recebidoDebitosExternos||0);
+  const recebido = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + totalDebitosExternos(sem);
   const meta     = sem.meta || 15000;
   const pct      = Math.min(100, Math.round(recebido/meta*100));
   const aPagarDeFech = c => {
@@ -8394,11 +8425,11 @@ function abrirDetalheRecebido() {
     totalPix += c.debitoOutrasNotasPix || 0;
     totalDin += c.debitoOutrasNotasDinheiro || 0;
   });
-  totalPix += sem.recebidoDebitosExternosPix || 0;
-  totalDin += sem.recebidoDebitosExternosDinheiro || 0;
+  totalPix += totalDebitosExternosPix(sem);
+  totalDin += totalDebitosExternosDinheiro(sem);
   const totalGeral  = comRecebido.reduce((a,c) => a+(c.recebido||0), 0)
                      + comDebitoAntigo.reduce((a,c) => a+(c.debitoOutrasNotasPago||0), 0)
-                     + (sem.recebidoDebitosExternos||0);
+                     + totalDebitosExternos(sem);
 
   document.getElementById('recebSemanaLabel').textContent = 'Semana ' + sem.numero + ' · ' + sem.regiao;
   document.getElementById('recebTotalPix').textContent = brl(totalPix);
@@ -8406,7 +8437,7 @@ function abrirDetalheRecebido() {
   document.getElementById('recebTotalGeral').textContent = brl(totalGeral);
 
   const lista = document.getElementById('recebLista');
-  if (comRecebido.length === 0 && comDebitoAntigo.length === 0 && !(sem.recebidoDebitosExternos>0)) {
+  if (comRecebido.length === 0 && comDebitoAntigo.length === 0 && !(sem.debitosExternosPagos && sem.debitosExternosPagos.length)) {
     lista.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:13px;padding:20px 0;">Nenhum recebimento registrado ainda.</div>';
   } else {
     const ordenada = [...comRecebido].sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
@@ -8442,21 +8473,23 @@ function abrirDetalheRecebido() {
           <button onclick="abrirCorrigirDebitoAntigo('${sem.id}','${c.id}')" style="flex-shrink:0;background:none;border:none;padding:4px;cursor:pointer;color:var(--ink-3);font-size:14px;">✎</button>
         </div>`;
     }).join('');
-    if ((sem.recebidoDebitosExternos||0) > 0) {
+    const externosOrdenados = [...(sem.debitosExternosPagos || [])].sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+    html += externosOrdenados.map((e, idx) => {
       const partesExt = [];
-      if (sem.recebidoDebitosExternosPix) partesExt.push('Pix: ' + brl(sem.recebidoDebitosExternosPix));
-      if (sem.recebidoDebitosExternosDinheiro) partesExt.push('Dinheiro: ' + brl(sem.recebidoDebitosExternosDinheiro));
+      if (e.pix) partesExt.push('Pix: ' + brl(e.pix));
+      if (e.dinheiro) partesExt.push('Dinheiro: ' + brl(e.dinheiro));
       if (!partesExt.length) partesExt.push('Forma não registrada');
-      html += `
+      const origem = e.semOrigem ? ' (Semana ' + e.semOrigem + ')' : '';
+      return `
         <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
-          <div style="width:22px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink-3);">${ordenada.length + debitoAntigoOrdenado.length + 1}</div>
+          <div style="width:22px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink-3);">${ordenada.length + debitoAntigoOrdenado.length + idx + 1}</div>
           <div style="flex:1;">
-            <div style="font-size:13px;font-weight:700;color:var(--ink);">Débitos de semanas/regiões antigas <span style="font-weight:700;color:var(--amber);">— pago nesta semana</span></div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink);">${e.nome} <span style="font-weight:700;color:var(--amber);">— Débito antigo de outra semana${origem}</span></div>
             <div style="font-size:11px;color:var(--ink-3);">${partesExt.join(' · ')}</div>
           </div>
-          <div style="font-size:14px;font-weight:800;color:var(--green);">${brl(sem.recebidoDebitosExternos)}</div>
+          <div style="font-size:14px;font-weight:800;color:var(--green);">${brl(e.valor)}</div>
         </div>`;
-    }
+    }).join('');
     lista.innerHTML = html;
   }
 
@@ -8688,7 +8721,7 @@ function renderRelatorio() {
   const atendidas  = elegiveis.filter(c => !busca || (c.nome||'').toLowerCase().includes(busca));
   const pendentes  = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido    = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido   = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + (sem.recebidoDebitosExternos||0);
+  const recebido   = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + totalDebitosExternos(sem);
   const debitos    = sem.consultoras.reduce((a,c) => {
     if (c.status !== 'concluida') return a;
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
@@ -8807,7 +8840,7 @@ async function gerarRelatorioIA() {
 
   const atendidas = sem.consultoras.filter(foiAtendida);
   const vendido   = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + (sem.recebidoDebitosExternos||0);
+  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + totalDebitosExternos(sem);
   const aPagarDeIA = c => {
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
     return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
@@ -8867,7 +8900,7 @@ function compartilharRelatorio() {
 
   const atendidas = sem.consultoras.filter(foiAtendida);
   const vendido   = sem.consultoras.reduce((a,c) => a+(c.vendido||0), 0);
-  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + (sem.recebidoDebitosExternos||0);
+  const recebido  = sem.consultoras.reduce((a,c) => a+(c.recebido||0)+(c.debitoOutrasNotasPago||0), 0) + totalDebitosExternos(sem);
   const aPagarDeSh = c => {
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
     return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
@@ -8949,7 +8982,7 @@ async function gerarPDF() {
   const inativas = sem.consultoras.filter(c => c.parouDeVender);
   const pend     = sem.consultoras.filter(c => c.status !== 'concluida');
   const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
-  const recebido= sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0) + (sem.recebidoDebitosExternos||0);
+  const recebido= sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0) + totalDebitosExternos(sem);
   const aPagar  = sem.consultoras.reduce((a,c)=>a+aPagarDe(c),0);
   const lucro   = sem.consultoras.reduce((a,c)=>a+lucroDe(c),0);
   const debitos = sem.consultoras.reduce((a,c)=>a+debitoDe(c),0);
@@ -9033,10 +9066,11 @@ async function gerarPDF() {
 
   // ── DÉBITOS ANTIGOS PAGOS (pagamentos de dívidas de notas/semanas anteriores)
   const debAntigosPagos = sem.consultoras.filter(c => (c.debitoOutrasNotasPago||0) > 0 || (c.debitoPagoAntigo||0) > 0);
-  if (debAntigosPagos.length) {
+  const debExternosPagos = sem.debitosExternosPagos || [];
+  if (debAntigosPagos.length || debExternosPagos.length) {
     chk(16);
     doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(15,10,20);
-    doc.text('DÉBITOS ANTIGOS PAGOS ('+debAntigosPagos.length+')', M, y); y+=5;
+    doc.text('DÉBITOS ANTIGOS PAGOS ('+(debAntigosPagos.length+debExternosPagos.length)+')', M, y); y+=5;
     let totalDebAntigo = 0;
     debAntigosPagos.forEach(c=>{
       chk(13);
@@ -9054,6 +9088,19 @@ async function gerarPDF() {
       if (mesmaNotaVal>0) detalhes.push('Junto com esta nota: '+brlP(mesmaNotaVal));
       doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(107,100,120);
       doc.text(detalhes.join('   ·   '), M+3, y+4);
+      y+=10;
+    });
+    debExternosPagos.forEach(e=>{
+      chk(13);
+      totalDebAntigo += e.valor||0;
+      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(15,10,20);
+      doc.text(e.nome+(e.cidade?' · '+e.cidade:''), M+3, y);
+      doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(10,143,92);
+      doc.text(brlP(e.valor||0), W-M-30, y);
+      y+=5;
+      const origem = e.semOrigem ? ' (Semana '+e.semOrigem+')' : '';
+      doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(107,100,120);
+      doc.text('De outra semana/região'+origem+': Pix '+brlP(e.pix||0)+' · Dinheiro '+brlP(e.dinheiro||0), M+3, y+4);
       y+=10;
     });
     doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(15,10,20);
