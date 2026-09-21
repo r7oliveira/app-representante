@@ -4195,6 +4195,39 @@ if (ACTIVE_PROFILE && ACTIVE_PROFILE.role === 'op') {
 }
 try { restaurarSessaoGoogle(); } catch(e) {}
 
+// Migração única: soma no Recebido da semana ativa os pagamentos de débitos de
+// semanas/regiões antigas que foram feitos ANTES desta correção existir (ficavam
+// registrados só na semana antiga e nunca apareciam no Recebido de hoje).
+function migrarRecebidoExterno() {
+  try {
+    DB.config = DB.config || {};
+    if (DB.config.migradoRecebidoExternoV1) return;
+    const semAtiva = getSemanaAtiva();
+    if (semAtiva) {
+      let total = 0, totalPix = 0, totalDin = 0;
+      (DB.semanas || []).forEach(s => {
+        if (s.id === semAtiva.id) return; // essa já conta certo sozinha
+        (s.consultoras || []).forEach(c => {
+          if ((c.debitoOutrasNotasPago||0) > 0) {
+            total    += c.debitoOutrasNotasPago || 0;
+            totalPix += c.debitoOutrasNotasPix || 0;
+            totalDin += c.debitoOutrasNotasDinheiro || 0;
+          }
+        });
+      });
+      if (total > 0) {
+        semAtiva.recebidoDebitosExternos = (semAtiva.recebidoDebitosExternos||0) + total;
+        semAtiva.recebidoDebitosExternosPix = (semAtiva.recebidoDebitosExternosPix||0) + totalPix;
+        semAtiva.recebidoDebitosExternosDinheiro = (semAtiva.recebidoDebitosExternosDinheiro||0) + totalDin;
+      }
+    }
+    DB.config.migradoRecebidoExternoV1 = true;
+    save();
+    renderSemana();
+  } catch(e) { console.error('Migração recebido externo falhou:', e); }
+}
+migrarRecebidoExterno();
+
 // Firebase refs
 let _db = null;
 let _docRef = null;
@@ -4244,6 +4277,7 @@ async function initFirebase() {
           DB.observacoes = DB.observacoes || [];
           DB.fcmTokens = DB.fcmTokens || []; DB.lives = DB.lives || []; DB.estrelas = DB.estrelas || []; DB.indicacoes = DB.indicacoes || []; DB.resgates = DB.resgates || [];
           localStorage.setItem(KEY, JSON.stringify(DB));
+          migrarRecebidoExterno();
           renderSemana();
         }
       }
