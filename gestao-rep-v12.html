@@ -5138,7 +5138,8 @@ function renderPagarDebitos() {
     if ((c.vendido||0) > 0) {
       const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
       const aPagarC = Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
-      return debitoRestante(aPagarC, c.recebido||0);
+      // Desconta pagamentos de débito antigo feitos separadamente (não entram em c.recebido)
+      return Math.max(0, debitoRestante(aPagarC, c.recebido||0) - (c.debitoOutrasNotasPago||0));
     }
     return c.debito || 0;
   };
@@ -5599,7 +5600,7 @@ function renderSemana() {
     if ((c.vendido||0) > 0) {
       const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
       const aPagarC = Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
-      return a + debitoRestante(aPagarC, c.recebido);
+      return a + Math.max(0, debitoRestante(aPagarC, c.recebido) - (c.debitoOutrasNotasPago||0));
     }
     // Senão, usa o débito registrado manualmente (ex: débito de outra nota)
     return a + (c.debito || 0);
@@ -8313,7 +8314,7 @@ function mostrarFechamentoSemana() {
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
     return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
   };
-  const debitoDeFech = c => (c.vendido||0) > 0 ? debitoRestante(aPagarDeFech(c), c.recebido||0) : (c.debito||0);
+  const debitoDeFech = c => (c.vendido||0) > 0 ? Math.max(0, debitoRestante(aPagarDeFech(c), c.recebido||0) - (c.debitoOutrasNotasPago||0)) : (c.debito||0);
   const comDebito = sem.consultoras.filter(c => debitoDeFech(c) > 0);
   const totalDeb  = comDebito.reduce((a,c) => a+debitoDeFech(c), 0);
 
@@ -8644,7 +8645,7 @@ function abrirDetalheCobrancas() {
     if ((c.vendido||0) > 0) {
       const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
       const aPagarC = Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
-      return debitoRestante(aPagarC, c.recebido);
+      return Math.max(0, debitoRestante(aPagarC, c.recebido) - (c.debitoOutrasNotasPago||0));
     }
     return c.debito || 0;
   }
@@ -8732,7 +8733,7 @@ function renderRelatorio() {
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
     if ((c.vendido||0) > 0) {
       const aPagarC = Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
-      return a + debitoRestante(aPagarC, c.recebido);
+      return a + Math.max(0, debitoRestante(aPagarC, c.recebido) - (c.debitoOutrasNotasPago||0));
     }
     return a + (c.debito || 0);
   }, 0);
@@ -8778,7 +8779,7 @@ function renderRelatorio() {
       const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
       const aPagarC = (c.aPagar||0) > 0 ? c.aPagar : Math.round((c.vendido||0) * (100-comissaoPctC)/100 * 100) / 100;
       const lucroC  = Math.round((c.vendido||0) * (100-comissaoPctC)/100 * 0.18 * 100) / 100;
-      const debitoC = (c.vendido||0) > 0 ? debitoRestante(aPagarC, c.recebido||0) : (c.debito || 0);
+      const debitoC = (c.vendido||0) > 0 ? Math.max(0, debitoRestante(aPagarC, c.recebido||0) - (c.debitoOutrasNotasPago||0)) : (c.debito || 0);
       const pixC = c.recebidoPix || 0;
       const dinC = c.recebidoDinheiro || 0;
       const isRemarcada = !!(c.remarcarMes || c.remarcarSemana);
@@ -8850,7 +8851,7 @@ async function gerarRelatorioIA() {
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
     return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
   };
-  const debitoDeIA = c => (c.vendido||0) > 0 ? debitoRestante(aPagarDeIA(c), c.recebido||0) : (c.debito||0);
+  const debitoDeIA = c => (c.vendido||0) > 0 ? Math.max(0, debitoRestante(aPagarDeIA(c), c.recebido||0) - (c.debitoOutrasNotasPago||0)) : (c.debito||0);
   const debitos   = sem.consultoras.reduce((a,c) => a + debitoDeIA(c), 0);
   const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
   const meta      = sem.meta || 15000;
@@ -8910,7 +8911,7 @@ function compartilharRelatorio() {
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
     return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
   };
-  const debitoDeSh = c => (c.vendido||0) > 0 ? debitoRestante(aPagarDeSh(c), c.recebido||0) : (c.debito||0);
+  const debitoDeSh = c => (c.vendido||0) > 0 ? Math.max(0, debitoRestante(aPagarDeSh(c), c.recebido||0) - (c.debitoOutrasNotasPago||0)) : (c.debito||0);
   const debitos   = sem.consultoras.reduce((a,c) => a + debitoDeSh(c), 0);
   const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
 
@@ -8980,7 +8981,7 @@ async function gerarPDF() {
     return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
   };
   const lucroDe = c => Math.round(aPagarDe(c) * 0.18 * 100) / 100;
-  const debitoDe = c => (c.vendido||0) > 0 ? debitoRestante(aPagarDe(c), c.recebido||0) : (c.debito||0);
+  const debitoDe = c => (c.vendido||0) > 0 ? Math.max(0, debitoRestante(aPagarDe(c), c.recebido||0) - (c.debitoOutrasNotasPago||0)) : (c.debito||0);
 
   const atend    = sem.consultoras.filter(foiAtendida);
   const remarc   = sem.consultoras.filter(c => c.status === 'concluida' && !c.parouDeVender && (c.remarcarSemana || c.remarcarMes));
