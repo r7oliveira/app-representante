@@ -461,7 +461,7 @@ input[type="time"]{max-width:100%;}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
         <div class="hero-week-label" id="semanaNumero">Semana —</div>
         <div style="display:flex;align-items:center;gap:10px;">
-          <div id="syncStatus" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);">● Carregando</div>
+          <div id="syncStatus" onclick="forcarSincronizacao()" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;">● Carregando</div>
           <button onclick="goTo('assist-new')" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:5px 10px;cursor:pointer;">
             <span style="font-size:12px;">✦</span>
             <span style="font-size:11px;font-weight:700;color:white;">Assistente</span>
@@ -4303,6 +4303,44 @@ async function initFirebase() {
     console.error('Firebase erro:', e);
     document.getElementById('syncStatus').textContent = '● Local';
     document.getElementById('syncStatus').style.color = '#FFD060';
+  }
+}
+
+// Puxa manualmente os dados mais recentes do Firestore. Útil quando o app fica muito
+// tempo aberto e a conexão em tempo real trava (mostra "Sincronizado" mas fica com
+// dados antigos) — tocar no status força buscar a versão mais nova de novo.
+async function forcarSincronizacao() {
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  if (!_docRef) {
+    // Nunca conseguiu conectar nessa sessão — tenta iniciar o Firebase do zero
+    el.textContent = '● Conectando...';
+    el.style.color = 'rgba(255,255,255,.6)';
+    await initFirebase();
+    return;
+  }
+  el.textContent = '● Atualizando...';
+  el.style.color = 'rgba(255,255,255,.6)';
+  try {
+    const snap = await _docRef.get({ source: 'server' });
+    if (snap.exists) {
+      const remoto = snap.data();
+      if (remoto && (remoto.seq || 0) > DB.seq) {
+        DB = remoto;
+        DB.agenda = DB.agenda || blankAgenda();
+        DB.observacoes = DB.observacoes || [];
+        DB.fcmTokens = DB.fcmTokens || []; DB.lives = DB.lives || []; DB.estrelas = DB.estrelas || []; DB.indicacoes = DB.indicacoes || []; DB.resgates = DB.resgates || [];
+        localStorage.setItem(KEY, JSON.stringify(DB));
+        migrarRecebidoExterno();
+        renderSemana();
+      }
+    }
+    el.textContent = '● Sincronizado';
+    el.style.color = '#6EF0B0';
+  } catch(e) {
+    console.error('Falha ao forçar sincronização:', e);
+    el.textContent = '● Erro sync';
+    el.style.color = '#FF9090';
   }
 }
 
@@ -9177,6 +9215,14 @@ if (!ACTIVE_PROFILE) {
 } else {
   goTo('semana');
   initFirebase();
+  // Depois de um tempo em segundo plano (app minimizado/tela bloqueada), o listener
+  // em tempo real do Firestore pode ficar "travado" mostrando Sincronizado com dados
+  // antigos. Ao voltar pro app, força buscar a versão mais recente sozinho.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && typeof forcarSincronizacao === 'function') {
+      forcarSincronizacao();
+    }
+  });
 }
 </script>
 <!-- ══════════════════════════════════════════
