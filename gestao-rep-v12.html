@@ -461,7 +461,7 @@ input[type="time"]{max-width:100%;}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
         <div class="hero-week-label" id="semanaNumero">Semana —</div>
         <div style="display:flex;align-items:center;gap:10px;">
-          <div id="syncStatus" onclick="forcarSincronizacao()" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;">● Carregando</div>
+          <div id="syncStatus" onclick="sincronizarManual()" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;">● Carregando</div>
           <button onclick="goTo('assist-new')" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:5px 10px;cursor:pointer;">
             <span style="font-size:12px;">✦</span>
             <span style="font-size:11px;font-weight:700;color:white;">Assistente</span>
@@ -4361,6 +4361,54 @@ function adotarRemoto(remoto) {
   DB.observacoes = DB.observacoes || [];
   DB.fcmTokens = DB.fcmTokens || []; DB.lives = DB.lives || []; DB.estrelas = DB.estrelas || []; DB.indicacoes = DB.indicacoes || []; DB.resgates = DB.resgates || [];
   try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e) {}
+}
+
+const APP_BUILD = 'sync-v3';
+
+function resumoDados(d) {
+  const sem = d && (d.semanas || []).find(x => x.id === d.semanaAtiva);
+  if (!sem) return 'sem semana ativa';
+  const cs = sem.consultoras || [];
+  const atend = cs.filter(foiAtendida).length;
+  const vend = cs.reduce((a, c) => a + (c.vendido || 0), 0);
+  const rec = cs.reduce((a, c) => a + (c.recebido || 0), 0);
+  const v = versaoDados(d);
+  const quando = v ? new Date(v).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) + (d.updatedAt ? '' : ' (estimada)') : 'desconhecida';
+  return 'Semana ' + sem.numero + ' · ' + atend + '/' + cs.length + ' atendidas · vendido ' + brl(vend) + ' · recebido ' + brl(rec) + '\nÚltima alteração: ' + quando;
+}
+
+// Toque no "Sincronizado": compara este aparelho com o servidor e deixa VOCÊ escolher
+// qual versão vale quando elas forem diferentes (serve também de diagnóstico).
+async function sincronizarManual() {
+  const el = document.getElementById('syncStatus');
+  if (!_docRef) { await forcarSincronizacao(); return; }
+  if (el) { el.textContent = '● Comparando...'; el.style.color = 'rgba(255,255,255,.6)'; }
+  try {
+    const snap = await _docRef.get({ source: 'server' });
+    const remoto = snap.exists ? snap.data() : null;
+    const rLocal = resumoDados(DB), rServ = resumoDados(remoto);
+    if (!remoto) {
+      await _docRef.set(DB);
+      alert('O servidor estava vazio — enviei os dados deste aparelho.\n\n(versão ' + APP_BUILD + ')');
+    } else if (rLocal === rServ) {
+      alert('Este aparelho e o servidor estão iguais ✔\n\n' + rServ + '\n\n(versão ' + APP_BUILD + ')');
+    } else {
+      const msg = 'SERVIDOR:\n' + rServ + '\n\nESTE APARELHO:\n' + rLocal + '\n\nOK = usar os dados do SERVIDOR aqui.\nCancelar = escolher outra opção.\n\n(versão ' + APP_BUILD + ')';
+      if (confirm(msg)) {
+        adotarRemoto(remoto);
+        renderSemana();
+      } else if (confirm('Então enviar os dados DESTE APARELHO para o servidor (substitui o que está lá)?')) {
+        DB.updatedAt = Date.now();
+        try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e) {}
+        await _docRef.set(DB);
+      }
+    }
+    if (el) { el.textContent = '● Sincronizado'; el.style.color = '#6EF0B0'; }
+  } catch(e) {
+    console.error('Falha ao comparar:', e);
+    if (el) { el.textContent = '● Erro sync'; el.style.color = '#FF9090'; }
+    alert('Não consegui falar com o servidor: ' + (e.message || e));
+  }
 }
 
 function save() {
