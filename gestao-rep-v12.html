@@ -2245,7 +2245,7 @@ input[type="time"]{max-width:100%;}
       </div>
 
       <!-- ═══ 6. EVOLUÇÃO DE VENDAS ═══ -->
-      <div style="font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;">Evolução de Vendas</div>
+      <div style="font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;">Evolução do A Pagar</div>
       <div class="card" style="padding:14px 16px;margin-bottom:16px;" id="fgEvolucao"></div>
 
       <!-- ═══ 7. PERFORMANCE POR TABLET ═══ -->
@@ -7659,7 +7659,11 @@ function recomputeFechamentoGeral() {
   if (!historico.length) {
     document.getElementById('fgEvolucao').innerHTML = '<div style="font-size:12px;color:var(--ink-3);text-align:center;padding:6px 0;">Sem histórico de semanas suficiente ainda.</div>';
   } else {
-    const valores = historico.map(s => (s.consultoras||[]).reduce((a,c) => a + (c.vendido||0), 0));
+    const aPagarDeEvol = c => {
+      const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
+      return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
+    };
+    const valores = historico.map(s => (s.consultoras||[]).reduce((a,c) => a + aPagarDeEvol(c), 0));
     const maxV = Math.max(1, ...valores);
     let variacaoTxt = '';
     if (valores.length >= 2) {
@@ -8143,10 +8147,10 @@ function gerarIniciativas(sem) {
   if (semFav.length > 0) {
     const pedidoMin = 400;
     const potVendas = semFav.length * pedidoMin;
-    const potLucro  = Math.round(semFav.length * pedidoMin * 0.70 * 0.18 * 100) / 100;
+    const potLucro  = Math.round(semFav.length * pedidoMin * 0.70 * 0.20 * 100) / 100;
     iniciativas.push({
       cor:'var(--amber)', tag:'Oportunidade', tempo:'esta semana',
-      texto:`<strong>${semFav.length} consultoras</strong> sem pedido favorita. Pedido mínimo R$ 400 × ${semFav.length} = <strong>${brl(potVendas)}</strong> em vendas · Seu lucro de 18%: <strong style="color:var(--green)">${brl(potLucro)}</strong>`,
+      texto:`<strong>${semFav.length} consultoras</strong> sem pedido favorita. Pedido mínimo R$ 400 × ${semFav.length} = <strong>${brl(potVendas)}</strong> em vendas · Seu lucro de 20%: <strong style="color:var(--green)">${brl(potLucro)}</strong>`,
       acao: null, fn: null
     });
   }
@@ -8862,7 +8866,7 @@ function renderRelatorio() {
     }
     return a + (c.debito || 0);
   }, 0);
-  const lucro      = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
+  const lucro      = Math.round(recebido * 0.20 * 100) / 100;
   const meta       = sem.meta || 15000;
   const aPagarTotal = sem.consultoras.reduce((a,c) => a + (c.aPagar||0), 0);
   const pct        = Math.min(100, Math.round(recebido/meta*100));
@@ -8883,7 +8887,7 @@ function renderRelatorio() {
         <div style="color:white;font-size:16px;font-weight:800;">${brl(recebido)}</div>
       </div>
       <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 12px;">
-        <div style="color:rgba(255,255,255,.6);font-size:10px;font-weight:600;text-transform:uppercase;margin-bottom:3px;">Seu lucro (18%)</div>
+        <div style="color:rgba(255,255,255,.6);font-size:10px;font-weight:600;text-transform:uppercase;margin-bottom:3px;">Seu lucro (20%)</div>
         <div style="color:#6EF0B0;font-size:16px;font-weight:800;">${brl(lucro)}</div>
       </div>
       <div style="background:rgba(255,255,255,.15);border-radius:12px;padding:10px 12px;">
@@ -8903,7 +8907,7 @@ function renderRelatorio() {
     html += atendidas.map(c => {
       const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
       const aPagarC = (c.aPagar||0) > 0 ? c.aPagar : Math.round((c.vendido||0) * (100-comissaoPctC)/100 * 100) / 100;
-      const lucroC  = Math.round((c.vendido||0) * (100-comissaoPctC)/100 * 0.18 * 100) / 100;
+      const lucroC  = Math.round((c.recebido||0) * 0.20 * 100) / 100;
       const debitoC = (c.vendido||0) > 0 ? Math.max(0, debitoRestante(aPagarC, c.recebido||0) - (c.debitoOutrasNotasPago||0)) : (c.debito || 0);
       const pixC = c.recebidoPix || 0;
       const dinC = c.recebidoDinheiro || 0;
@@ -8978,7 +8982,7 @@ async function gerarRelatorioIA() {
   };
   const debitoDeIA = c => (c.vendido||0) > 0 ? Math.max(0, debitoRestante(aPagarDeIA(c), c.recebido||0) - (c.debitoOutrasNotasPago||0)) : (c.debito||0);
   const debitos   = sem.consultoras.reduce((a,c) => a + debitoDeIA(c), 0);
-  const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
+  const lucro     = Math.round(recebido * 0.20 * 100) / 100;
   const meta      = sem.meta || 15000;
   const pct       = Math.min(100, Math.round(recebido/meta*100));
 
@@ -8993,7 +8997,7 @@ Dados da Semana ${sem.numero} — ${sem.regiao}:
 - Vendido: ${brl(vendido)}
 - Recebido: ${brl(recebido)} (${pct}% da meta)
 - A receber (débitos): ${brl(debitos)}
-- Seu lucro estimado (18% sobre 70%): ${brl(lucro)}
+- Seu lucro estimado (20% do recebido): ${brl(lucro)}
 - Consultoras atendidas: ${atendidas.length} de ${sem.consultoras.length}
 
 Consultoras atendidas:
@@ -9038,7 +9042,7 @@ function compartilharRelatorio() {
   };
   const debitoDeSh = c => (c.vendido||0) > 0 ? Math.max(0, debitoRestante(aPagarDeSh(c), c.recebido||0) - (c.debitoOutrasNotasPago||0)) : (c.debito||0);
   const debitos   = sem.consultoras.reduce((a,c) => a + debitoDeSh(c), 0);
-  const lucro     = Math.round(vendido * 0.70 * 0.18 * 100) / 100;
+  const lucro     = Math.round(recebido * 0.20 * 100) / 100;
 
   let txt = `RELATÓRIO — Semana ${sem.numero} · ${sem.regiao}\n`;
   txt += `${'─'.repeat(30)}\n`;
@@ -9105,7 +9109,6 @@ async function gerarPDF() {
     const comissaoPctC = c.pedidoFavoritaFeito ? 40 : 30;
     return Math.round((c.vendido||0) * (100 - comissaoPctC) / 100 * 100) / 100;
   };
-  const lucroDe = c => Math.round(aPagarDe(c) * 0.18 * 100) / 100;
   const debitoDe = c => (c.vendido||0) > 0 ? Math.max(0, debitoRestante(aPagarDe(c), c.recebido||0) - (c.debitoOutrasNotasPago||0)) : (c.debito||0);
 
   const atend    = sem.consultoras.filter(foiAtendida);
@@ -9115,7 +9118,7 @@ async function gerarPDF() {
   const vendido = sem.consultoras.reduce((a,c)=>a+(c.vendido||0),0);
   const recebido= sem.consultoras.reduce((a,c)=>a+(c.recebido||0)+(c.debitoOutrasNotasPago||0),0) + totalDebitosExternos(sem);
   const aPagar  = sem.consultoras.reduce((a,c)=>a+aPagarDe(c),0);
-  const lucro   = sem.consultoras.reduce((a,c)=>a+lucroDe(c),0);
+  const lucro   = Math.round(recebido * 0.20 * 100) / 100;
   const debitos = sem.consultoras.reduce((a,c)=>a+debitoDe(c),0);
   const meta = sem.meta||15000;
   const pct  = Math.min(100,Math.round(recebido/meta*100));
@@ -9127,7 +9130,7 @@ async function gerarPDF() {
   doc.text('RESUMO GERAL', M, y); y+=5;
   const cW=(W-M*2-4)/2;
   [[brlP(aPagar),'A PAGAR (70%)',brlP(vendido),[248,240,245]],[brlP(recebido),'RECEBIDO','Esta semana',[232,247,241]],
-   [brlP(lucro),'SEU LUCRO (18%)','Sobre valor líquido',[232,247,241]],[brlP(debitos),'A RECEBER','Pendentes',[254,240,238]]]
+   [brlP(lucro),'SEU LUCRO (20%)','Sobre o recebido',[232,247,241]],[brlP(debitos),'A RECEBER','Pendentes',[254,240,238]]]
   .forEach(([val,lbl,sub,bg],i)=>{
     const cx=M+(i%2)*(cW+4), cy=y+Math.floor(i/2)*22;
     fill(cx,cy,cW,19,...bg);
@@ -9163,7 +9166,7 @@ async function gerarPDF() {
     chk(38);
     const vd=c.vendido||0;
     const ap=aPagarDe(c);
-    const lc=lucroDe(c);
+    const lc=Math.round((c.recebido||0) * 0.20 * 100) / 100;
     const db=debitoDe(c);
     const pixV=c.recebidoPix||0, dinV=c.recebidoDinheiro||0;
     const pago=c.recebido||(pixV+dinV);
