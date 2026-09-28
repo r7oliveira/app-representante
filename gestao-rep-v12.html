@@ -5997,15 +5997,15 @@ function abrirModalAdicionarConsultora() {
   const sem = getSemanaAtiva();
   if (!sem) return;
 
-  // Consultoras do cadastro mestre que ainda não estão na semana
+  // Consultoras do cadastro mestre, da MESMA região desta semana, que ainda não estão na semana
   const idsNaSemana = new Set(sem.consultoras.map(c => c.id));
-  const disponiveis = DB.consultoras.filter(c => c.status !== 'inativa' && !idsNaSemana.has(c.id));
+  const disponiveis = DB.consultoras.filter(c => c.status !== 'inativa' && !idsNaSemana.has(c.id) && c.regiao === sem.regiao);
 
   document.getElementById('modalRegTitulo').textContent = 'Adicionar à Semana';
 
   if (!disponiveis.length) {
     document.getElementById('modalRegConteudo').innerHTML = `
-      <div style="text-align:center;padding:20px;color:var(--ink-3);">Todas as consultoras cadastradas já estão nesta semana.</div>
+      <div style="text-align:center;padding:20px;color:var(--ink-3);">Todas as consultoras cadastradas na região "${sem.regiao||''}" já estão nesta semana.</div>
       <button class="btn-ghost" onclick="fecharModal('modalRegistro');abrirModalConsultora()">+ Cadastrar nova consultora</button>`;
   } else {
     document.getElementById('modalRegConteudo').innerHTML = `
