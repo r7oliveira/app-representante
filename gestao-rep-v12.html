@@ -4363,7 +4363,7 @@ function adotarRemoto(remoto) {
   try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e) {}
 }
 
-const APP_BUILD = 'sync-v5';
+const APP_BUILD = 'sync-v6';
 
 function resumoDados(d) {
   const sem = d && (d.semanas || []).find(x => x.id === d.semanaAtiva);
@@ -9310,6 +9310,13 @@ if (!ACTIVE_PROFILE) {
       forcarSincronizacao();
     }
   });
+  // Mais uma rede de segurança: mesmo sem minimizar, confere com o servidor de tempos
+  // em tempos enquanto o app fica aberto (silencioso — só atualiza a tela se mudou algo).
+  setInterval(() => {
+    if (document.visibilityState === 'visible' && typeof forcarSincronizacao === 'function') {
+      forcarSincronizacao();
+    }
+  }, 120000);
 }
 </script>
 <!-- ══════════════════════════════════════════
