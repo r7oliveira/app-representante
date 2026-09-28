@@ -4363,7 +4363,7 @@ function adotarRemoto(remoto) {
   try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e) {}
 }
 
-const APP_BUILD = 'sync-v3';
+const APP_BUILD = 'sync-v5';
 
 function resumoDados(d) {
   const sem = d && (d.semanas || []).find(x => x.id === d.semanaAtiva);
@@ -4383,17 +4383,18 @@ async function sincronizarManual() {
   const el = document.getElementById('syncStatus');
   if (!_docRef) { await forcarSincronizacao(); return; }
   if (el) { el.textContent = '● Comparando...'; el.style.color = 'rgba(255,255,255,.6)'; }
+  const quemLogado = 'Login neste aparelho: ' + (ACTIVE_PROFILE ? (ACTIVE_PROFILE.nome || ACTIVE_PROFILE.id) + ' (id: ' + ACTIVE_PROFILE.id + ')' : 'nenhum') + '\nArquivo lido: representantes/' + USER_ID;
   try {
     const snap = await _docRef.get({ source: 'server' });
     const remoto = snap.exists ? snap.data() : null;
     const rLocal = resumoDados(DB), rServ = resumoDados(remoto);
     if (!remoto) {
       await _docRef.set(DB);
-      alert('O servidor estava vazio — enviei os dados deste aparelho.\n\n(versão ' + APP_BUILD + ')');
+      alert('O servidor estava vazio — enviei os dados deste aparelho.\n\n' + quemLogado + '\n\n(versão ' + APP_BUILD + ')');
     } else if (rLocal === rServ) {
-      alert('Este aparelho e o servidor estão iguais ✔\n\n' + rServ + '\n\n(versão ' + APP_BUILD + ')');
+      alert('Este aparelho e o servidor estão iguais ✔\n\n' + rServ + '\n\n' + quemLogado + '\n\nSe outra pessoa lançou dados e eles não aparecem aqui, confira nela mesma se o "Login neste aparelho" bate com o mesmo nome — cada login guarda numa gaveta separada no servidor.\n\n(versão ' + APP_BUILD + ')');
     } else {
-      const msg = 'SERVIDOR:\n' + rServ + '\n\nESTE APARELHO:\n' + rLocal + '\n\nOK = usar os dados do SERVIDOR aqui.\nCancelar = escolher outra opção.\n\n(versão ' + APP_BUILD + ')';
+      const msg = 'SERVIDOR:\n' + rServ + '\n\nESTE APARELHO:\n' + rLocal + '\n\n' + quemLogado + '\n\nOK = usar os dados do SERVIDOR aqui.\nCancelar = escolher outra opção.\n\n(versão ' + APP_BUILD + ')';
       if (confirm(msg)) {
         adotarRemoto(remoto);
         renderSemana();
@@ -4411,23 +4412,41 @@ async function sincronizarManual() {
   }
 }
 
+let _pendingSave = false;
+
+async function _flushSaveAgora() {
+  if (!_docRef || !_pendingSave) return;
+  clearTimeout(_syncTimeout);
+  _pendingSave = false;
+  try {
+    await _docRef.set(DB);
+    const el = document.getElementById('syncStatus');
+    if (el) { el.textContent = '● Sincronizado'; el.style.color = '#6EF0B0'; }
+  } catch(e) {
+    const el = document.getElementById('syncStatus');
+    if (el) { el.textContent = '● Erro sync'; el.style.color = '#FF9090'; }
+  }
+}
+
 function save() {
   DB.updatedAt = Date.now();
   try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e) {}
   if (_docRef) {
+    _pendingSave = true;
     clearTimeout(_syncTimeout);
-    _syncTimeout = setTimeout(async () => {
-      try {
-        await _docRef.set(DB);
-        document.getElementById('syncStatus').textContent = '● Sincronizado';
-        document.getElementById('syncStatus').style.color = '#6EF0B0';
-      } catch(e) {
-        document.getElementById('syncStatus').textContent = '● Erro sync';
-        document.getElementById('syncStatus').style.color = '#FF9090';
-      }
-    }, 1000);
+    // Debounce curto: várias edições seguidas viram um só envio, mas sem segurar
+    // demais — no celular é comum sair do app logo depois de lançar uma venda.
+    _syncTimeout = setTimeout(_flushSaveAgora, 400);
   }
 }
+
+// Rede de segurança: se o app for minimizado, trocado ou fechado com um envio ainda
+// pendente (dentro daquele meio segundo de espera), força mandar na hora — sem isso,
+// um lançamento feito e seguido de fechar o app pode nunca chegar no servidor.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') _flushSaveAgora();
+});
+window.addEventListener('pagehide', () => { _flushSaveAgora(); });
 
 function uid() { return 'id' + (DB.seq++) + Date.now().toString(36); }
 function adminUid() { return 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
