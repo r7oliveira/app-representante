@@ -4232,14 +4232,11 @@ function migrarRecebidoExterno() {
     }
     DB.config.migradoRecebidoExternoV1 = true;
     DB.config.migradoRecebidoExternoV2 = true;
-    // Sem isso, essa correção fica com a mesma "versão" (seq) de antes e pode ser
-    // silenciosamente apagada por uma cópia mais antiga vinda do Firebase no próximo sync.
-    if (mudou) DB.seq = (DB.seq || 1) + 1;
     save();
     renderSemana();
   } catch(e) { console.error('Migração recebido externo falhou:', e); }
 }
-migrarRecebidoExterno();
+// (a migração agora roda dentro do initFirebase, depois de alinhar com o servidor)
 
 // Firebase refs
 let _db = null;
@@ -4263,12 +4260,8 @@ async function initFirebase() {
     const snap = await _docRef.get();
     if (snap.exists) {
       const remoto = snap.data();
-      if (remoto && (remoto.seq || 0) > DB.seq) {
-        DB = remoto;
-        DB.agenda = DB.agenda || blankAgenda();
-        DB.observacoes = DB.observacoes || [];
-        DB.fcmTokens = DB.fcmTokens || []; DB.lives = DB.lives || []; DB.estrelas = DB.estrelas || []; DB.indicacoes = DB.indicacoes || []; DB.resgates = DB.resgates || [];
-        localStorage.setItem(KEY, JSON.stringify(DB));
+      if (deveAdotarRemoto(remoto)) {
+        adotarRemoto(remoto);
         renderSemana();
         console.log('Dados carregados do Firebase');
       } else {
@@ -4280,16 +4273,16 @@ async function initFirebase() {
       console.log('Dados iniciais enviados ao Firebase');
     }
 
+    // Só depois de alinhar com o servidor é seguro rodar a migração (antes ela rodava
+    // em cima de uma cópia local possivelmente desatualizada e "furava a fila").
+    migrarRecebidoExterno();
+
     // Listener em tempo real
     _docRef.onSnapshot((snap) => {
       if (snap.exists) {
         const remoto = snap.data();
-        if (remoto && (remoto.seq || 0) > DB.seq) {
-          DB = remoto;
-          DB.agenda = DB.agenda || blankAgenda();
-          DB.observacoes = DB.observacoes || [];
-          DB.fcmTokens = DB.fcmTokens || []; DB.lives = DB.lives || []; DB.estrelas = DB.estrelas || []; DB.indicacoes = DB.indicacoes || []; DB.resgates = DB.resgates || [];
-          localStorage.setItem(KEY, JSON.stringify(DB));
+        if (deveAdotarRemoto(remoto)) {
+          adotarRemoto(remoto);
           migrarRecebidoExterno();
           renderSemana();
         }
@@ -4325,12 +4318,8 @@ async function forcarSincronizacao() {
     const snap = await _docRef.get({ source: 'server' });
     if (snap.exists) {
       const remoto = snap.data();
-      if (remoto && (remoto.seq || 0) > DB.seq) {
-        DB = remoto;
-        DB.agenda = DB.agenda || blankAgenda();
-        DB.observacoes = DB.observacoes || [];
-        DB.fcmTokens = DB.fcmTokens || []; DB.lives = DB.lives || []; DB.estrelas = DB.estrelas || []; DB.indicacoes = DB.indicacoes || []; DB.resgates = DB.resgates || [];
-        localStorage.setItem(KEY, JSON.stringify(DB));
+      if (deveAdotarRemoto(remoto)) {
+        adotarRemoto(remoto);
         migrarRecebidoExterno();
         renderSemana();
       }
@@ -4344,7 +4333,38 @@ async function forcarSincronizacao() {
   }
 }
 
+// ── Controle de versão entre aparelhos ─────────────────────────────────────────
+// O contador `seq` só anda quando nasce um registro novo (uid()); editar vendas,
+// pagamentos e critérios NÃO mexia nele — então um aparelho com dados velhos podia
+// parecer "igual" (ou até "mais novo") que o outro e nunca puxava as atualizações.
+// Agora cada save() carimba `updatedAt`, e a comparação usa esse carimbo.
+function versaoDados(d) {
+  if (!d) return 0;
+  if (d.updatedAt) return d.updatedAt;
+  // Dados antigos (sem carimbo): usa a visita mais recente registrada como referência
+  let max = 0;
+  (d.semanas || []).forEach(s => (s.consultoras || []).forEach(c => {
+    const t = c.ultimaVisita ? Date.parse(c.ultimaVisita) : 0;
+    if (t > max) max = t;
+  }));
+  return max;
+}
+function deveAdotarRemoto(remoto) {
+  if (!remoto) return false;
+  const rv = versaoDados(remoto), lv = versaoDados(DB);
+  if (rv !== lv) return rv > lv;
+  return (remoto.seq || 0) > (DB.seq || 0);
+}
+function adotarRemoto(remoto) {
+  DB = remoto;
+  DB.agenda = DB.agenda || blankAgenda();
+  DB.observacoes = DB.observacoes || [];
+  DB.fcmTokens = DB.fcmTokens || []; DB.lives = DB.lives || []; DB.estrelas = DB.estrelas || []; DB.indicacoes = DB.indicacoes || []; DB.resgates = DB.resgates || [];
+  try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e) {}
+}
+
 function save() {
+  DB.updatedAt = Date.now();
   try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e) {}
   if (_docRef) {
     clearTimeout(_syncTimeout);
