@@ -8430,6 +8430,17 @@ async function gerarPDFConsultorasRegiao() {
     return semanasComEla.length ? { reg: semanasComEla[0].consultoras.find(x => x.id === c.id), sem: semanasComEla[0] } : null;
   };
 
+  // Ticket médio: média do valor vendido nas últimas 3 semanas em que ela foi atendida.
+  const ticketMedioDe = (c) => {
+    const semanasComEla = [...(DB.semanas || [])]
+      .filter(s => (s.consultoras || []).some(x => x.id === c.id && x.status === 'concluida'))
+      .sort((a, b) => (b.numero || 0) - (a.numero || 0))
+      .slice(0, 3);
+    if (!semanasComEla.length) return null;
+    const soma = semanasComEla.reduce((a, s) => a + (s.consultoras.find(x => x.id === c.id).vendido || 0), 0);
+    return { valor: soma / semanasComEla.length, qtdSemanas: semanasComEla.length };
+  };
+
   const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa')
     .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
   const inativas = DB.consultoras.filter(c => c.regiao === regiao && c.status === 'inativa')
@@ -8448,7 +8459,8 @@ async function gerarPDFConsultorasRegiao() {
 
   const cardConsultora = (c, i) => {
     const ultimo = ultimoRegistroDe(c);
-    const alturaExtra = ultimo ? 16 : 0;
+    const ticket = ticketMedioDe(c);
+    const alturaExtra = ultimo ? 28 : 0;
     chk(46 + alturaExtra);
     fill(M, y, W - M * 2, 44 + alturaExtra, ...(i % 2 === 0 ? [252, 251, 250] : [255, 255, 255]));
     doc.setDrawColor(220, 215, 225); doc.setLineWidth(0.2);
@@ -8475,20 +8487,28 @@ async function gerarPDFConsultorasRegiao() {
     const linhaBase = rota ? 37.5 : 30.5;
     if (ultimo) {
       const scoreAtual = calcScore(ultimo.reg);
+      const favorita = !!ultimo.reg.pedidoFavoritaFeito;
       doc.setDrawColor(220, 215, 225);
       doc.line(M + 4, y + linhaBase, W - M - 4, y + linhaBase);
       doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(150, 150, 160);
       doc.text('Semana ' + ultimo.sem.numero + ' (mais recente)', M + 4, y + linhaBase + 5);
-      const cols = [['Score', scoreAtual, scoreAtual >= 80 ? [10, 143, 92] : scoreAtual >= 50 ? [183, 138, 59] : [184, 90, 85]],
-                    ['Vendido', brlP(ultimo.reg.vendido || 0), [15, 10, 20]],
-                    ['Recebido', brlP(ultimo.reg.recebido || 0), [10, 143, 92]]];
+      const colW = (W - M * 2 - 8) / 4;
+      const cols = [
+        ['Score', scoreAtual, scoreAtual >= 80 ? [10, 143, 92] : scoreAtual >= 50 ? [183, 138, 59] : [184, 90, 85]],
+        ['Vendido', brlP(ultimo.reg.vendido || 0), [15, 10, 20]],
+        ['Recebido', brlP(ultimo.reg.recebido || 0), [10, 143, 92]],
+        ['Favorita', favorita ? 'Sim' : 'Não', favorita ? [10, 143, 92] : [184, 90, 85]],
+      ];
       cols.forEach(([lbl, v, clr], vi) => {
-        const vx = M + 4 + vi * ((W - M * 2 - 8) / 3);
+        const vx = M + 4 + vi * colW;
         doc.setFont('helvetica', 'normal'); doc.setFontSize(6); doc.setTextColor(150, 150, 160);
         doc.text(lbl, vx, y + linhaBase + 10);
         doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...clr);
         doc.text(String(v), vx, y + linhaBase + 14.5);
       });
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(107, 100, 120);
+      const ticketTxt = ticket ? 'Ticket médio (últimas ' + ticket.qtdSemanas + ' semana' + (ticket.qtdSemanas > 1 ? 's' : '') + '): ' + brlP(ticket.valor) : 'Ticket médio: —';
+      doc.text(ticketTxt, M + 4, y + linhaBase + 21);
     } else {
       doc.setFont('helvetica', 'italic'); doc.setFontSize(7.5); doc.setTextColor(150, 150, 160);
       doc.text('Ainda sem nenhum atendimento registrado', M + 4, y + linhaBase + 5);
