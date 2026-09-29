@@ -4214,7 +4214,7 @@ try { restaurarSessaoGoogle(); } catch(e) {}
 function migrarRecebidoExterno() {
   try {
     DB.config = DB.config || {};
-    if (DB.config.migradoRecebidoExternoV2) return;
+    if (DB.config.migradoRecebidoExternoV3) return;
     const semAtiva = getSemanaAtiva();
     let mudou = false;
     if (semAtiva) {
@@ -4224,16 +4224,23 @@ function migrarRecebidoExterno() {
         if (s.id === semAtiva.id) return; // essa já conta certo sozinha
         (s.consultoras || []).forEach(c => {
           const chave = s.id + ':' + c.id;
-          if ((c.debitoOutrasNotasPago||0) > 0 && !jaMigrados.has(chave)) {
-            semAtiva.debitosExternosPagos.push({
-              nome: c.nome,
-              cidade: c.cidade || '',
-              valor: c.debitoOutrasNotasPago || 0,
-              pix: c.debitoOutrasNotasPix || 0,
-              dinheiro: c.debitoOutrasNotasDinheiro || 0,
-              semOrigem: s.numero,
-              migradoDe: chave
-            });
+          if ((c.debitoOutrasNotasPago||0) > 0) {
+            if (!jaMigrados.has(chave)) {
+              semAtiva.debitosExternosPagos.push({
+                nome: c.nome,
+                cidade: c.cidade || '',
+                valor: c.debitoOutrasNotasPago || 0,
+                pix: c.debitoOutrasNotasPix || 0,
+                dinheiro: c.debitoOutrasNotasDinheiro || 0,
+                semOrigem: s.numero,
+                migradoDe: chave
+              });
+            }
+            // Limpa na semana de origem — senão esse valor conta como recebido tanto
+            // lá (onde nunca entrou o dinheiro de fato) quanto aqui na semana ativa.
+            c.debitoOutrasNotasPago = 0;
+            c.debitoOutrasNotasPix = 0;
+            c.debitoOutrasNotasDinheiro = 0;
             mudou = true;
           }
         });
@@ -4245,6 +4252,8 @@ function migrarRecebidoExterno() {
     }
     DB.config.migradoRecebidoExternoV1 = true;
     DB.config.migradoRecebidoExternoV2 = true;
+    DB.config.migradoRecebidoExternoV3 = true;
+    if (mudou) DB.updatedAt = Date.now();
     save();
     renderSemana();
   } catch(e) { console.error('Migração recebido externo falhou:', e); }
@@ -5400,12 +5409,18 @@ function salvarPagarDebitoGeral() {
   if (!val || val <= 0) { fecharModal('modalRegistro'); return; }
   const forma = window._formaDebito || 'dinheiro';
   const outraNota = !!window._outraNotaPagarGeral;
+  const semAtiva = getSemanaAtiva();
+  const ehCruzada = outraNota && semAtiva && semAtiva.id !== ctx.semId;
 
   if (outraNota) {
     // Pagamento separado: NÃO entra no Pix/Dinheiro/Recebido da nota de venda desta semana.
-    cons.debitoOutrasNotasPago = (cons.debitoOutrasNotasPago || 0) + val;
-    if (forma === 'pix') cons.debitoOutrasNotasPix = (cons.debitoOutrasNotasPix || 0) + val;
-    else cons.debitoOutrasNotasDinheiro = (cons.debitoOutrasNotasDinheiro || 0) + val;
+    // Se for de outra semana e o dinheiro entrou agora (semana ativa diferente da semana da
+    // dívida), NÃO soma aqui também — só na semana ativa (abaixo), senão conta em dobro.
+    if (!ehCruzada) {
+      cons.debitoOutrasNotasPago = (cons.debitoOutrasNotasPago || 0) + val;
+      if (forma === 'pix') cons.debitoOutrasNotasPix = (cons.debitoOutrasNotasPix || 0) + val;
+      else cons.debitoOutrasNotasDinheiro = (cons.debitoOutrasNotasDinheiro || 0) + val;
+    }
   } else {
     cons.recebido = (cons.recebido || 0) + val;
     cons.ultimoPgto = val;
@@ -5419,8 +5434,7 @@ function salvarPagarDebitoGeral() {
 
   // Se a dívida é de outra semana/região antiga, o dinheiro ainda assim foi recebido
   // AGORA — conta como recebido na semana ativa também, pra bater com o caixa do dia.
-  const semAtiva = getSemanaAtiva();
-  if (outraNota && semAtiva && semAtiva.id !== ctx.semId) {
+  if (ehCruzada) {
     semAtiva.debitosExternosPagos = semAtiva.debitosExternosPagos || [];
     semAtiva.debitosExternosPagos.push({
       nome: cons.nome,
@@ -8352,7 +8366,7 @@ function renderGerenciar() {
     // atendida de verdade — não só a semana que está "ativa" no momento, que pode
     // ser de outra região e nunca vai ter o registro dela.
     const semanasComEla = [...(DB.semanas || [])]
-      .filter(s => (s.consultoras || []).some(x => x.id === c.id && x.status === 'concluida'))
+      .filter(s => (s.consultoras || []).some(x => x.id === c.id && foiAtendida(x)))
       .sort((a, b) => (b.numero || 0) - (a.numero || 0));
     if (semanasComEla.length) {
       const registro = semanasComEla[0].consultoras.find(x => x.id === c.id);
@@ -8435,15 +8449,16 @@ async function gerarPDFConsultorasRegiao() {
   // mesma lógica usada pro Score atualizado na tela de Consultoras.
   const ultimoRegistroDe = (c) => {
     const semanasComEla = [...(DB.semanas || [])]
-      .filter(s => (s.consultoras || []).some(x => x.id === c.id && x.status === 'concluida'))
+      .filter(s => (s.consultoras || []).some(x => x.id === c.id && foiAtendida(x)))
       .sort((a, b) => (b.numero || 0) - (a.numero || 0));
     return semanasComEla.length ? { reg: semanasComEla[0].consultoras.find(x => x.id === c.id), sem: semanasComEla[0] } : null;
   };
 
-  // Ticket médio: média do valor vendido nas últimas 3 semanas em que ela foi atendida.
+  // Ticket médio: média do valor vendido nas últimas 3 semanas em que ela foi atendida de fato
+  // (não conta semanas remarcadas, que não são um atendimento de verdade).
   const ticketMedioDe = (c) => {
     const semanasComEla = [...(DB.semanas || [])]
-      .filter(s => (s.consultoras || []).some(x => x.id === c.id && x.status === 'concluida'))
+      .filter(s => (s.consultoras || []).some(x => x.id === c.id && foiAtendida(x)))
       .sort((a, b) => (b.numero || 0) - (a.numero || 0))
       .slice(0, 3);
     if (!semanasComEla.length) return null;
