@@ -4549,7 +4549,7 @@ function _statsFromSemana(sem, metaPadrao) {
 function _statsSemanaPessoa(data) {
   if (!data) return null;
   const semanas = data.semanas || [];
-  const sem = (data.semanaAtiva != null ? semanas.find(s => s.numero === data.semanaAtiva) : semanas[semanas.length-1]) || null;
+  const sem = (data.semanaAtiva != null ? semanas.find(s => s.id === data.semanaAtiva) : semanas[semanas.length-1]) || null;
   return _statsFromSemana(sem, data.config && data.config.metaPadrao);
 }
 
@@ -4594,7 +4594,7 @@ function abrirAdminPessoa(id) {
 }
 
 function adminMudarSemanaSelecionada(valor) {
-  _adminPessoaSemanaSel = valor ? Number(valor) : null;
+  _adminPessoaSemanaSel = valor || null;
   renderAdminPessoa();
 }
 
@@ -4627,23 +4627,23 @@ function adminSalvarMensagensProntas() {
 }
 
 function adminExcluirSemana() {
-  const id = _adminPessoaAtual;
-  const data = _adminDB[id];
+  const opId = _adminPessoaAtual;
+  const data = _adminDB[opId];
   if (!data) return;
   const semanas = data.semanas || [];
-  const defaultNumero = data.semanaAtiva != null ? data.semanaAtiva : (semanas.length ? semanas[semanas.length-1].numero : null);
-  const numeroEscolhido = _adminPessoaSemanaSel !== null ? _adminPessoaSemanaSel : defaultNumero;
-  const sem = semanas.find(s => s.numero === numeroEscolhido);
+  const defaultId = data.semanaAtiva != null ? data.semanaAtiva : (semanas.length ? semanas[semanas.length-1].id : null);
+  const idEscolhido = _adminPessoaSemanaSel !== null ? _adminPessoaSemanaSel : defaultId;
+  const sem = semanas.find(s => s.id === idEscolhido);
   if (!sem) return;
 
   if (!confirm(`Excluir a Semana ${sem.numero}${sem.regiao ? ' · ' + sem.regiao : ''}? Essa ação não pode ser desfeita.`)) return;
 
-  data.semanas = semanas.filter(s => s.numero !== numeroEscolhido);
-  if (data.semanaAtiva === numeroEscolhido) data.semanaAtiva = null;
+  data.semanas = semanas.filter(s => s.id !== idEscolhido);
+  if (data.semanaAtiva === idEscolhido) data.semanaAtiva = null;
   data.seq = (data.seq || 1) + 1;
   _adminPessoaSemanaSel = null;
 
-  _adminRefs[id].set(data).then(() => {
+  _adminRefs[opId].set(data).then(() => {
     renderAdminPessoa();
   }).catch(e => alert('Erro ao excluir: ' + e.message));
 }
@@ -4669,20 +4669,20 @@ function renderAdminPessoa() {
   document.getElementById('apMsgConfirmar').value = msgs.confirmarHorario || '';
 
   const semanas = data.semanas || [];
-  const defaultNumero = data.semanaAtiva != null ? data.semanaAtiva : (semanas.length ? semanas[semanas.length-1].numero : null);
-  const numeroEscolhido = _adminPessoaSemanaSel !== null ? _adminPessoaSemanaSel : defaultNumero;
+  const defaultId = data.semanaAtiva != null ? data.semanaAtiva : (semanas.length ? semanas[semanas.length-1].id : null);
+  const idEscolhido = _adminPessoaSemanaSel !== null ? _adminPessoaSemanaSel : defaultId;
 
   const selEl = document.getElementById('apSemanaSelect');
   if (!semanas.length) {
     selEl.innerHTML = '<option>Nenhuma semana registrada</option>';
   } else {
     selEl.innerHTML = [...semanas].reverse().map(s => {
-      const ativa = s.numero === data.semanaAtiva;
-      return `<option value="${s.numero}"${s.numero===numeroEscolhido?' selected':''}>Semana ${s.numero}${s.regiao ? ' · ' + s.regiao : ''}${ativa ? ' (ativa)' : ' (concluída)'}</option>`;
+      const ativa = s.id === data.semanaAtiva;
+      return `<option value="${s.id}"${s.id===idEscolhido?' selected':''}>Semana ${s.numero}${s.regiao ? ' · ' + s.regiao : ''}${ativa ? ' (ativa)' : ' (concluída)'}</option>`;
     }).join('');
   }
 
-  const semanaEscolhida = semanas.find(s => s.numero === numeroEscolhido) || null;
+  const semanaEscolhida = semanas.find(s => s.id === idEscolhido) || null;
   const st = _statsFromSemana(semanaEscolhida, data.config && data.config.metaPadrao);
   document.getElementById('apSemana').textContent = st.sem ? 'Semana ' + st.sem.numero : '—';
   document.getElementById('apAtendimentos').textContent = st.atendidas + '/' + st.previstas;
