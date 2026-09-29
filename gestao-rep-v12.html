@@ -4258,6 +4258,38 @@ function migrarRecebidoExterno() {
     renderSemana();
   } catch(e) { console.error('Migração recebido externo falhou:', e); }
 }
+
+// Correção pontual: 4 pagamentos que a migração V2 tinha atribuído à semana errada —
+// o representante confirmou que foram recebidos de fato já na Semana 36, não depois.
+function corrigirDebitosExternosSemana36() {
+  try {
+    DB.config = DB.config || {};
+    if (DB.config.corrigidoDebitosExternosSemana36) return;
+    const nomesCorretos = ['BERENICE FERREIRA DIAS', 'CIBELE DE OLIVEIRA DEOTTI', 'MARIA LOURDES MIRANDA DA SILVA', 'TATIANE ALVES DA ROSA'];
+    (DB.semanas || []).forEach(s => {
+      if (!s.debitosExternosPagos || !s.debitosExternosPagos.length) return;
+      const restantes = [];
+      s.debitosExternosPagos.forEach(e => {
+        const bate = e.semOrigem === 36 && nomesCorretos.includes((e.nome || '').toUpperCase());
+        if (!bate) { restantes.push(e); return; }
+        const destino = (DB.semanas || []).find(d => d.numero === 36 && d.id !== s.id && (d.consultoras || []).some(c => c.nome === e.nome));
+        const cons = destino && destino.consultoras.find(c => c.nome === e.nome);
+        if (cons) {
+          cons.debitoOutrasNotasPago = (cons.debitoOutrasNotasPago || 0) + e.valor;
+          cons.debitoOutrasNotasPix = (cons.debitoOutrasNotasPix || 0) + (e.pix || 0);
+          cons.debitoOutrasNotasDinheiro = (cons.debitoOutrasNotasDinheiro || 0) + (e.dinheiro || 0);
+        } else {
+          restantes.push(e); // não achou destino — mantém como estava, por segurança
+        }
+      });
+      s.debitosExternosPagos = restantes;
+    });
+    DB.config.corrigidoDebitosExternosSemana36 = true;
+    DB.updatedAt = Date.now();
+    save();
+    renderSemana();
+  } catch(e) { console.error('Correção pontual falhou:', e); }
+}
 // (a migração agora roda dentro do initFirebase, depois de alinhar com o servidor)
 
 // Firebase refs
@@ -4298,6 +4330,7 @@ async function initFirebase() {
     // Só depois de alinhar com o servidor é seguro rodar a migração (antes ela rodava
     // em cima de uma cópia local possivelmente desatualizada e "furava a fila").
     migrarRecebidoExterno();
+    corrigirDebitosExternosSemana36();
 
     // Listener em tempo real
     _docRef.onSnapshot((snap) => {
@@ -4306,6 +4339,7 @@ async function initFirebase() {
         if (deveAdotarRemoto(remoto)) {
           adotarRemoto(remoto);
           migrarRecebidoExterno();
+          corrigirDebitosExternosSemana36();
           renderSemana();
         }
       }
@@ -4343,6 +4377,7 @@ async function forcarSincronizacao() {
       if (deveAdotarRemoto(remoto)) {
         adotarRemoto(remoto);
         migrarRecebidoExterno();
+        corrigirDebitosExternosSemana36();
         renderSemana();
       }
     }
@@ -8707,6 +8742,36 @@ function registrarPgtoDebito(consId) {
   document.getElementById('fechRecebido').textContent = brl(novoRecebido);
 }
 
+// Corrige quando a migração automática (ou o registro do pagamento) atribuiu o
+// recebimento à semana errada — move o valor de volta pra semana em que o dinheiro
+// realmente entrou.
+function devolverDebitoExternoParaOrigem(semAtualId, idx) {
+  const semAtual = (DB.semanas || []).find(s => s.id === semAtualId);
+  if (!semAtual || !semAtual.debitosExternosPagos) return;
+  const entrada = semAtual.debitosExternosPagos[idx];
+  if (!entrada) return;
+
+  const candidatas = (DB.semanas || []).filter(s => s.numero === entrada.semOrigem && s.id !== semAtualId);
+  let destino = candidatas.find(s => (s.consultoras || []).some(c => c.nome === entrada.nome));
+  if (!destino) destino = candidatas[0];
+  if (!destino) { alert('Não encontrei a Semana ' + entrada.semOrigem + ' pra mover esse valor.'); return; }
+
+  const cons = destino.consultoras.find(c => c.nome === entrada.nome);
+  if (!cons) { alert('Não encontrei "' + entrada.nome + '" na Semana ' + entrada.semOrigem + '.'); return; }
+
+  if (!confirm('Mover ' + brl(entrada.valor) + ' de "' + entrada.nome + '" de volta para a Semana ' + entrada.semOrigem + '?')) return;
+
+  cons.debitoOutrasNotasPago = (cons.debitoOutrasNotasPago || 0) + entrada.valor;
+  cons.debitoOutrasNotasPix = (cons.debitoOutrasNotasPix || 0) + (entrada.pix || 0);
+  cons.debitoOutrasNotasDinheiro = (cons.debitoOutrasNotasDinheiro || 0) + (entrada.dinheiro || 0);
+
+  semAtual.debitosExternosPagos.splice(idx, 1);
+
+  save();
+  abrirDetalheRecebido();
+  renderSemana();
+}
+
 function abrirDetalheRecebido() {
   const sem = getSemanaAtiva();
   if (!sem) return;
@@ -8788,7 +8853,8 @@ function abrirDetalheRecebido() {
         </div>`;
     }).join('');
     const externosOrdenados = [...(sem.debitosExternosPagos || [])].sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
-    html += externosOrdenados.map((e, idx) => {
+    html += externosOrdenados.map((e) => {
+      const idxReal = (sem.debitosExternosPagos || []).indexOf(e);
       const partesExt = [];
       if (e.pix) partesExt.push('Pix: ' + brl(e.pix));
       if (e.dinheiro) partesExt.push('Dinheiro: ' + brl(e.dinheiro));
@@ -8796,12 +8862,13 @@ function abrirDetalheRecebido() {
       const origem = e.semOrigem ? ' (Semana ' + e.semOrigem + ')' : '';
       return `
         <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
-          <div style="width:22px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink-3);">${ordenada.length + debitoAntigoOrdenado.length + idx + 1}</div>
+          <div style="width:22px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink-3);">${ordenada.length + debitoAntigoOrdenado.length + externosOrdenados.indexOf(e) + 1}</div>
           <div style="flex:1;">
             <div style="font-size:13px;font-weight:700;color:var(--ink);">${e.nome} <span style="font-weight:700;color:var(--amber);">— Débito antigo de outra semana${origem}</span></div>
             <div style="font-size:11px;color:var(--ink-3);">${partesExt.join(' · ')}</div>
           </div>
           <div style="font-size:14px;font-weight:800;color:var(--green);">${brl(e.valor)}</div>
+          ${e.semOrigem ? `<button onclick="devolverDebitoExternoParaOrigem('${sem.id}',${idxReal})" title="Na verdade foi recebido na Semana ${e.semOrigem}, não aqui" style="background:none;border:none;font-size:15px;cursor:pointer;flex-shrink:0;">✎</button>` : ''}
         </div>`;
     }).join('');
     lista.innerHTML = html;
