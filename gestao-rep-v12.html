@@ -1914,9 +1914,12 @@ input[type="time"]{max-width:100%;}
     <div id="gerRegioesRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;"></div>
 
     <!-- Ativas -->
-    <div class="sec-title" style="padding-left:0;display:flex;align-items:center;justify-content:space-between;padding-right:0;">
+    <div class="sec-title" style="padding-left:0;display:flex;align-items:center;justify-content:space-between;padding-right:0;gap:8px;">
       <span>Consultoras ativas</span>
-      <button onclick="abrirModalConsultora()" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">+ Nova consultora</button>
+      <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+        <button onclick="gerarPDFConsultorasRegiao()" style="background:none;border:none;color:var(--ink-3);font-size:12px;font-weight:700;cursor:pointer;">⬇ PDF</button>
+        <button onclick="abrirModalConsultora()" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">+ Nova consultora</button>
+      </div>
     </div>
     <div id="gerListaAtivas"></div>
 
@@ -8334,10 +8337,18 @@ function renderGerenciar() {
 
   // Lista ativas
   const listaAt = document.getElementById('gerListaAtivas');
-  const semAtivaGer = getSemanaAtiva();
   const scoreAtualDe = (c) => {
-    const naSemana = semAtivaGer ? semAtivaGer.consultoras.find(x => x.id === c.id) : null;
-    return naSemana ? calcScore(naSemana) : calcScore(c);
+    // Olha a semana mais recente (de qualquer região) onde essa consultora foi
+    // atendida de verdade — não só a semana que está "ativa" no momento, que pode
+    // ser de outra região e nunca vai ter o registro dela.
+    const semanasComEla = [...(DB.semanas || [])]
+      .filter(s => (s.consultoras || []).some(x => x.id === c.id && x.status === 'concluida'))
+      .sort((a, b) => (b.numero || 0) - (a.numero || 0));
+    if (semanasComEla.length) {
+      const registro = semanasComEla[0].consultoras.find(x => x.id === c.id);
+      return calcScore(registro);
+    }
+    return calcScore(c);
   };
   if (!ativas.length) {
     listaAt.innerHTML = '<div style="text-align:center;padding:16px;color:var(--ink-3);font-size:13px;">Nenhuma consultora ativa nesta região.</div>';
@@ -8384,6 +8395,129 @@ function renderGerenciar() {
         </div>`
       ).join('') + '</div>';
   }
+}
+
+// PDF com a relação completa das consultoras da região selecionada na tela
+// "Consultoras" — nome, contato, dados de cadastro e o desempenho mais recente dela.
+async function gerarPDFConsultorasRegiao() {
+  const regiao = gerenciarRegiao;
+  if (!regiao) return;
+
+  if (!window.jspdf) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 16;
+  let y = 0;
+
+  const brlP = v => 'R$ ' + (v||0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fill = (x, yr, w, h, r, g, b) => { doc.setFillColor(r, g, b); doc.rect(x, yr, w, h, 'F'); };
+  const chk = (n) => { if (y + n > 272) { doc.addPage(); y = 16; } };
+
+  // Última semana (de qualquer região) onde a consultora foi de fato atendida —
+  // mesma lógica usada pro Score atualizado na tela de Consultoras.
+  const ultimoRegistroDe = (c) => {
+    const semanasComEla = [...(DB.semanas || [])]
+      .filter(s => (s.consultoras || []).some(x => x.id === c.id && x.status === 'concluida'))
+      .sort((a, b) => (b.numero || 0) - (a.numero || 0));
+    return semanasComEla.length ? { reg: semanasComEla[0].consultoras.find(x => x.id === c.id), sem: semanasComEla[0] } : null;
+  };
+
+  const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa')
+    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+  const inativas = DB.consultoras.filter(c => c.regiao === regiao && c.status === 'inativa')
+    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+
+  // ── CAPA
+  fill(0, 0, W, 42, 138, 0, 56);
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
+  doc.text('CONSULTORAS · ' + regiao, M, 20);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
+  doc.text(ativas.length + ' ativa' + (ativas.length !== 1 ? 's' : '') + (inativas.length ? ' · ' + inativas.length + ' inativa' + (inativas.length !== 1 ? 's' : '') : ''), M, 30);
+  doc.setFontSize(8.5);
+  doc.text(new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }), M, 37);
+  y = 52;
+
+  const cardConsultora = (c, i) => {
+    const ultimo = ultimoRegistroDe(c);
+    const alturaExtra = ultimo ? 16 : 0;
+    chk(46 + alturaExtra);
+    fill(M, y, W - M * 2, 44 + alturaExtra, ...(i % 2 === 0 ? [252, 251, 250] : [255, 255, 255]));
+    doc.setDrawColor(220, 215, 225); doc.setLineWidth(0.2);
+    doc.rect(M, y, W - M * 2, 44 + alturaExtra);
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(15, 10, 20);
+    doc.text((i + 1) + '. ' + c.nome, M + 4, y + 8);
+
+    const infoLinha1 = [c.telefone, c.cidade].filter(Boolean).join(' · ');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(107, 100, 120);
+    doc.text(infoLinha1 || '—', M + 4, y + 14);
+
+    const diaHora = [c.diaMelhor, c.horarioMelhor].filter(Boolean).join(' · ');
+    doc.text('Melhor dia/horário: ' + (diaHora || 'não definido'), M + 4, y + 19.5);
+
+    const rota = c.observacaoRota || c.obsRota || '';
+    doc.text('Bairro: ' + (c.bairro || '—') + (c.cpf ? '   ·   CPF: ' + c.cpf : ''), M + 4, y + 25);
+    if (rota) {
+      doc.setFont('helvetica', 'italic');
+      doc.text('Rota: ' + rota, M + 4, y + 30.5, { maxWidth: W - M * 2 - 8 });
+      doc.setFont('helvetica', 'normal');
+    }
+
+    const linhaBase = rota ? 37.5 : 30.5;
+    if (ultimo) {
+      const scoreAtual = calcScore(ultimo.reg);
+      doc.setDrawColor(220, 215, 225);
+      doc.line(M + 4, y + linhaBase, W - M - 4, y + linhaBase);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(150, 150, 160);
+      doc.text('Semana ' + ultimo.sem.numero + ' (mais recente)', M + 4, y + linhaBase + 5);
+      const cols = [['Score', scoreAtual, scoreAtual >= 80 ? [10, 143, 92] : scoreAtual >= 50 ? [183, 138, 59] : [184, 90, 85]],
+                    ['Vendido', brlP(ultimo.reg.vendido || 0), [15, 10, 20]],
+                    ['Recebido', brlP(ultimo.reg.recebido || 0), [10, 143, 92]]];
+      cols.forEach(([lbl, v, clr], vi) => {
+        const vx = M + 4 + vi * ((W - M * 2 - 8) / 3);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(6); doc.setTextColor(150, 150, 160);
+        doc.text(lbl, vx, y + linhaBase + 10);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...clr);
+        doc.text(String(v), vx, y + linhaBase + 14.5);
+      });
+    } else {
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(7.5); doc.setTextColor(150, 150, 160);
+      doc.text('Ainda sem nenhum atendimento registrado', M + 4, y + linhaBase + 5);
+    }
+
+    y += 44 + alturaExtra + 4;
+  };
+
+  chk(10);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(15, 10, 20);
+  doc.text('ATIVAS (' + ativas.length + ')', M, y); y += 6;
+  ativas.forEach((c, i) => cardConsultora(c, i));
+
+  if (inativas.length) {
+    chk(10);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(15, 10, 20);
+    doc.text('INATIVAS (' + inativas.length + ')', M, y); y += 6;
+    inativas.forEach((c, i) => cardConsultora(c, i));
+  }
+
+  const totalPag = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= totalPag; p++) {
+    doc.setPage(p);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(160, 155, 165);
+    doc.text('Gestão Representante · ' + regiao, M, 289);
+    doc.text('Página ' + p + ' de ' + totalPag, W - M - 22, 289);
+  }
+
+  doc.save('consultoras-' + regiao.toLowerCase().replace(/\s+/g, '-') + '.pdf');
 }
 
 function inativarConsultora(id) {
