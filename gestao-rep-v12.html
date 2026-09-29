@@ -496,6 +496,7 @@ input[type="time"]{max-width:100%;}
         <div class="hero-box" onclick="abrirDetalheRecebido()" style="cursor:pointer;">
           <div class="hero-box-label"><span class="hero-box-dot" style="background:var(--green);"></span>Recebido</div>
           <div class="hero-box-val" id="heroRecebidoNovo" style="color:var(--green);">R$ 0</div>
+          <div class="hero-box-sub" id="heroRecebidoPixDin" style="display:none;">Pix: — · Dinheiro: —</div>
         </div>
         <div class="hero-box" onclick="abrirDetalheCobrancas()" style="cursor:pointer;">
           <div class="hero-box-label"><span class="hero-box-dot" style="background:var(--red);"></span>Débitos</div>
@@ -5165,6 +5166,36 @@ function totalDebitosExternosPix(sem) {
 function totalDebitosExternosDinheiro(sem) {
   return (sem.debitosExternosPagos || []).reduce((a, e) => a + (e.dinheiro || 0), 0);
 }
+// Divide o recebido de uma consultora entre Pix e Dinheiro (mesma lógica usada no
+// detalhe do Recebido), pra poder somar o total da semana em qualquer tela.
+function splitRecebido(c) {
+  let pix = c.recebidoPix || 0;
+  let din = (c.recebidoDinheiro || 0) + (c.recebidoOutros || 0);
+  const naoClassificado = Math.max(0, (c.recebido||0) - (pix + din));
+  if (naoClassificado > 0) {
+    if (c.formaPgto === 'pix') pix += naoClassificado;
+    else din += naoClassificado; // 'dinheiro', 'ambos' ou não informado: entra como Dinheiro
+  }
+  return { pix, din };
+}
+// Total de Pix e Dinheiro recebidos na semana inteira (notas da semana + débitos
+// antigos pagos, da mesma nota ou de outra semana/região).
+function totalPixDinheiroSemana(sem) {
+  let pix = 0, din = 0;
+  sem.consultoras.forEach(c => {
+    if ((c.recebido||0) > 0) {
+      const s = splitRecebido(c);
+      pix += s.pix; din += s.din;
+    }
+    if ((c.debitoOutrasNotasPago||0) > 0) {
+      pix += c.debitoOutrasNotasPix || 0;
+      din += c.debitoOutrasNotasDinheiro || 0;
+    }
+  });
+  pix += totalDebitosExternosPix(sem);
+  din += totalDebitosExternosDinheiro(sem);
+  return { pix, din };
+}
 // Uma consultora só conta como "atendida" de fato quando o atendimento foi concluído
 // SEM remarcação. Se ela foi remarcada (semana ou mês), o atendimento ainda está em
 // aberto — ela só volta a contar como atendida quando for visitada de novo.
@@ -5758,6 +5789,8 @@ function renderSemana() {
     document.getElementById('heroRecebido').textContent = 'R$ 0';
     document.getElementById('heroRecebidoSub').textContent = 'Recebido: —';
     document.getElementById('heroRecebidoNovo').textContent = 'R$ 0';
+    const heroRecebidoPixDinEl0 = document.getElementById('heroRecebidoPixDin');
+    if (heroRecebidoPixDinEl0) heroRecebidoPixDinEl0.style.display = 'none';
     document.getElementById('heroCobrancas').textContent = 'R$ 0';
     document.getElementById('heroPendentes').textContent = '0';
     document.getElementById('cntAtendidas').textContent = '0';
@@ -5827,6 +5860,12 @@ function renderSemana() {
   document.getElementById('heroRecebido').textContent = brl(aPagarTotal);
   document.getElementById('heroRecebidoSub').textContent = 'Recebido: ' + brl(recebido);
   document.getElementById('heroRecebidoNovo').textContent = brl(recebido);
+  const pixDinSemana = totalPixDinheiroSemana(sem);
+  const heroRecebidoPixDinEl = document.getElementById('heroRecebidoPixDin');
+  if (heroRecebidoPixDinEl) {
+    heroRecebidoPixDinEl.style.display = '';
+    heroRecebidoPixDinEl.textContent = 'Pix: ' + brl(pixDinSemana.pix) + ' · Dinheiro: ' + brl(pixDinSemana.din);
+  }
   document.getElementById('heroCobrancas').textContent = brl(cobrancas);
   document.getElementById('heroPendentes').textContent = sem.consultoras.filter(c => c.debito > 0).length;
 
@@ -8775,20 +8814,6 @@ function devolverDebitoExternoParaOrigem(semAtualId, idx) {
 function abrirDetalheRecebido() {
   const sem = getSemanaAtiva();
   if (!sem) return;
-
-  // Para registros antigos (antes de existir o rastreio separado), infere
-  // a divisão Pix/Dinheiro a partir da "forma de pagamento" já salva.
-  // Sempre classifica como Pix ou Dinheiro (sem categoria "outros").
-  function splitRecebido(c) {
-    let pix = c.recebidoPix || 0;
-    let din = (c.recebidoDinheiro || 0) + (c.recebidoOutros || 0);
-    const naoClassificado = Math.max(0, (c.recebido||0) - (pix + din));
-    if (naoClassificado > 0) {
-      if (c.formaPgto === 'pix') pix += naoClassificado;
-      else din += naoClassificado; // 'dinheiro', 'ambos' ou não informado: entra como Dinheiro
-    }
-    return { pix, din };
-  }
 
   const comRecebido = sem.consultoras.filter(c => (c.recebido||0) > 0);
   const comDebitoAntigo = sem.consultoras.filter(c => (c.debitoOutrasNotasPago||0) > 0);
