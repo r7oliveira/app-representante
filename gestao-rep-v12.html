@@ -2971,7 +2971,17 @@ function renderAgendaCompleta() {
     return;
   }
 
-  el.innerHTML = '<div class="card" style="margin-bottom:12px;">' + tarefas.map((t) => {
+  const importantesPendentes = isHojeSel ? tarefas.filter(t => t.prioridade === 'importante' && !t.feito) : [];
+  const banner = importantesPendentes.length ? `
+    <div style="background:var(--rose);border-radius:14px;padding:14px 16px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:${importantesPendentes.length > 1 ? '8px' : '2px'};">
+        <span style="font-size:16px;">⚠️</span>
+        <span style="font-size:13px;font-weight:800;color:white;text-transform:uppercase;letter-spacing:.4px;">Importante! Fazer hoje!</span>
+      </div>
+      ${importantesPendentes.map(t => `<div style="font-size:13px;font-weight:600;color:white;padding:2px 0;">• ${t.texto}</div>`).join('')}
+    </div>` : '';
+
+  el.innerHTML = banner + '<div class="card" style="margin-bottom:12px;">' + tarefas.map((t) => {
     const feito = !!t.feito;
     const metaPartes = [t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin' ? 'da administração' : ''].filter(Boolean);
     const tagTxt = feito ? 'Concluída' : (t.prioridade === 'importante' ? 'Importante' : (t.consultoraId ? 'Atendimento' : ''));
