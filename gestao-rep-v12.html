@@ -619,10 +619,8 @@ input[type="time"]{max-width:100%;}
       <div style="font-size:11.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-2);">Consultoras da semana</div>
     </div>
     <div style="display:flex;gap:8px;margin:0 16px 12px;">
-      <button type="button" id="filtroAtendTodas" onclick="filtrarAtendimentos('todas')"
-        style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--rose);background:var(--rose);color:white;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Todas (<span id="cntFiltroTodas">0</span>)</button>
       <button type="button" id="filtroAtendPendentes" onclick="filtrarAtendimentos('pendentes')"
-        style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-3);font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Falta atender (<span id="cntFiltroPendentes">0</span>)</button>
+        style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--rose);background:var(--rose);color:white;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Falta atender (<span id="cntFiltroPendentes">0</span>)</button>
       <button type="button" id="filtroAtendAtendidas" onclick="filtrarAtendimentos('atendidas')"
         style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-3);font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Já atendidas (<span id="cntFiltroAtendidas">0</span>)</button>
     </div>
@@ -5381,7 +5379,6 @@ function irListaConsultoras() {
 function filtrarAtendimentos(tipo) {
   window._filtroAtendimentos = tipo;
   const btns = {
-    todas: document.getElementById('filtroAtendTodas'),
     pendentes: document.getElementById('filtroAtendPendentes'),
     atendidas: document.getElementById('filtroAtendAtendidas'),
   };
@@ -5985,19 +5982,18 @@ function renderSemana() {
 
   // Lista
   const lista = document.getElementById('listaConsultoras');
-  const filtroAtend = window._filtroAtendimentos || 'todas';
+  const filtroAtend = window._filtroAtendimentos || 'pendentes';
   let visiveis = sem.consultoras.filter(c => !c.avulso);
 
   // Contadores dos filtros (sempre com base na lista completa, independente do filtro ativo)
-  const cntTodasEl = document.getElementById('cntFiltroTodas');
   const cntPendentesEl = document.getElementById('cntFiltroPendentes');
   const cntAtendidasEl = document.getElementById('cntFiltroAtendidas');
-  if (cntTodasEl) cntTodasEl.textContent = visiveis.length;
   if (cntPendentesEl) cntPendentesEl.textContent = visiveis.filter(c => c.status !== 'concluida').length;
-  if (cntAtendidasEl) cntAtendidasEl.textContent = visiveis.filter(foiAtendida).length;
+  // "Já atendidas" inclui remarcadas — ela já foi atendida (só remarcou o próximo encontro)
+  if (cntAtendidasEl) cntAtendidasEl.textContent = visiveis.filter(c => c.status === 'concluida').length;
 
   if (filtroAtend === 'pendentes') visiveis = visiveis.filter(c => c.status !== 'concluida');
-  else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(foiAtendida);
+  else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(c => c.status === 'concluida');
 
   // Ordena a exibição por dia da semana, depois por horário do atendimento e depois
   // em ordem alfabética dentro de cada grupo de status, sem alterar a ordem real
