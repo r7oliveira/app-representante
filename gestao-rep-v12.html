@@ -1894,27 +1894,27 @@ input[type="time"]{max-width:100%;}
   </div>
 
   <div class="scroll-body" style="padding:0 16px 80px;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0;">
-      <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;">
-        <div style="color:var(--ink-3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Ativas</div>
-        <div style="color:var(--ink);font-size:20px;font-weight:800;" id="gerAtivas">0</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;">
+      <div style="background:var(--rose-light);border-radius:12px;padding:12px;">
+        <div style="color:var(--rose-deep);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;">Ativas</div>
+        <div style="color:var(--rose-deep);font-size:24px;font-weight:800;" id="gerAtivas">0</div>
       </div>
-      <button onclick="abrirInativasTodas()" style="background:white;border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center;cursor:pointer;font-family:var(--font);">
-        <div style="color:var(--ink-3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Inativas (<span id="gerInativas">0</span>)</div>
-        <div style="color:var(--rose-deep);font-size:12.5px;font-weight:800;">Acessar consultoras inativas</div>
+      <button onclick="abrirInativasTodas()" style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px;text-align:left;cursor:pointer;font-family:var(--font);">
+        <div style="color:var(--ink-3);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;">Inativas (<span id="gerInativas">0</span>)</div>
+        <div style="color:var(--rose-deep);font-size:13px;font-weight:700;">Ver inativas →</div>
       </button>
     </div>
 
     <!-- Regiões -->
     <div style="padding-left:0;font-size:19px;font-weight:800;color:var(--ink);font-family:var(--font-serif);text-transform:none;letter-spacing:normal;margin-bottom:8px;">Regiões</div>
-    <div id="gerRegioesRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;"></div>
+    <div id="gerRegioesRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px;"></div>
 
     <!-- Ativas -->
-    <div class="sec-title" style="padding-left:0;display:flex;align-items:center;justify-content:space-between;padding-right:0;gap:8px;">
-      <span>Consultoras ativas</span>
-      <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
-        <button onclick="gerarPDFConsultorasRegiao()" style="background:none;border:none;color:var(--ink-3);font-size:12px;font-weight:700;cursor:pointer;">⬇ PDF</button>
-        <button onclick="abrirModalConsultora()" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">+ Nova consultora</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;">
+      <span style="font-size:13px;font-weight:700;color:var(--ink-2);">Consultoras ativas</span>
+      <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
+        <button onclick="gerarPDFConsultorasRegiao()" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">PDF</button>
+        <button onclick="abrirModalConsultora()" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">+ Nova</button>
       </div>
     </div>
     <div id="gerListaAtivas"></div>
@@ -8506,6 +8506,7 @@ function renderGerenciar() {
   if (!ativas.length) {
     listaAt.innerHTML = '<div style="text-align:center;padding:16px;color:var(--ink-3);font-size:13px;">Nenhuma consultora ativa nesta região.</div>';
   } else {
+    const diaHojeLabel = (DIAS_AGENDA.find(d => d.key === hojeAgendaKey()) || {}).label;
     let diaAtual = null;
     let numDia = 0;
     listaAt.innerHTML = ativas.map((c, i) => {
@@ -8514,22 +8515,26 @@ function renderGerenciar() {
       if (diaDaConsultora !== diaAtual) {
         diaAtual = diaDaConsultora;
         numDia = 0;
-        header = `<div style="font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin:${i===0?'0':'14px'} 2px 6px;">${diaDaConsultora}</div>`;
+        const ehHoje = diaDaConsultora === diaHojeLabel;
+        header = `<div style="display:flex;align-items:center;gap:8px;margin:${i===0?'0':'20px'} 2px 10px;">
+          <span style="font-size:16px;font-weight:800;color:var(--ink);">${diaDaConsultora}</span>
+          ${ehHoje ? '<span style="background:var(--rose);color:white;font-size:10px;font-weight:800;padding:3px 9px;border-radius:10px;">HOJE</span>' : ''}
+        </div>`;
       }
       numDia++;
       const cardOpen = header || i === 0 ? '<div class="card" style="margin-bottom:12px;">' : '';
       const proximaTemHeader = (i + 1 < ativas.length) && ((ativas[i+1].diaMelhor || 'Sem dia definido') !== diaDaConsultora);
       const cardClose = (proximaTemHeader || i === ativas.length - 1) ? '</div>' : '';
       return header + cardOpen +
-        `<div class="card-row">
-          <div style="width:28px;height:28px;background:var(--rose-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--rose);flex-shrink:0;">${numDia}</div>
+        `<div class="card-row" style="padding:14px 16px;">
+          <div style="width:30px;height:30px;background:var(--rose-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--rose);flex-shrink:0;">${numDia}</div>
           <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nome}</div>
-            <div style="font-size:11px;color:var(--ink-3);margin-top:1px;">${c.cidade||''}${c.horarioMelhor ? ' · ' + c.horarioMelhor : ''} · Score ${scoreAtualDe(c)}</div>
+            <div style="font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nome}</div>
+            <div style="font-size:12px;color:var(--ink-3);margin-top:3px;">${c.cidade||''}${c.horarioMelhor ? ' · ' + c.horarioMelhor : ''} · Score ${scoreAtualDe(c)}</div>
           </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
-            <button onclick="editarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;">✎</button>
-            <button onclick="inativarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;">×</button>
+          <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
+            <button onclick="editarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;color:var(--rose-deep);">✎</button>
+            <button onclick="inativarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;color:var(--rose-deep);">×</button>
           </div>
         </div>` + cardClose;
     }).join('');
