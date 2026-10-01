@@ -2578,6 +2578,13 @@ function blankAgenda() {
   DIAS_AGENDA.forEach(d => t[d.key] = []);
   return t;
 }
+// Avisos importantes: lista separada das tarefas, por dia — o administrador escreve
+// o aviso direto (não precisa criar uma tarefa pra isso).
+function blankAvisos() {
+  const t = {};
+  DIAS_AGENDA.forEach(d => t[d.key] = []);
+  return t;
+}
 
 /* ════════════════════════════════════════════
    LOGIN
@@ -2966,23 +2973,26 @@ function renderAgendaCompleta() {
   document.getElementById('agendaDiaSelecionadoHoje').style.display = isHojeSel ? '' : 'none';
 
   const tarefas = [...(agenda[diaAtual] || [])].sort((a,b) => (a.feito?1:0) - (b.feito?1:0) || horarioParaMinutos(a) - horarioParaMinutos(b));
+  const avisos = DB.avisos || blankAvisos();
+  const avisosDoDia = avisos[diaAtual] || [];
 
-  if (!tarefas.length) {
+  if (!tarefas.length && !avisosDoDia.length) {
     el.innerHTML = '<div class="card" style="text-align:center;padding:24px 16px;color:var(--ink-3);font-size:13px;">Nenhuma tarefa por aqui.</div>';
     return;
   }
 
-  const importantesPendentes = isHojeSel ? tarefas.filter(t => t.prioridade === 'importante' && !t.feito) : [];
-  const banner = importantesPendentes.length ? `
-    <div style="background:var(--rose);border-radius:14px;padding:14px 16px;margin-bottom:12px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:${importantesPendentes.length > 1 ? '8px' : '2px'};">
+  const banner = avisosDoDia.length ? `
+    <div style="background:var(--rose-light);border-radius:14px;padding:14px 16px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:${avisosDoDia.length > 1 ? '8px' : '2px'};">
         <span style="font-size:16px;">⚠️</span>
-        <span style="font-size:13px;font-weight:800;color:white;text-transform:uppercase;letter-spacing:.4px;">Importante! Fazer hoje!</span>
+        <span style="font-size:13px;font-weight:800;color:var(--rose-deep);text-transform:uppercase;letter-spacing:.4px;">Importante!${isHojeSel ? ' Fazer hoje!' : ''}</span>
       </div>
-      ${importantesPendentes.map(t => `<div style="font-size:13px;font-weight:600;color:white;padding:2px 0;">• ${t.texto}</div>`).join('')}
+      ${avisosDoDia.map(a => `<div style="font-size:13px;font-weight:600;color:var(--rose-deep);padding:2px 0;">• ${a.texto}</div>`).join('')}
     </div>` : '';
 
-  el.innerHTML = banner + '<div class="card" style="margin-bottom:12px;">' + tarefas.map((t) => {
+  const tarefasLista = tarefas;
+
+  const listaHtml = tarefasLista.length ? '<div class="card" style="margin-bottom:12px;">' + tarefasLista.map((t) => {
     const feito = !!t.feito;
     const metaPartes = [t.diaTodo ? 'Dia todo' : t.horario, t.autor==='admin' ? 'da administração' : ''].filter(Boolean);
     const tagTxt = feito ? 'Concluída' : (t.prioridade === 'importante' ? 'Importante' : (t.consultoraId ? 'Atendimento' : ''));
@@ -3003,7 +3013,9 @@ function renderAgendaCompleta() {
       </div>
       <button onclick="event.stopPropagation();excluirTarefaDireta('${diaAtual}','${t.id}')" style="flex-shrink:0;background:none;border:none;color:var(--ink-3);font-size:15px;cursor:pointer;padding:2px 4px;margin-top:1px;">✕</button>
     </div>`;
-  }).join('') + '</div>';
+  }).join('') + '</div>' : '<div class="card" style="text-align:center;padding:24px 16px;color:var(--ink-3);font-size:13px;">Nenhuma outra tarefa por aqui.</div>';
+
+  el.innerHTML = banner + listaHtml;
 }
 
 /* ════════════════════════════════════════════
@@ -3912,6 +3924,7 @@ function confirmarAgendarCliente() {
   }
 
   DB.agenda = DB.agenda || blankAgenda();
+  DB.avisos = DB.avisos || blankAvisos();
   DB.agenda[diaKey] = DB.agenda[diaKey] || [];
   const novaTarefa = {
     id: uid(),
@@ -4039,6 +4052,7 @@ function salvarTarefa() {
   const recorrente = _tarefaRecorrente;
   const prioridade = document.getElementById('tarefaPrioridade').value;
   DB.agenda = DB.agenda || blankAgenda();
+  DB.avisos = DB.avisos || blankAvisos();
   DB.agenda[diaKey] = DB.agenda[diaKey] || [];
 
   if (id) {
@@ -4187,6 +4201,7 @@ let DB = (() => {
             semanaAtiva: parsed.semanaAtiva || null,
             config: parsed.config || { geminiKey: '', groqKey: '', metaPadrao: 15000 },
             agenda: parsed.agenda || blankAgenda(),
+            avisos: parsed.avisos || blankAvisos(),
             observacoes: parsed.observacoes || [],
             fcmTokens: parsed.fcmTokens || [],
             lives: parsed.lives || [],
@@ -4199,7 +4214,7 @@ let DB = (() => {
       }
     }
   } catch(e) {}
-  return { consultoras:[], semanas:[], semanaAtiva:null, config:{geminiKey:'',groqKey:'',metaPadrao:15000}, agenda: blankAgenda(), observacoes:[], fcmTokens:[], lives:[], estrelas:[], indicacoes:[], resgates:[], seq:1 };
+  return { consultoras:[], semanas:[], semanaAtiva:null, config:{geminiKey:'',groqKey:'',metaPadrao:15000}, agenda: blankAgenda(), avisos: blankAvisos(), observacoes:[], fcmTokens:[], lives:[], estrelas:[], indicacoes:[], resgates:[], seq:1 };
 })();
 
 // Com login fixo, o nome do tablet é sempre o nome da pessoa logada (não precisa mais digitar)
@@ -4207,6 +4222,7 @@ if (ACTIVE_PROFILE && ACTIVE_PROFILE.role === 'op') {
   DB.config = DB.config || {};
   DB.config.nomeTablet = ACTIVE_PROFILE.nome;
 }
+DB.avisos = DB.avisos || blankAvisos();
 try { restaurarSessaoGoogle(); } catch(e) {}
 
 // Migração única: soma no Recebido da semana ativa os pagamentos de débitos de
@@ -4416,6 +4432,7 @@ function deveAdotarRemoto(remoto) {
 function adotarRemoto(remoto) {
   DB = remoto;
   DB.agenda = DB.agenda || blankAgenda();
+  DB.avisos = DB.avisos || blankAvisos();
   DB.observacoes = DB.observacoes || [];
   DB.fcmTokens = DB.fcmTokens || []; DB.lives = DB.lives || []; DB.estrelas = DB.estrelas || []; DB.indicacoes = DB.indicacoes || []; DB.resgates = DB.resgates || [];
   try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e) {}
@@ -4703,24 +4720,35 @@ function renderAdminPessoa() {
 
   // Agenda por dia
   const agenda = data.agenda || blankAgenda();
+  const avisos = data.avisos || blankAvisos();
   if (resetarTarefasRecorrentesEm(agenda)) {
     data.seq = (data.seq || 1) + 1;
     _adminRefs[id].set(data).catch(() => {});
   }
   document.getElementById('apAgendaDias').innerHTML = DIAS_AGENDA.map(d => {
     const tarefas = agenda[d.key] || [];
+    const avisosDoDia = avisos[d.key] || [];
     return `
     <div style="margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <div style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;">${d.label}</div>
-        <button onclick="adminAbrirTarefa('${d.key}')" style="background:none;border:none;color:var(--rose);font-size:11px;font-weight:700;cursor:pointer;">+ Tarefa</button>
+        <div style="display:flex;gap:12px;">
+          <button onclick="adminAdicionarAviso('${d.key}')" style="background:none;border:none;color:var(--amber);font-size:11px;font-weight:700;cursor:pointer;">⚠ Aviso</button>
+          <button onclick="adminAbrirTarefa('${d.key}')" style="background:none;border:none;color:var(--rose);font-size:11px;font-weight:700;cursor:pointer;">+ Tarefa</button>
+        </div>
       </div>
+      ${avisosDoDia.map(a => `
+        <div style="display:flex;align-items:center;gap:8px;background:var(--rose-light);border-radius:10px;padding:8px 10px;margin-bottom:4px;">
+          <span style="font-size:13px;flex-shrink:0;">⚠️</span>
+          <div style="flex:1;font-size:12.5px;color:var(--rose-deep);font-weight:700;">${a.texto}</div>
+          <button onclick="adminExcluirAviso('${d.key}','${a.id}')" style="background:none;border:none;color:var(--rose-deep);font-size:13px;cursor:pointer;flex-shrink:0;">✕</button>
+        </div>`).join('')}
       ${tarefas.length ? tarefas.map(t => `
         <div onclick="adminAbrirTarefa('${d.key}','${t.id}')" style="display:flex;align-items:center;gap:8px;background:white;border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:4px;cursor:pointer;">
           <span style="color:${t.feito?'var(--green)':'var(--ink-3)'};font-size:13px;">${t.feito?'✓':'○'}</span>
           <div style="flex:1;font-size:12.5px;color:var(--ink);text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
           ${(t.horario || t.diaTodo || t.recorrente) ? `<span style="font-size:11px;color:var(--ink-3);">${[t.recorrente ? '🔁' : '', t.diaTodo ? 'Dia todo' : t.horario].filter(Boolean).join(' ')}</span>` : ''}
-        </div>`).join('') : '<div style="font-size:11.5px;color:var(--ink-3);padding:4px 0;">Nenhuma tarefa.</div>'}
+        </div>`).join('') : (avisosDoDia.length ? '' : '<div style="font-size:11.5px;color:var(--ink-3);padding:4px 0;">Nenhuma tarefa.</div>')}
     </div>`;
   }).join('');
 
@@ -5032,6 +5060,7 @@ function adminSalvarTarefa() {
   const pessoaId = _adminPessoaAtual;
   const data = _adminDB[pessoaId];
   data.agenda = data.agenda || blankAgenda();
+  data.avisos = data.avisos || blankAvisos();
   data.agenda[diaKey] = data.agenda[diaKey] || [];
 
   if (id) {
@@ -5067,6 +5096,39 @@ function adminExcluirTarefa() {
     fecharModal('modalAdminTarefa');
     renderAdminPessoa();
   }).catch(e => alert('Erro ao excluir: ' + e.message));
+}
+
+// Avisos importantes: lista separada das tarefas — não aparecem na agenda normal,
+// só no banner de destaque. O administrador escreve o texto direto, sem precisar
+// criar uma tarefa pra isso.
+function adminAdicionarAviso(diaKey) {
+  const texto = (prompt('Escreva o aviso importante para ' + (DIAS_AGENDA.find(d => d.key === diaKey) || {}).label + ':') || '').trim();
+  if (!texto) return;
+
+  const pessoaId = _adminPessoaAtual;
+  const data = _adminDB[pessoaId];
+  data.avisos = data.avisos || blankAvisos();
+  data.avisos[diaKey] = data.avisos[diaKey] || [];
+  data.avisos[diaKey].push({ id: adminUid(), texto, criadoEm: new Date().toISOString() });
+  data.seq = (data.seq || 1) + 1;
+
+  _adminRefs[pessoaId].set(data).then(() => {
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao adicionar aviso: ' + e.message));
+}
+
+function adminExcluirAviso(diaKey, avisoId) {
+  if (!confirm('Excluir este aviso?')) return;
+
+  const pessoaId = _adminPessoaAtual;
+  const data = _adminDB[pessoaId];
+  data.avisos = data.avisos || blankAvisos();
+  data.avisos[diaKey] = (data.avisos[diaKey] || []).filter(a => a.id !== avisoId);
+  data.seq = (data.seq || 1) + 1;
+
+  _adminRefs[pessoaId].set(data).then(() => {
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao excluir aviso: ' + e.message));
 }
 
 /* ════════════════════════════════════════════
