@@ -4735,7 +4735,7 @@ function renderAdminPessoa() {
       ${avisosDoDia.map(a => `
         <div style="display:flex;align-items:center;gap:8px;background:var(--rose-light);border-radius:10px;padding:8px 10px;margin-bottom:4px;">
           <span style="font-size:13px;flex-shrink:0;">⚠️</span>
-          <div style="flex:1;font-size:12.5px;color:var(--rose-deep);font-weight:700;">${a.texto}</div>
+          <div onclick="adminEditarAviso('${d.key}','${a.id}')" style="flex:1;font-size:12.5px;color:var(--rose-deep);font-weight:700;cursor:pointer;">${a.texto}</div>
           <button onclick="adminExcluirAviso('${d.key}','${a.id}')" style="background:none;border:none;color:var(--rose-deep);font-size:13px;cursor:pointer;flex-shrink:0;">✕</button>
         </div>`).join('')}
       ${tarefas.length ? tarefas.map(t => `
@@ -5124,6 +5124,24 @@ function adminExcluirAviso(diaKey, avisoId) {
   _adminRefs[pessoaId].set(data).then(() => {
     renderAdminPessoa();
   }).catch(e => alert('Erro ao excluir aviso: ' + e.message));
+}
+
+function adminEditarAviso(diaKey, avisoId) {
+  const pessoaId = _adminPessoaAtual;
+  const data = _adminDB[pessoaId];
+  data.avisos = data.avisos || blankAvisos();
+  const aviso = (data.avisos[diaKey] || []).find(a => a.id === avisoId);
+  if (!aviso) return;
+
+  const novoTexto = (prompt('Editar aviso:', aviso.texto) || '').trim();
+  if (!novoTexto || novoTexto === aviso.texto) return;
+
+  aviso.texto = novoTexto;
+  data.seq = (data.seq || 1) + 1;
+
+  _adminRefs[pessoaId].set(data).then(() => {
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao editar aviso: ' + e.message));
 }
 
 /* ════════════════════════════════════════════
