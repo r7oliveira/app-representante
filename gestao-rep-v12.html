@@ -1326,6 +1326,7 @@ input[type="time"]{max-width:100%;}
       <div id="apTabResumo">
         <div style="display:flex;gap:8px;margin-bottom:12px;">
           <select id="apSemanaSelect" onchange="adminMudarSemanaSelecionada(this.value)" style="flex:1;border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;font-family:var(--font);font-weight:700;color:var(--ink);background:white;"></select>
+          <button onclick="adminAbrirEditarSemana()" title="Editar semana" style="flex-shrink:0;width:44px;border:1.5px solid var(--border);border-radius:12px;background:white;color:var(--rose-deep);font-size:16px;cursor:pointer;">✎</button>
           <button onclick="adminExcluirSemana()" title="Excluir semana" style="flex-shrink:0;width:44px;border:1.5px solid var(--border);border-radius:12px;background:white;color:var(--red);font-size:16px;cursor:pointer;">🗑</button>
         </div>
 
@@ -1428,6 +1429,30 @@ input[type="time"]{max-width:100%;}
     <div class="btn-row" style="margin-top:8px;">
       <button class="btn-ghost" style="flex:1;" id="atBtnExcluir" onclick="adminExcluirTarefa()">Excluir</button>
       <button class="btn-primary" style="flex:1;" onclick="adminSalvarTarefa()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: ADMIN EDITA UMA SEMANA JÁ EXISTENTE
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalAdminEditarSemana">
+  <div class="modal-box" style="max-height:88vh;overflow-y:auto;">
+    <button class="modal-close" onclick="fecharModal('modalAdminEditarSemana')">✕</button>
+    <div class="modal-title">Editar semana</div>
+    <input type="hidden" id="aesSemanaId">
+    <div style="display:flex;gap:8px;">
+      <label class="field" style="flex:1;"><span>Número</span><input id="aesNumero" type="number"></label>
+      <label class="field" style="flex:1;"><span>Meta (R$)</span><input id="aesMeta" type="number" step="0.01"></label>
+    </div>
+    <label class="field"><span>Região</span><input id="aesRegiao"></label>
+
+    <div style="font-size:13px;font-weight:800;color:var(--ink);margin:16px 0 8px;">Consultoras desta semana</div>
+    <div id="aesConsultorasLista"></div>
+
+    <div class="btn-row" style="margin-top:14px;">
+      <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalAdminEditarSemana')">Cancelar</button>
+      <button class="btn-primary" style="flex:1;" onclick="adminSalvarEdicaoSemana()">Salvar</button>
     </div>
   </div>
 </div>
@@ -2246,6 +2271,10 @@ input[type="time"]{max-width:100%;}
       <!-- ═══ 6. EVOLUÇÃO DE VENDAS ═══ -->
       <div style="font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;">Evolução do A Pagar</div>
       <div class="card" style="padding:14px 16px;margin-bottom:16px;" id="fgEvolucao"></div>
+
+      <!-- ═══ 6b. EVOLUÇÃO DO RECEBIDO ═══ -->
+      <div style="font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;">Evolução do Recebido</div>
+      <div class="card" style="padding:14px 16px;margin-bottom:16px;" id="fgEvolucaoRecebido"></div>
 
       <!-- ═══ 7. PERFORMANCE POR TABLET ═══ -->
       <div style="font-size:13px;font-weight:800;color:var(--ink);margin:4px 0 8px;">Performance por Tablet</div>
@@ -4659,6 +4688,77 @@ function adminExcluirSemana() {
   _adminRefs[opId].set(data).then(() => {
     renderAdminPessoa();
   }).catch(e => alert('Erro ao excluir: ' + e.message));
+}
+
+// Abre a edição de uma semana já lançada — tanto os dados gerais (número, região,
+// meta) quanto o vendido/recebido de cada consultora, pra corrigir algo que entrou errado.
+function adminAbrirEditarSemana() {
+  const opId = _adminPessoaAtual;
+  const data = _adminDB[opId];
+  if (!data) return;
+  const semanas = data.semanas || [];
+  const defaultId = data.semanaAtiva != null ? data.semanaAtiva : (semanas.length ? semanas[semanas.length-1].id : null);
+  const idEscolhido = _adminPessoaSemanaSel !== null ? _adminPessoaSemanaSel : defaultId;
+  const sem = semanas.find(s => s.id === idEscolhido);
+  if (!sem) { alert('Nenhuma semana selecionada.'); return; }
+
+  document.getElementById('aesSemanaId').value = sem.id;
+  document.getElementById('aesNumero').value = sem.numero || '';
+  document.getElementById('aesMeta').value = sem.meta || '';
+  document.getElementById('aesRegiao').value = sem.regiao || '';
+
+  const cons = [...(sem.consultoras || [])].sort((a,b) => (a.nome||'').localeCompare(b.nome||'', 'pt-BR'));
+  const listaEl = document.getElementById('aesConsultorasLista');
+  if (!cons.length) {
+    listaEl.innerHTML = '<div style="font-size:12.5px;color:var(--ink-3);padding:6px 0;">Nenhuma consultora nesta semana.</div>';
+  } else {
+    listaEl.innerHTML = cons.map((c, i) => `
+      <div style="border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px;">${c.nome}</div>
+        <input type="hidden" class="aesConsId" value="${c.id}">
+        <div style="display:flex;gap:8px;">
+          <label style="flex:1;">
+            <span style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;">Vendido</span>
+            <input type="number" step="0.01" class="aesVendido" value="${c.vendido || 0}" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;font-family:var(--font);margin-top:3px;">
+          </label>
+          <label style="flex:1;">
+            <span style="font-size:10px;font-weight:700;color:var(--ink-3);text-transform:uppercase;">Recebido</span>
+            <input type="number" step="0.01" class="aesRecebido" value="${c.recebido || 0}" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;font-size:13px;font-family:var(--font);margin-top:3px;">
+          </label>
+        </div>
+      </div>`).join('');
+  }
+
+  document.getElementById('modalAdminEditarSemana').classList.add('open');
+}
+
+function adminSalvarEdicaoSemana() {
+  const opId = _adminPessoaAtual;
+  const data = _adminDB[opId];
+  if (!data) return;
+  const semId = document.getElementById('aesSemanaId').value;
+  const sem = (data.semanas || []).find(s => s.id === semId);
+  if (!sem) return;
+
+  sem.numero = parseInt(document.getElementById('aesNumero').value, 10) || sem.numero;
+  sem.meta = parseNum(document.getElementById('aesMeta').value) || sem.meta;
+  sem.regiao = document.getElementById('aesRegiao').value.trim() || sem.regiao;
+
+  const linhas = document.querySelectorAll('#aesConsultorasLista > div');
+  linhas.forEach(linha => {
+    const consId = linha.querySelector('.aesConsId').value;
+    const cons = sem.consultoras.find(c => c.id === consId);
+    if (!cons) return;
+    cons.vendido = parseNum(linha.querySelector('.aesVendido').value);
+    cons.recebido = parseNum(linha.querySelector('.aesRecebido').value);
+  });
+
+  data.seq = (data.seq || 1) + 1;
+
+  _adminRefs[opId].set(data).then(() => {
+    fecharModal('modalAdminEditarSemana');
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao salvar: ' + e.message));
 }
 
 function renderAdminPessoa() {
@@ -7853,6 +7953,29 @@ function recomputeFechamentoGeral() {
         </div>
         <div style="width:78px;flex-shrink:0;text-align:right;font-size:11px;font-weight:800;color:var(--ink);">${brl(valores[i])}</div>
       </div>`).join('') + variacaoTxt;
+  }
+
+  // Evolução do Recebido: mesmo histórico de semanas, mesmo layout, só que com o
+  // valor realmente recebido (inclui débitos antigos pagos, da mesma nota ou de outras semanas).
+  if (!historico.length) {
+    document.getElementById('fgEvolucaoRecebido').innerHTML = '<div style="font-size:12px;color:var(--ink-3);text-align:center;padding:6px 0;">Sem histórico de semanas suficiente ainda.</div>';
+  } else {
+    const valoresRec = historico.map(s => (s.consultoras||[]).reduce((a,c) => a + (c.recebido||0) + (c.debitoOutrasNotasPago||0), 0) + totalDebitosExternos(s));
+    const maxVR = Math.max(1, ...valoresRec);
+    let variacaoTxtRec = '';
+    if (valoresRec.length >= 2) {
+      const anteriorR = valoresRec[valoresRec.length-2], atualR = valoresRec[valoresRec.length-1];
+      const variacaoR = anteriorR > 0 ? Math.round((atualR-anteriorR)/anteriorR*100) : (atualR>0?100:0);
+      variacaoTxtRec = `<div style="text-align:right;font-size:12px;font-weight:800;color:${variacaoR>=0?'var(--green)':'var(--red)'};margin-top:2px;">${variacaoR>=0?'▲':'▼'} ${Math.abs(variacaoR)}% vs semana anterior</div>`;
+    }
+    document.getElementById('fgEvolucaoRecebido').innerHTML = historico.map((s,i) => `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div style="width:52px;flex-shrink:0;font-size:11px;font-weight:700;color:var(--ink-3);">Sem. ${s.numero}</div>
+        <div style="flex:1;height:10px;background:var(--surface);border-radius:6px;overflow:hidden;">
+          <div style="height:100%;width:${Math.max(4, Math.round(valoresRec[i]/maxVR*100))}%;background:${s.numero===numero?'var(--green)':'var(--ink-3)'};border-radius:6px;"></div>
+        </div>
+        <div style="width:78px;flex-shrink:0;text-align:right;font-size:11px;font-weight:800;color:var(--ink);">${brl(valoresRec[i])}</div>
+      </div>`).join('') + variacaoTxtRec;
   }
 
   const btnAddManual = document.getElementById('fgBtnAddManual');
