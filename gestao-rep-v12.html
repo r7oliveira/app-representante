@@ -615,7 +615,11 @@ input[type="time"]{max-width:100%;}
     <div class="ph-sub" style="color:rgba(255,255,255,.7);">Consultoras da semana</div>
   </div>
   <div class="scroll-body" style="padding:14px 0 80px;">
-    <div style="display:flex;gap:8px;margin:14px 16px 12px;">
+    <div style="margin:14px 16px 10px;position:relative;">
+      <input type="text" id="buscaAtendimentos" oninput="filtrarAtendimentos()" placeholder="Buscar consultora pelo nome..." style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px 14px 10px 36px;font-size:13px;font-family:var(--font);color:var(--ink);background:white;outline:none;box-sizing:border-box;">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink-3);">🔍</span>
+    </div>
+    <div style="display:flex;gap:8px;margin:0 16px 12px;">
       <button type="button" id="filtroAtendPendentes" onclick="filtrarAtendimentos('pendentes')"
         style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--rose);background:var(--rose);color:white;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Falta atender (<span id="cntFiltroPendentes">0</span>)</button>
       <button type="button" id="filtroAtendAtendidas" onclick="filtrarAtendimentos('atendidas')"
@@ -5492,24 +5496,26 @@ function irListaConsultoras() {
 })();
 
 function filtrarAtendimentos(tipo) {
-  window._filtroAtendimentos = tipo;
-  const btns = {
-    pendentes: document.getElementById('filtroAtendPendentes'),
-    atendidas: document.getElementById('filtroAtendAtendidas'),
-  };
-  Object.keys(btns).forEach(k => {
-    const btn = btns[k];
-    if (!btn) return;
-    if (k === tipo) {
-      btn.style.background = 'var(--rose)';
-      btn.style.borderColor = 'var(--rose)';
-      btn.style.color = 'white';
-    } else {
-      btn.style.background = 'white';
-      btn.style.borderColor = 'var(--border)';
-      btn.style.color = 'var(--ink-3)';
-    }
-  });
+  if (tipo) {
+    window._filtroAtendimentos = tipo;
+    const btns = {
+      pendentes: document.getElementById('filtroAtendPendentes'),
+      atendidas: document.getElementById('filtroAtendAtendidas'),
+    };
+    Object.keys(btns).forEach(k => {
+      const btn = btns[k];
+      if (!btn) return;
+      if (k === tipo) {
+        btn.style.background = 'var(--rose)';
+        btn.style.borderColor = 'var(--rose)';
+        btn.style.color = 'white';
+      } else {
+        btn.style.background = 'white';
+        btn.style.borderColor = 'var(--border)';
+        btn.style.color = 'var(--ink-3)';
+      }
+    });
+  }
   renderSemana();
 }
 
@@ -6110,6 +6116,11 @@ function renderSemana() {
   if (filtroAtend === 'pendentes') visiveis = visiveis.filter(c => c.status !== 'concluida');
   else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(c => c.status === 'concluida');
 
+  // Busca por nome (não mexe nos contadores das abas, só filtra o que aparece)
+  const buscaEl = document.getElementById('buscaAtendimentos');
+  const termoBusca = buscaEl ? buscaEl.value.trim().toLowerCase() : '';
+  if (termoBusca) visiveis = visiveis.filter(c => (c.nome || '').toLowerCase().includes(termoBusca));
+
   // Ordena a exibição por dia da semana, depois por horário do atendimento e depois
   // em ordem alfabética dentro de cada grupo de status, sem alterar a ordem real
   // usada para calcular a "Próxima" (que segue dia/horário).
@@ -6133,7 +6144,8 @@ function renderSemana() {
   });
 
   if (!visiveis.length) {
-    const msg = filtroAtend === 'pendentes' ? 'Nenhuma consultora falta atender. 🎉'
+    const msg = termoBusca ? 'Nenhuma consultora encontrada para "' + buscaEl.value.trim() + '".'
+      : filtroAtend === 'pendentes' ? 'Nenhuma consultora falta atender. 🎉'
       : filtroAtend === 'atendidas' ? 'Nenhuma consultora atendida ainda.'
       : 'Nenhuma consultora nesta semana.';
     lista.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);">' + msg + '</div>';
