@@ -385,16 +385,28 @@ input[type="time"]{max-width:100%;}
 ══════════════════════════════════════════ -->
 <nav class="bottom-nav" id="bottomNav">
   <button class="nav-item active" onclick="goTo('semana')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
-    Semana
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    Início
   </button>
-  <button class="nav-item" onclick="goTo('mais')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-    Mais
+  <button class="nav-item" onclick="goTo('agenda')">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg>
+    Agenda
+  </button>
+  <button class="nav-item" onclick="irListaConsultoras()">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+    Atendimentos
+  </button>
+  <button class="nav-item" onclick="abrirGerenciar()">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+    Consultoras
   </button>
   <button class="nav-item" onclick="goTo('fechamento-geral')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
     Fechamento
+  </button>
+  <button class="nav-item" onclick="goTo('programas')">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Programas
   </button>
 </nav>
 
@@ -5974,11 +5986,7 @@ function goTo(v) {
   // Marca aba ativa
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const navItems = document.querySelectorAll('.nav-item');
-  const navIdx = {
-    semana: 0,
-    mais: 1, agenda: 1, 'atendimentos-lista': 1, gerenciar: 1, programas: 1, config: 1, 'criar-semana': 1,
-    'fechamento-geral': 2,
-  };
+  const navIdx = { semana:0, agenda:1, 'atendimentos-lista':2, gerenciar:3, 'fechamento-geral':4, programas:5 };
   if (navIdx[v] !== undefined) navItems[navIdx[v]]?.classList.add('active');
 
   viewHistory.push(v);
