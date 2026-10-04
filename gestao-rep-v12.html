@@ -616,8 +616,9 @@ input[type="time"]{max-width:100%;}
   </div>
   <div class="scroll-body" style="padding:14px 0 80px;">
     <div style="margin:14px 16px 10px;position:relative;">
-      <input type="text" id="buscaAtendimentos" oninput="filtrarAtendimentos()" placeholder="Buscar consultora pelo nome..." style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px 14px 10px 36px;font-size:13px;font-family:var(--font);color:var(--ink);background:white;outline:none;box-sizing:border-box;">
+      <input type="text" id="buscaAtendimentos" oninput="filtrarAtendimentos()" placeholder="Buscar consultora pelo nome..." style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px 36px 10px 36px;font-size:13px;font-family:var(--font);color:var(--ink);background:white;outline:none;box-sizing:border-box;">
       <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink-3);">🔍</span>
+      <button type="button" id="buscaAtendimentosLimpar" onclick="limparBuscaAtendimentos()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:var(--border);color:var(--ink-3);font-size:13px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;">✕</button>
     </div>
     <div style="display:flex;gap:8px;margin:0 16px 12px;">
       <button type="button" id="filtroAtendPendentes" onclick="filtrarAtendimentos('pendentes')"
@@ -5519,6 +5520,12 @@ function filtrarAtendimentos(tipo) {
   renderSemana();
 }
 
+function limparBuscaAtendimentos() {
+  const buscaEl = document.getElementById('buscaAtendimentos');
+  if (buscaEl) buscaEl.value = '';
+  renderSemana();
+}
+
 function abrirPagarDebitos() {
   goTo('pagar-debitos');
 }
@@ -6120,6 +6127,8 @@ function renderSemana() {
   const buscaEl = document.getElementById('buscaAtendimentos');
   const termoBusca = buscaEl ? buscaEl.value.trim().toLowerCase() : '';
   if (termoBusca) visiveis = visiveis.filter(c => (c.nome || '').toLowerCase().includes(termoBusca));
+  const limparBtn = document.getElementById('buscaAtendimentosLimpar');
+  if (limparBtn) limparBtn.style.display = termoBusca ? 'flex' : 'none';
 
   // Ordena a exibição por dia da semana, depois por horário do atendimento e depois
   // em ordem alfabética dentro de cada grupo de status, sem alterar a ordem real
