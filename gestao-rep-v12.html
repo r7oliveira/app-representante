@@ -4950,7 +4950,7 @@ function abrirAdminCriarSemana() {
   const sugerida = proximaRegiaoPara(data.semanas, regs);
   document.getElementById('acsPessoaLabel').textContent = 'Para ' + (pessoa ? pessoa.nome : '—');
   popularSelectRegiaoLista('acsRegiao', regs, sugerida);
-  document.getElementById('acsNumero').value = data.semanas.length + 1;
+  document.getElementById('acsNumero').value = (data.semanas && data.semanas.length) ? Math.max(...data.semanas.map(s => s.numero || 0)) + 1 : 1;
   document.getElementById('acsMeta').value = (data.config && data.config.metaPadrao) || 15000;
 
   atualizarInfoAdminCriarSemana();
@@ -4982,7 +4982,7 @@ function confirmarAdminCriarSemana() {
   if (!data) return;
 
   const regiao = document.getElementById('acsRegiao').value;
-  const numero = parseInt(document.getElementById('acsNumero').value) || ((data.semanas||[]).length + 1);
+  const numero = parseInt(document.getElementById('acsNumero').value) || (((data.semanas||[]).length) ? Math.max(...data.semanas.map(s => s.numero || 0)) + 1 : 1);
   const meta = parseNum(document.getElementById('acsMeta').value) || (data.config && data.config.metaPadrao) || 15000;
 
   const semanasNaRegiao = (data.semanas || []).filter(s => s.regiao === regiao);
@@ -5362,6 +5362,14 @@ function parseNum(s) {
 }
 // Calcula o débito restante (a pagar - recebido) tolerando diferenças de até 1 centavo,
 // que costumam ser só resíduo de arredondamento e não uma dívida real.
+// Próximo número de semana = maior número já usado + 1 — nunca conta quantas
+// semanas existem hoje, porque se alguma for excluída no meio do caminho isso
+// voltaria a sugerir um número repetido.
+function proximoNumeroSemana() {
+  if (!DB.semanas || !DB.semanas.length) return 1;
+  return Math.max(...DB.semanas.map(s => s.numero || 0)) + 1;
+}
+
 function debitoRestante(aPagar, recebido) {
   const diff = Math.round(((aPagar||0) - (recebido||0)) * 100) / 100;
   return diff <= 0.01 ? 0 : diff;
@@ -7248,7 +7256,7 @@ function renderCriarSemana() {
   mostrarStep(1);
 
   // Número da próxima semana
-  const num = DB.semanas.length + 1;
+  const num = proximoNumeroSemana();
   document.getElementById('criarSemanaTitle').textContent = 'Criar Semana ' + num;
   document.getElementById('criarDataLabel').textContent = new Date().toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
   document.getElementById('criarSugestao').textContent = proximaRegiao();
@@ -7396,7 +7404,7 @@ function selecionarTodasStep2() {
 }
 
 function avancarStep3() {
-  const num = DB.semanas.length + 1;
+  const num = proximoNumeroSemana();
   document.getElementById('step3Title').textContent = 'Semana ' + num;
   document.getElementById('step3Regiao').textContent = criarRegiao;
   document.getElementById('step3Cons').textContent = (window._criarConsultoras||[]).length;
@@ -7411,7 +7419,7 @@ function avancarStep3() {
 function voltarStep2() { mostrarStep(2); }
 
 function confirmarCriarSemana() {
-  const numInput = parseInt(document.getElementById('step3NumSemana').value) || (DB.semanas.length + 1);
+  const numInput = parseInt(document.getElementById('step3NumSemana').value) || proximoNumeroSemana();
   const metaInput = parseNum(document.getElementById('step3MetaInput').value) || DB.config.metaPadrao || 15000;
   const semana = {
     id: uid(),
@@ -8525,7 +8533,7 @@ function renderDomingo() {
   }
 
   // Atualiza timeline
-  document.getElementById('tlStep2Title').textContent = 'Criar Semana ' + (DB.semanas.length+1);
+  document.getElementById('tlStep2Title').textContent = 'Criar Semana ' + proximoNumeroSemana();
   document.getElementById('tlStep2Sub').textContent = proximaRegiao() + ' · carregar consultoras';
 }
 
