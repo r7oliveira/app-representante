@@ -6225,16 +6225,18 @@ function renderSemana() {
       || (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
   });
 
+  const btnIncluirMais = '<button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-bottom:14px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>';
+
   if (!visiveis.length) {
     const msg = termoBusca ? 'Nenhuma consultora encontrada para "' + buscaEl.value.trim() + '".'
       : filtroAtend === 'pendentes' ? 'Nenhuma consultora falta atender. 🎉'
       : filtroAtend === 'atendidas' ? 'Nenhuma consultora atendida ainda.'
       : 'Nenhuma consultora nesta semana.';
-    lista.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);">' + msg + '</div>';
+    lista.innerHTML = btnIncluirMais + '<div style="text-align:center;padding:24px;color:var(--ink-3);">' + msg + '</div>';
     return;
   }
 
-  lista.innerHTML = '<button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-bottom:14px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>'
+  lista.innerHTML = btnIncluirMais
   + visiveis.map((c, idx) => {
     const st = c.status || 'pendente';
     const isNext = proxima && c.id === proxima.id;
