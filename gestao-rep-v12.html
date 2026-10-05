@@ -1466,6 +1466,40 @@ input[type="time"]{max-width:100%;}
 <!-- ══════════════════════════════════════════
      MODAL: ADMIN EDITA UMA SEMANA JÁ EXISTENTE
 ══════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════
+     MODAL: ESCOLHA DE RELATÓRIO PDF (tela Consultoras)
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalEscolhaPDF">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalEscolhaPDF')">✕</button>
+    <div class="modal-title">O que você deseja gerar?</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+      <button onclick="fecharModal('modalEscolhaPDF');gerarPDFCarteiraCompleta()" style="display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;font-family:var(--font);">
+        <span style="font-size:22px;">📋</span>
+        <span>
+          <span style="display:block;font-size:14px;font-weight:800;color:var(--ink);">Carteira Completa</span>
+          <span style="display:block;font-size:11.5px;color:var(--ink-3);">Lista completa das consultoras ativas</span>
+        </span>
+      </button>
+      <button onclick="fecharModal('modalEscolhaPDF');gerarPDFFinanceiroRegiao()" style="display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;font-family:var(--font);">
+        <span style="font-size:22px;">💰</span>
+        <span>
+          <span style="display:block;font-size:14px;font-weight:800;color:var(--ink);">Relatório Financeiro</span>
+          <span style="display:block;font-size:11.5px;color:var(--ink-3);">Vendido, recebido, a pagar e débitos</span>
+        </span>
+      </button>
+      <button onclick="fecharModal('modalEscolhaPDF');gerarPDFFechamentoRegiao()" style="display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;font-family:var(--font);">
+        <span style="font-size:22px;">📊</span>
+        <span>
+          <span style="display:block;font-size:14px;font-weight:800;color:var(--ink);">Relatório de Fechamento</span>
+          <span style="display:block;font-size:11.5px;color:var(--ink-3);">Resumo dos resultados da região/semana</span>
+        </span>
+      </button>
+    </div>
+    <button onclick="fecharModal('modalEscolhaPDF')" style="width:100%;margin-top:14px;background:none;border:none;color:var(--ink-3);font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;padding:8px;">Cancelar</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalAdminEditarSemana">
   <div class="modal-box" style="max-height:88vh;overflow-y:auto;">
     <button class="modal-close" onclick="fecharModal('modalAdminEditarSemana')">✕</button>
@@ -1968,7 +2002,7 @@ input[type="time"]{max-width:100%;}
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;">
       <span style="font-size:13px;font-weight:700;color:var(--ink-2);">Consultoras ativas</span>
       <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
-        <button onclick="gerarPDFConsultorasRegiao()" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">PDF</button>
+        <button onclick="document.getElementById('modalEscolhaPDF').classList.add('open')" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">PDF</button>
         <button onclick="abrirModalConsultora()" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">+ Nova</button>
       </div>
     </div>
@@ -8865,10 +8899,8 @@ function renderGerenciar() {
 
 // PDF com a relação completa das consultoras da região selecionada na tela
 // "Consultoras" — nome, contato, dados de cadastro e o desempenho mais recente dela.
-async function gerarPDFConsultorasRegiao() {
-  const regiao = gerenciarRegiao;
-  if (!regiao) return;
-
+// Carrega o jsPDF uma vez (compartilhado pelos 3 relatórios da tela Consultoras).
+async function _garantirJsPDF() {
   if (!window.jspdf) {
     await new Promise((res, rej) => {
       const s = document.createElement('script');
@@ -8877,134 +8909,330 @@ async function gerarPDFConsultorasRegiao() {
       document.head.appendChild(s);
     });
   }
+  return window.jspdf.jsPDF;
+}
 
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const W = 210, M = 16;
-  let y = 0;
-
-  const brlP = v => 'R$ ' + (v||0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const fill = (x, yr, w, h, r, g, b) => { doc.setFillColor(r, g, b); doc.rect(x, yr, w, h, 'F'); };
-  const chk = (n) => { if (y + n > 272) { doc.addPage(); y = 16; } };
-
-  // Última semana (de qualquer região) onde a consultora foi de fato atendida —
-  // mesma lógica usada pro Score atualizado na tela de Consultoras.
-  const ultimoRegistroDe = (c) => {
-    const semanasComEla = [...(DB.semanas || [])]
-      .filter(s => (s.consultoras || []).some(x => x.id === c.id && foiAtendida(x)))
-      .sort((a, b) => (b.numero || 0) - (a.numero || 0));
-    return semanasComEla.length ? { reg: semanasComEla[0].consultoras.find(x => x.id === c.id), sem: semanasComEla[0] } : null;
-  };
-
-  // Ticket médio: média do valor vendido nas últimas 3 semanas em que ela foi atendida de fato
-  // (não conta semanas remarcadas, que não são um atendimento de verdade).
-  const ticketMedioDe = (c) => {
-    const semanasComEla = [...(DB.semanas || [])]
-      .filter(s => (s.consultoras || []).some(x => x.id === c.id && foiAtendida(x)))
-      .sort((a, b) => (b.numero || 0) - (a.numero || 0))
-      .slice(0, 3);
-    if (!semanasComEla.length) return null;
-    const soma = semanasComEla.reduce((a, s) => a + (s.consultoras.find(x => x.id === c.id).vendido || 0), 0);
-    return { valor: soma / semanasComEla.length, qtdSemanas: semanasComEla.length };
-  };
-
-  const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa')
-    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
-  const inativas = DB.consultoras.filter(c => c.regiao === regiao && c.status === 'inativa')
-    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
-
-  // ── CAPA
-  fill(0, 0, W, 42, 138, 0, 56);
+// Cabeçalho padrão dos 3 relatórios da tela Consultoras: TIME ESTRELAS, tipo do
+// relatório, região, semana (quando houver) e data de geração.
+function _capaPDFConsultoras(doc, W, M, tipoTxt, regiao, semanaTxt) {
+  doc.setFillColor(138, 0, 56); doc.rect(0, 0, W, 38, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
-  doc.text('CONSULTORAS · ' + regiao, M, 20);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-  doc.text(ativas.length + ' ativa' + (ativas.length !== 1 ? 's' : '') + (inativas.length ? ' · ' + inativas.length + ' inativa' + (inativas.length !== 1 ? 's' : '') : ''), M, 30);
-  doc.setFontSize(8.5);
-  doc.text(new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }), M, 37);
-  y = 52;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+  doc.text('TIME ESTRELAS', M, 13);
+  doc.setFontSize(16);
+  doc.text(tipoTxt + ' · ' + regiao, M, 23);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text((semanaTxt ? semanaTxt + ' · ' : '') + new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }), M, 31);
+  return 48;
+}
 
-  const cardConsultora = (c, i) => {
-    const ultimo = ultimoRegistroDe(c);
-    const ticket = ticketMedioDe(c);
-    const alturaExtra = ultimo ? 28 : 0;
-    chk(46 + alturaExtra);
-    fill(M, y, W - M * 2, 44 + alturaExtra, ...(i % 2 === 0 ? [252, 251, 250] : [255, 255, 255]));
-    doc.setDrawColor(220, 215, 225); doc.setLineWidth(0.2);
-    doc.rect(M, y, W - M * 2, 44 + alturaExtra);
-
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(15, 10, 20);
-    doc.text((i + 1) + '. ' + c.nome, M + 4, y + 8);
-
-    const infoLinha1 = [c.telefone, c.cidade].filter(Boolean).join(' · ');
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(107, 100, 120);
-    doc.text(infoLinha1 || '—', M + 4, y + 14);
-
-    const diaHora = [c.diaMelhor, c.horarioMelhor].filter(Boolean).join(' · ');
-    doc.text('Melhor dia/horário: ' + (diaHora || 'não definido'), M + 4, y + 19.5);
-
-    const rota = c.observacaoRota || c.obsRota || '';
-    doc.text('Bairro: ' + (c.bairro || '—') + (c.cpf ? '   ·   CPF: ' + c.cpf : ''), M + 4, y + 25);
-    if (rota) {
-      doc.setFont('helvetica', 'italic');
-      doc.text('Rota: ' + rota, M + 4, y + 30.5, { maxWidth: W - M * 2 - 8 });
-      doc.setFont('helvetica', 'normal');
-    }
-
-    const linhaBase = rota ? 37.5 : 30.5;
-    if (ultimo) {
-      const scoreAtual = calcScore(ultimo.reg);
-      const favorita = !!ultimo.reg.pedidoFavoritaFeito;
-      doc.setDrawColor(220, 215, 225);
-      doc.line(M + 4, y + linhaBase, W - M - 4, y + linhaBase);
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(150, 150, 160);
-      doc.text('Semana ' + ultimo.sem.numero + ' (mais recente)', M + 4, y + linhaBase + 5);
-      const colW = (W - M * 2 - 8) / 4;
-      const cols = [
-        ['Score', scoreAtual, scoreAtual >= 80 ? [10, 143, 92] : scoreAtual >= 50 ? [183, 138, 59] : [184, 90, 85]],
-        ['Vendido', brlP(ultimo.reg.vendido || 0), [15, 10, 20]],
-        ['Recebido', brlP(ultimo.reg.recebido || 0), [10, 143, 92]],
-        ['Favorita', favorita ? 'Sim' : 'Não', favorita ? [10, 143, 92] : [184, 90, 85]],
-      ];
-      cols.forEach(([lbl, v, clr], vi) => {
-        const vx = M + 4 + vi * colW;
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(6); doc.setTextColor(150, 150, 160);
-        doc.text(lbl, vx, y + linhaBase + 10);
-        doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...clr);
-        doc.text(String(v), vx, y + linhaBase + 14.5);
-      });
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(107, 100, 120);
-      const ticketTxt = ticket ? 'Ticket médio (últimas ' + ticket.qtdSemanas + ' semana' + (ticket.qtdSemanas > 1 ? 's' : '') + '): ' + brlP(ticket.valor) : 'Ticket médio: —';
-      doc.text(ticketTxt, M + 4, y + linhaBase + 21);
-    } else {
-      doc.setFont('helvetica', 'italic'); doc.setFontSize(7.5); doc.setTextColor(150, 150, 160);
-      doc.text('Ainda sem nenhum atendimento registrado', M + 4, y + linhaBase + 5);
-    }
-
-    y += 44 + alturaExtra + 4;
-  };
-
-  chk(10);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(15, 10, 20);
-  doc.text('ATIVAS (' + ativas.length + ')', M, y); y += 6;
-  ativas.forEach((c, i) => cardConsultora(c, i));
-
-  if (inativas.length) {
-    chk(10);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(15, 10, 20);
-    doc.text('INATIVAS (' + inativas.length + ')', M, y); y += 6;
-    inativas.forEach((c, i) => cardConsultora(c, i));
-  }
-
+function _rodapePDFConsultoras(doc, W, M, regiao) {
   const totalPag = doc.internal.getNumberOfPages();
   for (let p = 1; p <= totalPag; p++) {
     doc.setPage(p);
     doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(160, 155, 165);
-    doc.text('Gestão Representante · ' + regiao, M, 289);
+    doc.text('Time Estrelas · ' + regiao, M, 289);
     doc.text('Página ' + p + ' de ' + totalPag, W - M - 22, 289);
   }
+}
 
-  doc.save('consultoras-' + regiao.toLowerCase().replace(/\s+/g, '-') + '.pdf');
+// Última semana (de qualquer região) onde a consultora foi de fato atendida —
+// mesma lógica usada pro Score atualizado na tela de Consultoras.
+function _ultimoRegistroDe(c) {
+  const semanasComEla = [...(DB.semanas || [])]
+    .filter(s => (s.consultoras || []).some(x => x.id === c.id && foiAtendida(x)))
+    .sort((a, b) => (b.numero || 0) - (a.numero || 0));
+  return semanasComEla.length ? { reg: semanasComEla[0].consultoras.find(x => x.id === c.id), sem: semanasComEla[0] } : null;
+}
+
+// Ticket médio: média do valor vendido nas últimas 3 semanas em que ela foi atendida de fato
+// (não conta semanas remarcadas, que não são um atendimento de verdade).
+function _ticketMedioDe(c) {
+  const semanasComEla = [...(DB.semanas || [])]
+    .filter(s => (s.consultoras || []).some(x => x.id === c.id && foiAtendida(x)))
+    .sort((a, b) => (b.numero || 0) - (a.numero || 0))
+    .slice(0, 3);
+  if (!semanasComEla.length) return null;
+  const soma = semanasComEla.reduce((a, s) => a + (s.consultoras.find(x => x.id === c.id).vendido || 0), 0);
+  return { valor: soma / semanasComEla.length, qtdSemanas: semanasComEla.length };
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 📋 CARTEIRA COMPLETA — lista compacta das consultoras ativas da região,
+// pra imprimir e trabalhar com a carteira. Uma linha enxuta por consultora,
+// bem mais compacta que o card grande de antes, pra caber muito mais por página.
+// ──────────────────────────────────────────────────────────────────────────
+async function gerarPDFCarteiraCompleta() {
+  const regiao = gerenciarRegiao;
+  if (!regiao) return;
+  const jsPDFClass = await _garantirJsPDF();
+  const brlP = v => 'R$ ' + (v||0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const doc = new jsPDFClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 14;
+  let y = _capaPDFConsultoras(doc, W, M, 'CARTEIRA COMPLETA', regiao);
+
+  const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa')
+    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+
+  const chk = (n) => { if (y + n > 283) { doc.addPage(); y = 14; } };
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(15, 10, 20);
+  doc.text('CONSULTORAS ATIVAS (' + ativas.length + ')', M, y); y += 6;
+
+  ativas.forEach((c, i) => {
+    const ultimo = _ultimoRegistroDe(c);
+    const ticket = _ticketMedioDe(c);
+    const linhaH = 18;
+    chk(linhaH);
+
+    if (i % 2 === 0) { doc.setFillColor(248, 247, 245); doc.rect(M, y, W - M * 2, linhaH, 'F'); }
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(15, 10, 20);
+    doc.text((i + 1) + '. ' + c.nome, M + 2, y + 5);
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(107, 100, 120);
+    const linha1 = [c.cidade, c.telefone, c.bairro ? 'Bairro ' + c.bairro : null, [c.diaMelhor, c.horarioMelhor].filter(Boolean).join(' ')].filter(Boolean).join('  ·  ');
+    doc.text(linha1 || '—', M + 2, y + 10);
+
+    if (ultimo) {
+      const scoreAtual = calcScore(ultimo.reg);
+      const favorita = ultimo.reg.pedidoFavoritaFeito ? 'Favorita: Sim' : 'Favorita: Não';
+      const ticketTxt = ticket ? brlP(ticket.valor) : '—';
+      const debitoTxt = brlP(debitoDe(ultimo.reg));
+      doc.setTextColor(107, 100, 120);
+      doc.text(
+        'Sem.' + ultimo.sem.numero + '  ·  Score ' + scoreAtual + '  ·  Vendido ' + brlP(ultimo.reg.vendido||0) + '  ·  Pago ' + brlP(ultimo.reg.recebido||0) + '  ·  Débito ' + debitoTxt + '  ·  Ticket ' + ticketTxt + '  ·  ' + favorita,
+        M + 2, y + 15
+      );
+    } else {
+      doc.setFont('helvetica', 'italic'); doc.setTextColor(170, 165, 175);
+      doc.text('Ainda sem nenhum atendimento registrado', M + 2, y + 15);
+    }
+
+    doc.setDrawColor(230, 228, 224); doc.setLineWidth(0.15);
+    doc.line(M, y + linhaH, W - M, y + linhaH);
+    y += linhaH;
+  });
+
+  _rodapePDFConsultoras(doc, W, M, regiao);
+  doc.save('carteira-' + regiao.toLowerCase().replace(/\s+/g, '-') + '.pdf');
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 💰 RELATÓRIO FINANCEIRO — foco em conferência: vendido, pago, a pagar e
+// débito por consultora (com base no último atendimento registrado de cada
+// uma), mais o total da região no fim.
+// ──────────────────────────────────────────────────────────────────────────
+async function gerarPDFFinanceiroRegiao() {
+  const regiao = gerenciarRegiao;
+  if (!regiao) return;
+  const jsPDFClass = await _garantirJsPDF();
+  const brlP = v => 'R$ ' + (v||0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const doc = new jsPDFClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 14;
+  let y = _capaPDFConsultoras(doc, W, M, 'RELATÓRIO FINANCEIRO', regiao);
+  const chk = (n) => { if (y + n > 283) { doc.addPage(); y = 14; } };
+
+  const ativas = DB.consultoras.filter(c => c.regiao === regiao && c.status !== 'inativa')
+    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+
+  // Dados de cada consultora: último registro de atendimento dela (mesma base da Carteira)
+  const linhas = ativas.map(c => {
+    const ultimo = _ultimoRegistroDe(c);
+    const ticket = _ticketMedioDe(c);
+    if (!ultimo) return { nome: c.nome, vendido: 0, pago: 0, aPagar: 0, debito: 0, ticket: null, semNum: null };
+    return {
+      nome: c.nome,
+      vendido: ultimo.reg.vendido || 0,
+      pago: ultimo.reg.recebido || 0,
+      aPagar: aPagarDe(ultimo.reg),
+      debito: debitoDe(ultimo.reg),
+      ticket: ticket ? ticket.valor : null,
+      semNum: ultimo.sem.numero,
+    };
+  });
+
+  const totVendido = linhas.reduce((a,l)=>a+l.vendido,0);
+  const totPago = linhas.reduce((a,l)=>a+l.pago,0);
+  const totAPagar = linhas.reduce((a,l)=>a+l.aPagar,0);
+  const totDebito = linhas.reduce((a,l)=>a+l.debito,0);
+  const comTicket = linhas.filter(l => l.ticket != null);
+  const ticketMedioGeral = comTicket.length ? comTicket.reduce((a,l)=>a+l.ticket,0)/comTicket.length : 0;
+
+  // Pix/Dinheiro — soma direto das semanas mais recentes de cada consultora, usando
+  // a mesma divisão da tela Recebido.
+  let totPix = 0, totDin = 0;
+  ativas.forEach(c => {
+    const ultimo = _ultimoRegistroDe(c);
+    if (!ultimo) return;
+    const s = splitRecebido(ultimo.reg);
+    totPix += s.pix; totDin += s.din;
+  });
+
+  // ── Resumo da região
+  chk(34);
+  doc.setFillColor(248, 247, 245); doc.rect(M, y, W - M*2, 30, 'F');
+  const kpis = [
+    ['Vendido', brlP(totVendido)], ['Pago', brlP(totPago)],
+    ['A Pagar', brlP(totAPagar)], ['Débitos', brlP(totDebito)],
+    ['Pix', brlP(totPix)], ['Dinheiro', brlP(totDin)],
+  ];
+  const kpiColW = (W - M*2) / 3;
+  kpis.forEach(([lbl, v], i) => {
+    const kx = M + (i % 3) * kpiColW + 4;
+    const ky = y + 7 + Math.floor(i/3) * 14;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(140, 135, 145);
+    doc.text(lbl.toUpperCase(), kx, ky);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(15, 10, 20);
+    doc.text(v, kx, ky + 5.5);
+  });
+  y += 36;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(107, 100, 120);
+  doc.text('Ticket médio geral: ' + brlP(ticketMedioGeral), M, y); y += 10;
+
+  // ── Por consultora
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(15, 10, 20);
+  doc.text('POR CONSULTORA', M, y); y += 7;
+
+  linhas.forEach((l, i) => {
+    chk(13);
+    if (i % 2 === 0) { doc.setFillColor(248, 247, 245); doc.rect(M, y, W - M*2, 13, 'F'); }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(15, 10, 20);
+    doc.text(l.nome, M + 2, y + 5.5);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(107, 100, 120);
+    const txt = l.semNum
+      ? 'Vendido ' + brlP(l.vendido) + '  ·  Pago ' + brlP(l.pago) + '  ·  A pagar ' + brlP(l.aPagar) + '  ·  Débito ' + brlP(l.debito) + '  ·  Ticket ' + (l.ticket!=null ? brlP(l.ticket) : '—')
+      : 'Sem atendimento registrado ainda';
+    doc.text(txt, M + 2, y + 10.5);
+    y += 13;
+  });
+
+  // ── Total da região
+  chk(26);
+  doc.setDrawColor(138, 0, 56); doc.setLineWidth(0.5);
+  doc.line(M, y, W - M, y); y += 7;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(15, 10, 20);
+  doc.text('TOTAL DA REGIÃO', M, y); y += 7;
+  const totKpis = [['Vendido', totVendido], ['Recebido', totPago], ['A Receber', totAPagar], ['Débitos', totDebito]];
+  const totColW = (W - M*2) / 4;
+  totKpis.forEach(([lbl, v], i) => {
+    const kx = M + i * totColW;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(140, 135, 145);
+    doc.text(lbl.toUpperCase(), kx, y);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(15, 10, 20);
+    doc.text(brlP(v), kx, y + 5.5);
+  });
+
+  _rodapePDFConsultoras(doc, W, M, regiao);
+  doc.save('financeiro-' + regiao.toLowerCase().replace(/\s+/g, '-') + '.pdf');
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// 📊 RELATÓRIO DE FECHAMENTO — resumo gerencial da semana mais recente dessa
+// região: meta, vendido, recebido, cobertura, remarcações, novas, ativas/
+// inativas e a análise da IA, se já tiver sido gerada pra essa semana.
+// ──────────────────────────────────────────────────────────────────────────
+async function gerarPDFFechamentoRegiao() {
+  const regiao = gerenciarRegiao;
+  if (!regiao) return;
+
+  const sem = [...(DB.semanas||[])].filter(s => s.regiao === regiao).sort((a,b) => (b.numero||0)-(a.numero||0))[0];
+  if (!sem) { alert('Nenhuma semana encontrada para ' + regiao + ' ainda.'); return; }
+
+  const jsPDFClass = await _garantirJsPDF();
+  const brlP = v => 'R$ ' + (v||0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const doc = new jsPDFClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 14;
+  let y = _capaPDFConsultoras(doc, W, M, 'RELATÓRIO DE FECHAMENTO', regiao, 'Semana ' + sem.numero);
+  const chk = (n) => { if (y + n > 283) { doc.addPage(); y = 14; } };
+
+  const vendido = vendidoSemana(sem);
+  const recebido = recebidoSemana(sem);
+  const aReceber = debitoSemana(sem);
+  const meta = sem.meta || 15000;
+  const pctMeta = meta > 0 ? Math.min(999, Math.round(recebido/meta*100)) : 0;
+  const previstas = sem.consultoras.length;
+  const atendidas = sem.consultoras.filter(foiAtendida).length;
+  const pendentes = sem.consultoras.filter(c => c.status !== 'concluida').length;
+  const cobertura = previstas > 0 ? Math.round(atendidas/previstas*100) : 0;
+  const remSemana = sem.consultoras.filter(c => c.remarcarSemana).length;
+  const remMes = sem.consultoras.filter(c => c.remarcarMes).length;
+  const pararamVender = sem.consultoras.filter(c => c.parouDeVender).length;
+  const novas = sem.consultoras.filter(c => contaComoNova(c, sem)).length;
+  const cadastroRegiao = DB.consultoras.filter(c => c.regiao === regiao);
+  const ativasCount = cadastroRegiao.filter(c => c.status !== 'inativa').length;
+  const inativasCount = cadastroRegiao.filter(c => c.status === 'inativa').length;
+  const comTicket = sem.consultoras.filter(c => foiAtendida(c)).map(c => _ticketMedioDe(c)).filter(Boolean);
+  const ticketMedio = comTicket.length ? comTicket.reduce((a,t)=>a+t.valor,0)/comTicket.length : 0;
+
+  // ── Resultado da semana
+  chk(34);
+  doc.setFillColor(248, 247, 245); doc.rect(M, y, W - M*2, 30, 'F');
+  const kpis = [
+    ['Meta', brlP(meta)], ['Vendido', brlP(vendido)],
+    ['Recebido', brlP(recebido)], ['A Receber', brlP(aReceber)],
+    ['% da Meta', pctMeta+'%'], ['Ticket Médio', brlP(ticketMedio)],
+  ];
+  const kpiColW = (W - M*2) / 3;
+  kpis.forEach(([lbl, v], i) => {
+    const kx = M + (i % 3) * kpiColW + 4;
+    const ky = y + 7 + Math.floor(i/3) * 14;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(140, 135, 145);
+    doc.text(lbl.toUpperCase(), kx, ky);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10.5); doc.setTextColor(15, 10, 20);
+    doc.text(String(v), kx, ky + 5.5);
+  });
+  y += 38;
+
+  // ── Consultoras
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(15, 10, 20);
+  doc.text('CONSULTORAS', M, y); y += 7;
+  chk(26);
+  doc.setFillColor(248, 247, 245); doc.rect(M, y, W - M*2, 22, 'F');
+  const consKpis = [
+    ['Previstas', previstas], ['Atendidas', atendidas], ['Pendentes', pendentes], ['Cobertura', cobertura+'%'],
+    ['Rem. Semana', remSemana], ['Rem. Mês', remMes], ['Pararam de vender', pararamVender], ['Novas', novas],
+  ];
+  const consColW = (W - M*2) / 4;
+  consKpis.forEach(([lbl, v], i) => {
+    const kx = M + (i % 4) * consColW + 4;
+    const ky = y + 7 + Math.floor(i/4) * 11;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5); doc.setTextColor(140, 135, 145);
+    doc.text(lbl.toUpperCase(), kx, ky);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5); doc.setTextColor(15, 10, 20);
+    doc.text(String(v), kx, ky + 5);
+  });
+  y += 28;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(107, 100, 120);
+  doc.text('Cadastro da região: ' + ativasCount + ' ativas · ' + inativasCount + ' inativas', M, y);
+  y += 10;
+
+  // ── Destaques
+  const topVendedora = [...sem.consultoras].filter(c=>(c.vendido||0)>0).sort((a,b)=>(b.vendido||0)-(a.vendido||0))[0];
+  const comDebitoReg = sem.consultoras.filter(c => debitoDe(c) > 0).length;
+  chk(20);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(15, 10, 20);
+  doc.text('PRINCIPAIS DESTAQUES', M, y); y += 7;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(60, 55, 65);
+  doc.text('• Maior venda: ' + (topVendedora ? topVendedora.nome + ' (' + brlP(topVendedora.vendido) + ')' : '—'), M, y); y += 6;
+  doc.text('• Consultoras com débito em aberto: ' + comDebitoReg, M, y); y += 6;
+  doc.text('• Cobertura da carteira: ' + cobertura + '% (' + atendidas + ' de ' + previstas + ')', M, y); y += 10;
+
+  // ── Análise da IA (se já foi gerada pra esta mesma semana)
+  if (window._relatorioIATexto && window._relatorioIASemanaId === sem.id) {
+    chk(16);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(15, 10, 20);
+    doc.text('ANÁLISE DA IA', M, y); y += 7;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(60, 55, 65);
+    const linhasIA = doc.splitTextToSize(window._relatorioIATexto, W - M*2);
+    linhasIA.forEach(linha => { chk(5.5); doc.text(linha, M, y); y += 5; });
+  }
+
+  _rodapePDFConsultoras(doc, W, M, regiao);
+  doc.save('fechamento-' + regiao.toLowerCase().replace(/\s+/g, '-') + '-semana-' + sem.numero + '.pdf');
 }
 
 function inativarConsultora(id) {
