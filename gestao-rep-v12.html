@@ -1985,7 +1985,7 @@ input[type="time"]{max-width:100%;}
   <div class="scroll-body" style="padding:0 16px 80px;">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;">
       <div style="background:var(--rose-light);border-radius:12px;padding:12px;">
-        <div style="color:var(--rose-deep);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;">Ativas</div>
+        <div style="color:var(--rose-deep);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;">Ativas · todos os setores</div>
         <div style="color:var(--rose-deep);font-size:24px;font-weight:800;" id="gerAtivas">0</div>
       </div>
       <button onclick="abrirInativasTodas()" style="background:white;border:1px solid var(--border);border-radius:12px;padding:12px;text-align:left;cursor:pointer;font-family:var(--font);">
@@ -8820,6 +8820,7 @@ function renderGerenciar() {
   if (limparGerBtn) limparGerBtn.style.display = termoGer ? 'flex' : 'none';
   document.getElementById('gerenciarTitulo').textContent = regiao;
   document.getElementById('gerInativas').textContent = DB.consultoras.filter(c => c.status === 'inativa').length;
+  document.getElementById('gerAtivas').textContent = DB.consultoras.filter(c => c.status !== 'inativa').length;
 
   if (termoGer) {
     document.getElementById('gerSecaoRegioes').style.display = 'none';
@@ -8829,7 +8830,6 @@ function renderGerenciar() {
       .filter(c => c.status !== 'inativa' && (c.nome || '').toLowerCase().includes(termoGer))
       .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
     document.getElementById('gerListaTitulo').textContent = resultados.length + ' resultado' + (resultados.length !== 1 ? 's' : '') + ' para "' + buscaGerEl.value.trim() + '"';
-    document.getElementById('gerAtivas').textContent = resultados.length;
     const listaAtBusca = document.getElementById('gerListaAtivas');
     if (!resultados.length) {
       listaAtBusca.innerHTML = '<div style="text-align:center;padding:16px;color:var(--ink-3);font-size:13px;">Nenhuma consultora encontrada em nenhum setor.</div>';
@@ -8874,7 +8874,6 @@ function renderGerenciar() {
     .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
 
   document.getElementById('gerenciarTitulo').textContent = regiao;
-  document.getElementById('gerAtivas').textContent = ativas.length;
   document.getElementById('gerInativas').textContent = DB.consultoras.filter(c => c.status === 'inativa').length;
 
   // Botões das 6 regiões, com a quantidade de consultoras ativas em cada uma
