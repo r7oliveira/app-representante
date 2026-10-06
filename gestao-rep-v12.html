@@ -1994,14 +1994,23 @@ input[type="time"]{max-width:100%;}
       </button>
     </div>
 
+    <!-- Busca por nome, em todos os setores -->
+    <div style="margin:0 0 16px;position:relative;">
+      <input type="text" id="buscaConsultorasGlobal" oninput="renderGerenciar()" placeholder="Buscar consultora em todos os setores..." style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px 36px 10px 36px;font-size:13px;font-family:var(--font);color:var(--ink);background:white;outline:none;box-sizing:border-box;">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink-3);">🔍</span>
+      <button type="button" id="buscaConsultorasGlobalLimpar" onclick="document.getElementById('buscaConsultorasGlobal').value='';renderGerenciar();" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:var(--border);color:var(--ink-3);font-size:13px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;">✕</button>
+    </div>
+
     <!-- Regiões -->
-    <div style="padding-left:0;font-size:19px;font-weight:800;color:var(--ink);font-family:var(--font-serif);text-transform:none;letter-spacing:normal;margin-bottom:8px;">Regiões</div>
-    <div id="gerRegioesRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px;"></div>
+    <div id="gerSecaoRegioes">
+      <div style="padding-left:0;font-size:19px;font-weight:800;color:var(--ink);font-family:var(--font-serif);text-transform:none;letter-spacing:normal;margin-bottom:8px;">Regiões</div>
+      <div id="gerRegioesRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px;"></div>
+    </div>
 
     <!-- Ativas -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;">
-      <span style="font-size:13px;font-weight:700;color:var(--ink-2);">Consultoras ativas</span>
-      <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
+      <span style="font-size:13px;font-weight:700;color:var(--ink-2);" id="gerListaTitulo">Consultoras ativas</span>
+      <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;" id="gerAcoesTopo">
         <button onclick="document.getElementById('modalEscolhaPDF').classList.add('open')" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">PDF</button>
         <button onclick="abrirModalConsultora()" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">+ Nova</button>
       </div>
@@ -8801,6 +8810,52 @@ function toggleInativasGerenciar() {
 
 function renderGerenciar() {
   const regiao = gerenciarRegiao;
+
+  // Busca por nome em todos os setores — quando tem texto digitado, troca a lista
+  // de "só essa região" por uma lista achatada com todas as batidas, mostrando
+  // o setor de cada uma, e esconde a navegação por região enquanto isso.
+  const buscaGerEl = document.getElementById('buscaConsultorasGlobal');
+  const termoGer = buscaGerEl ? buscaGerEl.value.trim().toLowerCase() : '';
+  const limparGerBtn = document.getElementById('buscaConsultorasGlobalLimpar');
+  if (limparGerBtn) limparGerBtn.style.display = termoGer ? 'flex' : 'none';
+  document.getElementById('gerenciarTitulo').textContent = regiao;
+  document.getElementById('gerInativas').textContent = DB.consultoras.filter(c => c.status === 'inativa').length;
+
+  if (termoGer) {
+    document.getElementById('gerSecaoRegioes').style.display = 'none';
+    const acoesTopoEl = document.getElementById('gerAcoesTopo');
+    if (acoesTopoEl) acoesTopoEl.style.display = 'none';
+    const resultados = DB.consultoras
+      .filter(c => c.status !== 'inativa' && (c.nome || '').toLowerCase().includes(termoGer))
+      .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+    document.getElementById('gerListaTitulo').textContent = resultados.length + ' resultado' + (resultados.length !== 1 ? 's' : '') + ' para "' + buscaGerEl.value.trim() + '"';
+    document.getElementById('gerAtivas').textContent = resultados.length;
+    const listaAtBusca = document.getElementById('gerListaAtivas');
+    if (!resultados.length) {
+      listaAtBusca.innerHTML = '<div style="text-align:center;padding:16px;color:var(--ink-3);font-size:13px;">Nenhuma consultora encontrada em nenhum setor.</div>';
+    } else {
+      listaAtBusca.innerHTML = '<div class="card" style="margin-bottom:12px;">' + resultados.map(c => `
+        <div class="card-row" style="padding:14px 16px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nome}</div>
+            <div style="font-size:12px;color:var(--ink-3);margin-top:3px;">
+              <span style="color:var(--rose-deep);font-weight:700;">${c.regiao || 'Sem setor'}</span>
+              ${c.cidade ? ' · ' + c.cidade : ''}${c.horarioMelhor ? ' · ' + c.horarioMelhor : ''}
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
+            <button onclick="editarConsultora('${c.id}')" style="font-size:15px;background:none;border:none;cursor:pointer;color:var(--rose-deep);">✎</button>
+            <button onclick="document.getElementById('buscaConsultorasGlobal').value='';trocarRegiaoGerenciar('${c.regiao}')" style="font-size:11px;font-weight:700;background:none;border:none;cursor:pointer;color:var(--rose-deep);white-space:nowrap;">Ir ao setor →</button>
+          </div>
+        </div>`).join('') + '</div>';
+    }
+    return;
+  }
+  document.getElementById('gerSecaoRegioes').style.display = '';
+  const acoesTopoEl2 = document.getElementById('gerAcoesTopo');
+  if (acoesTopoEl2) acoesTopoEl2.style.display = '';
+  document.getElementById('gerListaTitulo').textContent = 'Consultoras ativas';
+
   const ORDEM_DIAS = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
   const ordemDia = (c) => {
     const i = ORDEM_DIAS.indexOf(c.diaMelhor);
