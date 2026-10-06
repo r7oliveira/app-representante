@@ -6457,8 +6457,9 @@ function adicionarUmaConsultora(id) {
   cons.favoritaProximaPendente = false;
   sem.consultoras.push({...cons, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:favoritaJaPendente, pedidoFavoritaProxima:false, consultoraNova: !!cons.novaConsultora});
   save();
-  fecharModal('modalRegistro');
   renderSemana();
+  // Mantém o modal aberto pra dar pra adicionar várias seguidas — só fecha no X.
+  abrirModalAdicionarConsultora();
 }
 
 function adicionarConsultorasSemana() {
