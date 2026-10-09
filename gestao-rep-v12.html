@@ -5442,7 +5442,11 @@ function comissaoPctDe(c) {
 }
 
 // Valor "A Pagar" por uma consultora: o que sobra do valor vendido depois da comissão.
+// Se o valor a pagar foi ajustado manualmente na tela de Venda e Pagamento, usa esse
+// valor salvo em vez de recalcular do zero — senão um ajuste manual nunca aparecia
+// certo no resto do app (Cobranças, PDF, Fechamento), só na própria tela de edição.
 function aPagarDe(c) {
+  if ((c.vendido||0) > 0 && (c.aPagar||0) > 0) return c.aPagar;
   return Math.round((c.vendido||0) * (100 - comissaoPctDe(c)) / 100 * 100) / 100;
 }
 
