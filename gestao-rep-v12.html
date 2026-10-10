@@ -5456,13 +5456,14 @@ function lucroDe(c) {
 }
 
 // Débito pendente de uma consultora NESTA semana: se ela vendeu, é A Pagar menos o
-// que já foi recebido (descontando pagamentos de débito antigo feitos à parte, que
-// não entram no `recebido` da nota mas já reduziram a dívida de fato). Se não vendeu
-// nada nesta semana, usa o campo de débito já salvo (carregado de semanas/visitas
-// anteriores).
+// que já foi recebido da nota desta semana. Um pagamento de débito antigo (de outra
+// nota/semana, registrado à parte) é uma dívida DIFERENTE — nunca abate o débito da
+// nota atual, mesmo quando os dois ficam salvos na mesma consultora/semana.
+// Se não vendeu nada nesta semana, usa o campo de débito já salvo (carregado de
+// semanas/visitas anteriores).
 function debitoDe(c) {
   if ((c.vendido||0) > 0) {
-    return Math.max(0, debitoRestante(aPagarDe(c), c.recebido||0) - (c.debitoOutrasNotasPago||0));
+    return debitoRestante(aPagarDe(c), c.recebido||0);
   }
   return c.debito || 0;
 }
