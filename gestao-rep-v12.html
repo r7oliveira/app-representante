@@ -10372,8 +10372,12 @@ async function gerarPDF() {
       doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(150,150,160); doc.text(lbl,vx,y+16);
       doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...clr); doc.text(brlP(v),vx,y+21);
     });
-    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(0,0,0);
-    doc.text('Pix: '+brlP(pixV)+'   ·   Dinheiro: '+brlP(dinV), M+3, y+28);
+    doc.setFont('helvetica','bold');doc.setFontSize(10.5);
+    doc.setTextColor(138,0,56);
+    doc.text('Pix: '+brlP(pixV), M+3, y+28.5);
+    const larguraPix = doc.getTextWidth('Pix: '+brlP(pixV));
+    doc.setTextColor(10,143,92);
+    doc.text('Dinheiro: '+brlP(dinV), M+3+larguraPix+6, y+28.5);
     doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(107,100,120);
     doc.text('Lucro: '+brlP(lc), M+3, y+32.5);
     y+=36;
