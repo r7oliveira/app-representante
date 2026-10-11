@@ -1467,6 +1467,18 @@ input[type="time"]{max-width:100%;}
      MODAL: ADMIN EDITA UMA SEMANA JÁ EXISTENTE
 ══════════════════════════════════════════ -->
 <!-- ══════════════════════════════════════════
+     MODAL: TROCAR SEMANA ATIVA
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalTrocarSemana">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <button class="modal-close" onclick="fecharModal('modalTrocarSemana')">✕</button>
+    <div class="modal-title">Trocar semana ativa</div>
+    <div style="font-size:12.5px;color:var(--ink-3);margin:-8px 0 14px;">Toque numa semana pra deixar ela como a ativa agora.</div>
+    <div id="trocarSemanaLista"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      MODAL: ESCOLHA DE RELATÓRIO PDF (tela Consultoras)
 ══════════════════════════════════════════ -->
 <div class="modal-overlay" id="modalEscolhaPDF">
@@ -1591,6 +1603,14 @@ input[type="time"]{max-width:100%;}
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4"/></svg>
       </div>
       <div style="flex:1;font-size:14px;font-weight:700;color:var(--ink);">Criar nova semana</div>
+      <span style="color:var(--ink-3);font-size:18px;">›</span>
+    </button>
+
+    <button onclick="fecharModal('modalMenuRapido');abrirTrocarSemana()" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:64px;box-sizing:border-box;">
+      <div style="width:40px;height:40px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--ink-2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+      </div>
+      <div style="flex:1;font-size:14px;font-weight:700;color:var(--ink);">Trocar semana ativa</div>
       <span style="color:var(--ink-3);font-size:18px;">›</span>
     </button>
 
@@ -5038,6 +5058,14 @@ function confirmarAdminCriarSemana() {
   const numero = parseInt(document.getElementById('acsNumero').value) || (((data.semanas||[]).length) ? Math.max(...data.semanas.map(s => s.numero || 0)) + 1 : 1);
   const meta = parseNum(document.getElementById('acsMeta').value) || (data.config && data.config.metaPadrao) || 15000;
 
+  // Já existe uma semana com esse número nessa região? Criar outra deixa a antiga
+  // (que pode já ter dados lançados) de lado, sem aparecer em lugar nenhum.
+  const jaExisteAdmin = (data.semanas || []).some(s => s.numero === numero && s.regiao === regiao);
+  if (jaExisteAdmin) {
+    const confirmaAdmin = confirm('Já existe uma Semana ' + numero + ' para ' + regiao + ' nessa pessoa, e ela pode já ter atendimentos lançados.\n\nCriar outra com esse mesmo número vai deixar a antiga de lado.\n\nCriar mesmo assim?');
+    if (!confirmaAdmin) return;
+  }
+
   const semanasNaRegiao = (data.semanas || []).filter(s => s.regiao === regiao);
   const ultima = semanasNaRegiao.length ? semanasNaRegiao[semanasNaRegiao.length - 1] : null;
 
@@ -7477,9 +7505,58 @@ function avancarStep3() {
 
 function voltarStep2() { mostrarStep(2); }
 
+// Lista todas as semanas já criadas (de todas as regiões), mais recente primeiro,
+// pra poder trocar qual é a "ativa" agora — útil se uma semana nova foi criada
+// sem querer por cima de uma que já tinha dados lançados.
+function abrirTrocarSemana() {
+  const lista = [...(DB.semanas || [])].sort((a, b) => {
+    const da = a.dataInicio || '', db_ = b.dataInicio || '';
+    return db_.localeCompare(da);
+  });
+  const listaEl = document.getElementById('trocarSemanaLista');
+  if (!lista.length) {
+    listaEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--ink-3);font-size:13px;">Nenhuma semana criada ainda.</div>';
+  } else {
+    listaEl.innerHTML = lista.map(s => {
+      const ativa = s.id === DB.semanaAtiva;
+      const atendidas = (s.consultoras || []).filter(foiAtendida).length;
+      const vendido = vendidoSemana(s);
+      return `
+      <div onclick="trocarParaSemana('${s.id}')" style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:${ativa ? 'var(--rose-light)' : 'var(--surface)'};border:1.5px solid ${ativa ? 'var(--rose-mid)' : 'var(--border)'};border-radius:14px;margin-bottom:8px;cursor:pointer;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:700;color:var(--ink);">Semana ${s.numero} · ${s.regiao || 'Sem região'}${ativa ? ' (ativa)' : ''}</div>
+          <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px;">${atendidas}/${(s.consultoras||[]).length} atendidas · Vendido ${brl(vendido)}</div>
+        </div>
+        ${ativa ? '<span style="color:var(--rose-deep);font-size:16px;">✓</span>' : '<span style="color:var(--ink-3);font-size:16px;">›</span>'}
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('modalTrocarSemana').classList.add('open');
+}
+
+function trocarParaSemana(id) {
+  const sem = DB.semanas.find(s => s.id === id);
+  if (!sem) return;
+  if (id === DB.semanaAtiva) { fecharModal('modalTrocarSemana'); return; }
+  DB.semanaAtiva = id;
+  save();
+  fecharModal('modalTrocarSemana');
+  renderSemana();
+}
+
 function confirmarCriarSemana() {
   const numInput = parseInt(document.getElementById('step3NumSemana').value) || proximoNumeroSemana();
   const metaInput = parseNum(document.getElementById('step3MetaInput').value) || DB.config.metaPadrao || 15000;
+
+  // Já existe uma semana com esse número nessa mesma região? Criar outra deixaria
+  // a antiga (possivelmente com dados já lançados) de fora, sem aparecer em lugar
+  // nenhum até alguém trocar a semana ativa manualmente — por isso avisa antes.
+  const jaExiste = DB.semanas.some(s => s.numero === numInput && s.regiao === criarRegiao);
+  if (jaExiste) {
+    const confirma = confirm('Já existe uma Semana ' + numInput + ' para ' + criarRegiao + ', e ela pode já ter atendimentos lançados.\n\nCriar outra semana com esse mesmo número vai deixar a antiga de lado (ela continua existindo, mas você precisa trocar manualmente pra voltar a vê-la).\n\nTem certeza que quer criar mesmo assim?');
+    if (!confirma) return;
+  }
+
   const semana = {
     id: uid(),
     numero: numInput,
@@ -10375,9 +10452,8 @@ async function gerarPDF() {
     doc.setFont('helvetica','bold');doc.setFontSize(10.5);
     doc.setTextColor(138,0,56);
     doc.text('Pix: '+brlP(pixV), M+3, y+28.5);
-    const larguraPix = doc.getTextWidth('Pix: '+brlP(pixV));
     doc.setTextColor(10,143,92);
-    doc.text('Dinheiro: '+brlP(dinV), M+3+larguraPix+6, y+28.5);
+    doc.text('Dinheiro: '+brlP(dinV), M+3+(W-M*2)/2, y+28.5);
     doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(107,100,120);
     doc.text('Lucro: '+brlP(lc), M+3, y+32.5);
     y+=36;
