@@ -5567,6 +5567,22 @@ function totalPixDinheiroSemana(sem) {
 // Uma consultora só conta como "atendida" de fato quando o atendimento foi concluído
 // SEM remarcação. Se ela foi remarcada (semana ou mês), o atendimento ainda está em
 // aberto — ela só volta a contar como atendida quando for visitada de novo.
+// Lista "de verdade" de uma semana: confere com o cadastro mestre e tira quem
+// ficou inativa ou mudou de região depois de ter sido incluída. Usada em todo
+// lugar que CONTA consultoras da semana (não só na tela de Atendimentos), pra
+// o número do topo nunca ficar maior do que quem realmente aparece pra atender.
+function consultorasValidasDe(sem) {
+  const regiaoSemNorm = (sem.regiao || '').trim().toLowerCase();
+  return sem.consultoras.filter(c => {
+    if (c.avulso) return false;
+    const mestre = DB.consultoras.find(m => m.id === c.id);
+    if (!mestre) return true;
+    if (mestre.status === 'inativa') return false;
+    const regiaoMestreNorm = (mestre.regiao || '').trim().toLowerCase();
+    return !regiaoMestreNorm || regiaoMestreNorm === regiaoSemNorm;
+  });
+}
+
 function foiAtendida(c) {
   return c.status === 'concluida' && !c.remarcarSemana && !c.remarcarMes;
 }
@@ -6133,42 +6149,6 @@ function ehConsultoraNova(c, sem) {
 function renderSemana() {
   const sem = getSemanaAtiva();
 
-  // Autocorreção pontual (roda só UMA vez por semana, marcada com _autocorrigida —
-  // rodar em todo render duplicava gente, porque cada sincronização disparava de novo).
-  if (sem && !sem._autocorrigida) {
-    let mudouAutocorrecao = false;
-
-    // Remove entradas duplicadas (mesmo id aparecendo mais de uma vez), mantendo a
-    // que tiver mais dados preenchidos (vendido/recebido/status concluída).
-    const porId = new Map();
-    sem.consultoras.forEach(c => {
-      const atual = porId.get(c.id);
-      if (!atual) { porId.set(c.id, c); return; }
-      const pontosC = (c.status === 'concluida' ? 2 : 0) + (c.vendido > 0 ? 1 : 0);
-      const pontosAtual = (atual.status === 'concluida' ? 2 : 0) + (atual.vendido > 0 ? 1 : 0);
-      if (pontosC > pontosAtual) porId.set(c.id, c);
-    });
-    if (porId.size !== sem.consultoras.length) {
-      sem.consultoras = [...porId.values()];
-      mudouAutocorrecao = true;
-    }
-
-    if (!sem.consultoras.some(c => c.status === 'concluida')) {
-      sem.consultoras.forEach(c => {
-        if (c.remarcarSemana || c.remarcarMes) { c.remarcarSemana = false; c.remarcarMes = false; mudouAutocorrecao = true; }
-      });
-      const idsNaSemanaAtual = new Set(sem.consultoras.map(c => c.id));
-      const faltando = DB.consultoras.filter(c => c.regiao === sem.regiao && c.status !== 'inativa' && !idsNaSemanaAtual.has(c.id));
-      if (faltando.length) {
-        faltando.forEach(c => sem.consultoras.push({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, pedidoFavoritaProxima:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!c.novaConsultora}));
-        mudouAutocorrecao = true;
-      }
-    }
-
-    sem._autocorrigida = true;
-    if (mudouAutocorrecao) save();
-  }
-
   renderAgendaHoje();
   atualizarObsBanner();
 
@@ -6214,8 +6194,9 @@ function renderSemana() {
     return;
   }
 
-  const atendidas = sem.consultoras.filter(c => c.status === 'concluida').length;
-  const total = sem.consultoras.length;
+  const consultorasValidas = consultorasValidasDe(sem);
+  const atendidas = consultorasValidas.filter(c => c.status === 'concluida').length;
+  const total = consultorasValidas.length;
   const pctC = total > 0 ? Math.round(atendidas/total*100) : 0;
   const vendido = vendidoSemana(sem);
   const recebido = recebidoSemana(sem);
@@ -6264,16 +6245,16 @@ function renderSemana() {
     heroRecebidoPixDinEl.textContent = 'Pix: ' + brl(pixDinSemana.pix) + ' · Dinheiro: ' + brl(pixDinSemana.din);
   }
   document.getElementById('heroCobrancas').textContent = brl(cobrancas);
-  document.getElementById('heroPendentes').textContent = sem.consultoras.filter(c => c.debito > 0).length;
+  document.getElementById('heroPendentes').textContent = consultorasValidas.filter(c => c.debito > 0).length;
 
   // Contadores de status
-  const pendentesAgora = sem.consultoras.filter(c => c.status !== 'concluida');
-  const nAtendidas   = sem.consultoras.filter(c => foiAtendida(c)).length;
-  const nRemSemana   = sem.consultoras.filter(c => c.remarcarSemana).length;
-  const nRemMes      = sem.consultoras.filter(c => c.remarcarMes).length;
-  const nNovas       = sem.consultoras.filter(c => contaComoNova(c, sem)).length;
-  const nSemFavorita = sem.consultoras.filter(c => foiAtendida(c) && !c.pedidoFavoritaFeito).length;
-  const nInativas    = sem.consultoras.filter(c => c.parouDeVender).length;
+  const pendentesAgora = consultorasValidas.filter(c => c.status !== 'concluida');
+  const nAtendidas   = consultorasValidas.filter(c => foiAtendida(c)).length;
+  const nRemSemana   = consultorasValidas.filter(c => c.remarcarSemana).length;
+  const nRemMes      = consultorasValidas.filter(c => c.remarcarMes).length;
+  const nNovas       = consultorasValidas.filter(c => contaComoNova(c, sem)).length;
+  const nSemFavorita = consultorasValidas.filter(c => foiAtendida(c) && !c.pedidoFavoritaFeito).length;
+  const nInativas    = consultorasValidas.filter(c => c.parouDeVender).length;
   document.getElementById('cntAtendidas').textContent   = nAtendidas;
   document.getElementById('cntRemSemana').textContent   = nRemSemana;
   document.getElementById('cntRemMes').textContent      = nRemMes;
