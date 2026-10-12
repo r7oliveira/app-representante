@@ -5075,15 +5075,22 @@ function confirmarAdminCriarSemana() {
       const mestre = (data.consultoras || []).find(m => m.id === c.id);
       const favoritaJaPendente = !!(mestre && mestre.favoritaProximaPendente);
       if (mestre) mestre.favoritaProximaPendente = false;
-      return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false };
+      return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false };
     });
+    // Inclui também quem é ativa na região agora mas não estava na semana anterior
+    // (nova ou reativada depois) — senão a semana nova nunca cresce além do ciclo passado.
+    const idsJaIncluidosAdmin = new Set(consultoras.map(c => c.id));
+    const extrasAdmin = (data.consultoras || [])
+      .filter(c => c.regiao === regiao && c.status !== 'inativa' && !idsJaIncluidosAdmin.has(c.id))
+      .map(c => ({ ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: false, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false }));
+    consultoras = consultoras.concat(extrasAdmin);
   } else {
     consultoras = (data.consultoras || [])
       .filter(c => c.regiao === regiao && c.status !== 'inativa')
       .map(c => {
         const favoritaJaPendente = !!c.favoritaProximaPendente;
         c.favoritaProximaPendente = false;
-        return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false };
+        return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false };
       });
   }
 
@@ -6125,6 +6132,25 @@ function ehConsultoraNova(c, sem) {
 
 function renderSemana() {
   const sem = getSemanaAtiva();
+
+  // Autocorreção pontual: semanas criadas antes dessa correção podem ter herdado
+  // remarcações da semana passada sem querer, ou ficado faltando gente que é ativa
+  // na região agora. Só mexe se ninguém ainda foi atendida nesta semana (senão pode
+  // estar apagando uma remarcação de verdade feita agora).
+  if (sem && !sem.consultoras.some(c => c.status === 'concluida')) {
+    let mudouAutocorrecao = false;
+    sem.consultoras.forEach(c => {
+      if (c.remarcarSemana || c.remarcarMes) { c.remarcarSemana = false; c.remarcarMes = false; mudouAutocorrecao = true; }
+    });
+    const idsNaSemanaAtual = new Set(sem.consultoras.map(c => c.id));
+    const faltando = DB.consultoras.filter(c => c.regiao === sem.regiao && c.status !== 'inativa' && !idsNaSemanaAtual.has(c.id));
+    if (faltando.length) {
+      faltando.forEach(c => sem.consultoras.push({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, pedidoFavoritaProxima:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!c.novaConsultora}));
+      mudouAutocorrecao = true;
+    }
+    if (mudouAutocorrecao) save();
+  }
+
   renderAgendaHoje();
   atualizarObsBanner();
 
@@ -7416,9 +7442,20 @@ function avancarStep2() {
 
   // Busca consultoras: primeiro da região, depois todas ativas como fallback
   let consBase = ultima
-    ? ultima.consultoras.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}))
+    ? ultima.consultoras.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}))
     : DB.consultoras.filter(c => c.regiao === criarRegiao && c.status !== 'inativa')
-        .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+        .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+
+  // Se veio da semana anterior, inclui também quem é ativa na região AGORA mas não
+  // estava na lista da semana passada (nova consultora, ou reativada depois) —
+  // senão a nova semana nunca cresce além de quem já estava no ciclo anterior.
+  if (ultima) {
+    const idsJaIncluidos = new Set(consBase.map(c => c.id));
+    const extras = DB.consultoras
+      .filter(c => c.regiao === criarRegiao && c.status !== 'inativa' && !idsJaIncluidos.has(c.id))
+      .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!c.novaConsultora}));
+    consBase = consBase.concat(extras);
+  }
 
   // Se não achou pela região, pega todas ativas do cadastro
   const todasAtivas = DB.consultoras.filter(c => c.status !== 'inativa');
@@ -7483,7 +7520,7 @@ function toggleConsStep2(id) {
   // Atualiza _criarConsultoras com as selecionadas
   window._criarConsultoras = (window._step2Todas||[])
     .filter(c => sel.has(c.id))
-    .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+    .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
   document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
 }
 
@@ -7498,7 +7535,7 @@ function selecionarTodasStep2() {
       chk.innerHTML = '<span style="color:white;font-size:11px;font-weight:800;">✓</span>';
     }
   });
-  window._criarConsultoras = todas.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+  window._criarConsultoras = todas.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
   document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
 }
 
