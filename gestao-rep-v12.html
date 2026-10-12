@@ -6133,21 +6133,39 @@ function ehConsultoraNova(c, sem) {
 function renderSemana() {
   const sem = getSemanaAtiva();
 
-  // Autocorreção pontual: semanas criadas antes dessa correção podem ter herdado
-  // remarcações da semana passada sem querer, ou ficado faltando gente que é ativa
-  // na região agora. Só mexe se ninguém ainda foi atendida nesta semana (senão pode
-  // estar apagando uma remarcação de verdade feita agora).
-  if (sem && !sem.consultoras.some(c => c.status === 'concluida')) {
+  // Autocorreção pontual (roda só UMA vez por semana, marcada com _autocorrigida —
+  // rodar em todo render duplicava gente, porque cada sincronização disparava de novo).
+  if (sem && !sem._autocorrigida) {
     let mudouAutocorrecao = false;
+
+    // Remove entradas duplicadas (mesmo id aparecendo mais de uma vez), mantendo a
+    // que tiver mais dados preenchidos (vendido/recebido/status concluída).
+    const porId = new Map();
     sem.consultoras.forEach(c => {
-      if (c.remarcarSemana || c.remarcarMes) { c.remarcarSemana = false; c.remarcarMes = false; mudouAutocorrecao = true; }
+      const atual = porId.get(c.id);
+      if (!atual) { porId.set(c.id, c); return; }
+      const pontosC = (c.status === 'concluida' ? 2 : 0) + (c.vendido > 0 ? 1 : 0);
+      const pontosAtual = (atual.status === 'concluida' ? 2 : 0) + (atual.vendido > 0 ? 1 : 0);
+      if (pontosC > pontosAtual) porId.set(c.id, c);
     });
-    const idsNaSemanaAtual = new Set(sem.consultoras.map(c => c.id));
-    const faltando = DB.consultoras.filter(c => c.regiao === sem.regiao && c.status !== 'inativa' && !idsNaSemanaAtual.has(c.id));
-    if (faltando.length) {
-      faltando.forEach(c => sem.consultoras.push({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, pedidoFavoritaProxima:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!c.novaConsultora}));
+    if (porId.size !== sem.consultoras.length) {
+      sem.consultoras = [...porId.values()];
       mudouAutocorrecao = true;
     }
+
+    if (!sem.consultoras.some(c => c.status === 'concluida')) {
+      sem.consultoras.forEach(c => {
+        if (c.remarcarSemana || c.remarcarMes) { c.remarcarSemana = false; c.remarcarMes = false; mudouAutocorrecao = true; }
+      });
+      const idsNaSemanaAtual = new Set(sem.consultoras.map(c => c.id));
+      const faltando = DB.consultoras.filter(c => c.regiao === sem.regiao && c.status !== 'inativa' && !idsNaSemanaAtual.has(c.id));
+      if (faltando.length) {
+        faltando.forEach(c => sem.consultoras.push({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, pedidoFavoritaProxima:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!c.novaConsultora}));
+        mudouAutocorrecao = true;
+      }
+    }
+
+    sem._autocorrigida = true;
     if (mudouAutocorrecao) save();
   }
 
