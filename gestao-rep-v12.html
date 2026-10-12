@@ -6278,7 +6278,14 @@ function renderSemana() {
   // Lista
   const lista = document.getElementById('listaConsultoras');
   const filtroAtend = window._filtroAtendimentos || 'pendentes';
-  let visiveis = sem.consultoras.filter(c => !c.avulso);
+  // Confere com o cadastro mestre: se ela ficou inativa ou mudou de região depois
+  // de ter sido incluída nesta semana, não deve mais aparecer em Atendimentos.
+  let visiveis = sem.consultoras.filter(c => {
+    if (c.avulso) return false;
+    const mestre = DB.consultoras.find(m => m.id === c.id);
+    if (!mestre) return true; // sem cadastro mestre (ex: avulsa antiga) — mantém como estava
+    return mestre.status !== 'inativa' && mestre.regiao === sem.regiao;
+  });
 
   // Contadores dos filtros (sempre com base na lista completa, independente do filtro ativo)
   const cntPendentesEl = document.getElementById('cntFiltroPendentes');
