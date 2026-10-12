@@ -6280,11 +6280,16 @@ function renderSemana() {
   const filtroAtend = window._filtroAtendimentos || 'pendentes';
   // Confere com o cadastro mestre: se ela ficou inativa ou mudou de região depois
   // de ter sido incluída nesta semana, não deve mais aparecer em Atendimentos.
+  const regiaoSemNorm = (sem.regiao || '').trim().toLowerCase();
   let visiveis = sem.consultoras.filter(c => {
     if (c.avulso) return false;
     const mestre = DB.consultoras.find(m => m.id === c.id);
     if (!mestre) return true; // sem cadastro mestre (ex: avulsa antiga) — mantém como estava
-    return mestre.status !== 'inativa' && mestre.regiao === sem.regiao;
+    if (mestre.status === 'inativa') return false;
+    // Compara região ignorando maiúsculas/espaços, pra não esconder por uma diferença
+    // boba de formatação — só exclui quando é claramente outro setor.
+    const regiaoMestreNorm = (mestre.regiao || '').trim().toLowerCase();
+    return !regiaoMestreNorm || regiaoMestreNorm === regiaoSemNorm;
   });
 
   // Contadores dos filtros (sempre com base na lista completa, independente do filtro ativo)
@@ -6414,7 +6419,7 @@ function renderSemana() {
         + linhaTrilha(passo1Feito)
         + passoTrilha("toggleConfirmouHorario('" + c.id + "')", c2, passo2Feito ? svgCheck : '', 'Confirmar<br>horário', false)
         + linhaTrilha(passo2Feito)
-        + passoTrilha("abrirAtendimento('" + c.id + "')", c3, passo3Feito ? svgCheck : svgPlay, 'Atendimento', !passo2Feito && !passo3Feito)
+        + passoTrilha("abrirAtendimento('" + c.id + "')", c3, passo3Feito ? svgCheck : svgPlay, 'Atendimento', !passo2Feito && !passo3Feito && !c.remarcarSemana && !c.remarcarMes)
       + '</div>'
     ) : (
       '<div style="padding:0 14px 14px;">'
