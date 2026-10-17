@@ -8021,7 +8021,11 @@ async function buscarFechamentoGeral(numero) {
       if (USER_ID && doc.id !== USER_ID) return;
 
       const semanas = data.semanas || [];
-      const sem = semanas.find(s => s.numero === numero);
+      // Pode existir mais de uma semana com esse número (regiões diferentes correndo em
+      // paralelo usam a mesma numeração global) — prioriza a que é a semana ativa dessa
+      // pessoa agora; só cai pra "primeira que achar" se a ativa não bater com o número.
+      const semanasComNumero = semanas.filter(s => s.numero === numero);
+      const sem = semanasComNumero.find(s => s.id === data.semanaAtiva) || semanasComNumero[0];
       const nomeTablet = nomeConfigurado;
       const metaTablet = (sem && sem.meta) || (data.config && data.config.metaPadrao) || 15000;
 
@@ -8031,9 +8035,19 @@ async function buscarFechamentoGeral(numero) {
       let topConsultora = null; // melhor consultora deste tablet, pra achar a melhor geral depois
 
       if (sem) {
-        tPrevistas = (sem.consultoras || []).length;
-        tAtendidas = (sem.consultoras || []).filter(foiAtendida).length;
-        (sem.consultoras || []).forEach(c => {
+        const regiaoSemNorm = (sem.regiao || '').trim().toLowerCase();
+        const cadastroTablet = data.consultoras || [];
+        const consValidas = (sem.consultoras || []).filter(c => {
+          if (c.avulso) return false;
+          const mestre = cadastroTablet.find(m => m.id === c.id);
+          if (!mestre) return true;
+          if (mestre.status === 'inativa') return false;
+          const regiaoMestreNorm = (mestre.regiao || '').trim().toLowerCase();
+          return !regiaoMestreNorm || regiaoMestreNorm === regiaoSemNorm;
+        });
+        tPrevistas = consValidas.length;
+        tAtendidas = consValidas.filter(foiAtendida).length;
+        consValidas.forEach(c => {
           tVendido += (c.vendido || 0);
           tAPagar  += (c.aPagar || 0);
           // Mesmo critério de rateio Pix/Dinheiro usado na tela "Recebido"
