@@ -6192,9 +6192,9 @@ function renderSemana() {
         }
       });
     }
-    // Se não há valor vendido, não existe "valor a pagar" nem "recebido" possível —
-    // qualquer coisa diferente de zero aqui é resíduo de outra semana, sempre, não
-    // depende de ninguém ter sido atendida ainda (é uma inconsistência por si só).
+    // Mesma ideia: numa semana onde ninguém foi atendida ainda, vendido zerado com
+    // "a pagar"/recebido/débito preenchido só pode ser resíduo arrastado — não é um
+    // caso legítimo de "pagou sem comprar", porque essa semana ainda nem começou.
     sem.consultoras.forEach(c => {
       if ((c.vendido||0) === 0 && ((c.aPagar||0) > 0 || (c.recebidoPix||0) > 0 || (c.recebidoDinheiro||0) > 0 || (c.recebidoOutros||0) > 0 || (c.debito||0) > 0 || c.formaPgto)) {
         c.aPagar = 0; c.recebidoPix = 0; c.recebidoDinheiro = 0; c.recebidoOutros = 0; c.debito = 0; c.formaPgto = '';
@@ -8110,9 +8110,11 @@ async function buscarFechamentoGeral(numero) {
         // não tem como ser de verdade de uma semana que ainda nem começou.
         const semanaAindaNaoComecou = !consValidas.some(c => c.status === 'concluida');
         consValidas.forEach(c => {
-          // Sem vendido não existe "a pagar" nem "recebido" possível — valores presentes
-          // aqui só podem ser resíduo arrastado de outra semana, independente do resto.
-          const semVendidoMasComResiduo = (c.vendido||0) === 0 && ((c.aPagar||0) > 0 || (c.recebidoPix||0) > 0 || (c.recebidoDinheiro||0) > 0 || (c.debito||0) > 0);
+          // Sem vendido não existe "a pagar" nem "débito" possível vindo de uma venda —
+          // mas só trata como resíduo arrastado quando ninguém foi atendida ainda nesta
+          // semana, porque uma consultora pode legitimamente pagar algo sem comprar nada
+          // novo (vendido 0 com recebido > 0 é uma combinação válida no app).
+          const semVendidoMasComResiduo = semanaAindaNaoComecou && (c.vendido||0) === 0 && ((c.aPagar||0) > 0 || (c.recebidoPix||0) > 0 || (c.recebidoDinheiro||0) > 0 || (c.debito||0) > 0);
           tVendido += (c.vendido || 0);
           tAPagar  += semVendidoMasComResiduo ? 0 : (c.aPagar || 0);
           // Mesmo critério de rateio Pix/Dinheiro usado na tela "Recebido"
