@@ -7222,13 +7222,19 @@ function atualizarResumo() {
   const pix = parseNum(document.getElementById('regPix')?.value);
   const din = parseNum(document.getElementById('regDinheiro')?.value);
   const total = pix + din;
+  const aPagarPreview = parseNum(document.getElementById('regAPagar')?.value);
   const resumo = document.getElementById('resumoRecebido');
   if (resumo) {
     resumo.style.display = total > 0 ? '' : 'none';
     document.getElementById('resumoTotal').textContent = brl(total);
+    // Verde só quando cobre o valor a pagar inteiro — pagamento parcial fica em âmbar,
+    // pra ficar claro de cara que ainda vai sobrar débito.
+    const pagouTudo = aPagarPreview === 0 || total >= aPagarPreview;
+    resumo.style.background = pagouTudo ? 'var(--green-bg)' : 'var(--amber-bg)';
+    document.getElementById('resumoTotal').style.color = pagouTudo ? 'var(--green)' : 'var(--amber)';
   }
 
-  const aPagar = parseNum(document.getElementById('regAPagar')?.value);
+  const aPagar = aPagarPreview;
   const debito = debitoRestante(aPagar, total);
   const resumoDeb = document.getElementById('resumoDebito');
   if (resumoDeb) {
