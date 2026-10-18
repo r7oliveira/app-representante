@@ -8076,6 +8076,10 @@ async function buscarFechamentoGeral(numero) {
         });
         tPrevistas = consValidas.length;
         tAtendidas = consValidas.filter(foiAtendida).length;
+        // Se ninguém ainda foi atendida nesta semana, qualquer "débito antigo pago"
+        // presente só pode ter vindo arrastado de uma semana passada por engano —
+        // não tem como ser de verdade de uma semana que ainda nem começou.
+        const semanaAindaNaoComecou = !consValidas.some(c => c.status === 'concluida');
         consValidas.forEach(c => {
           tVendido += (c.vendido || 0);
           tAPagar  += (c.aPagar || 0);
@@ -8085,8 +8089,10 @@ async function buscarFechamentoGeral(numero) {
           const naoClass = Math.max(0, (c.recebido || 0) - (pix + din));
           if (naoClass > 0) { if (c.formaPgto === 'pix') pix += naoClass; else din += naoClass; }
           // Débito antigo pago separado (de outra nota, mesma semana) também conta como recebido
-          pix += c.debitoOutrasNotasPix || 0;
-          din += c.debitoOutrasNotasDinheiro || 0;
+          if (!semanaAindaNaoComecou) {
+            pix += c.debitoOutrasNotasPix || 0;
+            din += c.debitoOutrasNotasDinheiro || 0;
+          }
           tPix += pix; tDin += din;
           tDebito += (c.debito || 0);
           if (c.remarcarSemana) tRemSemana++;
