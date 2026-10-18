@@ -2398,43 +2398,54 @@ input[type="time"]{max-width:100%;}
      MODAL: TABLET MANUAL (Fechamento Geral)
 ══════════════════════════════════════════ -->
 <div class="modal-overlay" id="modalFechManual">
-  <div class="modal-box">
+  <div class="modal-box" style="max-height:88vh;overflow-y:auto;">
     <button class="modal-close" onclick="fecharModal('modalFechManual')">✕</button>
     <div class="modal-title" id="fmTitulo">Adicionar tablet manualmente</div>
 
     <input type="hidden" id="fmId">
     <label class="field"><span>Nome do tablet / responsável *</span><input id="fmNome" placeholder="Ex: Tablet 2"></label>
 
-    <div class="two-col">
-      <label class="field" style="margin:0;"><span>Meta da semana (R$)</span><input id="fmMeta" type="text" inputmode="decimal" placeholder="R$ 15.000,00" oninput="maskMoeda(this)"></label>
-      <label class="field" style="margin:0;"><span>Vendido (R$)</span><input id="fmVendido" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
-    </div>
-    <div class="two-col" style="margin-top:12px;">
-      <label class="field" style="margin:0;"><span>Débito (R$)</span><input id="fmDebito" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
-      <label class="field" style="margin:0;"><span>Recebido Pix (R$)</span><input id="fmPix" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
-    </div>
-    <div class="two-col" style="margin-top:12px;">
-      <label class="field" style="margin:0;"><span>Recebido Dinheiro (R$)</span><input id="fmDinheiro" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
-      <label class="field" style="margin:0;"><span>Nº de vendas (p/ ticket médio)</span><input id="fmNumVendas" type="number" inputmode="numeric" placeholder="0"></label>
-    </div>
-    <div class="two-col" style="margin-top:12px;">
-      <label class="field" style="margin:0;"><span>Consultoras previstas</span><input id="fmPrevistas" type="number" inputmode="numeric" placeholder="0"></label>
-      <label class="field" style="margin:0;"><span>Consultoras atendidas</span><input id="fmAtendidas" type="number" inputmode="numeric" placeholder="0"></label>
-    </div>
-    <div class="two-col" style="margin-top:12px;">
-      <label class="field" style="margin:0;"><span>Remarc. semana</span><input id="fmRemSemana" type="number" inputmode="numeric" placeholder="0"></label>
-      <label class="field" style="margin:0;"><span>Remarc. mês</span><input id="fmRemMes" type="number" inputmode="numeric" placeholder="0"></label>
-    </div>
-    <div class="two-col" style="margin-top:12px;">
-      <label class="field" style="margin:0;"><span>Parou de vender</span><input id="fmParouVender" type="number" inputmode="numeric" placeholder="0"></label>
-      <label class="field" style="margin:0;"><span>Consultoras ativas</span><input id="fmAtivas" type="number" inputmode="numeric" placeholder="0"></label>
-    </div>
-    <div class="two-col" style="margin-top:12px;">
-      <label class="field" style="margin:0;"><span>Consultoras inativas</span><input id="fmInativas" type="number" inputmode="numeric" placeholder="0"></label>
-      <label class="field" style="margin:0;"><span>Novas consultoras</span><input id="fmNovas" type="number" inputmode="numeric" placeholder="0"></label>
+    <div style="font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px;">💰 Financeiro</div>
+    <div style="background:var(--surface);border-radius:14px;padding:14px;">
+      <div class="two-col">
+        <label class="field" style="margin:0;"><span>Meta da semana (R$)</span><input id="fmMeta" type="text" inputmode="decimal" placeholder="R$ 15.000,00" oninput="maskMoeda(this)"></label>
+        <label class="field" style="margin:0;"><span>Vendido (R$)</span><input id="fmVendido" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+      </div>
+      <div class="two-col" style="margin-top:12px;">
+        <label class="field" style="margin:0;"><span>Recebido Pix (R$)</span><input id="fmPix" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+        <label class="field" style="margin:0;"><span>Recebido Dinheiro (R$)</span><input id="fmDinheiro" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+      </div>
+      <div class="two-col" style="margin-top:12px;">
+        <label class="field" style="margin:0;"><span>Débito (R$)</span><input id="fmDebito" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
+        <label class="field" style="margin:0;"><span>Nº de vendas (p/ ticket médio)</span><input id="fmNumVendas" type="number" inputmode="numeric" placeholder="0"></label>
+      </div>
     </div>
 
-    <div class="btn-row" style="margin-top:8px;">
+    <div style="font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px;">📋 Atendimentos da semana</div>
+    <div style="background:var(--surface);border-radius:14px;padding:14px;">
+      <div class="two-col">
+        <label class="field" style="margin:0;"><span>Consultoras previstas</span><input id="fmPrevistas" type="number" inputmode="numeric" placeholder="0"></label>
+        <label class="field" style="margin:0;"><span>Consultoras atendidas</span><input id="fmAtendidas" type="number" inputmode="numeric" placeholder="0"></label>
+      </div>
+      <div class="two-col" style="margin-top:12px;">
+        <label class="field" style="margin:0;"><span>Remarc. semana</span><input id="fmRemSemana" type="number" inputmode="numeric" placeholder="0"></label>
+        <label class="field" style="margin:0;"><span>Remarc. mês</span><input id="fmRemMes" type="number" inputmode="numeric" placeholder="0"></label>
+      </div>
+      <div class="two-col" style="margin-top:12px;">
+        <label class="field" style="margin:0;"><span>Novas consultoras</span><input id="fmNovas" type="number" inputmode="numeric" placeholder="0"></label>
+        <label class="field" style="margin:0;"><span>Parou de vender</span><input id="fmParouVender" type="number" inputmode="numeric" placeholder="0"></label>
+      </div>
+    </div>
+
+    <div style="font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px;">👥 Carteira (cadastro geral)</div>
+    <div style="background:var(--surface);border-radius:14px;padding:14px;">
+      <div class="two-col">
+        <label class="field" style="margin:0;"><span>Consultoras ativas</span><input id="fmAtivas" type="number" inputmode="numeric" placeholder="0"></label>
+        <label class="field" style="margin:0;"><span>Consultoras inativas</span><input id="fmInativas" type="number" inputmode="numeric" placeholder="0"></label>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-top:20px;">
       <button class="btn-ghost" style="flex:1;" id="fmBtnExcluir" onclick="excluirFechManual()">Excluir</button>
       <button class="btn-primary" style="flex:1;" onclick="salvarFechManual()">Salvar</button>
     </div>
