@@ -8149,9 +8149,16 @@ async function buscarFechamentoGeral(numero) {
         ? cadastro.filter(c => c.criadoEm && c.criadoEm >= sem.dataInicio).length
         : 0;
 
+      // Recebido total deste tablet pela MESMA função central usada na tela Início —
+      // o pix+dinheiro reconstruído acima serve só pra mostrar a composição, nunca
+      // pro total principal, porque os campos separados podem ficar fora de sincronia
+      // com o valor de verdade em c.recebido (editado pelo admin, por exemplo).
+      const tRecebidoTotal = sem ? recebidoSemana(sem) : 0;
+
       tablets.push({
         origem: 'auto', nome: nomeTablet, temSemana: !!sem, meta: metaTablet,
         vendido: tVendido, aPagar: tAPagar, pix: tPix, dinheiro: tDin, debito: tDebito,
+        recebidoTotal: tRecebidoTotal,
         remSemana: tRemSemana, remMes: tRemMes, parouVender: tParouVender, numVendas: tVendasCount,
         ativas: ativasTablet, inativas: inativasTablet, novas: novaTablet,
         previstas: tPrevistas, atendidas: tAtendidas, topConsultora,
@@ -8235,7 +8242,7 @@ function recomputeFechamentoGeral() {
   window._fgTabletsSincronizados = tablets.filter(t => t.temSemana).length;
   window._fgTabletsTotal = tablets.length;
 
-  let totVendido = 0, totAPagar = 0, totPix = 0, totDin = 0, totDebito = 0, totMeta = 0;
+  let totVendido = 0, totAPagar = 0, totPix = 0, totDin = 0, totDebito = 0, totMeta = 0, totRecebidoReal = 0;
   let totRemSemana = 0, totRemMes = 0, totParouVender = 0, totVendasCount = 0;
   let totAtivas = 0, totInativas = 0, totClienteNova = 0;
   let totPrevistas = 0, totAtendidas = 0;
@@ -8243,6 +8250,7 @@ function recomputeFechamentoGeral() {
   tablets.forEach(t => {
     totVendido += (t.vendido||0); totAPagar += (t.aPagar||0); totMeta += (t.meta||0);
     totPix += (t.pix||0); totDin += (t.dinheiro||0); totDebito += (t.debito||0);
+    totRecebidoReal += (t.recebidoTotal||0);
     totRemSemana += (t.remSemana||0); totRemMes += (t.remMes||0); totParouVender += (t.parouVender||0);
     totVendasCount += (t.numVendas||0);
     totAtivas += (t.ativas||0); totInativas += (t.inativas||0); totClienteNova += (t.novas||0);
@@ -8250,7 +8258,9 @@ function recomputeFechamentoGeral() {
   });
 
   const ticketMedio = totVendasCount > 0 ? totVendido / totVendasCount : 0;
-  const totRecebido = totPix + totDin;
+  // Total "de verdade" vem da mesma função central da tela Início — pix+dinheiro só
+  // serve pra mostrar a composição (pode ter uma pequena diferença de classificação).
+  const totRecebido = totRecebidoReal;
 
   // Meta geral (referente ao recebimento, não ao faturamento vendido)
   const pctMetaGeral = totMeta > 0 ? Math.round(totRecebido/totMeta*100) : 0;
@@ -8293,10 +8303,10 @@ function recomputeFechamentoGeral() {
   document.getElementById('fgAPagar').textContent = brl(totAPagar);
   document.getElementById('fgPix').textContent = brl(totPix);
   document.getElementById('fgDinheiro').textContent = brl(totDin);
-  document.getElementById('fgRecebidoTotal').textContent = brl(totPix + totDin);
-  document.getElementById('fgRecebidoTotalKpi').textContent = brl(totPix + totDin);
+  document.getElementById('fgRecebidoTotal').textContent = brl(totRecebido);
+  document.getElementById('fgRecebidoTotalKpi').textContent = brl(totRecebido);
   document.getElementById('fgDebito').textContent = brl(totDebito);
-  document.getElementById('fgLucro').textContent = brl(Math.round((totPix + totDin) * 0.20 * 100) / 100);
+  document.getElementById('fgLucro').textContent = brl(Math.round(totRecebido * 0.20 * 100) / 100);
   document.getElementById('fgRemSemana').textContent = totRemSemana;
   document.getElementById('fgRemMes').textContent = totRemMes;
   document.getElementById('fgTicket').textContent = brl(ticketMedio);
