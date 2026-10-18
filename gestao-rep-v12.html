@@ -7087,6 +7087,10 @@ function abrirRegistro(tipo) {
           <input id="regDinheiro" type="text" inputmode="decimal" placeholder="R$ 0,00" value="${brlInput(cons && cons.recebidoDinheiro)}" oninput="maskMoeda(this);atualizarResumo()" style="text-align:center;">
         </label>
       </div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button type="button" onclick="preencherFormaTotal('pix')" style="flex:1;background:var(--rose-light);border:1px solid var(--rose-mid);color:var(--rose-deep);border-radius:10px;padding:8px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Tudo no Pix</button>
+        <button type="button" onclick="preencherFormaTotal('dinheiro')" style="flex:1;background:var(--rose-light);border:1px solid var(--rose-mid);color:var(--rose-deep);border-radius:10px;padding:8px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Tudo em Dinheiro</button>
+      </div>
       <div style="font-size:11px;color:var(--ink-3);text-align:center;margin:8px 0 14px;">Preencha um ou os dois — o total soma automaticamente</div>
 
       <div id="resumoRecebido" style="display:none;background:var(--green-bg);border-radius:12px;padding:12px 14px;margin-bottom:10px;text-align:center;">
@@ -7161,6 +7165,23 @@ function abrirRegistro(tipo) {
   }
 
   document.getElementById('modalRegistro').classList.add('open');
+}
+
+// Preenche o valor total "a pagar" de uma vez só no Pix ou no Dinheiro — pra não
+// precisar digitar tudo de novo quando o pagamento inteiro foi numa forma só.
+function preencherFormaTotal(forma) {
+  const aPagar = parseNum(document.getElementById('regAPagar')?.value || '0');
+  const pixEl = document.getElementById('regPix');
+  const dinEl = document.getElementById('regDinheiro');
+  if (!pixEl || !dinEl) return;
+  if (forma === 'pix') {
+    pixEl.value = brlInput(aPagar);
+    dinEl.value = '';
+  } else {
+    dinEl.value = brlInput(aPagar);
+    pixEl.value = '';
+  }
+  atualizarResumo();
 }
 
 function brlInput(v) {
