@@ -6172,6 +6172,18 @@ function renderSemana() {
         limpouDebitoAntigo = true;
       }
     });
+    // Mesma lógica pro "WhatsApp enviado" / "Confirmar horário": se praticamente todo
+    // mundo já está com os dois marcados numa semana onde ninguém foi atendida ainda,
+    // isso não é progresso de verdade — é a marcação antiga arrastada da semana passada.
+    const comPassosMarcados = sem.consultoras.filter(c => c.horarioEnviado || c.confirmouHorario).length;
+    if (sem.consultoras.length > 0 && comPassosMarcados / sem.consultoras.length >= 0.8) {
+      sem.consultoras.forEach(c => {
+        if (c.horarioEnviado || c.confirmouHorario) {
+          c.horarioEnviado = false; c.confirmouHorario = false;
+          limpouDebitoAntigo = true;
+        }
+      });
+    }
     if (limpouDebitoAntigo) save();
   }
 
