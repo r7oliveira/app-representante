@@ -7775,6 +7775,7 @@ function salvarConsultora() {
       document.getElementById('modalConsTitulo').textContent = 'Nova Consultora';
       renderGerenciar();
       if (getSemanaAtiva()) renderSemana();
+      mostrarMensagemSucesso('✓ Alterações salvas com sucesso!');
       return;
     }
   }
@@ -7807,6 +7808,8 @@ function salvarConsultora() {
   DB.consultoras.push(c);
   save();
   fecharModal('modalConsultora');
+
+  mostrarMensagemSucesso('✓ Cadastro salvo com sucesso!');
 
   // Se estiver no passo 2 do criar semana, atualiza a lista na hora
   if (document.getElementById('criarStep2').style.display !== 'none') {
