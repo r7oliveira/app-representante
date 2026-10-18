@@ -5918,6 +5918,9 @@ function salvarPagarDebitoGeral() {
 
   // Atualiza a tela de início se ela estiver mostrando a semana afetada
   if (semAtiva && (semAtiva.id === ctx.semId || outraNota)) renderSemana();
+
+  tocarSomSucesso();
+  mostrarMensagemSucesso('✓ Pagamento efetuado com sucesso!');
 }
 
 function toggleBuscaConsultoraDebito() {
