@@ -5075,14 +5075,14 @@ function confirmarAdminCriarSemana() {
       const mestre = (data.consultoras || []).find(m => m.id === c.id);
       const favoritaJaPendente = !!(mestre && mestre.favoritaProximaPendente);
       if (mestre) mestre.favoritaProximaPendente = false;
-      return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false };
+      return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0 };
     });
     // Inclui também quem é ativa na região agora mas não estava na semana anterior
     // (nova ou reativada depois) — senão a semana nova nunca cresce além do ciclo passado.
     const idsJaIncluidosAdmin = new Set(consultoras.map(c => c.id));
     const extrasAdmin = (data.consultoras || [])
       .filter(c => c.regiao === regiao && c.status !== 'inativa' && !idsJaIncluidosAdmin.has(c.id))
-      .map(c => ({ ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: false, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false }));
+      .map(c => ({ ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: false, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0 }));
     consultoras = consultoras.concat(extrasAdmin);
   } else {
     consultoras = (data.consultoras || [])
@@ -5090,7 +5090,7 @@ function confirmarAdminCriarSemana() {
       .map(c => {
         const favoritaJaPendente = !!c.favoritaProximaPendente;
         c.favoritaProximaPendente = false;
-        return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false };
+        return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0 };
       });
   }
 
@@ -6159,6 +6159,21 @@ function ehConsultoraNova(c, sem) {
 
 function renderSemana() {
   const sem = getSemanaAtiva();
+
+  // Limpeza leve: se ninguém ainda foi atendida nesta semana, qualquer "débito antigo
+  // pago" presente nas consultoras só pode ter vindo arrastado de uma semana passada
+  // por engano (não tem como ser de verdade desta semana, que ainda nem começou).
+  // Seguro de rodar sempre, porque só zera campo que já deveria ser zero.
+  if (sem && !sem.consultoras.some(c => c.status === 'concluida')) {
+    let limpouDebitoAntigo = false;
+    sem.consultoras.forEach(c => {
+      if (c.debitoOutrasNotasPago || c.debitoOutrasNotasPix || c.debitoOutrasNotasDinheiro || c.debitoPagoAntigo) {
+        c.debitoOutrasNotasPago = 0; c.debitoOutrasNotasPix = 0; c.debitoOutrasNotasDinheiro = 0; c.debitoPagoAntigo = 0;
+        limpouDebitoAntigo = true;
+      }
+    });
+    if (limpouDebitoAntigo) save();
+  }
 
   renderAgendaHoje();
   atualizarObsBanner();
@@ -7455,9 +7470,9 @@ function avancarStep2() {
 
   // Busca consultoras: primeiro da região, depois todas ativas como fallback
   let consBase = ultima
-    ? consultorasValidasDe(ultima).map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}))
+    ? consultorasValidasDe(ultima).map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}))
     : DB.consultoras.filter(c => c.regiao === criarRegiao && c.status !== 'inativa')
-        .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+        .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
 
   // Se veio da semana anterior, inclui também quem é ativa na região AGORA mas não
   // estava na lista da semana passada (nova consultora, ou reativada depois) —
@@ -7466,7 +7481,7 @@ function avancarStep2() {
     const idsJaIncluidos = new Set(consBase.map(c => c.id));
     const extras = DB.consultoras
       .filter(c => c.regiao === criarRegiao && c.status !== 'inativa' && !idsJaIncluidos.has(c.id))
-      .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!c.novaConsultora}));
+      .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, consultoraNova: !!c.novaConsultora}));
     consBase = consBase.concat(extras);
   }
 
@@ -7533,7 +7548,7 @@ function toggleConsStep2(id) {
   // Atualiza _criarConsultoras com as selecionadas
   window._criarConsultoras = (window._step2Todas||[])
     .filter(c => sel.has(c.id))
-    .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+    .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
   document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
 }
 
@@ -7548,7 +7563,7 @@ function selecionarTodasStep2() {
       chk.innerHTML = '<span style="color:white;font-size:11px;font-weight:800;">✓</span>';
     }
   });
-  window._criarConsultoras = todas.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+  window._criarConsultoras = todas.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
   document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
 }
 
