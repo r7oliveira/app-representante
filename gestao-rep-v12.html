@@ -5426,6 +5426,14 @@ function enviarWhatsappHorario(consultoraId) {
   if (typeof renderSemana === 'function') renderSemana();
   window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(mensagemAgendarHorario(c.horarioMelhor, c.diaMelhor)), '_blank');
 }
+function toggleHorarioEnviado(consultoraId) {
+  const sem = getSemanaAtiva();
+  const c = sem ? sem.consultoras.find(x => x.id === consultoraId) : null;
+  if (!c) return;
+  c.horarioEnviado = false;
+  save();
+  renderSemana();
+}
 function mensagemConfirmarHorario(horario) {
   const custom = DB.config && DB.config.mensagensProntas && DB.config.mensagensProntas.confirmarHorario;
   if (custom) return custom.replace(/\{horario\}/gi, horario || '');
@@ -6487,7 +6495,7 @@ function renderSemana() {
     const svgPlay = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21"></polygon></svg>';
     const trilha = c.telefone ? (
       '<div style="display:flex;align-items:flex-start;padding:12px 12px 12px;">'
-        + passoTrilha("enviarWhatsappHorario('" + c.id + "')", c1, passo1Feito ? svgCheck : svgChat, 'WhatsApp', false)
+        + passoTrilha(passo1Feito ? "toggleHorarioEnviado('" + c.id + "')" : "enviarWhatsappHorario('" + c.id + "')", c1, passo1Feito ? svgCheck : svgChat, 'WhatsApp', false)
         + linhaTrilha(passo1Feito)
         + passoTrilha("toggleConfirmouHorario('" + c.id + "')", c2, passo2Feito ? svgCheck : '', 'Confirmar<br>horário', false)
         + linhaTrilha(passo2Feito)
