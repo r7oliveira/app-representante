@@ -5075,14 +5075,14 @@ function confirmarAdminCriarSemana() {
       const mestre = (data.consultoras || []).find(m => m.id === c.id);
       const favoritaJaPendente = !!(mestre && mestre.favoritaProximaPendente);
       if (mestre) mestre.favoritaProximaPendente = false;
-      return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, confirmouHorario: false };
+      return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, confirmouHorario: false, aPagar: 0, ultimoPgto: 0, recebidoPix: 0, recebidoDinheiro: 0, recebidoOutros: 0, debito: 0, formaPgto: '' };
     });
     // Inclui também quem é ativa na região agora mas não estava na semana anterior
     // (nova ou reativada depois) — senão a semana nova nunca cresce além do ciclo passado.
     const idsJaIncluidosAdmin = new Set(consultoras.map(c => c.id));
     const extrasAdmin = (data.consultoras || [])
       .filter(c => c.regiao === regiao && c.status !== 'inativa' && !idsJaIncluidosAdmin.has(c.id))
-      .map(c => ({ ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: false, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, confirmouHorario: false }));
+      .map(c => ({ ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: false, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, confirmouHorario: false, aPagar: 0, ultimoPgto: 0, recebidoPix: 0, recebidoDinheiro: 0, recebidoOutros: 0, debito: 0, formaPgto: '' }));
     consultoras = consultoras.concat(extrasAdmin);
   } else {
     consultoras = (data.consultoras || [])
@@ -5090,7 +5090,7 @@ function confirmarAdminCriarSemana() {
       .map(c => {
         const favoritaJaPendente = !!c.favoritaProximaPendente;
         c.favoritaProximaPendente = false;
-        return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, confirmouHorario: false };
+        return { ...c, status: 'pendente', vendido: 0, recebido: 0, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, confirmouHorario: false, aPagar: 0, ultimoPgto: 0, recebidoPix: 0, recebidoDinheiro: 0, recebidoOutros: 0, debito: 0, formaPgto: '' };
       });
   }
 
@@ -6184,6 +6184,15 @@ function renderSemana() {
         }
       });
     }
+    // Se não há valor vendido, não existe "valor a pagar" nem "recebido" possível —
+    // qualquer coisa diferente de zero aqui é resíduo de outra semana, sempre, não
+    // depende de ninguém ter sido atendida ainda (é uma inconsistência por si só).
+    sem.consultoras.forEach(c => {
+      if ((c.vendido||0) === 0 && ((c.aPagar||0) > 0 || (c.recebidoPix||0) > 0 || (c.recebidoDinheiro||0) > 0 || (c.recebidoOutros||0) > 0 || (c.debito||0) > 0 || c.formaPgto)) {
+        c.aPagar = 0; c.recebidoPix = 0; c.recebidoDinheiro = 0; c.recebidoOutros = 0; c.debito = 0; c.formaPgto = '';
+        limpouDebitoAntigo = true;
+      }
+    });
     if (limpouDebitoAntigo) save();
   }
 
@@ -7482,9 +7491,9 @@ function avancarStep2() {
 
   // Busca consultoras: primeiro da região, depois todas ativas como fallback
   let consBase = ultima
-    ? consultorasValidasDe(ultima).map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, confirmouHorario:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}))
+    ? consultorasValidasDe(ultima).map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}))
     : DB.consultoras.filter(c => c.regiao === criarRegiao && c.status !== 'inativa')
-        .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, confirmouHorario:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+        .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
 
   // Se veio da semana anterior, inclui também quem é ativa na região AGORA mas não
   // estava na lista da semana passada (nova consultora, ou reativada depois) —
@@ -7493,7 +7502,7 @@ function avancarStep2() {
     const idsJaIncluidos = new Set(consBase.map(c => c.id));
     const extras = DB.consultoras
       .filter(c => c.regiao === criarRegiao && c.status !== 'inativa' && !idsJaIncluidos.has(c.id))
-      .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, confirmouHorario:false, consultoraNova: !!c.novaConsultora}));
+      .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!c.novaConsultora}));
     consBase = consBase.concat(extras);
   }
 
@@ -7560,7 +7569,7 @@ function toggleConsStep2(id) {
   // Atualiza _criarConsultoras com as selecionadas
   window._criarConsultoras = (window._step2Todas||[])
     .filter(c => sel.has(c.id))
-    .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, confirmouHorario:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+    .map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
   document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
 }
 
@@ -7575,7 +7584,7 @@ function selecionarTodasStep2() {
       chk.innerHTML = '<span style="color:white;font-size:11px;font-weight:800;">✓</span>';
     }
   });
-  window._criarConsultoras = todas.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, confirmouHorario:false, consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+  window._criarConsultoras = todas.map(c => ({...c, status:'pendente', vendido:0, recebido:0, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
   document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
 }
 
@@ -8093,11 +8102,14 @@ async function buscarFechamentoGeral(numero) {
         // não tem como ser de verdade de uma semana que ainda nem começou.
         const semanaAindaNaoComecou = !consValidas.some(c => c.status === 'concluida');
         consValidas.forEach(c => {
+          // Sem vendido não existe "a pagar" nem "recebido" possível — valores presentes
+          // aqui só podem ser resíduo arrastado de outra semana, independente do resto.
+          const semVendidoMasComResiduo = (c.vendido||0) === 0 && ((c.aPagar||0) > 0 || (c.recebidoPix||0) > 0 || (c.recebidoDinheiro||0) > 0 || (c.debito||0) > 0);
           tVendido += (c.vendido || 0);
-          tAPagar  += (c.aPagar || 0);
+          tAPagar  += semVendidoMasComResiduo ? 0 : (c.aPagar || 0);
           // Mesmo critério de rateio Pix/Dinheiro usado na tela "Recebido"
-          let pix = c.recebidoPix || 0;
-          let din = (c.recebidoDinheiro || 0) + (c.recebidoOutros || 0);
+          let pix = semVendidoMasComResiduo ? 0 : (c.recebidoPix || 0);
+          let din = semVendidoMasComResiduo ? 0 : ((c.recebidoDinheiro || 0) + (c.recebidoOutros || 0));
           const naoClass = Math.max(0, (c.recebido || 0) - (pix + din));
           if (naoClass > 0) { if (c.formaPgto === 'pix') pix += naoClass; else din += naoClass; }
           // Débito antigo pago separado (de outra nota, mesma semana) também conta como recebido
@@ -8106,7 +8118,7 @@ async function buscarFechamentoGeral(numero) {
             din += c.debitoOutrasNotasDinheiro || 0;
           }
           tPix += pix; tDin += din;
-          tDebito += (c.debito || 0);
+          tDebito += semVendidoMasComResiduo ? 0 : (c.debito || 0);
           if (c.remarcarSemana) tRemSemana++;
           if (c.remarcarMes) tRemMes++;
           if (c.parouDeVender) tParouVender++;
