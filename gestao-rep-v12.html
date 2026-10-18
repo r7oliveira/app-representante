@@ -2403,7 +2403,10 @@ input[type="time"]{max-width:100%;}
     <div class="modal-title" id="fmTitulo">Adicionar tablet manualmente</div>
 
     <input type="hidden" id="fmId">
-    <label class="field"><span>Nome do tablet / responsável *</span><input id="fmNome" placeholder="Ex: Tablet 2"></label>
+    <div class="two-col">
+      <label class="field" style="margin:0;"><span>Semana *</span><input id="fmNumeroSemana" type="number" inputmode="numeric" placeholder="Ex: 42"></label>
+      <label class="field" style="margin:0;"><span>Nome do tablet / responsável *</span><input id="fmNome" placeholder="Ex: Tablet 2"></label>
+    </div>
 
     <div style="font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px;margin:18px 0 8px;">💰 Financeiro</div>
     <div style="background:var(--surface);border-radius:14px;padding:14px;">
@@ -8565,8 +8568,11 @@ function abrirModalFechManual(id) {
   const manuais = (DB.config.manuaisFechamento && DB.config.manuaisFechamento[numero]) || [];
   const m = id ? manuais.find(x => x.id === id) : null;
 
+  window._fmNumeroOriginal = numero;
+
   document.getElementById('fmTitulo').textContent = m ? 'Editar tablet manual' : 'Adicionar tablet manualmente';
   document.getElementById('fmId').value = m ? m.id : '';
+  document.getElementById('fmNumeroSemana').value = numero;
   document.getElementById('fmNome').value = m ? m.nome : '';
   document.getElementById('fmMeta').value = brlInput(m?.meta) || brlInput(DB.config.metaPadrao || 15000);
   document.getElementById('fmVendido').value = brlInput(m?.vendido);
@@ -8588,8 +8594,9 @@ function abrirModalFechManual(id) {
 }
 
 function salvarFechManual() {
-  const numero = window._fgNumeroAtual;
-  if (!numero) return;
+  const numero = parseInt(document.getElementById('fmNumeroSemana').value) || window._fgNumeroAtual;
+  if (!numero) { alert('Informe a semana.'); return; }
+  const numeroOriginal = window._fmNumeroOriginal || numero;
   const nome = document.getElementById('fmNome').value.trim();
   if (!nome) { alert('Digite o nome do tablet.'); return; }
 
@@ -8615,6 +8622,14 @@ function salvarFechManual() {
   };
 
   DB.config.manuaisFechamento = DB.config.manuaisFechamento || {};
+
+  // Se a semana foi trocada (editando um registro), tira ele da semana antiga antes
+  // de colocar na nova — senão fica duplicado em duas semanas ao mesmo tempo.
+  if (numeroOriginal !== numero) {
+    const listaAntiga = DB.config.manuaisFechamento[numeroOriginal] || [];
+    DB.config.manuaisFechamento[numeroOriginal] = listaAntiga.filter(x => x.id !== entry.id);
+  }
+
   const lista = DB.config.manuaisFechamento[numero] || [];
   const idx = lista.findIndex(x => x.id === entry.id);
   if (idx >= 0) lista[idx] = entry; else lista.push(entry);
@@ -8622,11 +8637,11 @@ function salvarFechManual() {
   save();
 
   fecharModal('modalFechManual');
-  recomputeFechamentoGeral();
+  buscarFechamentoGeral(numero);
 }
 
 function excluirFechManual() {
-  const numero = window._fgNumeroAtual;
+  const numero = window._fmNumeroOriginal || window._fgNumeroAtual;
   const id = document.getElementById('fmId').value;
   if (!numero || !id) return;
   if (!confirm('Remover este tablet manual?')) return;
@@ -8636,7 +8651,7 @@ function excluirFechManual() {
   save();
 
   fecharModal('modalFechManual');
-  recomputeFechamentoGeral();
+  buscarFechamentoGeral(window._fgNumeroAtual || numero);
 }
 
 function testarSync() {
