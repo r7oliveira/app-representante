@@ -988,6 +988,7 @@ input[type="time"]{max-width:100%;}
     <div class="ph-sub" style="color:rgba(255,255,255,.7);">Tarefas da semana, dia a dia</div>
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;">
+    <div id="agendaFocoDoDia"></div>
     <div class="sec-title" style="padding-left:0;">Dias</div>
     <div id="agendaDiasRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;"></div>
 
@@ -2733,6 +2734,14 @@ function blankAvisos() {
   DIAS_AGENDA.forEach(d => t[d.key] = []);
   return t;
 }
+// Foco do dia: UM aviso só por dia, bem mais chamativo que os "Avisos Importantes",
+// fica fixado no topo da Agenda (acima até dos dias) — pra recado de destaque mesmo,
+// tipo "Hoje é dia de bater a meta!".
+function blankFocoDoDia() {
+  const t = {};
+  DIAS_AGENDA.forEach(d => t[d.key] = '');
+  return t;
+}
 
 /* ════════════════════════════════════════════
    LOGIN
@@ -3119,6 +3128,21 @@ function renderAgendaCompleta() {
   const isHojeSel = diaAtual === hoje;
   document.getElementById('agendaDiaSelecionadoTitulo').textContent = diaInfo ? diaInfo.label : '';
   document.getElementById('agendaDiaSelecionadoHoje').style.display = isHojeSel ? '' : 'none';
+
+  // Foco do dia: recado único e bem chamativo, fixado acima até dos dias da semana.
+  const focoDoDia = DB.focoDoDia || blankFocoDoDia();
+  const focoTexto = focoDoDia[diaAtual] || '';
+  const focoEl = document.getElementById('agendaFocoDoDia');
+  if (focoEl) {
+    focoEl.innerHTML = focoTexto ? `
+      <div style="background:linear-gradient(135deg,var(--ink),#2a2420);border-radius:16px;padding:16px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:17px;">🎯</span>
+          <span style="font-size:12px;font-weight:800;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.6px;">Foco do dia</span>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:white;line-height:1.4;">${focoTexto}</div>
+      </div>` : '';
+  }
 
   const tarefas = [...(agenda[diaAtual] || [])].sort((a,b) => (a.feito?1:0) - (b.feito?1:0) || horarioParaMinutos(a) - horarioParaMinutos(b));
   const avisos = DB.avisos || blankAvisos();
@@ -4083,6 +4107,7 @@ function confirmarAgendarCliente() {
 
   DB.agenda = DB.agenda || blankAgenda();
   DB.avisos = DB.avisos || blankAvisos();
+  DB.focoDoDia = DB.focoDoDia || blankFocoDoDia();
   DB.agenda[diaKey] = DB.agenda[diaKey] || [];
   const novaTarefa = {
     id: uid(),
@@ -4211,6 +4236,7 @@ function salvarTarefa() {
   const prioridade = document.getElementById('tarefaPrioridade').value;
   DB.agenda = DB.agenda || blankAgenda();
   DB.avisos = DB.avisos || blankAvisos();
+  DB.focoDoDia = DB.focoDoDia || blankFocoDoDia();
   DB.agenda[diaKey] = DB.agenda[diaKey] || [];
 
   if (id) {
@@ -4372,7 +4398,7 @@ let DB = (() => {
       }
     }
   } catch(e) {}
-  return { consultoras:[], semanas:[], semanaAtiva:null, config:{geminiKey:'',groqKey:'',metaPadrao:15000}, agenda: blankAgenda(), avisos: blankAvisos(), observacoes:[], fcmTokens:[], lives:[], estrelas:[], indicacoes:[], resgates:[], seq:1 };
+  return { consultoras:[], semanas:[], semanaAtiva:null, config:{geminiKey:'',groqKey:'',metaPadrao:15000}, agenda: blankAgenda(), avisos: blankAvisos(), focoDoDia: blankFocoDoDia(), observacoes:[], fcmTokens:[], lives:[], estrelas:[], indicacoes:[], resgates:[], seq:1 };
 })();
 
 // Com login fixo, o nome do tablet é sempre o nome da pessoa logada (não precisa mais digitar)
@@ -4381,6 +4407,7 @@ if (ACTIVE_PROFILE && ACTIVE_PROFILE.role === 'op') {
   DB.config.nomeTablet = ACTIVE_PROFILE.nome;
 }
 DB.avisos = DB.avisos || blankAvisos();
+DB.focoDoDia = DB.focoDoDia || blankFocoDoDia();
 try { restaurarSessaoGoogle(); } catch(e) {}
 
 // Migração única: soma no Recebido da semana ativa os pagamentos de débitos de
@@ -4591,6 +4618,7 @@ function adotarRemoto(remoto) {
   DB = remoto;
   DB.agenda = DB.agenda || blankAgenda();
   DB.avisos = DB.avisos || blankAvisos();
+  DB.focoDoDia = DB.focoDoDia || blankFocoDoDia();
   DB.observacoes = DB.observacoes || [];
   DB.fcmTokens = DB.fcmTokens || []; DB.lives = DB.lives || []; DB.estrelas = DB.estrelas || []; DB.indicacoes = DB.indicacoes || []; DB.resgates = DB.resgates || [];
   try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch(e) {}
@@ -4950,6 +4978,7 @@ function renderAdminPessoa() {
   // Agenda por dia
   const agenda = data.agenda || blankAgenda();
   const avisos = data.avisos || blankAvisos();
+  const focoDoDia = data.focoDoDia || blankFocoDoDia();
   if (resetarTarefasRecorrentesEm(agenda)) {
     data.seq = (data.seq || 1) + 1;
     _adminRefs[id].set(data).catch(() => {});
@@ -4957,15 +4986,23 @@ function renderAdminPessoa() {
   document.getElementById('apAgendaDias').innerHTML = DIAS_AGENDA.map(d => {
     const tarefas = agenda[d.key] || [];
     const avisosDoDia = avisos[d.key] || [];
+    const focoTexto = focoDoDia[d.key] || '';
     return `
     <div style="margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <div style="font-size:11px;font-weight:700;color:var(--ink-3);text-transform:uppercase;">${d.label}</div>
         <div style="display:flex;gap:12px;">
+          <button onclick="adminEditarFocoDoDia('${d.key}')" style="background:none;border:none;color:var(--ink);font-size:11px;font-weight:700;cursor:pointer;">🎯 Foco do dia</button>
           <button onclick="adminAdicionarAviso('${d.key}')" style="background:none;border:none;color:var(--amber);font-size:11px;font-weight:700;cursor:pointer;">⚠ Aviso</button>
           <button onclick="adminAbrirTarefa('${d.key}')" style="background:none;border:none;color:var(--rose);font-size:11px;font-weight:700;cursor:pointer;">+ Tarefa</button>
         </div>
       </div>
+      ${focoTexto ? `
+        <div onclick="adminEditarFocoDoDia('${d.key}')" style="display:flex;align-items:center;gap:8px;background:var(--ink);border-radius:10px;padding:8px 10px;margin-bottom:4px;cursor:pointer;">
+          <span style="font-size:13px;flex-shrink:0;">🎯</span>
+          <div style="flex:1;font-size:12.5px;color:white;font-weight:700;">${focoTexto}</div>
+          <button onclick="event.stopPropagation();adminExcluirFocoDoDia('${d.key}')" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;flex-shrink:0;">✕</button>
+        </div>` : ''}
       ${avisosDoDia.map(a => `
         <div style="display:flex;align-items:center;gap:8px;background:var(--rose-light);border-radius:10px;padding:8px 10px;margin-bottom:4px;">
           <span style="font-size:13px;flex-shrink:0;">⚠️</span>
@@ -4977,7 +5014,7 @@ function renderAdminPessoa() {
           <span style="color:${t.feito?'var(--green)':'var(--ink-3)'};font-size:13px;">${t.feito?'✓':'○'}</span>
           <div style="flex:1;font-size:12.5px;color:var(--ink);text-decoration:${t.feito?'line-through':'none'};">${t.texto}</div>
           ${(t.horario || t.diaTodo || t.recorrente) ? `<span style="font-size:11px;color:var(--ink-3);">${[t.recorrente ? '🔁' : '', t.diaTodo ? 'Dia todo' : t.horario].filter(Boolean).join(' ')}</span>` : ''}
-        </div>`).join('') : (avisosDoDia.length ? '' : '<div style="font-size:11.5px;color:var(--ink-3);padding:4px 0;">Nenhuma tarefa.</div>')}
+        </div>`).join('') : ((avisosDoDia.length || focoTexto) ? '' : '<div style="font-size:11.5px;color:var(--ink-3);padding:4px 0;">Nenhuma tarefa.</div>')}
     </div>`;
   }).join('');
 
@@ -5305,6 +5342,7 @@ function adminSalvarTarefa() {
   const data = _adminDB[pessoaId];
   data.agenda = data.agenda || blankAgenda();
   data.avisos = data.avisos || blankAvisos();
+  data.focoDoDia = data.focoDoDia || blankFocoDoDia();
   data.agenda[diaKey] = data.agenda[diaKey] || [];
 
   if (id) {
@@ -5345,6 +5383,39 @@ function adminExcluirTarefa() {
 // Avisos importantes: lista separada das tarefas — não aparecem na agenda normal,
 // só no banner de destaque. O administrador escreve o texto direto, sem precisar
 // criar uma tarefa pra isso.
+// Foco do dia: UM recado só por dia, bem mais chamativo que os Avisos — fica fixado
+// no topo da Agenda da pessoa, acima até da lista de dias.
+function adminEditarFocoDoDia(diaKey) {
+  const pessoaId = _adminPessoaAtual;
+  const data = _adminDB[pessoaId];
+  data.focoDoDia = data.focoDoDia || blankFocoDoDia();
+  const atual = data.focoDoDia[diaKey] || '';
+
+  const texto = (prompt('Foco do dia para ' + (DIAS_AGENDA.find(d => d.key === diaKey) || {}).label + ':', atual) || '').trim();
+  if (texto === atual) return;
+
+  data.focoDoDia[diaKey] = texto;
+  data.seq = (data.seq || 1) + 1;
+
+  _adminRefs[pessoaId].set(data).then(() => {
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao salvar foco do dia: ' + e.message));
+}
+
+function adminExcluirFocoDoDia(diaKey) {
+  if (!confirm('Remover o foco do dia?')) return;
+
+  const pessoaId = _adminPessoaAtual;
+  const data = _adminDB[pessoaId];
+  data.focoDoDia = data.focoDoDia || blankFocoDoDia();
+  data.focoDoDia[diaKey] = '';
+  data.seq = (data.seq || 1) + 1;
+
+  _adminRefs[pessoaId].set(data).then(() => {
+    renderAdminPessoa();
+  }).catch(e => alert('Erro ao remover foco do dia: ' + e.message));
+}
+
 function adminAdicionarAviso(diaKey) {
   const texto = (prompt('Escreva o aviso importante para ' + (DIAS_AGENDA.find(d => d.key === diaKey) || {}).label + ':') || '').trim();
   if (!texto) return;
@@ -5352,6 +5423,7 @@ function adminAdicionarAviso(diaKey) {
   const pessoaId = _adminPessoaAtual;
   const data = _adminDB[pessoaId];
   data.avisos = data.avisos || blankAvisos();
+  data.focoDoDia = data.focoDoDia || blankFocoDoDia();
   data.avisos[diaKey] = data.avisos[diaKey] || [];
   data.avisos[diaKey].push({ id: adminUid(), texto, criadoEm: new Date().toISOString() });
   data.seq = (data.seq || 1) + 1;
@@ -5367,6 +5439,7 @@ function adminExcluirAviso(diaKey, avisoId) {
   const pessoaId = _adminPessoaAtual;
   const data = _adminDB[pessoaId];
   data.avisos = data.avisos || blankAvisos();
+  data.focoDoDia = data.focoDoDia || blankFocoDoDia();
   data.avisos[diaKey] = (data.avisos[diaKey] || []).filter(a => a.id !== avisoId);
   data.seq = (data.seq || 1) + 1;
 
@@ -5379,6 +5452,7 @@ function adminEditarAviso(diaKey, avisoId) {
   const pessoaId = _adminPessoaAtual;
   const data = _adminDB[pessoaId];
   data.avisos = data.avisos || blankAvisos();
+  data.focoDoDia = data.focoDoDia || blankFocoDoDia();
   const aviso = (data.avisos[diaKey] || []).find(a => a.id === avisoId);
   if (!aviso) return;
 
