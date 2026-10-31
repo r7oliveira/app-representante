@@ -201,6 +201,49 @@ input[type="time"]{max-width:100%;}
 .b-next{background:var(--rose);color:white;box-shadow:none;}
 .b-done{background:var(--green-bg);color:var(--green);}
 .b-pending{background:white;color:var(--ink-3);border:1px solid var(--border);}
+/* ── Atendimentos: resumo em cards + cards de consultora com mais informação ── */
+.tile-resumo{background:white;border:1.5px solid var(--border);border-radius:14px;padding:10px 12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:1px;min-width:0;}
+.tile-resumo.on{border-color:var(--rose);background:var(--rose-light);}
+.tile-num{font-size:22px;font-weight:800;color:var(--ink);line-height:1.1;letter-spacing:-.5px;white-space:nowrap;}
+.tile-lbl{font-size:11px;font-weight:800;color:var(--ink-2);margin-top:3px;}
+.tile-sub{font-size:10px;font-weight:600;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tile-red .tile-num{color:var(--red);font-size:17px;padding-top:4px;}
+.ac-top{display:flex;gap:12px;padding:14px 14px 10px;background:white;cursor:pointer;}
+.ac-time{width:52px;flex-shrink:0;text-align:center;padding-top:1px;}
+.ac-hora{font-size:19px;font-weight:800;letter-spacing:-.6px;line-height:1.1;color:var(--ink);}
+.ac-hora.sem{color:var(--ink-3);font-weight:700;}
+.ac-per{font-size:10.5px;font-weight:700;color:var(--ink-3);margin-top:3px;}
+.ac-main{flex:1;min-width:0;}
+.ac-linha1{display:flex;align-items:flex-start;gap:8px;}
+.ac-nome{flex:1;min-width:0;font-size:14.5px;font-weight:800;line-height:1.25;color:var(--ink);}
+.ac-end{font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.35;font-weight:500;}
+.ac-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.chip{font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--ink-2);white-space:nowrap;}
+.chip.red{background:var(--red-bg);color:var(--red);}
+.chip.green{background:var(--green-bg);color:var(--green);}
+.chip.amber{background:var(--amber-bg);color:var(--amber);}
+.ac-obs{font-size:11.5px;color:var(--ink-3);font-style:italic;margin-top:7px;line-height:1.35;}
+.ac-acoes{display:flex;gap:8px;align-items:center;padding:0 14px 12px;}
+.btn-mini{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:800;color:var(--ink);text-decoration:none;}
+.btn-mini.pri{background:var(--ink);color:white;}
+.btn-ico{width:30px;height:30px;border-radius:50%;background:var(--surface-2);color:var(--ink-2);font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dia-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:18px 2px 8px;}
+.dia-head .dh-nome{font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;}
+.dia-head .dh-hoje{font-size:9.5px;font-weight:800;background:var(--rose);color:white;border-radius:99px;padding:2px 7px;margin-left:6px;letter-spacing:.4px;}
+.dia-head .dh-rota{font-size:11.5px;font-weight:800;color:var(--rose);background:var(--rose-light);border-radius:99px;padding:5px 11px;white-space:nowrap;}
+/* ── Rota do dia ── */
+.rota-pin-wrap{display:flex;align-items:center;justify-content:center;background:none!important;border:none!important;}
+.rota-pin{width:30px;height:30px;border-radius:50%;background:var(--rose);color:white;border:3px solid white;box-shadow:0 3px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:var(--font);}
+.rota-pin.prox{background:var(--ink);width:38px;height:38px;font-size:15px;}
+.rota-pin.feito{background:var(--green);width:24px;height:24px;font-size:12px;}
+.rota-pin.sel{box-shadow:0 0 0 5px rgba(166,124,82,.5),0 3px 8px rgba(0,0,0,.35);}
+.rota-eu{width:18px;height:18px;border-radius:50%;background:#2563eb;border:3px solid white;animation:rotaPulso 2s infinite;}
+@keyframes rotaPulso{0%{box-shadow:0 0 0 0 rgba(37,99,235,.5);}70%{box-shadow:0 0 0 14px rgba(37,99,235,0);}100%{box-shadow:0 0 0 0 rgba(37,99,235,0);}}
+.rota-num{width:30px;height:30px;border-radius:50%;background:var(--rose);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rota-num.feito{background:var(--green-bg);color:var(--green);}
+.rota-fab{width:40px;height:40px;border-radius:50%;background:white;box-shadow:0 4px 12px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;color:var(--ink);}
+.leaflet-container{font-family:var(--font);}
+.leaflet-control-attribution{font-size:10px;opacity:.85;}
 .b-alert{background:var(--amber-bg);color:var(--amber);}
 .b-inativa{background:var(--red-bg);color:var(--red);}
 
@@ -626,11 +669,22 @@ input[type="time"]{max-width:100%;}
       <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink-3);">🔍</span>
       <button type="button" id="buscaAtendimentosLimpar" onclick="limparBuscaAtendimentos()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:var(--border);color:var(--ink-3);font-size:13px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;">✕</button>
     </div>
-    <div style="display:flex;gap:8px;margin:0 16px 12px;">
-      <button type="button" id="filtroAtendPendentes" onclick="filtrarAtendimentos('pendentes')"
-        style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--rose);background:var(--rose);color:white;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Falta atender (<span id="cntFiltroPendentes">0</span>)</button>
-      <button type="button" id="filtroAtendAtendidas" onclick="filtrarAtendimentos('atendidas')"
-        style="flex:1;padding:9px 4px;border-radius:12px;border:1.5px solid var(--border);background:white;color:var(--ink-3);font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">Já atendidas (<span id="cntFiltroAtendidas">0</span>)</button>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 16px 12px;">
+      <button type="button" id="filtroAtendPendentes" class="tile-resumo on" onclick="filtrarAtendimentos('pendentes')">
+        <div class="tile-num" id="cntFiltroPendentes">0</div>
+        <div class="tile-lbl">Falta atender</div>
+        <div class="tile-sub" id="subFiltroPendentes">de 0 previstas</div>
+      </button>
+      <button type="button" id="filtroAtendAtendidas" class="tile-resumo" onclick="filtrarAtendimentos('atendidas')">
+        <div class="tile-num" id="cntFiltroAtendidas">0</div>
+        <div class="tile-lbl">Já atendidas</div>
+        <div class="tile-sub" id="subFiltroAtendidas">R$ 0 vendidos</div>
+      </button>
+      <button type="button" id="tileDebitosAtend" class="tile-resumo tile-red" onclick="abrirPagarDebitos()">
+        <div class="tile-num" id="valTileDebitos">R$ 0</div>
+        <div class="tile-lbl">Em aberto</div>
+        <div class="tile-sub" id="subTileDebitos">nenhum débito</div>
+      </button>
     </div>
     <div style="padding:0 16px 80px;" id="listaConsultoras">
       <div style="text-align:center;padding:32px;color:var(--ink-3);font-size:14px;">
@@ -640,7 +694,41 @@ input[type="time"]{max-width:100%;}
     </div>
   </div>
   <button id="btnTopoAtendimentos" onclick="document.querySelector('#view-atendimentos-lista .scroll-body').scrollTo({top:0,behavior:'smooth'})"
-    style="display:none;position:absolute;right:16px;bottom:24px;width:48px;height:48px;border-radius:50%;background:var(--ink);color:white;border:none;box-shadow:0 4px 14px rgba(0,0,0,.25);font-size:20px;align-items:center;justify-content:center;z-index:50;cursor:pointer;">↑</button>
+    style="display:none;position:absolute;right:16px;bottom:80px;width:44px;height:44px;border-radius:50%;background:white;color:var(--ink);border:1px solid var(--border);box-shadow:0 4px 14px rgba(0,0,0,.18);font-size:18px;align-items:center;justify-content:center;z-index:50;cursor:pointer;">↑</button>
+  <button id="btnVerRotaMapa" type="button" onclick="abrirRota()" style="display:none;position:absolute;left:16px;right:16px;bottom:14px;height:52px;border-radius:16px;background:var(--ink);color:white;box-shadow:0 8px 24px rgba(0,0,0,.28);font-size:14px;font-weight:800;align-items:center;justify-content:center;gap:10px;z-index:49;cursor:pointer;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+    <span id="ctaRotaTxt">Ver rota no mapa</span>
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: ROTA DO DIA (mapa, trajeto e posição ao vivo)
+══════════════════════════════════════════ -->
+<div class="view" id="view-rota">
+  <div class="page-header" style="padding-bottom:12px;">
+    <button onclick="goTo('atendimentos-lista')" style="color:var(--rose);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
+    <div class="ph-title" style="color:white;">Rota do dia</div>
+    <div class="ph-sub" id="rotaSub" style="color:rgba(255,255,255,.7);">—</div>
+  </div>
+  <div class="scroll-body" id="rotaScroll" style="padding:0 0 90px;">
+    <div id="rotaDias" style="display:flex;gap:8px;overflow-x:auto;padding:12px 16px 4px;"></div>
+    <div style="position:relative;margin:8px 16px 0;border-radius:18px;overflow:hidden;border:1px solid var(--border);height:450px;background:#e9e6e0;">
+      <div id="rotaMapa" style="position:absolute;top:0;left:0;right:0;bottom:0;"></div>
+      <div id="rotaMsg" style="display:none;position:absolute;top:34px;left:56px;right:60px;z-index:1000;text-align:center;color:white;font-size:12px;font-weight:700;padding:8px 12px;border-radius:12px;line-height:1.35;"></div>
+      <div style="position:absolute;top:10px;right:10px;z-index:1000;display:flex;flex-direction:column;gap:8px;">
+        <button type="button" class="rota-fab" onclick="rotaCentralizarEu()" aria-label="Minha posição"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></button>
+        <button type="button" class="rota-fab" onclick="rotaEnquadrar()" aria-label="Ver rota toda"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+        <button type="button" class="rota-fab" onclick="ROTA.map && ROTA.map.zoomIn()" aria-label="Aproximar" style="font-size:20px;font-weight:700;">+</button>
+        <button type="button" class="rota-fab" onclick="ROTA.map && ROTA.map.zoomOut()" aria-label="Afastar" style="font-size:22px;font-weight:700;">−</button>
+      </div>
+      <div id="rotaCard" style="position:absolute;left:10px;right:10px;bottom:10px;z-index:1000;"></div>
+    </div>
+    <div id="rotaResumo" style="margin:12px 16px 0;"></div>
+    <div style="padding:16px 16px 0;font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;">Paradas do dia</div>
+    <div id="rotaLista" style="padding:8px 16px 0;"></div>
+    <div id="rotaGpsPref" style="padding:6px 18px 0;font-size:11.5px;color:var(--ink-3);"></div>
+    <div style="padding:14px 18px 0;font-size:10.5px;color:var(--ink-3);line-height:1.5;">Mapa © colaboradores do OpenStreetMap · endereços localizados pelo Nominatim · trajetos calculados pelo OSRM.</div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════════
@@ -2524,6 +2612,8 @@ input[type="time"]{max-width:100%;}
       <label class="field" style="margin:0;"><span>CPF</span><input id="cCpf" inputmode="numeric" placeholder="000.000.000-00"></label>
       <label class="field" style="margin:0;"><span>Aniversário</span><input id="cAniv" type="date"></label>
     </div>
+    <label class="field" style="margin-top:12px;"><span>Endereço (rua e número)</span><input id="cEndereco" placeholder="Ex: Rua das Flores, 123"></label>
+    <div style="font-size:11px;color:var(--ink-3);margin:-6px 0 10px;line-height:1.4;">Com a rua e o número, o ponto no mapa fica exato. Só com bairro e cidade, fica aproximado.</div>
     <div class="two-col" style="margin-top:12px;">
       <label class="field" style="margin:0;"><span>Bairro</span><input id="cBairro" placeholder="Ex: Centro"></label>
       <label class="field" style="margin:0;"><span>Cidade</span><input id="cCidade" placeholder="Ex: Gramado"></label>
@@ -5701,6 +5791,55 @@ function consultorasValidasDe(sem) {
   return [...porId.values()];
 }
 
+// ── Helpers da tela de Atendimentos / Rota ─────────────────────────────
+const DIAS_ORDEM_ROTA = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+const MESES_CURTOS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+// Soma o débito em aberto da consultora em TODAS as semanas (mesma conta da tela Pagar Débitos)
+function debitoTotalDe(consultoraId) {
+  let total = 0;
+  (DB.semanas || []).forEach(sm => {
+    (sm.consultoras || []).forEach(c => { if (c.id === consultoraId) total += debitoDe(c); });
+  });
+  return Math.round(total * 100) / 100;
+}
+
+// Data (Date) de um dia da semana ("Terça-feira") dentro de uma semana de trabalho.
+// A semana começa na segunda; se foi criada no sábado/domingo, vale a segunda seguinte.
+function dataDoDiaDaSemana(sem, diaLabel) {
+  const idx = DIAS_ORDEM_ROTA.indexOf(diaLabel);
+  if (idx < 0 || !sem || !sem.dataInicio) return null;
+  const base = new Date(sem.dataInicio);
+  if (isNaN(base)) return null;
+  base.setHours(12, 0, 0, 0);
+  const dow = base.getDay(); // 0=dom ... 6=sáb
+  const voltaParaSegunda = dow === 0 ? -6 : 1 - dow;
+  let segunda = new Date(base); segunda.setDate(base.getDate() + voltaParaSegunda);
+  if (dow === 0 || dow === 6) segunda.setDate(segunda.getDate() + 7); // criada no fim de semana → semana que vem
+  const d = new Date(segunda); d.setDate(segunda.getDate() + idx);
+  return d;
+}
+function fmtDiaMes(d) { return d ? d.getDate() + ' ' + MESES_CURTOS[d.getMonth()] : ''; }
+function ehMesmoDia(a, b) { return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+function nomeDiaHoje() { return DIAS_ORDEM_ROTA[(new Date().getDay() + 6) % 7] || null; } // dom → undefined → null
+
+function brlCurto(v) { v = v || 0; return v >= 1000 ? 'R$ ' + (v/1000).toLocaleString('pt-BR', {maximumFractionDigits:1}) + ' mil' : 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+function brlInteiro(v) { return 'R$ ' + Math.round(v || 0).toLocaleString('pt-BR'); }
+function periodoDoHorario(h) {
+  if (!h) return 'sem horário';
+  const hh = parseInt(String(h).split(':')[0], 10);
+  return hh < 12 ? 'manhã' : hh < 18 ? 'tarde' : 'noite';
+}
+function minutosDoHorario(h) {
+  if (!h) return Infinity;
+  const [hh, mm] = String(h).split(':').map(Number);
+  return (hh || 0) * 60 + (mm || 0);
+}
+function enderecoCompleto(c) {
+  const m = DB.consultoras.find(x => x.id === c.id) || c;
+  return [m.endereco || c.endereco, m.bairro || c.bairro, m.cidade || c.cidade].filter(Boolean).join(' · ');
+}
+
 function foiAtendida(c) {
   return c.status === 'concluida' && !c.remarcarSemana && !c.remarcarMes;
 }
@@ -5826,17 +5965,7 @@ function filtrarAtendimentos(tipo) {
       atendidas: document.getElementById('filtroAtendAtendidas'),
     };
     Object.keys(btns).forEach(k => {
-      const btn = btns[k];
-      if (!btn) return;
-      if (k === tipo) {
-        btn.style.background = 'var(--rose)';
-        btn.style.borderColor = 'var(--rose)';
-        btn.style.color = 'white';
-      } else {
-        btn.style.background = 'white';
-        btn.style.borderColor = 'var(--border)';
-        btn.style.color = 'var(--ink-3)';
-      }
+      if (btns[k]) btns[k].classList.toggle('on', k === tipo);
     });
   }
   renderSemana();
@@ -6229,12 +6358,16 @@ function goTo(v) {
   // Marca aba ativa
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   const navItems = document.querySelectorAll('.nav-item');
-  const navIdx = { semana:0, agenda:1, 'atendimentos-lista':2, gerenciar:3, 'fechamento-geral':4, programas:5 };
+  const navIdx = { semana:0, agenda:1, 'atendimentos-lista':2, rota:2, gerenciar:3, 'fechamento-geral':4, programas:5 };
   if (navIdx[v] !== undefined) navItems[navIdx[v]]?.classList.add('active');
 
   viewHistory.push(v);
 
+  // Mapa/rota: só mantém o GPS ligado enquanto a tela de rota está aberta
+  if (v !== 'rota') { pararGPSRota(); ROTA.token++; }
+
   // Renderizar
+  if (v === 'rota')         renderRota();
   if (v === 'semana')       renderSemana();
   if (v === 'atendimentos-lista') { window._filtroAtendimentos = 'pendentes'; renderSemana(); }
   if (v === 'pagar-debitos') renderPagarDebitos();
@@ -6252,6 +6385,591 @@ function goTo(v) {
   if (v === 'live-detalhe') renderLiveDetalhe();
   if (v === 'estrelas')     renderEstrelasRanking();
 }
+
+/* ════════════════════════════════════════════
+   ROTA · MAPA DO DIA (estilo Uber / Mercado Livre)
+   Mapa: Leaflet + OpenStreetMap · Endereço → ponto: Nominatim · Trajeto: OSRM
+   Posição ao vivo: GPS do aparelho. Tudo gratuito, sem chave de API.
+════════════════════════════════════════════ */
+const ROTA = {
+  dia: null, map: null, grupo: null, linha: null, marcadores: {},
+  euMarker: null, euCirculo: null, watchId: null, pos: null, gpsErro: null,
+  paradas: [], selId: null, ajustandoId: null,
+  rotaInfo: null, rotaOrigem: null, rotaEm: 0, calculando: false,
+  token: 0, leafletPromessa: null,
+};
+
+const rotaEspera = ms => new Promise(r => setTimeout(r, ms));
+const rotaEsc = s => String(s == null ? '' : s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+// Assinatura do endereço: se mudar, o ponto guardado deixa de valer e é localizado de novo
+function rotaAssinatura(m) { return [m.endereco, m.bairro, m.cidade].map(x => String(x || '').trim().toLowerCase()).join('|'); }
+function rotaCidadeTxt(c) { return String(c || '').replace(/\s*\/\s*/g, ', ').trim(); }
+function rotaDistM(a, b) { // distância em linha reta (haversine), em metros
+  const R = 6371000, rad = x => x * Math.PI / 180;
+  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function rotaFmtDist(m) { return m < 950 ? (Math.max(10, Math.round(m / 10) * 10)) + ' m' : (m / 1000).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' km'; }
+function rotaFmtTempo(seg) {
+  const min = Math.max(1, Math.round(seg / 60));
+  if (min < 60) return min + ' min';
+  const h = Math.floor(min / 60), r = min % 60;
+  return h + ' h' + (r ? ' ' + String(r).padStart(2, '0') + ' min' : '');
+}
+
+/* ── dias e paradas ── */
+function rotaDiasDisponiveis(sem) {
+  const validas = consultorasValidasDe(sem);
+  const res = [];
+  [...DIAS_ORDEM_ROTA, 'Sem dia definido'].forEach(d => {
+    const grupo = validas.filter(c => (c.diaMelhor || 'Sem dia definido') === d);
+    if (!grupo.length) return;
+    const feitas = grupo.filter(c => c.status === 'concluida').length;
+    res.push({ dia: d, total: grupo.length, pend: grupo.length - feitas });
+  });
+  return res;
+}
+// Dia que abre por padrão: hoje (se tem gente pra atender); senão o próximo dia com pendências
+function rotaDiaPadrao(dias) {
+  const comPend = dias.filter(d => d.pend > 0);
+  if (!comPend.length) return null;
+  const hoje = nomeDiaHoje();
+  const doHoje = comPend.find(d => d.dia === hoje);
+  if (doHoje) return doHoje;
+  const idxHoje = DIAS_ORDEM_ROTA.indexOf(hoje);
+  const proximo = comPend.find(d => { const i = DIAS_ORDEM_ROTA.indexOf(d.dia); return i >= 0 && i > idxHoje; });
+  return proximo || comPend[0];
+}
+function atualizarCtaRota(sem, lista) {
+  const btn = document.getElementById('btnVerRotaMapa');
+  if (!btn || !sem) return;
+  const def = rotaDiaPadrao(rotaDiasDisponiveis(sem));
+  if (!def) { btn.style.display = 'none'; return; }
+  const hoje = nomeDiaHoje();
+  const rotulo = def.dia === hoje ? 'de hoje' : (def.dia === 'Sem dia definido' ? 'sem dia' : 'de ' + def.dia.replace('-feira', ''));
+  document.getElementById('ctaRotaTxt').textContent = 'Ver rota ' + rotulo + ' · ' + def.pend + (def.pend > 1 ? ' paradas' : ' parada');
+  btn.style.display = 'flex';
+}
+function abrirRota(dia) {
+  const sem = getSemanaAtiva();
+  if (!sem) return;
+  const dias = rotaDiasDisponiveis(sem);
+  if (!dias.length) { alert('Nenhuma consultora nesta semana.'); return; }
+  ROTA.dia = dia || (rotaDiaPadrao(dias) || dias[0]).dia;
+  goTo('rota');
+}
+function rotaMontarParadas(sem, dia) {
+  const validas = consultorasValidasDe(sem).filter(c => (c.diaMelhor || 'Sem dia definido') === dia);
+  validas.sort((a, b) => minutosDoHorario(a.horarioMelhor) - minutosDoHorario(b.horarioMelhor) || (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+  let num = 0;
+  return validas.map(c => {
+    const m = DB.consultoras.find(x => x.id === c.id) || c;
+    const feito = c.status === 'concluida';
+    const especial = c.parouDeVender ? 'inativa' : c.remarcarMes ? 'mes' : c.remarcarSemana ? 'semana' : null;
+    const assin = rotaAssinatura(m);
+    const geoOk = m.geoQ === assin;            // já tentamos localizar este endereço exato
+    const temPonto = geoOk && typeof m.lat === 'number' && typeof m.lng === 'number';
+    const endTxt = [m.endereco, m.bairro, m.cidade].filter(Boolean).join(' · ');
+    return {
+      id: c.id, c, m, nome: c.nome, hora: c.horarioMelhor || '', feito, especial, naRota: !feito,
+      num: feito ? null : ++num, endTxt,
+      lat: temPonto ? m.lat : null, lng: temPonto ? m.lng : null, nivel: temPonto ? (m.geoNivel || null) : null,
+      tentou: geoOk && !temPonto, leg: null,
+    };
+  });
+}
+
+/* ── Leaflet (carrega só quando abre a tela) ── */
+function rotaCarregarLeaflet() {
+  if (window.L && window.L.map) return Promise.resolve();
+  if (ROTA.leafletPromessa) return ROTA.leafletPromessa;
+  ROTA.leafletPromessa = new Promise((resolve, reject) => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(css);
+    const sc = document.createElement('script');
+    sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    sc.onload = () => resolve();
+    sc.onerror = () => { ROTA.leafletPromessa = null; reject(new Error('Não consegui carregar o mapa. Confira a internet e tente de novo.')); };
+    document.head.appendChild(sc);
+  });
+  return ROTA.leafletPromessa;
+}
+function rotaIniciarMapa() {
+  const el = document.getElementById('rotaMapa');
+  if (!el) return;
+  if (!ROTA.map) {
+    ROTA.map = L.map(el, { zoomControl: false, attributionControl: false }).setView([-29.57, -50.79], 12);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(ROTA.map);
+    L.control.attribution({ position: 'topleft', prefix: false }).addAttribution('© OpenStreetMap').addTo(ROTA.map);
+    ROTA.grupo = L.layerGroup().addTo(ROTA.map);
+    ROTA.map.on('click', e => {
+      if (!ROTA.ajustandoId) return;
+      const p = ROTA.paradas.find(x => x.id === ROTA.ajustandoId);
+      if (p) rotaAoSoltarPino(p, e.latlng);
+    });
+  }
+  setTimeout(() => { if (ROTA.map) ROTA.map.invalidateSize(); }, 60);
+}
+
+/* ── Endereço → ponto no mapa (Nominatim, 1 pedido por segundo, resultado fica guardado) ── */
+async function rotaNominatim(q) {
+  const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&accept-language=pt-BR&q=' + encodeURIComponent(q);
+  const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  if (!resp.ok) throw new Error('geocode ' + resp.status);
+  const j = await resp.json();
+  if (!j || !j.length) return null;
+  const lat = parseFloat(j[0].lat), lng = parseFloat(j[0].lon);
+  return (isFinite(lat) && isFinite(lng)) ? { lat, lng } : null;
+}
+async function rotaGeocodificar(m) {
+  const cidade = rotaCidadeTxt(m.cidade);
+  const tentativas = [];
+  if (m.endereco && cidade) {
+    tentativas.push({ nivel: 'endereco', q: [m.endereco, m.bairro, cidade, 'Brasil'].filter(Boolean).join(', ') });
+    if (m.bairro) tentativas.push({ nivel: 'endereco', q: [m.endereco, cidade, 'Brasil'].join(', ') });
+  }
+  if (m.bairro && cidade) tentativas.push({ nivel: 'bairro', q: [m.bairro, cidade, 'Brasil'].join(', ') });
+  if (cidade) tentativas.push({ nivel: 'cidade', q: [cidade, 'Brasil'].join(', ') });
+  for (let i = 0; i < tentativas.length; i++) {
+    const r = await rotaNominatim(tentativas[i].q);
+    if (r) return { lat: r.lat, lng: r.lng, nivel: tentativas[i].nivel };
+    if (i < tentativas.length - 1) await rotaEspera(1100);
+  }
+  return null;
+}
+async function rotaGarantirCoordenadas(token) {
+  const faltam = ROTA.paradas.filter(p => p.naRota && p.endTxt && p.lat === null && !p.tentou);
+  let n = 0;
+  for (const p of faltam) {
+    if (token !== ROTA.token) return;
+    n++;
+    rotaMsg('Localizando endereços… ' + n + '/' + faltam.length);
+    try {
+      const g = await rotaGeocodificar(p.m);
+      if (token !== ROTA.token) return;
+      p.m.geoQ = rotaAssinatura(p.m);
+      if (g) { p.m.lat = g.lat; p.m.lng = g.lng; p.m.geoNivel = g.nivel; p.lat = g.lat; p.lng = g.lng; p.nivel = g.nivel; }
+      else { p.m.lat = null; p.m.lng = null; p.m.geoNivel = null; p.tentou = true; }
+      save();
+    } catch (e) {
+      // sem internet / serviço ocupado: não marca como tentado, tenta de novo na próxima vez
+      if (token === ROTA.token) rotaMsg('Não consegui localizar agora. Tente de novo em instantes.', true);
+      return;
+    }
+    rotaDesenharParadas(false);
+    rotaRenderLista();
+    rotaRenderCard();
+    if (n < faltam.length) await rotaEspera(1100);
+  }
+}
+
+/* ── Desenho do mapa ── */
+function rotaIcone(p, proxId) {
+  const cls = 'rota-pin' + (p.feito ? ' feito' : (p.id === proxId ? ' prox' : '')) + (p.id === ROTA.selId ? ' sel' : '');
+  return L.divIcon({ className: 'rota-pin-wrap', html: '<div class="' + cls + '">' + (p.feito ? '✓' : p.num) + '</div>', iconSize: [40, 40], iconAnchor: [20, 20] });
+}
+function rotaDesenharParadas(enquadrar) {
+  if (!ROTA.map || !window.L) return;
+  ROTA.grupo.clearLayers();
+  ROTA.marcadores = {};
+  const prox = ROTA.paradas.find(p => p.naRota);
+  const proxId = prox ? prox.id : null;
+  ROTA.paradas.forEach(p => {
+    if (p.lat === null) return;
+    const ajustando = ROTA.ajustandoId === p.id;
+    const mk = L.marker([p.lat, p.lng], { icon: rotaIcone(p, proxId), draggable: ajustando, keyboard: false, zIndexOffset: p.id === proxId ? 500 : (p.feito ? -200 : 0) });
+    mk.on('click', () => rotaSelecionar(p.id, false));
+    if (ajustando) mk.on('dragend', ev => rotaAoSoltarPino(p, ev.target.getLatLng()));
+    mk.addTo(ROTA.grupo);
+    ROTA.marcadores[p.id] = mk;
+  });
+  if (enquadrar) rotaEnquadrar();
+}
+function rotaEnquadrar() {
+  if (!ROTA.map || !window.L) return;
+  const pts = ROTA.paradas.filter(p => p.lat !== null && (p.naRota || ROTA.paradas.every(x => x.feito))).map(p => [p.lat, p.lng]);
+  if (ROTA.pos) pts.push([ROTA.pos.lat, ROTA.pos.lng]);
+  if (!pts.length) return;
+  if (pts.length === 1) ROTA.map.setView(pts[0], 15);
+  else ROTA.map.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [36, 56], paddingBottomRight: [36, 190], maxZoom: 16 });
+}
+function rotaCentralizarEu() {
+  if (!ROTA.map) return;
+  if (!ROTA.pos) { rotaMsg(ROTA.gpsErro || 'Ainda buscando sua localização…', !!ROTA.gpsErro); setTimeout(() => { if (!ROTA.ajustandoId) rotaMsg(''); }, 3000); return; }
+  ROTA.map.setView([ROTA.pos.lat, ROTA.pos.lng], Math.max(ROTA.map.getZoom(), 15), { animate: true });
+}
+function rotaDesenharLinha(latlngs, tracejada) {
+  if (!ROTA.map || !window.L) return;
+  if (ROTA.linha) { ROTA.map.removeLayer(ROTA.linha); ROTA.linha = null; }
+  if (!latlngs || latlngs.length < 2) return;
+  const casing = L.polyline(latlngs, { color: '#ffffff', weight: 9, opacity: .95, lineCap: 'round', lineJoin: 'round', interactive: false });
+  const topo = L.polyline(latlngs, { color: '#181818', weight: 5, opacity: .95, lineCap: 'round', lineJoin: 'round', dashArray: tracejada ? '2 10' : null, interactive: false });
+  ROTA.linha = L.layerGroup([casing, topo]).addTo(ROTA.map);
+}
+function rotaMsg(txt, erro) {
+  const el = document.getElementById('rotaMsg');
+  if (!el) return;
+  if (!txt) { el.textContent = ''; el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.textContent = txt;
+  el.style.background = erro ? 'var(--red)' : 'rgba(24,24,24,.9)';
+}
+
+/* ── Trajeto (OSRM) ── */
+async function rotaCalcularRota() {
+  if (ROTA.calculando) return;
+  const token = ROTA.token;
+  const pts = ROTA.paradas.filter(p => p.naRota && p.lat !== null);
+  ROTA.paradas.forEach(p => { p.leg = null; });
+  const usaEu = !!ROTA.pos;
+  const waypoints = (usaEu ? [{ lat: ROTA.pos.lat, lng: ROTA.pos.lng }] : []).concat(pts.map(p => ({ lat: p.lat, lng: p.lng })));
+  if (waypoints.length < 2) {
+    rotaDesenharLinha(null);
+    ROTA.rotaInfo = pts.length ? { distancia: 0, duracao: 0, legs: [], comOrigemUsuario: usaEu, online: true } : null;
+    rotaRenderTudo();
+    return;
+  }
+  ROTA.calculando = true;
+  try {
+    let info, linha, tracejada = false;
+    try {
+      const url = 'https://router.project-osrm.org/route/v1/driving/' + waypoints.map(w => w.lng.toFixed(6) + ',' + w.lat.toFixed(6)).join(';') + '?overview=full&geometries=geojson&steps=false';
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 12000);
+      const resp = await fetch(url, { signal: ctrl.signal });
+      clearTimeout(to);
+      const j = await resp.json();
+      if (j.code !== 'Ok' || !j.routes || !j.routes[0]) throw new Error('sem rota');
+      const r = j.routes[0];
+      info = { distancia: r.distance, duracao: r.duration, legs: r.legs.map(l => ({ distancia: l.distance, duracao: l.duration })), comOrigemUsuario: usaEu, online: true };
+      linha = r.geometry.coordinates.map(c => [c[1], c[0]]);
+    } catch (e) {
+      // Sem serviço de rotas: linha reta tracejada e estimativa (ruas ≈ 30% mais longas que a reta, ~30 km/h)
+      const legs = [];
+      for (let i = 1; i < waypoints.length; i++) {
+        const d = rotaDistM(waypoints[i - 1], waypoints[i]) * 1.3;
+        legs.push({ distancia: d, duracao: d / (30000 / 3600) });
+      }
+      info = { distancia: legs.reduce((a, l) => a + l.distancia, 0), duracao: legs.reduce((a, l) => a + l.duracao, 0), legs, comOrigemUsuario: usaEu, online: false };
+      linha = waypoints.map(w => [w.lat, w.lng]);
+      tracejada = true;
+    }
+    if (token !== ROTA.token) return;
+    ROTA.rotaInfo = info;
+    ROTA.rotaOrigem = usaEu ? { lat: ROTA.pos.lat, lng: ROTA.pos.lng } : null;
+    ROTA.rotaEm = Date.now();
+    pts.forEach((p, k) => { const li = usaEu ? k : k - 1; p.leg = li >= 0 ? (info.legs[li] || null) : null; });
+    rotaDesenharLinha(linha, tracejada);
+    rotaRenderTudo();
+  } finally {
+    ROTA.calculando = false;
+  }
+}
+
+/* ── GPS do aparelho (posição ao vivo) ── */
+function rotaIniciarGPS() {
+  if (ROTA.watchId !== null) return;
+  if (!navigator.geolocation) { ROTA.gpsErro = 'Este aparelho não tem localização disponível.'; rotaRenderCard(); return; }
+  ROTA.watchId = navigator.geolocation.watchPosition(rotaAoReceberPosicao, err => {
+    ROTA.gpsErro = err && err.code === 1
+      ? 'Localização bloqueada. Ative a localização para este site nas configurações do navegador pra ver você no mapa.'
+      : 'Não consegui pegar sua localização agora.';
+    rotaRenderCard();
+  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+}
+function pararGPSRota() {
+  if (ROTA.watchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(ROTA.watchId);
+  ROTA.watchId = null;
+}
+function rotaAoReceberPosicao(pos) {
+  const primeira = !ROTA.pos;
+  ROTA.pos = { lat: pos.coords.latitude, lng: pos.coords.longitude, prec: pos.coords.accuracy || 30 };
+  ROTA.gpsErro = null;
+  if (ROTA.map && window.L) {
+    const ll = [ROTA.pos.lat, ROTA.pos.lng];
+    if (!ROTA.euMarker) {
+      ROTA.euCirculo = L.circle(ll, { radius: ROTA.pos.prec, color: '#2563eb', weight: 1, fillColor: '#2563eb', fillOpacity: .1, interactive: false }).addTo(ROTA.map);
+      ROTA.euMarker = L.marker(ll, { icon: L.divIcon({ className: 'rota-pin-wrap', html: '<div class="rota-eu"></div>', iconSize: [24, 24], iconAnchor: [12, 12] }), interactive: false, keyboard: false, zIndexOffset: 1000 }).addTo(ROTA.map);
+    } else {
+      ROTA.euMarker.setLatLng(ll);
+      ROTA.euCirculo.setLatLng(ll).setRadius(ROTA.pos.prec);
+    }
+  }
+  const moveu = ROTA.rotaOrigem ? rotaDistM(ROTA.pos, ROTA.rotaOrigem) : Infinity;
+  const temParadaNoMapa = ROTA.paradas.some(p => p.naRota && p.lat !== null);
+  const recalcular = temParadaNoMapa && !ROTA.calculando && (primeira || (moveu > 300 && Date.now() - ROTA.rotaEm > 40000));
+  if (primeira) rotaEnquadrar();
+  if (recalcular) rotaCalcularRota(); else rotaRenderCard();
+}
+
+/* ── Tela ── */
+async function renderRota() {
+  const sem = getSemanaAtiva();
+  const token = ++ROTA.token;
+  if (!sem) return;
+  const dias = rotaDiasDisponiveis(sem);
+  if (!dias.length) { ROTA.paradas = []; rotaRenderTudo(); return; }
+  if (!ROTA.dia || !dias.some(d => d.dia === ROTA.dia)) ROTA.dia = (rotaDiaPadrao(dias) || dias[0]).dia;
+  ROTA.paradas = rotaMontarParadas(sem, ROTA.dia);
+  ROTA.selId = null; ROTA.ajustandoId = null; ROTA.rotaInfo = null; ROTA.rotaOrigem = null; ROTA.calculando = false;
+  rotaRenderChips(sem, dias);
+  rotaRenderTudo();
+  const sc = document.getElementById('rotaScroll'); if (sc) sc.scrollTop = 0;
+  rotaMsg('Carregando mapa…');
+  try { await rotaCarregarLeaflet(); } catch (e) { rotaMsg(e.message, true); return; }
+  if (token !== ROTA.token) return;
+  rotaIniciarMapa();
+  if (ROTA.linha) { ROTA.map.removeLayer(ROTA.linha); ROTA.linha = null; }
+  rotaDesenharParadas(true);
+  rotaIniciarGPS();
+  rotaMsg('');
+  await rotaGarantirCoordenadas(token);
+  if (token !== ROTA.token) return;
+  if (!document.getElementById('rotaMsg').textContent.startsWith('Não consegui')) rotaMsg('');
+  rotaDesenharParadas(true);
+  await rotaCalcularRota();
+}
+function rotaTrocarDia(dia) { ROTA.dia = dia; renderRota(); }
+
+function rotaRenderChips(sem, dias) {
+  const el = document.getElementById('rotaDias');
+  if (!el) return;
+  const hoje = nomeDiaHoje();
+  el.innerHTML = dias.map(d => {
+    const ativo = d.dia === ROTA.dia;
+    const data = dataDoDiaDaSemana(sem, d.dia);
+    const abrev = d.dia === 'Sem dia definido' ? 'Sem dia' : d.dia.replace('-feira', '').slice(0, 3);
+    return '<button type="button" onclick="rotaTrocarDia(\'' + d.dia + '\')" style="flex-shrink:0;border-radius:14px;padding:8px 13px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;border:1.5px solid ' + (ativo ? 'var(--ink)' : 'var(--border)') + ';background:' + (ativo ? 'var(--ink)' : 'white') + ';color:' + (ativo ? 'white' : 'var(--ink-2)') + ';">'
+      + abrev + (data ? ' ' + data.getDate() : '') + ' <span style="opacity:.65;">· ' + d.pend + '</span>'
+      + (d.dia === hoje ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + (ativo ? 'white' : 'var(--rose)') + ';margin-left:6px;vertical-align:middle;"></span>' : '')
+      + '</button>';
+  }).join('');
+  const sub = document.getElementById('rotaSub');
+  if (sub) {
+    const data = dataDoDiaDaSemana(sem, ROTA.dia);
+    sub.textContent = 'Semana ' + sem.numero + (sem.regiao ? ' · ' + sem.regiao : '') + ' · ' + ROTA.dia + (data ? ', ' + fmtDiaMes(data) : '');
+  }
+}
+function rotaRenderTudo() { rotaRenderLista(); rotaRenderCard(); rotaRenderResumo(); rotaRenderGpsPref(); }
+
+function rotaRenderResumo() {
+  const el = document.getElementById('rotaResumo');
+  if (!el) return;
+  const pend = ROTA.paradas.filter(p => p.naRota);
+  const feitas = ROTA.paradas.length - pend.length;
+  const info = ROTA.rotaInfo;
+  const aprox = pend.filter(p => p.lat !== null && p.nivel && p.nivel !== 'endereco' && p.nivel !== 'manual').length;
+  const semLocal = pend.filter(p => p.lat === null).length;
+  const caixa = (valor, rotulo) => '<div style="flex:1;background:white;border:1px solid var(--border);border-radius:14px;padding:10px 12px;min-width:0;"><div style="font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.3px;white-space:nowrap;">' + valor + '</div><div style="font-size:10.5px;font-weight:700;color:var(--ink-3);margin-top:1px;">' + rotulo + '</div></div>';
+  let html = '<div style="display:flex;gap:8px;">'
+    + caixa(pend.length, (pend.length === 1 ? 'parada' : 'paradas') + (feitas ? ' · ' + feitas + (feitas === 1 ? ' feita' : ' feitas') : ''))
+    + caixa(info && info.duracao ? rotaFmtTempo(info.duracao) : '—', 'no trajeto')
+    + caixa(info && info.distancia ? rotaFmtDist(info.distancia) : '—', 'de distância')
+    + '</div>';
+  const avisos = [];
+  if (info && !info.online) avisos.push('Sem serviço de rotas agora — mostrando estimativa em linha reta.');
+  if (aprox) avisos.push(aprox + (aprox > 1 ? ' paradas com local aproximado' : ' parada com local aproximado') + ' (cadastre rua e número pra ficar exato).');
+  if (semLocal) avisos.push(semLocal + (semLocal > 1 ? ' paradas sem localização' : ' parada sem localização') + ' no mapa.');
+  if (avisos.length) html += '<div style="font-size:11px;color:var(--amber);font-weight:700;line-height:1.45;margin-top:8px;">' + avisos.map(a => '• ' + a).join('<br>') + '</div>';
+  el.innerHTML = html;
+}
+
+function rotaRenderLista() {
+  const el = document.getElementById('rotaLista');
+  if (!el) return;
+  if (!ROTA.paradas.length) { el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);font-size:13px;">Nenhuma consultora neste dia.</div>'; return; }
+  el.innerHTML = ROTA.paradas.map(p => {
+    const sel = p.id === ROTA.selId;
+    const circ = p.feito ? '<div class="rota-num feito">✓</div>' : '<div class="rota-num">' + p.num + '</div>';
+    let status = '';
+    if (p.feito) status = '<span class="chip green">' + (p.especial ? 'Remarcada' : 'Atendida') + '</span>';
+    else if (p.lat === null) status = p.tentou ? '<span class="chip red">Endereço não localizado</span>' : (p.endTxt ? '<span class="chip">Localizando…</span>' : '<span class="chip red">Sem endereço</span>');
+    else if (p.nivel && p.nivel !== 'endereco' && p.nivel !== 'manual') status = '<span class="chip amber">Local aproximado</span>';
+    const leg = p.leg ? '<div style="text-align:right;flex-shrink:0;"><div style="font-size:12.5px;font-weight:800;color:var(--ink);">' + rotaFmtTempo(p.leg.duracao) + '</div><div style="font-size:10.5px;color:var(--ink-3);font-weight:600;">' + rotaFmtDist(p.leg.distancia) + '</div></div>' : '';
+    return '<div onclick="rotaSelecionar(\'' + p.id + '\', true)" style="display:flex;align-items:center;gap:12px;background:white;border:1.5px solid ' + (sel ? 'var(--rose)' : 'var(--border)') + ';border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer;' + (p.feito ? 'opacity:.6;' : '') + '">'
+      + circ
+      + '<div style="flex:1;min-width:0;">'
+        + '<div style="font-size:11px;font-weight:800;color:var(--ink-3);">' + (p.hora || 'sem horário') + '</div>'
+        + '<div style="font-size:13.5px;font-weight:800;color:var(--ink);line-height:1.25;">' + rotaEsc(p.nome) + '</div>'
+        + '<div style="font-size:11.5px;color:var(--ink-2);margin-top:2px;">' + rotaEsc(p.endTxt || 'Endereço não cadastrado') + '</div>'
+        + (status ? '<div style="margin-top:6px;">' + status + '</div>' : '')
+      + '</div>' + leg + '</div>';
+  }).join('');
+}
+
+function rotaParadaFoco() {
+  if (ROTA.selId) { const s = ROTA.paradas.find(p => p.id === ROTA.selId); if (s) return s; }
+  return ROTA.paradas.find(p => p.naRota) || null;
+}
+function rotaRenderCard() {
+  const el = document.getElementById('rotaCard');
+  if (!el) return;
+  const p = rotaParadaFoco();
+  if (!p) { el.innerHTML = ''; return; }
+  const prox = ROTA.paradas.find(x => x.naRota);
+  const ehProxima = !p.feito && prox && prox.id === p.id;
+  const titulo = p.feito ? (p.especial ? 'REMARCADA' : 'ATENDIDA') : (ehProxima ? 'PRÓXIMA PARADA' : 'PARADA ' + p.num);
+  const base = 'background:white;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:12px 14px;';
+  const cab = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;"><span style="font-size:10px;font-weight:800;letter-spacing:.7px;color:var(--rose);">' + titulo + '</span><span style="font-size:13px;font-weight:800;color:var(--ink);">' + (p.hora || '') + '</span></div>'
+    + '<div style="font-size:15px;font-weight:800;color:var(--ink);line-height:1.25;">' + rotaEsc(p.nome) + '</div>'
+    + '<div style="font-size:11.5px;color:var(--ink-2);margin-top:2px;">' + rotaEsc(p.endTxt || 'Endereço não cadastrado') + '</div>';
+
+  if (ROTA.ajustandoId === p.id) {
+    el.innerHTML = '<div style="' + base + '">' + cab
+      + '<div style="font-size:12.5px;font-weight:700;color:var(--ink);margin-top:8px;">Arraste o pino ou toque no mapa no local certo.</div>'
+      + '<button type="button" onclick="rotaCancelarAjuste()" style="margin-top:10px;width:100%;background:var(--surface-2);border-radius:10px;padding:10px;font-size:12.5px;font-weight:800;color:var(--ink);">Cancelar</button></div>';
+    return;
+  }
+
+  let info = '';
+  if (!p.feito) {
+    if (p.lat !== null && ROTA.pos) {
+      const reta = rotaDistM(ROTA.pos, p);
+      if (reta <= 100) info = '<span style="color:var(--green);">Você chegou</span>';
+      else if (ehProxima && ROTA.rotaInfo && ROTA.rotaInfo.comOrigemUsuario && p.leg) info = rotaFmtTempo(p.leg.duracao) + ' · ' + rotaFmtDist(p.leg.distancia) + (ROTA.rotaInfo.online ? '' : ' (estimado)');
+      else if (p.leg && !ehProxima) info = rotaFmtTempo(p.leg.duracao) + ' · ' + rotaFmtDist(p.leg.distancia) + ' da parada anterior';
+      else info = rotaFmtDist(reta) + ' em linha reta de você';
+    } else if (p.lat !== null && p.leg) info = rotaFmtTempo(p.leg.duracao) + ' · ' + rotaFmtDist(p.leg.distancia) + ' da parada anterior';
+    else if (p.lat !== null) info = ROTA.gpsErro ? '' : 'Buscando sua localização…';
+    else info = p.tentou ? 'Não consegui localizar este endereço' : (p.endTxt ? 'Localizando endereço…' : 'Cadastre o endereço para traçar a rota');
+  }
+  const aprox = (!p.feito && p.lat !== null && p.nivel && p.nivel !== 'endereco' && p.nivel !== 'manual')
+    ? '<div style="font-size:10.5px;color:var(--amber);font-weight:700;margin-top:3px;">Local aproximado (' + p.nivel + ')</div>' : '';
+  const gpsErro = (ROTA.gpsErro && !ROTA.pos && !p.feito) ? '<div style="font-size:10.5px;color:var(--red);font-weight:700;margin-top:3px;line-height:1.35;">' + rotaEsc(ROTA.gpsErro) + '</div>' : '';
+
+  const svg = (path) => '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>';
+  const btnNav = p.endTxt ? '<button type="button" onclick="abrirGPS(\'' + p.id + '\')" class="btn-mini pri" style="flex:1;justify-content:center;padding:10px 8px;">' + svg('<polygon points="3 11 22 2 13 21 11 13 3 11"/>') + ' Navegar</button>' : '';
+  const btnZap = p.c.telefone ? '<button type="button" onclick="rotaWhats(\'' + p.id + '\')" class="btn-mini" style="justify-content:center;padding:10px 12px;">' + svg('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>') + '</button>' : '';
+  const btnAtender = !p.feito ? '<button type="button" onclick="rotaAtender(\'' + p.id + '\')" class="btn-mini" style="flex:1;justify-content:center;padding:10px 8px;background:var(--rose);color:white;">Atender</button>' : '';
+  const ajustar = (!p.feito && p.endTxt) ? '<button type="button" onclick="rotaIniciarAjuste(\'' + p.id + '\')" style="margin-top:8px;font-size:11.5px;font-weight:800;color:var(--rose);text-decoration:underline;">Ajustar local no mapa</button>' : '';
+
+  el.innerHTML = '<div style="' + base + '">' + cab
+    + (info ? '<div style="font-size:13px;font-weight:800;color:var(--ink);margin-top:7px;">' + info + '</div>' : '')
+    + aprox + gpsErro
+    + ((btnNav || btnZap || btnAtender) ? '<div style="display:flex;gap:8px;margin-top:10px;">' + btnNav + btnZap + btnAtender + '</div>' : '')
+    + ajustar
+  + '</div>';
+}
+
+function rotaSelecionar(id, subirParaMapa) {
+  if (ROTA.ajustandoId && ROTA.ajustandoId !== id) rotaCancelarAjuste();
+  ROTA.selId = id;
+  const p = ROTA.paradas.find(x => x.id === id);
+  rotaRenderLista();
+  rotaRenderCard();
+  rotaDesenharParadas(false);
+  if (p && p.lat !== null && ROTA.map) ROTA.map.setView([p.lat, p.lng], Math.max(ROTA.map.getZoom(), 15), { animate: true });
+  if (subirParaMapa) { const sc = document.getElementById('rotaScroll'); if (sc) sc.scrollTo({ top: 0, behavior: 'smooth' }); }
+}
+
+/* ── Ajustar o ponto no mapa (arrastar o pino ou tocar) ── */
+function rotaIniciarAjuste(id) {
+  const p = ROTA.paradas.find(x => x.id === id);
+  if (!p || !ROTA.map) return;
+  if (ROTA.ajustandoId && ROTA.ajustandoId !== id) rotaCancelarAjuste();
+  ROTA.ajustandoId = id; ROTA.selId = id;
+  if (p.lat === null) { const c = ROTA.map.getCenter(); p.lat = c.lat; p.lng = c.lng; p.nivel = 'manual'; p._temp = true; }
+  rotaDesenharParadas(false);
+  rotaRenderLista();
+  rotaRenderCard();
+  rotaMsg('Arraste o pino até o local certo');
+  const sc = document.getElementById('rotaScroll'); if (sc) sc.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function rotaCancelarAjuste() {
+  const p = ROTA.paradas.find(x => x.id === ROTA.ajustandoId);
+  if (p && p._temp) { p.lat = null; p.lng = null; p.nivel = null; p._temp = false; }
+  ROTA.ajustandoId = null;
+  rotaMsg('');
+  rotaDesenharParadas(false);
+  rotaRenderTudo();
+}
+function rotaAoSoltarPino(p, ll) {
+  p.lat = ll.lat; p.lng = ll.lng; p.nivel = 'manual'; p._temp = false; p.tentou = false;
+  p.m.lat = ll.lat; p.m.lng = ll.lng; p.m.geoNivel = 'manual'; p.m.geoQ = rotaAssinatura(p.m);
+  save();
+  ROTA.ajustandoId = null;
+  rotaMsg('Local salvo ✓');
+  setTimeout(() => { if (!ROTA.ajustandoId) rotaMsg(''); }, 1800);
+  rotaDesenharParadas(false);
+  rotaCalcularRota();
+}
+
+/* ── Ações do card ── */
+function rotaWhats(consId) {
+  const m = DB.consultoras.find(x => x.id === consId);
+  if (!m || !m.telefone) { alert('Essa consultora não tem telefone cadastrado.'); return; }
+  window.open('https://wa.me/' + telefoneWa(m.telefone), '_blank');
+}
+function rotaAtender(consId) {
+  const sem = getSemanaAtiva();
+  const c = sem ? sem.consultoras.find(x => x.id === consId) : null;
+  if (!c) return;
+  if (c.telefone && !c.confirmouHorario && !c.remarcarSemana && !c.remarcarMes) {
+    alert('Confirme o horário com a consultora antes de lançar o atendimento.');
+    return;
+  }
+  abrirAtendimento(consId);
+}
+
+/* ── Escolha do GPS (Google Maps / Waze / Apple Maps / escolher no celular) ── */
+function gpsLinks(m) {
+  // Ponto exato (endereço localizado ou ajustado à mão) → vai por coordenada.
+  // Local aproximado (só bairro/cidade) → manda o endereço escrito, que o app de GPS resolve melhor.
+  const exato = typeof m.lat === 'number' && typeof m.lng === 'number' && m.geoQ === rotaAssinatura(m) && (m.geoNivel === 'endereco' || m.geoNivel === 'manual');
+  const ll = exato ? m.lat + ',' + m.lng : null;
+  const q = encodeURIComponent([m.endereco, m.bairro, rotaCidadeTxt(m.cidade)].filter(Boolean).join(', '));
+  return {
+    google: 'https://www.google.com/maps/dir/?api=1&destination=' + (ll || q) + '&travelmode=driving',
+    waze: ll ? 'https://waze.com/ul?ll=' + ll + '&navigate=yes' : 'https://waze.com/ul?q=' + q + '&navigate=yes',
+    apple: 'https://maps.apple.com/?daddr=' + (ll || q) + '&dirflg=d',
+    geo: ll ? 'geo:' + ll + '?q=' + ll + '(' + encodeURIComponent(m.nome || '') + ')' : 'geo:0,0?q=' + q,
+  };
+}
+function abrirGPS(consId) {
+  const m = DB.consultoras.find(x => x.id === consId);
+  if (!m) return;
+  window._gpsConsId = consId;
+  const pref = localStorage.getItem('gps_preferido');
+  if (pref && gpsLinks(m)[pref]) { gpsAbrirCom(pref); return; }
+  const ua = navigator.userAgent || '';
+  const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const android = /Android/i.test(ua);
+  const opcoes = [
+    ['google', 'Google Maps', 'Abre o trajeto no Google Maps'],
+    ['waze', 'Waze', 'Abre o trajeto no Waze'],
+    ios ? ['apple', 'Apple Maps', 'Abre o trajeto no app Mapas do iPhone'] : null,
+    android ? ['geo', 'Escolher no celular', 'O celular mostra os apps de mapa instalados'] : null,
+  ].filter(Boolean);
+  document.getElementById('gpsNome').textContent = m.nome || '';
+  document.getElementById('gpsOpcoes').innerHTML = opcoes.map(o =>
+    '<button type="button" onclick="gpsAbrirCom(\'' + o[0] + '\')" style="width:100%;text-align:left;background:white;border:1.5px solid var(--border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;">'
+    + '<div style="width:38px;height:38px;border-radius:12px;background:var(--rose-light);color:var(--rose);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg></div>'
+    + '<div><div style="font-size:14px;font-weight:800;color:var(--ink);">' + o[1] + '</div><div style="font-size:11.5px;color:var(--ink-3);font-weight:500;margin-top:1px;">' + o[2] + '</div></div></button>').join('');
+  document.getElementById('gpsLembrar').checked = false;
+  document.getElementById('modalGPS').classList.add('open');
+}
+function gpsAbrirCom(tipo) {
+  const m = DB.consultoras.find(x => x.id === window._gpsConsId);
+  if (!m) return;
+  const modal = document.getElementById('modalGPS');
+  const lembrar = document.getElementById('gpsLembrar');
+  if (modal.classList.contains('open') && lembrar && lembrar.checked) localStorage.setItem('gps_preferido', tipo);
+  fecharModal('modalGPS');
+  const url = gpsLinks(m)[tipo];
+  if (tipo === 'geo') window.location.href = url; else window.open(url, '_blank');
+  rotaRenderGpsPref();
+}
+function rotaRenderGpsPref() {
+  const el = document.getElementById('rotaGpsPref');
+  if (!el) return;
+  const pref = localStorage.getItem('gps_preferido');
+  const nomes = { google: 'Google Maps', waze: 'Waze', apple: 'Apple Maps', geo: 'Escolher no celular' };
+  el.innerHTML = pref ? 'GPS preferido: <b>' + (nomes[pref] || pref) + '</b> · <button type="button" onclick="localStorage.removeItem(\'gps_preferido\');rotaRenderGpsPref();" style="color:var(--rose);font-weight:800;font-size:11.5px;text-decoration:underline;">trocar</button>' : '';
+}
+
 
 function goBack() {
   viewHistory.pop();
@@ -6477,12 +7195,27 @@ function renderSemana() {
     return !regiaoMestreNorm || regiaoMestreNorm === regiaoSemNorm;
   });
 
-  // Contadores dos filtros (sempre com base na lista completa, independente do filtro ativo)
-  const cntPendentesEl = document.getElementById('cntFiltroPendentes');
-  const cntAtendidasEl = document.getElementById('cntFiltroAtendidas');
-  if (cntPendentesEl) cntPendentesEl.textContent = visiveis.filter(c => c.status !== 'concluida').length;
-  // "Já atendidas" inclui remarcadas — ela já foi atendida (só remarcou o próximo encontro)
-  if (cntAtendidasEl) cntAtendidasEl.textContent = visiveis.filter(c => c.status === 'concluida').length;
+  // Resumo do topo (sempre com base na lista completa, independente do filtro ativo)
+  const listaCompleta = visiveis;
+  const listaAtend = listaCompleta.filter(c => c.status === 'concluida'); // inclui remarcadas: já foi atendida
+  const setTxt = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+  setTxt('cntFiltroPendentes', listaCompleta.filter(c => c.status !== 'concluida').length);
+  setTxt('subFiltroPendentes', 'de ' + listaCompleta.length + ' previstas');
+  setTxt('cntFiltroAtendidas', listaAtend.length);
+  setTxt('subFiltroAtendidas', brlCurto(listaAtend.reduce((a, c) => a + (c.vendido || 0), 0)));
+  // Débitos em aberto: mesma conta da tela Pagar Débitos (todas as semanas)
+  let totalDebAberto = 0; const idsComDeb = new Set();
+  (DB.semanas || []).forEach(sm => (sm.consultoras || []).forEach(cc => {
+    const d = debitoDe(cc);
+    if (d > 0) { totalDebAberto += d; idsComDeb.add(cc.id); }
+  }));
+  setTxt('valTileDebitos', brlInteiro(totalDebAberto));
+  setTxt('subTileDebitos', idsComDeb.size ? idsComDeb.size + (idsComDeb.size > 1 ? ' consultoras' : ' consultora') : 'nenhum débito');
+  const tileOn = filtroAtend === 'atendidas' ? 'atendidas' : 'pendentes';
+  const tP = document.getElementById('filtroAtendPendentes'), tA = document.getElementById('filtroAtendAtendidas');
+  if (tP) tP.classList.toggle('on', tileOn === 'pendentes');
+  if (tA) tA.classList.toggle('on', tileOn === 'atendidas');
+  if (typeof atualizarCtaRota === 'function') atualizarCtaRota(sem, listaCompleta);
 
   if (filtroAtend === 'pendentes') visiveis = visiveis.filter(c => c.status !== 'concluida');
   else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(c => c.status === 'concluida');
@@ -6544,8 +7277,16 @@ function renderSemana() {
     // Cabeçalho de dia da semana (só dentro do mesmo grupo de status)
     const diaDaConsultora = c.diaMelhor || 'Sem dia definido';
     const diaAnterior = idx > 0 ? (visiveis[idx-1].diaMelhor || 'Sem dia definido') : null;
-    const tituloDia = (!tituloGrupo && diaDaConsultora === diaAnterior) ? '' :
-      '<div style="font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;margin:' + (tituloGrupo ? '0' : '16px') + ' 2px 8px;">' + diaDaConsultora + '</div>';
+    let tituloDia = '';
+    if (tituloGrupo || diaDaConsultora !== diaAnterior) {
+      const dataDia = dataDoDiaDaSemana(sem, c.diaMelhor);
+      const ehHoje = ehMesmoDia(dataDia, new Date());
+      const qtdDia = visiveis.filter(x => grupoStatus(x) === grupoAtual && (x.diaMelhor || 'Sem dia definido') === diaDaConsultora).length;
+      tituloDia = '<div class="dia-head" style="margin-top:' + (tituloGrupo ? '0' : '18px') + ';">'
+        + '<div><span class="dh-nome">' + diaDaConsultora + (dataDia ? ' · ' + fmtDiaMes(dataDia) : '') + '</span>' + (ehHoje ? '<span class="dh-hoje">HOJE</span>' : '') + '</div>'
+        + (grupoAtual === 0 ? '<button type="button" class="dh-rota" onclick="abrirRota(\'' + diaDaConsultora + '\')">Rota · ' + qtdDia + '</button>' : '')
+      + '</div>';
+    }
 
     const cls = (especial === 'inativa' || especial === 'mes' || especial === 'semana') ? 'done' : st === 'concluida' ? 'done' : isNext ? 'next' : c.debito > 0 ? 'alert' : '';
     const avCls = (especial === 'inativa' || especial === 'mes' || especial === 'semana') ? 'av-done' : st === 'concluida' ? 'av-done' : c.debito > 0 ? 'av-alert' : 'av-default';
@@ -6599,7 +7340,7 @@ function renderSemana() {
     const svgChat = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>';
     const svgPlay = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21"></polygon></svg>';
     const trilha = c.telefone ? (
-      '<div style="display:flex;align-items:flex-start;padding:12px 12px 12px;">'
+      '<div style="display:flex;align-items:flex-start;padding:10px 12px 8px;">'
         + passoTrilha(passo1Feito ? "toggleHorarioEnviado('" + c.id + "')" : "enviarWhatsappHorario('" + c.id + "')", c1, passo1Feito ? svgCheck : svgChat, 'WhatsApp', false)
         + linhaTrilha(passo1Feito)
         + passoTrilha("toggleConfirmouHorario('" + c.id + "')", c2, passo2Feito ? svgCheck : '', 'Confirmar<br>horário', false)
@@ -6614,20 +7355,52 @@ function renderSemana() {
       + '</div>'
     );
 
+    // Informações extras do card
+    const mestre = DB.consultoras.find(m => m.id === c.id) || c;
+    const hora = c.horarioMelhor || '';
+    const endTxt = [mestre.endereco, mestre.bairro, mestre.cidade].filter(Boolean).join(' · ');
+    const svgIco = (path, w) => '<svg width="' + (w||14) + '" height="' + (w||14) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">' + path + '</svg>';
+    const icoPin = svgIco('<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>', 12);
+    const icoNav = svgIco('<polygon points="3 11 22 2 13 21 11 13 3 11"/>', 14);
+    const icoTel = svgIco('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>', 14);
+
+    const chips = [];
+    const debTot = debitoTotalDe(c.id);
+    if (debTot > 0) chips.push('<span class="chip red">Débito ' + brl(debTot) + '</span>');
+    if (especial === 'inativa') chips.push('<span class="chip amber">Parou de vender</span>');
+    else if (especial === 'mes') chips.push('<span class="chip amber">Remarcada p/ o próximo mês</span>');
+    else if (especial === 'semana') chips.push('<span class="chip amber">Remarcada p/ a próxima semana</span>');
+    else if (st === 'concluida') {
+      chips.push('<span class="chip green">Vendido ' + brl(c.vendido || 0) + '</span>');
+      chips.push('<span class="chip green">Recebido ' + brl(c.recebido || 0) + '</span>');
+    } else {
+      const ult = _ultimoRegistroDe(mestre);
+      if (ult && ult.reg) chips.push('<span class="chip">Último pedido ' + brl(ult.reg.vendido || 0) + ' · sem. ' + ult.sem.numero + '</span>');
+      const tk = _ticketMedioDe(mestre);
+      if (tk) chips.push('<span class="chip">Ticket ' + brl(tk.valor) + '</span>');
+      if (!ult && !tk) chips.push('<span class="chip">Sem histórico</span>');
+    }
+
+    const acoes = '<div class="ac-acoes" style="border-top:1px solid var(--border);padding-top:10px;">'
+      + (endTxt ? '<button type="button" class="btn-mini pri" onclick="event.stopPropagation();abrirGPS(\'' + c.id + '\')">' + icoNav + ' Ir (GPS)</button>' : '')
+      + (c.telefone ? '<a class="btn-mini" href="tel:' + String(c.telefone).replace(/[^\d+]/g, '') + '" onclick="event.stopPropagation()">' + icoTel + ' Ligar</a>' : '')
+      + '<div style="flex:1;"></div>'
+      + '<button type="button" class="btn-ico" onclick="event.stopPropagation();editarConsultora(\'' + c.id + '\')">✎</button>'
+      + '<button type="button" class="btn-ico" onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')">✕</button>'
+    + '</div>';
+
     return tituloGrupo + tituloDia + '<div class="cons-card ' + cls + '" style="flex-direction:column;align-items:stretch;padding:0;overflow:hidden;">'
-      + '<div style="display:flex;align-items:flex-start;gap:12px;background:white;border-bottom:1px solid var(--border);padding:14px 16px 10px;">'
-        + '<div style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;flex:1;min-width:0;" onclick="abrirAtendimento(\'' + c.id + '\')">'
-          + '<div class="c-av ' + avCls + '" style="margin-top:1px;">' + avTxt + '</div>'
-          + '<div class="c-info">'
-            + '<div class="c-name" style="white-space:normal;overflow:visible;text-overflow:clip;color:var(--ink);">' + c.nome + '</div>'
-            + '<div class="c-sub" style="color:var(--ink-2);">' + sub + '</div>'
-          + '</div>'
+      + '<div class="ac-top" style="border-bottom:1px solid var(--border);" onclick="abrirAtendimento(\'' + c.id + '\')">'
+        + '<div class="ac-time"><div class="ac-hora' + (hora ? '' : ' sem') + '">' + (hora || '--:--') + '</div><div class="ac-per">' + periodoDoHorario(hora) + '</div></div>'
+        + '<div class="ac-main">'
+          + '<div class="ac-linha1"><div class="ac-nome">' + c.nome + '</div>' + badge + '</div>'
+          + '<div class="ac-end" style="display:flex;align-items:flex-start;gap:5px;">' + (endTxt ? icoPin + '<span>' + endTxt + '</span>' : '<span style="color:var(--ink-3);">Endereço não cadastrado</span>') + '</div>'
+          + (chips.length ? '<div class="ac-chips">' + chips.join('') + '</div>' : '')
+          + (mestre.rotaObs ? '<div class="ac-obs">' + mestre.rotaObs + '</div>' : '')
         + '</div>'
-        + badge
-        + '<button onclick="event.stopPropagation();editarConsultora(\'' + c.id + '\')" style="flex-shrink:0;background:var(--surface-2);border:none;color:var(--rose);font-size:13px;cursor:pointer;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:2px;">✎</button>'
-        + '<button onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')" style="flex-shrink:0;background:var(--surface-2);border:none;color:var(--ink-2);font-size:13px;cursor:pointer;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:2px;">✕</button>'
       + '</div>'
       + trilha
+      + acoes
     + '</div>';
   }).join('')
   + '<div style="height:16px;"></div>';
@@ -7819,7 +8592,7 @@ function confirmarCriarSemana() {
    CONSULTORAS
 ════════════════════════════════════════════ */
 function abrirModalConsultora() {
-  ['cNome','cTel','cCpf','cBairro','cCidade','cRotaObs'].forEach(id => {
+  ['cNome','cTel','cCpf','cEndereco','cBairro','cCidade','cRotaObs'].forEach(id => {
     const el = document.getElementById(id); if(el) el.value = '';
   });
   document.getElementById('cDia').value = '';
@@ -7847,6 +8620,7 @@ function salvarConsultora() {
       c.nome = nome;
       c.telefone = document.getElementById('cTel').value.trim();
       c.cpf = document.getElementById('cCpf').value.trim();
+      c.endereco = document.getElementById('cEndereco').value.trim();
       c.bairro = document.getElementById('cBairro').value.trim();
       c.cidade = document.getElementById('cCidade').value.trim();
       c.regiao = document.getElementById('cRegiao').value;
@@ -7863,6 +8637,7 @@ function salvarConsultora() {
           cSem.nome = c.nome;
           cSem.telefone = c.telefone;
           cSem.cidade = c.cidade;
+          cSem.endereco = c.endereco;
           cSem.bairro = c.bairro;
           cSem.diaMelhor = c.diaMelhor;
           cSem.horarioMelhor = c.horarioMelhor;
@@ -7884,6 +8659,7 @@ function salvarConsultora() {
     telefone: document.getElementById('cTel').value.trim(),
     cpf: document.getElementById('cCpf').value.trim(),
     aniversario: document.getElementById('cAniv').value,
+    endereco: document.getElementById('cEndereco').value.trim(),
     bairro: document.getElementById('cBairro').value.trim(),
     cidade: document.getElementById('cCidade').value.trim(),
     regiao: document.getElementById('cRegiao').value,
@@ -9700,6 +10476,7 @@ function editarConsultora(id) {
   document.getElementById('cNome').value = c.nome || '';
   document.getElementById('cTel').value = c.telefone || '';
   document.getElementById('cCpf').value = c.cpf || '';
+  document.getElementById('cEndereco').value = c.endereco || '';
   document.getElementById('cBairro').value = c.bairro || '';
   document.getElementById('cCidade').value = c.cidade || '';
   document.getElementById('cDia').value = c.diaMelhor || '';
@@ -10910,6 +11687,22 @@ if (!ACTIVE_PROFILE) {
 <!-- ══════════════════════════════════════════
      MODAL: DETALHE DO RECEBIDO
 ══════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════
+     MODAL: ABRIR COM QUAL GPS?
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalGPS">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalGPS')">✕</button>
+    <div class="modal-title" style="margin-bottom:2px;">Abrir com qual GPS?</div>
+    <div id="gpsNome" style="font-size:13px;color:var(--ink-3);font-weight:600;margin-bottom:16px;"></div>
+    <div id="gpsOpcoes" style="display:flex;flex-direction:column;gap:10px;"></div>
+    <label style="display:flex;align-items:center;gap:10px;margin-top:16px;font-size:13px;color:var(--ink-2);font-weight:600;cursor:pointer;">
+      <input type="checkbox" id="gpsLembrar" style="width:18px;height:18px;flex-shrink:0;"> Lembrar minha escolha neste celular
+    </label>
+    <div style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.4;">Pra trocar depois: tela Rota do dia → "GPS preferido".</div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalRecebido">
   <div class="modal-box">
     <button class="modal-close" onclick="fecharModal('modalRecebido')">✕</button>
