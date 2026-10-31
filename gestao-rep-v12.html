@@ -244,6 +244,22 @@ input[type="time"]{max-width:100%;}
 .rota-fab{width:40px;height:40px;border-radius:50%;background:white;box-shadow:0 4px 12px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;color:var(--ink);}
 .leaflet-container{font-family:var(--font);}
 .leaflet-control-attribution{font-size:10px;opacity:.85;}
+/* ── Cadastro de consultora (seções em cartões) ── */
+.cm-head{position:sticky;top:0;z-index:10;background:white;display:flex;align-items:center;justify-content:space-between;margin:0 -20px 14px;padding:max(18px,calc(10px + env(safe-area-inset-top))) 20px 12px;border-bottom:1px solid var(--border);}
+.cm-save{background:var(--ink);color:white;border-radius:12px;padding:9px 18px;font-size:13.5px;font-weight:800;}
+.cm-sec{background:var(--surface);border-radius:16px;padding:14px;margin-bottom:12px;}
+.cm-sec-t{font-size:11px;font-weight:800;letter-spacing:.7px;color:var(--ink-3);text-transform:uppercase;margin-bottom:12px;}
+.cm-sec .field{margin-bottom:12px;}
+.two-col>*{min-width:0;}
+.field input[type=date]{-webkit-appearance:none;appearance:none;min-height:46px;max-width:100%;}
+.field textarea{resize:none;line-height:1.4;}
+#consCepStatus:empty{display:none;}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+.chip-op{padding:9px 14px;border-radius:99px;background:white;border:1.5px solid var(--border);font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer;}
+.chip-op.on{background:var(--ink);border-color:var(--ink);color:white;}
+.chip-op.on[data-v=falta],.chip-op.on[data-v=consulta]{background:var(--amber);border-color:var(--amber);}
+.chip-op.on[data-v=aprovado]{background:var(--green);border-color:var(--green);}
+.chip-op.on[data-v=reprovado]{background:var(--red);border-color:var(--red);}
 .b-alert{background:var(--amber-bg);color:var(--amber);}
 .b-inativa{background:var(--red-bg);color:var(--red);}
 
@@ -2596,9 +2612,14 @@ input[type="time"]{max-width:100%;}
      MODAL: CADASTRO DE CONSULTORA
 ══════════════════════════════════════════ -->
 <div class="modal-overlay" id="modalConsultora">
-  <div class="modal-box">
-    <button class="modal-close" onclick="fecharModal('modalConsultora')">✕</button>
-    <div class="modal-title" id="modalConsTitulo">Nova Consultora</div>
+  <div class="modal-box" style="padding-top:0;max-height:94vh;">
+    <div class="cm-head">
+      <div class="modal-title" id="modalConsTitulo" style="margin:0;">Nova Consultora</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button type="button" class="cm-save" onclick="salvarConsultora()">Salvar</button>
+        <button class="modal-close" style="margin:0;" onclick="fecharModal('modalConsultora')">✕</button>
+      </div>
+    </div>
 
     <button class="ai-photo-btn" onclick="document.getElementById('consPhotoInput').click()">
        Preencher com foto do tablet (IA)
@@ -2606,30 +2627,61 @@ input[type="time"]{max-width:100%;}
     <input type="file" id="consPhotoInput" accept="image/*" style="display:none" onchange="extrairFotoConsultora(this)">
     <div class="ai-loading" id="consAiLoading"><span class="spinner"></span><span id="consAiLoadingTxt">Analisando ficha...</span></div>
 
-    <label class="field"><span>Nome completo *</span><input id="cNome" placeholder="Ex: Ana Leticia de Oliveira"></label>
-    <label class="field"><span>Telefone</span><input id="cTel" inputmode="tel" placeholder="(51) 99999-9999"></label>
-    <div class="two-col">
-      <label class="field" style="margin:0;"><span>CPF</span><input id="cCpf" inputmode="numeric" placeholder="000.000.000-00"></label>
-      <label class="field" style="margin:0;"><span>Aniversário</span><input id="cAniv" type="date"></label>
+    <div class="cm-sec">
+      <div class="cm-sec-t">Quem é a consultora</div>
+      <label class="field"><span>Nome completo *</span><input id="cNome" placeholder="Ex: Ana Leticia de Oliveira"></label>
+      <label class="field"><span>Telefone / WhatsApp</span><input id="cTel" inputmode="tel" placeholder="(51) 99999-9999"></label>
+      <label class="field" style="margin-bottom:0;">
+        <span>Região</span>
+        <select id="cRegiao">
+          <option>Gramado 1</option><option>Gramado 2</option><option>Gramado 3</option>
+          <option>Gramado 4</option><option>Gramado 5</option><option>Cambará do Sul</option>
+        </select>
+      </label>
+      <div id="cStatusBox" style="display:none;margin-top:14px;">
+        <span style="font-size:12px;font-weight:700;color:var(--ink-3);display:block;margin-bottom:6px;">Status</span>
+        <div style="display:flex;gap:8px;">
+          <button type="button" id="cStatusAtivaBtn" onclick="setStatusFormConsultora('ativa')"
+            style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">Ativa</button>
+          <button type="button" id="cStatusInativaBtn" onclick="setStatusFormConsultora('inativa')"
+            style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">Inativa</button>
+        </div>
+      </div>
     </div>
-    <label class="field" style="margin-top:12px;"><span>Endereço (rua e número)</span><input id="cEndereco" placeholder="Ex: Rua das Flores, 123"></label>
-    <div style="font-size:11px;color:var(--ink-3);margin:-6px 0 10px;line-height:1.4;">Com a rua e o número, o ponto no mapa fica exato. Só com bairro e cidade, fica aproximado.</div>
-    <div class="two-col" style="margin-top:12px;">
-      <label class="field" style="margin:0;"><span>Bairro</span><input id="cBairro" placeholder="Ex: Centro"></label>
-      <label class="field" style="margin:0;"><span>Cidade</span><input id="cCidade" placeholder="Ex: Gramado"></label>
-    </div>
-    <label class="field" style="margin-top:12px;">
-      <span>Região</span>
-      <select id="cRegiao">
-        <option>Gramado 1</option><option>Gramado 2</option><option>Gramado 3</option>
-        <option>Gramado 4</option><option>Gramado 5</option><option>Cambará do Sul</option>
-      </select>
-    </label>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-      <label class="field" style="margin:0;">
-        <span>Melhor dia</span>
-        <select id="cDia">
+    <div class="cm-sec">
+      <div class="cm-sec-t">Endereço</div>
+      <label class="field"><span>CEP</span><input id="cCep" inputmode="numeric" placeholder="00000-000" maxlength="9" oninput="consMascaraCep(this)" style="max-width:170px;"></label>
+      <div id="consCepStatus" style="font-size:11px;color:var(--ink-3);margin:-6px 0 12px;"></div>
+      <label class="field"><span>Rua</span><input id="cRua" placeholder="Ex: Rua das Flores"></label>
+      <div class="two-col">
+        <label class="field"><span>Número</span><input id="cNumero" placeholder="123"></label>
+        <label class="field"><span>Complemento</span><input id="cComplemento" placeholder="Apto, fundos..."></label>
+      </div>
+      <label class="field"><span>Bairro</span><input id="cBairro" placeholder="Ex: Centro"></label>
+      <div style="display:grid;grid-template-columns:1fr 84px;gap:10px;">
+        <label class="field"><span>Cidade</span><input id="cCidade" placeholder="Ex: Gramado"></label>
+        <label class="field"><span>UF</span><input id="cUf" maxlength="2" placeholder="RS" style="text-transform:uppercase;"></label>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <button type="button" class="btn-mini" onclick="consLocalizarNoMapa()" style="padding:10px 14px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Localizar no mapa
+        </button>
+        <button type="button" onclick="consUsarPosicao()" style="display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:var(--ink);padding:10px 6px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg> Usar minha posição
+        </button>
+      </div>
+      <div id="consGeoTxt" style="font-size:11.5px;color:var(--ink-3);margin-top:8px;line-height:1.4;">Sem coordenadas — com rua e número o ponto no mapa fica exato.</div>
+      <div id="consMapaWrap" style="display:none;margin-top:10px;">
+        <div id="consMapa" style="position:relative;height:230px;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#e9e6e0;"></div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:6px;">Arraste o pino ou toque no mapa para ajustar o local exato.</div>
+      </div>
+    </div>
+
+    <div class="cm-sec">
+      <div class="cm-sec-t">Atendimento</div>
+      <div class="two-col">
+        <label class="field"><span>Melhor dia</span><select id="cDia">
           <option value="">— Qualquer —</option>
           <option>Segunda-feira</option>
           <option>Terça-feira</option>
@@ -2637,11 +2689,8 @@ input[type="time"]{max-width:100%;}
           <option>Quinta-feira</option>
           <option>Sexta-feira</option>
           <option>Sábado</option>
-        </select>
-      </label>
-      <label class="field" style="margin:0;">
-        <span>Melhor horário</span>
-        <select id="cHorario">
+        </select></label>
+        <label class="field"><span>Melhor horário</span><select id="cHorario">
           <option value="">— Qualquer —</option>
           <option>06:00</option><option>06:05</option>
           <option>06:10</option><option>06:15</option>
@@ -2725,26 +2774,32 @@ input[type="time"]{max-width:100%;}
           <option>19:10</option><option>19:15</option>
           <option>19:20</option><option>19:25</option>
           <option>19:30</option>
-        </select>
-      </label>
-    </div>
-
-    <label class="field">
-      <span>Observação de rota</span>
-      <input id="cRotaObs" placeholder="Ex: Atende só de tarde, mora perto da praça...">
-    </label>
-
-    <div id="cStatusBox" style="display:none;margin-bottom:14px;">
-      <span style="font-size:12px;font-weight:700;color:var(--ink-3);display:block;margin-bottom:6px;">Status</span>
-      <div style="display:flex;gap:8px;">
-        <button type="button" id="cStatusAtivaBtn" onclick="setStatusFormConsultora('ativa')"
-          style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">Ativa</button>
-        <button type="button" id="cStatusInativaBtn" onclick="setStatusFormConsultora('inativa')"
-          style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);font-size:13px;font-weight:700;font-family:var(--font);background:white;color:var(--ink-3);cursor:pointer;">Inativa</button>
+        </select></label>
       </div>
+      <div class="field" style="margin-bottom:12px;">
+        <span>Como chegou até você</span>
+        <div class="chip-row"><button type="button" class="chip-op" data-g="como" data-v="Indicação" onclick="consSetChip('como','Indicação')">Indicação</button><button type="button" class="chip-op" data-g="como" data-v="Instagram" onclick="consSetChip('como','Instagram')">Instagram</button><button type="button" class="chip-op" data-g="como" data-v="Facebook" onclick="consSetChip('como','Facebook')">Facebook</button><button type="button" class="chip-op" data-g="como" data-v="WhatsApp / status" onclick="consSetChip('como','WhatsApp / status')">WhatsApp / status</button><button type="button" class="chip-op" data-g="como" data-v="Porta a porta" onclick="consSetChip('como','Porta a porta')">Porta a porta</button><button type="button" class="chip-op" data-g="como" data-v="Evento / feira" onclick="consSetChip('como','Evento / feira')">Evento / feira</button><button type="button" class="chip-op" data-g="como" data-v="Anúncio" onclick="consSetChip('como','Anúncio')">Anúncio</button></div>
+      </div>
+      <label class="field" style="margin-bottom:0;"><span>Observações</span><textarea id="cRotaObs" rows="3" placeholder="Ex.: indicação da Carla, prefere depois das 10h"></textarea></label>
     </div>
 
-    <div class="btn-row" style="margin-top:18px;">
+    <div class="cm-sec">
+      <div class="cm-sec-t">Cadastro na Romance</div>
+      <label class="field"><span>Nome que vai no cadastro da Romance</span><input id="cNomeRomance" placeholder="Mesmo nome da consultora"></label>
+      <div style="font-size:11px;color:var(--ink-3);margin:-8px 0 12px;line-height:1.4;">Deixe em branco se o cadastro é no nome dela.</div>
+      <div class="two-col">
+        <label class="field"><span>CPF</span><input id="cCpf" inputmode="numeric" placeholder="000.000.000-00"></label>
+        <label class="field"><span>Nascimento</span><input id="cAniv" type="date"></label>
+      </div>
+      <div class="field" style="margin-bottom:12px;">
+        <span>Consulta do CPF</span>
+        <div class="chip-row"><button type="button" class="chip-op" data-g="cpf" data-v="falta" onclick="consSetChip('cpf','falta')">Falta mandar</button><button type="button" class="chip-op" data-g="cpf" data-v="consulta" onclick="consSetChip('cpf','consulta')">Em consulta</button><button type="button" class="chip-op" data-g="cpf" data-v="aprovado" onclick="consSetChip('cpf','aprovado')">Aprovado</button><button type="button" class="chip-op" data-g="cpf" data-v="reprovado" onclick="consSetChip('cpf','reprovado')">Reprovado</button></div>
+      </div>
+      <label class="field" style="margin-bottom:0;"><span>Código de liberação da Romance</span><input id="cCodigoLib" inputmode="numeric" placeholder="Ex: 440766495792"></label>
+      <div style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.4;">Ao anotar o código, a consultora aparece como “Liberada” no atendimento.</div>
+    </div>
+
+    <div class="btn-row" style="margin-top:6px;">
       <button class="btn-ghost" style="flex:1;" onclick="fecharModal('modalConsultora')">Cancelar</button>
       <button class="btn-primary" style="flex:1;" onclick="salvarConsultora()">Salvar</button>
     </div>
@@ -5835,6 +5890,14 @@ function minutosDoHorario(h) {
   const [hh, mm] = String(h).split(':').map(Number);
   return (hh || 0) * 60 + (mm || 0);
 }
+// "Igrejinha/RS" a partir de cidade + UF (sem repetir quando a cidade já vem com a UF)
+function cidadeUfTxt(m, sep) {
+  const cid = String(m.cidade || '').trim();
+  const uf = String(m.uf || '').trim().toUpperCase();
+  if (cid && uf && !/[\/,]/.test(cid)) return cid + (sep || '/') + uf;
+  return cid;
+}
+function enderecoLinha(m) { return [m.endereco, m.bairro, cidadeUfTxt(m)].filter(Boolean).join(' · '); }
 function enderecoCompleto(c) {
   const m = DB.consultoras.find(x => x.id === c.id) || c;
   return [m.endereco || c.endereco, m.bairro || c.bairro, m.cidade || c.cidade].filter(Boolean).join(' · ');
@@ -6402,7 +6465,7 @@ const ROTA = {
 const rotaEspera = ms => new Promise(r => setTimeout(r, ms));
 const rotaEsc = s => String(s == null ? '' : s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 // Assinatura do endereço: se mudar, o ponto guardado deixa de valer e é localizado de novo
-function rotaAssinatura(m) { return [m.endereco, m.bairro, m.cidade].map(x => String(x || '').trim().toLowerCase()).join('|'); }
+function rotaAssinatura(m) { return [m.endereco, m.bairro, m.cidade].concat(m.uf ? [m.uf] : []).map(x => String(x || '').trim().toLowerCase()).join('|'); }
 function rotaCidadeTxt(c) { return String(c || '').replace(/\s*\/\s*/g, ', ').trim(); }
 function rotaDistM(a, b) { // distância em linha reta (haversine), em metros
   const R = 6371000, rad = x => x * Math.PI / 180;
@@ -6470,7 +6533,7 @@ function rotaMontarParadas(sem, dia) {
     const assin = rotaAssinatura(m);
     const geoOk = m.geoQ === assin;            // já tentamos localizar este endereço exato
     const temPonto = geoOk && typeof m.lat === 'number' && typeof m.lng === 'number';
-    const endTxt = [m.endereco, m.bairro, m.cidade].filter(Boolean).join(' · ');
+    const endTxt = enderecoLinha(m);
     return {
       id: c.id, c, m, nome: c.nome, hora: c.horarioMelhor || '', feito, especial, naRota: !feito,
       num: feito ? null : ++num, endTxt,
@@ -6525,7 +6588,7 @@ async function rotaNominatim(q) {
   return (isFinite(lat) && isFinite(lng)) ? { lat, lng } : null;
 }
 async function rotaGeocodificar(m) {
-  const cidade = rotaCidadeTxt(m.cidade);
+  const cidade = rotaCidadeTxt(cidadeUfTxt(m));
   const tentativas = [];
   if (m.endereco && cidade) {
     tentativas.push({ nivel: 'endereco', q: [m.endereco, m.bairro, cidade, 'Brasil'].filter(Boolean).join(', ') });
@@ -6841,8 +6904,8 @@ function rotaRenderCard() {
   const gpsErro = (ROTA.gpsErro && !ROTA.pos && !p.feito) ? '<div style="font-size:10.5px;color:var(--red);font-weight:700;margin-top:3px;line-height:1.35;">' + rotaEsc(ROTA.gpsErro) + '</div>' : '';
 
   const svg = (path) => '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>';
-  const btnNav = p.endTxt ? '<button type="button" onclick="abrirGPS(\'' + p.id + '\')" class="btn-mini pri" style="flex:1;justify-content:center;padding:10px 8px;">' + svg('<polygon points="3 11 22 2 13 21 11 13 3 11"/>') + ' Navegar</button>' : '';
-  const btnZap = p.c.telefone ? '<button type="button" onclick="rotaWhats(\'' + p.id + '\')" class="btn-mini" style="justify-content:center;padding:10px 12px;">' + svg('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>') + '</button>' : '';
+  const btnNav = p.endTxt ? '<button type="button" onclick="abrirGPS(\'' + p.id + '\')" class="btn-mini pri" style="flex:1;justify-content:center;padding:10px 8px;white-space:nowrap;">' + svg('<polygon points="3 11 22 2 13 21 11 13 3 11"/>') + ' Navegar</button>' : '';
+  const btnZap = p.c.telefone ? '<button type="button" onclick="rotaWhats(\'' + p.id + '\')" class="btn-mini" style="flex:1;justify-content:center;padding:10px 8px;background:#25D366;color:white;white-space:nowrap;">' + svg('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>') + ' WhatsApp</button>' : '';
   const btnAtender = !p.feito ? '<button type="button" onclick="rotaAtender(\'' + p.id + '\')" class="btn-mini" style="flex:1;justify-content:center;padding:10px 8px;background:var(--rose);color:white;">Atender</button>' : '';
   const ajustar = (!p.feito && p.endTxt) ? '<button type="button" onclick="rotaIniciarAjuste(\'' + p.id + '\')" style="margin-top:8px;font-size:11.5px;font-weight:800;color:var(--rose);text-decoration:underline;">Ajustar local no mapa</button>' : '';
 
@@ -6920,7 +6983,7 @@ function gpsLinks(m) {
   // Local aproximado (só bairro/cidade) → manda o endereço escrito, que o app de GPS resolve melhor.
   const exato = typeof m.lat === 'number' && typeof m.lng === 'number' && m.geoQ === rotaAssinatura(m) && (m.geoNivel === 'endereco' || m.geoNivel === 'manual');
   const ll = exato ? m.lat + ',' + m.lng : null;
-  const q = encodeURIComponent([m.endereco, m.bairro, rotaCidadeTxt(m.cidade)].filter(Boolean).join(', '));
+  const q = encodeURIComponent([m.endereco, m.bairro, rotaCidadeTxt(cidadeUfTxt(m))].filter(Boolean).join(', '));
   return {
     google: 'https://www.google.com/maps/dir/?api=1&destination=' + (ll || q) + '&travelmode=driving',
     waze: ll ? 'https://waze.com/ul?ll=' + ll + '&navigate=yes' : 'https://waze.com/ul?q=' + q + '&navigate=yes',
@@ -7358,15 +7421,22 @@ function renderSemana() {
     // Informações extras do card
     const mestre = DB.consultoras.find(m => m.id === c.id) || c;
     const hora = c.horarioMelhor || '';
-    const endTxt = [mestre.endereco, mestre.bairro, mestre.cidade].filter(Boolean).join(' · ');
+    const endTxt = enderecoLinha(mestre);
     const svgIco = (path, w) => '<svg width="' + (w||14) + '" height="' + (w||14) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">' + path + '</svg>';
     const icoPin = svgIco('<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>', 12);
     const icoNav = svgIco('<polygon points="3 11 22 2 13 21 11 13 3 11"/>', 14);
-    const icoTel = svgIco('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>', 14);
+    const icoZap = svgIco('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>', 14);
 
     const chips = [];
     const debTot = debitoTotalDe(c.id);
     if (debTot > 0) chips.push('<span class="chip red">Débito ' + brl(debTot) + '</span>');
+    if (st !== 'concluida' && !especial) {
+      if (mestre.codigoLiberacao) chips.push('<span class="chip green">Liberada · cód. ' + String(mestre.codigoLiberacao).replace(/[<>&"]/g, '') + '</span>');
+      else if (mestre.cpfStatus === 'falta') chips.push('<span class="chip amber">CPF: falta mandar</span>');
+      else if (mestre.cpfStatus === 'consulta') chips.push('<span class="chip amber">CPF em consulta</span>');
+      else if (mestre.cpfStatus === 'reprovado') chips.push('<span class="chip red">CPF reprovado</span>');
+      else if (mestre.cpfStatus === 'aprovado') chips.push('<span class="chip green">CPF aprovado</span>');
+    }
     if (especial === 'inativa') chips.push('<span class="chip amber">Parou de vender</span>');
     else if (especial === 'mes') chips.push('<span class="chip amber">Remarcada p/ o próximo mês</span>');
     else if (especial === 'semana') chips.push('<span class="chip amber">Remarcada p/ a próxima semana</span>');
@@ -7383,7 +7453,7 @@ function renderSemana() {
 
     const acoes = '<div class="ac-acoes" style="border-top:1px solid var(--border);padding-top:10px;">'
       + (endTxt ? '<button type="button" class="btn-mini pri" onclick="event.stopPropagation();abrirGPS(\'' + c.id + '\')">' + icoNav + ' Ir (GPS)</button>' : '')
-      + (c.telefone ? '<a class="btn-mini" href="tel:' + String(c.telefone).replace(/[^\d+]/g, '') + '" onclick="event.stopPropagation()">' + icoTel + ' Ligar</a>' : '')
+      + (c.telefone ? '<button type="button" class="btn-mini" style="background:#25D366;color:white;" onclick="event.stopPropagation();rotaWhats(\'' + c.id + '\')">' + icoZap + ' WhatsApp</button>' : '')
       + '<div style="flex:1;"></div>'
       + '<button type="button" class="btn-ico" onclick="event.stopPropagation();editarConsultora(\'' + c.id + '\')">✎</button>'
       + '<button type="button" class="btn-ico" onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')">✕</button>'
@@ -8591,12 +8661,118 @@ function confirmarCriarSemana() {
 /* ════════════════════════════════════════════
    CONSULTORAS
 ════════════════════════════════════════════ */
-function abrirModalConsultora() {
-  ['cNome','cTel','cCpf','cEndereco','cBairro','cCidade','cRotaObs'].forEach(id => {
-    const el = document.getElementById(id); if(el) el.value = '';
+/* ── Formulário de consultora: chips, endereço, CEP e mapa ── */
+const CONSMAP = { map: null, marker: null };
+window._consChip = { como: '', cpf: '' };
+window._consGeo = null;       // ponto marcado/ajustado neste formulário (só vale se for mexido)
+window._consGeoSalvo = null;  // ponto que já estava salvo no cadastro (ao editar)
+
+function consSetChip(grupo, valor) {
+  window._consChip[grupo] = window._consChip[grupo] === valor ? '' : valor; // tocar de novo desmarca
+  consRenderChips();
+}
+function consRenderChips() {
+  document.querySelectorAll('#modalConsultora .chip-op').forEach(b => b.classList.toggle('on', window._consChip[b.dataset.g] === b.dataset.v));
+}
+function consSepararEndereco(end) {
+  const t = String(end || '').trim();
+  const m = t.match(/^(.*?)[,\s]+(\d+[A-Za-z]?)$/);
+  return m ? { rua: m[1].trim(), numero: m[2] } : { rua: t, numero: '' };
+}
+function consLerEndereco() {
+  const v = id => (document.getElementById(id).value || '').trim();
+  const rua = v('cRua'), numero = v('cNumero');
+  return { cep: v('cCep'), rua, numero, complemento: v('cComplemento'), endereco: [rua, numero].filter(Boolean).join(', '),
+           bairro: v('cBairro'), cidade: v('cCidade'), uf: v('cUf').toUpperCase() };
+}
+function consResetForm() {
+  ['cNome','cTel','cCpf','cAniv','cCep','cRua','cNumero','cComplemento','cBairro','cCidade','cUf','cRotaObs','cNomeRomance','cCodigoLib'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('cDia').value = '';
   document.getElementById('cHorario').value = '';
+  window._consChip = { como: '', cpf: '' }; consRenderChips();
+  window._consGeo = null; window._consGeoSalvo = null;
+  document.getElementById('consCepStatus').textContent = '';
+  document.getElementById('consGeoTxt').textContent = 'Sem coordenadas — com rua e número o ponto no mapa fica exato.';
+  document.getElementById('consMapaWrap').style.display = 'none';
+  if (CONSMAP.map && CONSMAP.marker) { CONSMAP.map.removeLayer(CONSMAP.marker); CONSMAP.marker = null; }
+}
+function consMascaraCep(el) {
+  const d = el.value.replace(/\D/g, '').slice(0, 8);
+  el.value = d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d;
+  if (d.length === 8) consBuscarCep(d);
+}
+async function consBuscarCep(d) {
+  const st = document.getElementById('consCepStatus');
+  st.textContent = 'Buscando CEP…';
+  try {
+    const r = await fetch('https://viacep.com.br/ws/' + d + '/json/');
+    const j = await r.json();
+    if (j.erro) { st.textContent = 'CEP não encontrado.'; return; }
+    const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+    set('cRua', j.logradouro); set('cBairro', j.bairro); set('cCidade', j.localidade); set('cUf', j.uf);
+    st.textContent = 'Endereço preenchido ✓ — confira e complete o número.';
+    const n = document.getElementById('cNumero'); if (n && !n.value) n.focus();
+  } catch (e) { st.textContent = 'Não consegui buscar o CEP agora.'; }
+}
+async function consAbrirMapa(lat, lng, zoom) {
+  document.getElementById('consMapaWrap').style.display = 'block';
+  try { await rotaCarregarLeaflet(); }
+  catch (e) { document.getElementById('consGeoTxt').textContent = e.message; return false; }
+  if (!CONSMAP.map) {
+    CONSMAP.map = L.map(document.getElementById('consMapa'), { zoomControl: true, attributionControl: false }).setView([lat, lng], zoom || 16);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(CONSMAP.map);
+    L.control.attribution({ position: 'bottomright', prefix: false }).addAttribution('© OpenStreetMap').addTo(CONSMAP.map);
+    CONSMAP.map.on('click', e => consSetPino(e.latlng.lat, e.latlng.lng, 'manual'));
+  }
+  setTimeout(() => { CONSMAP.map.invalidateSize(); CONSMAP.map.setView([lat, lng], zoom || 16); }, 80);
+  return true;
+}
+function consSetPino(lat, lng, nivel) {
+  window._consGeo = { lat, lng, nivel };
+  if (CONSMAP.map) {
+    if (!CONSMAP.marker) {
+      CONSMAP.marker = L.marker([lat, lng], { draggable: true, icon: L.divIcon({ className: 'rota-pin-wrap', html: '<div class="rota-pin prox"></div>', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(CONSMAP.map);
+      CONSMAP.marker.on('dragend', ev => { const q = ev.target.getLatLng(); consSetPino(q.lat, q.lng, 'manual'); });
+    } else CONSMAP.marker.setLatLng([lat, lng]);
+  }
+  document.getElementById('consGeoTxt').textContent = nivel === 'manual' ? 'Local marcado no mapa ✓'
+    : nivel === 'endereco' ? 'Endereço localizado ✓ — ajuste o pino se precisar'
+    : 'Local aproximado (' + nivel + ') — arraste o pino pro local exato';
+}
+async function consLocalizarNoMapa() {
+  const f = consLerEndereco();
+  const salvo = window._consGeoSalvo;
+  if (salvo && salvo.sig === rotaAssinatura(f)) { // endereço não mudou: só mostra o ponto que já está salvo
+    if (await consAbrirMapa(salvo.lat, salvo.lng, 17)) { consSetPino(salvo.lat, salvo.lng, salvo.nivel || 'manual'); window._consGeo = null; }
+    return;
+  }
+  if (!f.cidade && !f.bairro && !f.endereco) { alert('Preencha o CEP ou pelo menos a cidade pra localizar no mapa.'); return; }
+  const txt = document.getElementById('consGeoTxt');
+  txt.textContent = 'Localizando…';
+  try {
+    const g = await rotaGeocodificar(f);
+    if (!g) { txt.textContent = 'Não achei esse endereço. Toque no mapa pra marcar o local.'; await consAbrirMapa(-29.6, -51.0, 9); return; }
+    if (await consAbrirMapa(g.lat, g.lng, g.nivel === 'endereco' ? 17 : 15)) consSetPino(g.lat, g.lng, g.nivel);
+  } catch (e) { txt.textContent = 'Não consegui localizar agora (sem internet?).'; }
+}
+function consUsarPosicao() {
+  if (!navigator.geolocation) { alert('Este aparelho não tem localização disponível.'); return; }
+  const gt = document.getElementById('consGeoTxt');
+  gt.textContent = 'Pegando sua localização…';
+  navigator.geolocation.getCurrentPosition(async pos => {
+    if (await consAbrirMapa(pos.coords.latitude, pos.coords.longitude, 18)) consSetPino(pos.coords.latitude, pos.coords.longitude, 'manual');
+  }, err => {
+    gt.textContent = err && err.code === 1 ? 'Localização bloqueada. Ative a localização para este site nas configurações do navegador.' : 'Não consegui pegar sua localização agora.';
+  }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 });
+}
+function consAplicarGeo(c) {
+  if (window._consGeo) { c.lat = window._consGeo.lat; c.lng = window._consGeo.lng; c.geoNivel = window._consGeo.nivel; c.geoQ = rotaAssinatura(c); }
+}
+
+function abrirModalConsultora() {
+  consResetForm();
   popularSelectRegiao('cRegiao', gerenciarRegiao);
   document.getElementById('modalConsTitulo').textContent = 'Nova Consultora';
   document.getElementById('cStatusBox').style.display = 'none';
@@ -8607,27 +8783,31 @@ function abrirModalConsultora() {
 function salvarConsultora() {
   const nome = document.getElementById('cNome').value.trim();
   if (!nome) { alert('Nome obrigatório.'); return; }
+  const val = id => document.getElementById(id).value.trim();
+  const f = consLerEndereco();
+  const campos = {
+    telefone: val('cTel'), cpf: val('cCpf'), aniversario: document.getElementById('cAniv').value,
+    cep: f.cep, rua: f.rua, numero: f.numero, complemento: f.complemento, endereco: f.endereco,
+    bairro: f.bairro, cidade: f.cidade, uf: f.uf,
+    regiao: document.getElementById('cRegiao').value,
+    diaMelhor: document.getElementById('cDia').value, horarioMelhor: document.getElementById('cHorario').value,
+    rotaObs: val('cRotaObs'),
+    nomeRomance: val('cNomeRomance'), cpfStatus: window._consChip.cpf || '', codigoLiberacao: val('cCodigoLib'),
+    comoChegou: window._consChip.como || ''
+  };
 
   // Edição
   if (window._editConsId) {
     const c = DB.consultoras.find(x => x.id === window._editConsId);
     if (c) {
-      const cpfEdit = document.getElementById('cCpf').value.trim();
-      if (cpfEdit) {
-        const cpfDupEdit = DB.consultoras.find(x => x.id !== c.id && x.cpf && x.cpf.replace(/\D/g,'') === cpfEdit.replace(/\D/g,''));
+      if (campos.cpf) {
+        const cpfDupEdit = DB.consultoras.find(x => x.id !== c.id && x.cpf && x.cpf.replace(/\D/g,'') === campos.cpf.replace(/\D/g,''));
         if (cpfDupEdit) { alert('Já existe uma consultora cadastrada com esse CPF: ' + cpfDupEdit.nome + '. Não é possível salvar com CPF duplicado.'); return; }
       }
       c.nome = nome;
-      c.telefone = document.getElementById('cTel').value.trim();
-      c.cpf = document.getElementById('cCpf').value.trim();
-      c.endereco = document.getElementById('cEndereco').value.trim();
-      c.bairro = document.getElementById('cBairro').value.trim();
-      c.cidade = document.getElementById('cCidade').value.trim();
-      c.regiao = document.getElementById('cRegiao').value;
-      c.diaMelhor = document.getElementById('cDia').value;
-      c.horarioMelhor = document.getElementById('cHorario').value;
-      c.rotaObs = document.getElementById('cRotaObs').value.trim();
+      Object.assign(c, campos);
       if (window._editConsStatus) c.status = window._editConsStatus;
+      consAplicarGeo(c);
 
       // Sincroniza com a semana ativa se a consultora estiver lá
       const sem = getSemanaAtiva();
@@ -8637,6 +8817,7 @@ function salvarConsultora() {
           cSem.nome = c.nome;
           cSem.telefone = c.telefone;
           cSem.cidade = c.cidade;
+          cSem.uf = c.uf;
           cSem.endereco = c.endereco;
           cSem.bairro = c.bairro;
           cSem.diaMelhor = c.diaMelhor;
@@ -8654,32 +8835,22 @@ function salvarConsultora() {
     }
   }
 
-  const c = {
+  const c = Object.assign({
     id: uid(), nome,
-    telefone: document.getElementById('cTel').value.trim(),
-    cpf: document.getElementById('cCpf').value.trim(),
-    aniversario: document.getElementById('cAniv').value,
-    endereco: document.getElementById('cEndereco').value.trim(),
-    bairro: document.getElementById('cBairro').value.trim(),
-    cidade: document.getElementById('cCidade').value.trim(),
-    regiao: document.getElementById('cRegiao').value,
-    diaMelhor: document.getElementById('cDia').value,
-    horarioMelhor: document.getElementById('cHorario').value,
-    rotaObs: document.getElementById('cRotaObs').value.trim(),
     status: 'ativa', score: 0,
     novaConsultora: true,
     criadoEm: new Date().toISOString()
-  };
+  }, campos);
 
-  const cpfNovo = document.getElementById('cCpf').value.trim();
-  if (cpfNovo) {
-    const cpfDup = DB.consultoras.find(x => x.cpf && x.cpf.replace(/\D/g,'') === cpfNovo.replace(/\D/g,''));
+  if (campos.cpf) {
+    const cpfDup = DB.consultoras.find(x => x.cpf && x.cpf.replace(/\D/g,'') === campos.cpf.replace(/\D/g,''));
     if (cpfDup) { alert('Já existe uma consultora cadastrada com esse CPF: ' + cpfDup.nome + '. Não é possível cadastrar duplicado.'); return; }
   }
 
   const dup = DB.consultoras.find(x => x.nome.toLowerCase() === nome.toLowerCase());
   if (dup) { if (!confirm('Já existe uma consultora com este nome. Salvar mesmo assim?')) return; }
 
+  consAplicarGeo(c);
   DB.consultoras.push(c);
   save();
   fecharModal('modalConsultora');
@@ -8718,6 +8889,7 @@ async function extrairFotoConsultora(input) {
     if (json.nome) document.getElementById('cNome').value = json.nome;
     if (json.telefone) document.getElementById('cTel').value = fmtTelefone(json.telefone);
     if (json.cpf) document.getElementById('cCpf').value = json.cpf;
+    if (json.endereco) { const se = consSepararEndereco(json.endereco); document.getElementById('cRua').value = se.rua; document.getElementById('cNumero').value = se.numero; }
     if (json.bairro) document.getElementById('cBairro').value = json.bairro;
     if (json.cidade) document.getElementById('cCidade').value = json.cidade;
     if (json.dataNascimento) {
@@ -10473,20 +10645,25 @@ function reativarConsultora(id) {
 function editarConsultora(id) {
   const c = DB.consultoras.find(x => x.id === id);
   if (!c) return;
-  document.getElementById('cNome').value = c.nome || '';
-  document.getElementById('cTel').value = c.telefone || '';
-  document.getElementById('cCpf').value = c.cpf || '';
-  document.getElementById('cEndereco').value = c.endereco || '';
-  document.getElementById('cBairro').value = c.bairro || '';
-  document.getElementById('cCidade').value = c.cidade || '';
-  document.getElementById('cDia').value = c.diaMelhor || '';
-  document.getElementById('cHorario').value = c.horarioMelhor || '';
-  document.getElementById('cRotaObs').value = c.rotaObs || '';
+  consResetForm();
+  const set = (el, v) => { document.getElementById(el).value = v || ''; };
+  set('cNome', c.nome); set('cTel', c.telefone); set('cCpf', c.cpf); set('cAniv', c.aniversario);
+  set('cCep', c.cep);
+  const sep = c.rua ? { rua: c.rua, numero: c.numero } : consSepararEndereco(c.endereco);
+  set('cRua', sep.rua); set('cNumero', sep.numero); set('cComplemento', c.complemento);
+  set('cBairro', c.bairro); set('cCidade', c.cidade); set('cUf', c.uf);
+  set('cDia', c.diaMelhor); set('cHorario', c.horarioMelhor);
+  set('cRotaObs', c.rotaObs);
+  set('cNomeRomance', c.nomeRomance); set('cCodigoLib', c.codigoLiberacao);
+  window._consChip = { como: c.comoChegou || '', cpf: c.cpfStatus || '' }; consRenderChips();
+  if (typeof c.lat === 'number' && typeof c.lng === 'number' && c.geoQ === rotaAssinatura(c)) {
+    window._consGeoSalvo = { lat: c.lat, lng: c.lng, nivel: c.geoNivel, sig: c.geoQ };
+    document.getElementById('consGeoTxt').textContent = 'Local salvo no mapa ✓ — toque em "Localizar no mapa" pra rever ou ajustar.';
+  }
   popularSelectRegiao('cRegiao', c.regiao);
   document.getElementById('modalConsTitulo').textContent = 'Editar Consultora';
   document.getElementById('cStatusBox').style.display = '';
   setStatusFormConsultora(c.status === 'inativa' ? 'inativa' : 'ativa');
-  // Salvar vai criar nova — idealmente atualizaria. Por agora marca para edição:
   window._editConsId = id;
   document.getElementById('modalConsultora').classList.add('open');
 }
