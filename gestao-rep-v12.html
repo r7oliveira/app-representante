@@ -2630,7 +2630,7 @@ input[type="time"]{max-width:100%;}
     <div class="cm-sec">
       <div class="cm-sec-t">Quem é a consultora</div>
       <label class="field"><span>Nome completo *</span><input id="cNome" placeholder="Ex: Ana Leticia de Oliveira"></label>
-      <label class="field"><span>Telefone / WhatsApp</span><input id="cTel" inputmode="tel" placeholder="(51) 99999-9999"></label>
+      <label class="field"><span>Telefone / WhatsApp</span><input id="cTel" inputmode="tel" placeholder="(51) 99999-9999" oninput="mascaraTelefone(this)" onblur="this.value=fmtTelefone(this.value)"></label>
       <label class="field" style="margin-bottom:0;">
         <span>Região</span>
         <select id="cRegiao">
@@ -5616,6 +5616,17 @@ function adminEditarAviso(diaKey, avisoId) {
    UTILS
 ════════════════════════════════════════════ */
 const brl = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+// Máscara enquanto digita: (DD) 99999-9999 — mantém o formato certo mesmo ao editar um número já salvo
+function mascaraTelefone(el) {
+  let d = el.value.replace(/\D/g, '');
+  if (d.length > 11 && d.startsWith('55')) d = d.slice(2);
+  d = d.slice(0, 11);
+  let out = '';
+  if (d.length) out = '(' + d.slice(0, 2);
+  if (d.length >= 3) out = '(' + d.slice(0, 2) + ') ' + d.slice(2, 7);
+  if (d.length >= 8) out += '-' + d.slice(7);
+  el.value = out;
+}
 function fmtTelefone(tel) {
   const d = String(tel||'').replace(/\D/g,'');
   const n = d.slice(-11);
@@ -8786,7 +8797,7 @@ function salvarConsultora() {
   const val = id => document.getElementById(id).value.trim();
   const f = consLerEndereco();
   const campos = {
-    telefone: val('cTel'), cpf: val('cCpf'), aniversario: document.getElementById('cAniv').value,
+    telefone: fmtTelefone(val('cTel')), cpf: val('cCpf'), aniversario: document.getElementById('cAniv').value,
     cep: f.cep, rua: f.rua, numero: f.numero, complemento: f.complemento, endereco: f.endereco,
     bairro: f.bairro, cidade: f.cidade, uf: f.uf,
     regiao: document.getElementById('cRegiao').value,
@@ -10647,7 +10658,7 @@ function editarConsultora(id) {
   if (!c) return;
   consResetForm();
   const set = (el, v) => { document.getElementById(el).value = v || ''; };
-  set('cNome', c.nome); set('cTel', c.telefone); set('cCpf', c.cpf); set('cAniv', c.aniversario);
+  set('cNome', c.nome); set('cTel', fmtTelefone(c.telefone || '')); set('cCpf', c.cpf); set('cAniv', c.aniversario);
   set('cCep', c.cep);
   const sep = c.rua ? { rua: c.rua, numero: c.numero } : consSepararEndereco(c.endereco);
   set('cRua', sep.rua); set('cNumero', sep.numero); set('cComplemento', c.complemento);
