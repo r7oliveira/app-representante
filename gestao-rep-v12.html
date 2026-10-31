@@ -2653,15 +2653,15 @@ input[type="time"]{max-width:100%;}
       <div class="cm-sec-t">Endereço</div>
       <label class="field"><span>CEP</span><input id="cCep" inputmode="numeric" placeholder="00000-000" maxlength="9" oninput="consMascaraCep(this)" style="max-width:170px;"></label>
       <div id="consCepStatus" style="font-size:11px;color:var(--ink-3);margin:-6px 0 12px;"></div>
-      <label class="field"><span>Rua</span><input id="cRua" placeholder="Ex: Rua das Flores"></label>
+      <label class="field"><span>Rua</span><input id="cRua" placeholder="Ex: Rua das Flores" oninput="consAgendarLocalizar()"></label>
       <div class="two-col">
-        <label class="field"><span>Número</span><input id="cNumero" placeholder="123"></label>
+        <label class="field"><span>Número</span><input id="cNumero" placeholder="123" oninput="consAgendarLocalizar()"></label>
         <label class="field"><span>Complemento</span><input id="cComplemento" placeholder="Apto, fundos..."></label>
       </div>
-      <label class="field"><span>Bairro</span><input id="cBairro" placeholder="Ex: Centro"></label>
+      <label class="field"><span>Bairro</span><input id="cBairro" placeholder="Ex: Centro" oninput="consAgendarLocalizar()"></label>
       <div style="display:grid;grid-template-columns:1fr 84px;gap:10px;">
-        <label class="field"><span>Cidade</span><input id="cCidade" placeholder="Ex: Gramado"></label>
-        <label class="field"><span>UF</span><input id="cUf" maxlength="2" placeholder="RS" style="text-transform:uppercase;"></label>
+        <label class="field"><span>Cidade</span><input id="cCidade" placeholder="Ex: Gramado" oninput="consAgendarLocalizar()"></label>
+        <label class="field"><span>UF</span><input id="cUf" maxlength="2" placeholder="RS" style="text-transform:uppercase;" oninput="consAgendarLocalizar()"></label>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         <button type="button" class="btn-mini" onclick="consLocalizarNoMapa()" style="padding:10px 14px;">
@@ -2671,10 +2671,10 @@ input[type="time"]{max-width:100%;}
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg> Usar minha posição
         </button>
       </div>
-      <div id="consGeoTxt" style="font-size:11.5px;color:var(--ink-3);margin-top:8px;line-height:1.4;">Sem coordenadas — com rua e número o ponto no mapa fica exato.</div>
-      <div id="consMapaWrap" style="display:none;margin-top:10px;">
-        <div id="consMapa" style="position:relative;height:230px;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#e9e6e0;"></div>
-        <div style="font-size:11px;color:var(--ink-3);margin-top:6px;">Arraste o pino ou toque no mapa para ajustar o local exato.</div>
+      <div id="consGeoTxt" style="font-size:11.5px;color:var(--ink-3);margin-top:8px;line-height:1.4;">Preencha o endereço — o pino aparece sozinho no mapa.</div>
+      <div id="consMapaWrap" style="display:block;margin-top:10px;">
+        <div id="consMapa" style="position:relative;height:240px;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#e9e6e0;"></div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:6px;">Arraste o pino ou toque no mapa para ajustar o local exato. Se mexer no pino, o app não troca mais o local sozinho.</div>
       </div>
     </div>
 
@@ -8705,8 +8705,8 @@ function consResetForm() {
   window._consChip = { como: '', cpf: '' }; consRenderChips();
   window._consGeo = null; window._consGeoSalvo = null;
   document.getElementById('consCepStatus').textContent = '';
-  document.getElementById('consGeoTxt').textContent = 'Sem coordenadas — com rua e número o ponto no mapa fica exato.';
-  document.getElementById('consMapaWrap').style.display = 'none';
+  document.getElementById('consGeoTxt').textContent = 'Preencha o endereço — o pino aparece sozinho no mapa.';
+  window._consTravado = false; window._consSigAuto = null; clearTimeout(window._consTimer); window._consReq = (window._consReq || 0) + 1;
   if (CONSMAP.map && CONSMAP.marker) { CONSMAP.map.removeLayer(CONSMAP.marker); CONSMAP.marker = null; }
 }
 function consMascaraCep(el) {
@@ -8725,6 +8725,7 @@ async function consBuscarCep(d) {
     set('cRua', j.logradouro); set('cBairro', j.bairro); set('cCidade', j.localidade); set('cUf', j.uf);
     st.textContent = 'Endereço preenchido ✓ — confira e complete o número.';
     const n = document.getElementById('cNumero'); if (n && !n.value) n.focus();
+    consAgendarLocalizar();
   } catch (e) { st.textContent = 'Não consegui buscar o CEP agora.'; }
 }
 async function consAbrirMapa(lat, lng, zoom) {
@@ -8742,17 +8743,19 @@ async function consAbrirMapa(lat, lng, zoom) {
 }
 function consSetPino(lat, lng, nivel) {
   window._consGeo = { lat, lng, nivel };
+  if (nivel === 'manual') window._consTravado = true; // você mexeu no pino: não troca mais sozinho
   if (CONSMAP.map) {
     if (!CONSMAP.marker) {
       CONSMAP.marker = L.marker([lat, lng], { draggable: true, icon: L.divIcon({ className: 'rota-pin-wrap', html: '<div class="rota-pin prox"></div>', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(CONSMAP.map);
       CONSMAP.marker.on('dragend', ev => { const q = ev.target.getLatLng(); consSetPino(q.lat, q.lng, 'manual'); });
     } else CONSMAP.marker.setLatLng([lat, lng]);
   }
-  document.getElementById('consGeoTxt').textContent = nivel === 'manual' ? 'Local marcado no mapa ✓'
+  document.getElementById('consGeoTxt').textContent = nivel === 'manual' ? 'Local marcado no mapa ✓ (mudou o endereço? toque em Localizar no mapa)'
     : nivel === 'endereco' ? 'Endereço localizado ✓ — ajuste o pino se precisar'
     : 'Local aproximado (' + nivel + ') — arraste o pino pro local exato';
 }
 async function consLocalizarNoMapa() {
+  window._consTravado = false; window._consSigAuto = null;
   const f = consLerEndereco();
   const salvo = window._consGeoSalvo;
   if (salvo && salvo.sig === rotaAssinatura(f)) { // endereço não mudou: só mostra o ponto que já está salvo
@@ -8778,6 +8781,53 @@ function consUsarPosicao() {
     gt.textContent = err && err.code === 1 ? 'Localização bloqueada. Ative a localização para este site nas configurações do navegador.' : 'Não consegui pegar sua localização agora.';
   }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 });
 }
+function consAgendarLocalizar() {
+  clearTimeout(window._consTimer);
+  window._consTimer = setTimeout(consAutoLocalizar, 1000);
+}
+async function consAutoLocalizar() {
+  if (window._consTravado) return;
+  const f = consLerEndereco();
+  if (!f.cidade || !(f.endereco || f.bairro)) return;
+  const sig = rotaAssinatura(f);
+  if (sig === window._consSigAuto) return;
+  const txt = document.getElementById('consGeoTxt');
+  const salvo = window._consGeoSalvo;
+  if (salvo && salvo.sig === sig) { // endereço igual ao que já está salvo: mantém o ponto salvo
+    window._consSigAuto = sig;
+    return;
+  }
+  const req = window._consReq = (window._consReq || 0) + 1;
+  txt.textContent = 'Buscando o endereço no mapa…';
+  try {
+    const g = await rotaGeocodificar(f);
+    if (req !== window._consReq || window._consTravado) return;
+    window._consSigAuto = sig;
+    if (!g) {
+      window._consGeo = null;
+      if (CONSMAP.map && CONSMAP.marker) { CONSMAP.map.removeLayer(CONSMAP.marker); CONSMAP.marker = null; }
+      txt.textContent = 'Não achei esse endereço. Confira os dados ou toque no mapa pra marcar o local.';
+      return;
+    }
+    if (await consAbrirMapa(g.lat, g.lng, g.nivel === 'endereco' ? 17 : 15)) consSetPino(g.lat, g.lng, g.nivel);
+  } catch (e) {
+    if (req === window._consReq) txt.textContent = 'Não consegui buscar o endereço agora (sem internet?).';
+  }
+}
+// Mapa já aparece ao abrir o cadastro: no ponto salvo, ou buscando o endereço que já existe
+async function consIniciarMapaForm(c) {
+  const salvo = window._consGeoSalvo;
+  if (salvo) {
+    if (await consAbrirMapa(salvo.lat, salvo.lng, 17)) {
+      consSetPino(salvo.lat, salvo.lng, salvo.nivel || 'manual');
+      window._consGeo = null;
+      document.getElementById('consGeoTxt').textContent = 'Local salvo no mapa ✓ — arraste o pino pra ajustar.';
+    }
+    return;
+  }
+  await consAbrirMapa(-29.6, -51.0, 8);
+  if (c) consAutoLocalizar();
+}
 function consAplicarGeo(c) {
   if (window._consGeo) { c.lat = window._consGeo.lat; c.lng = window._consGeo.lng; c.geoNivel = window._consGeo.nivel; c.geoQ = rotaAssinatura(c); }
 }
@@ -8789,6 +8839,7 @@ function abrirModalConsultora() {
   document.getElementById('cStatusBox').style.display = 'none';
   window._editConsId = null;
   document.getElementById('modalConsultora').classList.add('open');
+  consIniciarMapaForm(null);
 }
 
 function salvarConsultora() {
@@ -10677,6 +10728,7 @@ function editarConsultora(id) {
   setStatusFormConsultora(c.status === 'inativa' ? 'inativa' : 'ativa');
   window._editConsId = id;
   document.getElementById('modalConsultora').classList.add('open');
+  consIniciarMapaForm(c);
 }
 
 function setStatusFormConsultora(status) {
