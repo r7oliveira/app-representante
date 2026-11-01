@@ -270,11 +270,15 @@ input[type="time"]{max-width:100%;}
 #rotaDiasCheia button{box-shadow:0 2px 8px rgba(0,0,0,.22);}
 /* tela cheia: o mapa ocupa a tela toda (sem cabeçalho nem menu de baixo) */
 #view-rota.cheia{bottom:0;}
+/* o cabeçalho some e a área de rolagem vira só uma moldura: o mapa preenche a tela inteira (no iPhone, itens que
+   "escapam" da área de rolagem são cortados, por isso nada aqui depende disso) */
+#view-rota.cheia .page-header{display:none;}
+#view-rota.cheia .scroll-body{position:relative;overflow:hidden;padding:0 !important;}
 #view-rota.cheia .rota-wrap{position:absolute;top:0;left:0;right:0;bottom:0;margin:0;border:none;border-radius:0;height:auto;z-index:30;}
-#view-rota.cheia #rotaTopoCheia{display:flex;}
-#view-rota.cheia .rota-fabs{top:calc(66px + env(safe-area-inset-top));}
-#view-rota.cheia #rotaMsg{top:calc(70px + env(safe-area-inset-top)) !important;left:12px !important;right:70px !important;}
-#view-rota.cheia #rotaCard{bottom:calc(14px + env(safe-area-inset-bottom)) !important;}
+#view-rota.cheia #rotaTopoCheia{display:flex;left:16px;right:16px;}
+#view-rota.cheia .rota-fabs{top:calc(66px + env(safe-area-inset-top));right:16px;}
+#view-rota.cheia #rotaMsg{top:calc(70px + env(safe-area-inset-top)) !important;left:16px !important;right:72px !important;}
+#view-rota.cheia #rotaCard{left:16px !important;right:16px !important;bottom:calc(18px + env(safe-area-inset-bottom)) !important;}
 #view-rota.cheia .leaflet-top.leaflet-left{top:calc(58px + env(safe-area-inset-top));}
 .rota-fab{width:40px;height:40px;border-radius:50%;background:white;box-shadow:0 4px 12px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;color:var(--ink);}
 .leaflet-container{font-family:var(--font);}
@@ -790,7 +794,7 @@ input[type="time"]{max-width:100%;}
         <button type="button" class="rota-fab" onclick="ROTA.map && ROTA.map.zoomIn()" aria-label="Aproximar" style="font-size:20px;font-weight:700;">+</button>
         <button type="button" class="rota-fab" onclick="ROTA.map && ROTA.map.zoomOut()" aria-label="Afastar" style="font-size:22px;font-weight:700;">−</button>
       </div>
-      <div id="rotaCard" style="position:absolute;left:10px;right:10px;bottom:10px;z-index:1000;"></div>
+      <div id="rotaCard" style="position:absolute;left:12px;right:12px;bottom:12px;z-index:1000;"></div>
     </div>
     <div id="rotaResumo" style="margin:12px 16px 0;"></div>
     <div style="padding:16px 16px 0;font-size:11px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;">Paradas do dia</div>
@@ -6945,7 +6949,7 @@ function rotaEnquadrar() {
   if (ROTA.pos) pts.push([ROTA.pos.lat, ROTA.pos.lng]);
   if (!pts.length) return;
   if (pts.length === 1) ROTA.map.setView(pts[0], 15);
-  else ROTA.map.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [36, ROTA.cheia ? 110 : 56], paddingBottomRight: [ROTA.cheia ? 76 : 36, 140], maxZoom: 16 });
+  else ROTA.map.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [36, ROTA.cheia ? 110 : 56], paddingBottomRight: [ROTA.cheia ? 84 : 36, 150], maxZoom: 16 });
 }
 function rotaCentralizarEu() {
   if (!ROTA.map) return;
@@ -7165,7 +7169,7 @@ function rotaRenderCard() {
   const prox = ROTA.paradas.find(x => x.naRota);
   const ehProxima = !p.feito && prox && prox.id === p.id;
   const titulo = p.feito ? (p.especial ? 'REMARCADA' : 'ATENDIDA') : (ehProxima ? 'PRÓXIMA PARADA' : 'PARADA ' + p.num);
-  const base = 'background:white;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:9px 12px 10px;';
+  const base = 'background:white;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:10px 14px 12px;';
   const cab = '<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:9.5px;font-weight:800;letter-spacing:.7px;color:var(--rose);">' + titulo + '</span><span style="font-size:12.5px;font-weight:800;color:var(--ink);">' + (p.hora || '') + '</span></div>'
     + '<div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + rotaEsc(p.nome) + '</div>'
     + '<div style="font-size:11px;color:var(--ink-2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + rotaEsc(p.endTxt || 'Endereço não cadastrado') + '</div>';
@@ -7203,7 +7207,7 @@ function rotaRenderCard() {
   el.innerHTML = '<div style="' + base + '">' + cab
     + ((info || aprox || ajustar) ? '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;"><div style="font-size:12px;font-weight:800;color:var(--ink);min-width:0;">' + info + aprox + '</div>' + ajustar + '</div>' : '')
     + gpsErro
-    + ((btnNav || btnZap || btnAtender) ? '<div style="display:flex;gap:6px;margin-top:7px;">' + btnNav + btnZap + btnAtender + '</div>' : '')
+    + ((btnNav || btnZap || btnAtender) ? '<div style="display:flex;gap:8px;margin-top:8px;">' + btnNav + btnZap + btnAtender + '</div>' : '')
   + '</div>';
 }
 
