@@ -6945,7 +6945,7 @@ function rotaEnquadrar() {
   if (ROTA.pos) pts.push([ROTA.pos.lat, ROTA.pos.lng]);
   if (!pts.length) return;
   if (pts.length === 1) ROTA.map.setView(pts[0], 15);
-  else ROTA.map.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [36, ROTA.cheia ? 110 : 56], paddingBottomRight: [ROTA.cheia ? 76 : 36, 200], maxZoom: 16 });
+  else ROTA.map.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [36, ROTA.cheia ? 110 : 56], paddingBottomRight: [ROTA.cheia ? 76 : 36, 140], maxZoom: 16 });
 }
 function rotaCentralizarEu() {
   if (!ROTA.map) return;
@@ -7165,10 +7165,10 @@ function rotaRenderCard() {
   const prox = ROTA.paradas.find(x => x.naRota);
   const ehProxima = !p.feito && prox && prox.id === p.id;
   const titulo = p.feito ? (p.especial ? 'REMARCADA' : 'ATENDIDA') : (ehProxima ? 'PRÓXIMA PARADA' : 'PARADA ' + p.num);
-  const base = 'background:white;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:12px 14px;';
-  const cab = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;"><span style="display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;letter-spacing:.7px;color:var(--rose);">' + titulo + '</span><span style="font-size:13px;font-weight:800;color:var(--ink);">' + (p.hora || '') + '</span></div>'
-    + '<div style="font-size:15px;font-weight:800;color:var(--ink);line-height:1.25;">' + rotaEsc(p.nome) + '</div>'
-    + '<div style="font-size:11.5px;color:var(--ink-2);margin-top:2px;">' + rotaEsc(p.endTxt || 'Endereço não cadastrado') + '</div>';
+  const base = 'background:white;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:9px 12px 10px;';
+  const cab = '<div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:9.5px;font-weight:800;letter-spacing:.7px;color:var(--rose);">' + titulo + '</span><span style="font-size:12.5px;font-weight:800;color:var(--ink);">' + (p.hora || '') + '</span></div>'
+    + '<div style="font-size:14px;font-weight:800;color:var(--ink);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + rotaEsc(p.nome) + '</div>'
+    + '<div style="font-size:11px;color:var(--ink-2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + rotaEsc(p.endTxt || 'Endereço não cadastrado') + '</div>';
 
   if (ROTA.ajustandoId === p.id) {
     el.innerHTML = '<div style="' + base + '">' + cab
@@ -7190,20 +7190,20 @@ function rotaRenderCard() {
     else info = p.tentou ? 'Não consegui localizar este endereço' : (p.endTxt ? 'Localizando endereço…' : 'Cadastre o endereço para traçar a rota');
   }
   const aprox = (!p.feito && p.lat !== null && rotaNivelAprox(p.nivel))
-    ? '<div style="font-size:10.5px;color:var(--amber);font-weight:700;margin-top:3px;">Local aproximado (' + p.nivel + ')</div>' : '';
+    ? ' <span style="font-size:10.5px;color:var(--amber);font-weight:800;">· local aproximado</span>' : '';
   const gpsErro = (ROTA.gpsErro && !ROTA.pos && !p.feito) ? '<div style="font-size:10.5px;color:var(--red);font-weight:700;margin-top:3px;line-height:1.35;">' + rotaEsc(ROTA.gpsErro) + '</div>' : '';
 
-  const svg = (path) => '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>';
-  const btnNav = (p.endTxt || p.nivel === 'link') ? '<button type="button" onclick="abrirGPS(\'' + p.id + '\')" class="btn-mini pri" style="flex:1;justify-content:center;padding:10px 8px;white-space:nowrap;">' + svg('<polygon points="3 11 22 2 13 21 11 13 3 11"/>') + ' Navegar</button>' : '';
-  const btnZap = p.c.telefone ? '<button type="button" onclick="rotaWhats(\'' + p.id + '\')" class="btn-mini" style="flex:1;justify-content:center;padding:10px 8px;background:#25D366;color:white;white-space:nowrap;">' + svg('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>') + ' WhatsApp</button>' : '';
-  const btnAtender = !p.feito ? '<button type="button" onclick="rotaAtender(\'' + p.id + '\')" class="btn-mini" style="flex:1;justify-content:center;padding:10px 8px;background:var(--rose);color:white;">Atender</button>' : '';
-  const ajustar = (!p.feito && p.endTxt) ? '<button type="button" onclick="rotaIniciarAjuste(\'' + p.id + '\')" style="margin-top:8px;font-size:11.5px;font-weight:800;color:var(--rose);text-decoration:underline;">Ajustar local no mapa</button>' : '';
+  const svg = (path) => '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>';
+  const estiloBtn = 'flex:1;justify-content:center;padding:8px 6px;font-size:12px;white-space:nowrap;';
+  const btnNav = (p.endTxt || p.nivel === 'link') ? '<button type="button" onclick="abrirGPS(\'' + p.id + '\')" class="btn-mini pri" style="' + estiloBtn + '">' + svg('<polygon points="3 11 22 2 13 21 11 13 3 11"/>') + ' Navegar</button>' : '';
+  const btnZap = p.c.telefone ? '<button type="button" onclick="rotaWhats(\'' + p.id + '\')" class="btn-mini" style="' + estiloBtn + 'background:#25D366;color:white;">' + svg('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>') + ' WhatsApp</button>' : '';
+  const btnAtender = !p.feito ? '<button type="button" onclick="rotaAtender(\'' + p.id + '\')" class="btn-mini" style="' + estiloBtn + 'background:var(--rose);color:white;">Atender</button>' : '';
+  const ajustar = (!p.feito && p.endTxt) ? '<button type="button" onclick="rotaIniciarAjuste(\'' + p.id + '\')" style="flex-shrink:0;font-size:11px;font-weight:800;color:var(--rose);text-decoration:underline;">Ajustar local</button>' : '';
 
   el.innerHTML = '<div style="' + base + '">' + cab
-    + (info ? '<div style="font-size:13px;font-weight:800;color:var(--ink);margin-top:7px;">' + info + '</div>' : '')
-    + aprox + gpsErro
-    + ((btnNav || btnZap || btnAtender) ? '<div style="display:flex;gap:8px;margin-top:10px;">' + btnNav + btnZap + btnAtender + '</div>' : '')
-    + ajustar
+    + ((info || aprox || ajustar) ? '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;"><div style="font-size:12px;font-weight:800;color:var(--ink);min-width:0;">' + info + aprox + '</div>' + ajustar + '</div>' : '')
+    + gpsErro
+    + ((btnNav || btnZap || btnAtender) ? '<div style="display:flex;gap:6px;margin-top:7px;">' + btnNav + btnZap + btnAtender + '</div>' : '')
   + '</div>';
 }
 
