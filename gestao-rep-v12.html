@@ -243,6 +243,20 @@ input[type="time"]{max-width:100%;}
 @keyframes rotaPulso{0%{box-shadow:0 0 0 0 rgba(37,99,235,.5);}70%{box-shadow:0 0 0 14px rgba(37,99,235,0);}100%{box-shadow:0 0 0 0 rgba(37,99,235,0);}}
 .rota-num{width:30px;height:30px;border-radius:50%;background:var(--rose);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .rota-num.feito{background:var(--green-bg);color:var(--green);}
+.rota-wrap{position:relative;margin:8px 16px 0;border-radius:18px;overflow:hidden;border:1px solid var(--border);height:450px;background:#e9e6e0;}
+.rota-fabs{position:absolute;top:10px;right:10px;z-index:1000;display:flex;flex-direction:column;gap:8px;}
+#rotaTopoCheia{display:none;position:absolute;z-index:1100;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));align-items:center;gap:8px;}
+#rotaDiasCheia{flex:1;min-width:0;display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;}
+#rotaDiasCheia::-webkit-scrollbar{display:none;}
+#rotaDiasCheia button{box-shadow:0 2px 8px rgba(0,0,0,.22);}
+/* tela cheia: o mapa ocupa a tela toda (sem cabeçalho nem menu de baixo) */
+#view-rota.cheia{bottom:0;}
+#view-rota.cheia .rota-wrap{position:absolute;top:0;left:0;right:0;bottom:0;margin:0;border:none;border-radius:0;height:auto;z-index:30;}
+#view-rota.cheia #rotaTopoCheia{display:flex;}
+#view-rota.cheia .rota-fabs{top:calc(66px + env(safe-area-inset-top));}
+#view-rota.cheia #rotaMsg{top:calc(70px + env(safe-area-inset-top)) !important;left:12px !important;right:70px !important;}
+#view-rota.cheia #rotaCard{bottom:calc(14px + env(safe-area-inset-bottom)) !important;}
+#view-rota.cheia .leaflet-top.leaflet-left{top:calc(58px + env(safe-area-inset-top));}
 .rota-fab{width:40px;height:40px;border-radius:50%;background:white;box-shadow:0 4px 12px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;color:var(--ink);}
 .leaflet-container{font-family:var(--font);}
 .leaflet-control-attribution{font-size:10px;opacity:.85;}
@@ -742,13 +756,18 @@ input[type="time"]{max-width:100%;}
   </div>
   <div class="scroll-body" id="rotaScroll" style="padding:0 0 90px;">
     <div id="rotaDias" style="display:flex;gap:8px;overflow-x:auto;padding:12px 16px 4px;"></div>
-    <div style="position:relative;margin:8px 16px 0;border-radius:18px;overflow:hidden;border:1px solid var(--border);height:450px;background:#e9e6e0;">
+    <div class="rota-wrap" id="rotaMapaWrap">
       <div id="rotaMapa" style="position:absolute;top:0;left:0;right:0;bottom:0;"></div>
       <div id="rotaMsg" style="display:none;position:absolute;top:34px;left:56px;right:60px;z-index:1000;text-align:center;color:white;font-size:12px;font-weight:700;padding:8px 12px;border-radius:12px;line-height:1.35;"></div>
-      <div style="position:absolute;top:10px;right:10px;z-index:1000;display:flex;flex-direction:column;gap:8px;">
+      <div id="rotaTopoCheia">
+        <button type="button" class="rota-fab" onclick="goTo('atendimentos-lista')" aria-label="Voltar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+        <div id="rotaDiasCheia"></div>
+      </div>
+      <div class="rota-fabs">
+        <button type="button" class="rota-fab" id="rotaToggleCheia" onclick="rotaAlternarCheia()" aria-label="Minimizar o mapa"></button>
         <button type="button" class="rota-fab" id="rotaBussola" onclick="rotaNorte()" aria-label="Voltar o mapa para o norte" style="display:none;"><svg id="rotaBussolaSvg" width="20" height="20" viewBox="0 0 24 24" style="transition:transform .12s;"><polygon points="12,2 18,20 12,16 6,20" fill="#c0392b"/><polygon points="12,16 18,20 12,22 6,20" fill="#5a5a5a"/></svg></button>
         <button type="button" class="rota-fab" onclick="rotaCentralizarEu()" aria-label="Minha posição"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></button>
-        <button type="button" class="rota-fab" onclick="rotaEnquadrar()" aria-label="Ver rota toda"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+        <button type="button" class="rota-fab" onclick="rotaEnquadrar()" aria-label="Ver todas as paradas"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg></button>
         <button type="button" class="rota-fab" onclick="ROTA.map && ROTA.map.zoomIn()" aria-label="Aproximar" style="font-size:20px;font-weight:700;">+</button>
         <button type="button" class="rota-fab" onclick="ROTA.map && ROTA.map.zoomOut()" aria-label="Afastar" style="font-size:22px;font-weight:700;">−</button>
       </div>
@@ -6566,10 +6585,10 @@ function goTo(v) {
   viewHistory.push(v);
 
   // Mapa/rota: só mantém o GPS ligado enquanto a tela de rota está aberta
-  if (v !== 'rota') { pararGPSRota(); ROTA.token++; }
+  if (v !== 'rota') { pararGPSRota(); ROTA.token++; const vr = document.getElementById('view-rota'); if (vr) vr.classList.remove('cheia'); }
 
   // Renderizar
-  if (v === 'rota')         renderRota();
+  if (v === 'rota')         { rotaAlternarCheia(true); renderRota(); }
   if (v === 'semana')       renderSemana();
   if (v === 'atendimentos-lista') { window._filtroAtendimentos = 'pendentes'; renderSemana(); }
   if (v === 'pagar-debitos') renderPagarDebitos();
@@ -6757,6 +6776,23 @@ function rotaAtualizarBussola() {
   if (!svg || !ROTA.map || !ROTA.giro) return;
   svg.style.transform = 'rotate(' + (-(ROTA.map.getBearing() || 0)) + 'deg)';
 }
+// Tela cheia (padrão ao abrir) ⇄ minimizado (mapa menor, com a lista de paradas embaixo)
+function rotaAlternarCheia(forcar) {
+  const v = document.getElementById('view-rota');
+  const cheia = typeof forcar === 'boolean' ? forcar : !v.classList.contains('cheia');
+  v.classList.toggle('cheia', cheia);
+  ROTA.cheia = cheia;
+  const nav = document.getElementById('bottomNav'); if (nav) nav.style.display = cheia ? 'none' : 'flex';
+  const b = document.getElementById('rotaToggleCheia');
+  if (b) {
+    b.setAttribute('aria-label', cheia ? 'Minimizar o mapa' : 'Mapa em tela cheia');
+    b.innerHTML = cheia
+      ? '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>'
+      : '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>';
+  }
+  if (!cheia) { const sc = document.getElementById('rotaScroll'); if (sc) sc.scrollTop = 0; }
+  setTimeout(() => { if (ROTA.map) { ROTA.map.invalidateSize(); rotaEnquadrar(); } }, 150);
+}
 function rotaNorte() { if (ROTA.map && ROTA.giro) ROTA.map.setBearing(0); }
 
 /* ── Endereço → ponto no mapa (Nominatim, 1 pedido por segundo, resultado fica guardado) ── */
@@ -6891,7 +6927,7 @@ function rotaEnquadrar() {
   if (ROTA.pos) pts.push([ROTA.pos.lat, ROTA.pos.lng]);
   if (!pts.length) return;
   if (pts.length === 1) ROTA.map.setView(pts[0], 15);
-  else ROTA.map.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [36, 56], paddingBottomRight: [36, 190], maxZoom: 16 });
+  else ROTA.map.fitBounds(L.latLngBounds(pts), { paddingTopLeft: [36, ROTA.cheia ? 110 : 56], paddingBottomRight: [ROTA.cheia ? 76 : 36, 200], maxZoom: 16 });
 }
 function rotaCentralizarEu() {
   if (!ROTA.map) return;
@@ -7045,6 +7081,7 @@ function rotaRenderChips(sem, dias) {
       + (d.dia === hoje ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + (ativo ? 'white' : 'var(--rose)') + ';margin-left:6px;vertical-align:middle;"></span>' : '')
       + '</button>';
   }).join('');
+  const chipsCheia = document.getElementById('rotaDiasCheia'); if (chipsCheia) chipsCheia.innerHTML = el.innerHTML;
   const sub = document.getElementById('rotaSub');
   if (sub) {
     const data = dataDoDiaDaSemana(sem, ROTA.dia);
