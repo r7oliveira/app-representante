@@ -10581,28 +10581,8 @@ function renderGerenciar() {
       numDia++;
       const endTxt = enderecoLinha(c);
       const ult = _ultimoRegistroDe(c);
-      const tk = _ticketMedioDe(c);
-      const deb = debDe[c.id] || 0;
       const atras = ult ? Math.max(0, semMax - (ult.sem.numero || 0)) : null;
       const ultTxt = ult ? 'último atendimento: sem. ' + ult.sem.numero + (atras === 0 ? ' (esta semana)' : ' · há ' + atras + (atras === 1 ? ' semana' : ' semanas')) : 'ainda não foi atendida';
-      // data prevista da próxima visita = semana do setor + dia de atendimento dela
-      let visita = '';
-      if (infoSetor) {
-        const idx = DIAS_ORDEM_ROTA.indexOf(c.diaMelhor);
-        const dt = idx >= 0 ? new Date(infoSetor.segunda.getTime() + idx * 86400000) : null;
-        visita = (infoSetor.atual ? 'Esta semana' : 'Próxima visita') + ': ' + (dt ? c.diaMelhor.replace('-feira', '').slice(0, 3).toUpperCase() + ' ' + fmtDM(dt) : 'sem. ' + infoSetor.numero)
-          + (c.horarioMelhor ? ' · ' + c.horarioMelhor : '') + (dt ? ' · sem. ' + infoSetor.numero : '');
-      }
-      const chips = [];
-      chips.push('<span class="chip">Score ' + scoreAtualDe(c) + '</span>');
-      if (tk) chips.push('<span class="chip">Ticket ' + brl(tk.valor) + '</span>');
-      if (c.novaConsultora) chips.push('<span class="chip amber">Nova</span>');
-      if (c.codigoLiberacao) chips.push('<span class="chip green">Liberada · cód. ' + String(c.codigoLiberacao).replace(/[<>&"]/g, '') + '</span>');
-      else if (c.cpfStatus === 'falta') chips.push('<span class="chip amber">CPF: falta mandar</span>');
-      else if (c.cpfStatus === 'consulta') chips.push('<span class="chip amber">CPF em consulta</span>');
-      else if (c.cpfStatus === 'reprovado') chips.push('<span class="chip red">CPF reprovado</span>');
-      else if (c.cpfStatus === 'aprovado') chips.push('<span class="chip green">CPF aprovado</span>');
-      if (!c.endereco) chips.push('<span class="chip amber">Sem rua e número</span>');
       return header + '<div class="cons-card ac-card" style="flex-direction:column;align-items:stretch;padding:0;overflow:hidden;">'
         + '<div class="ac-top" style="border-bottom:1px solid var(--border);" onclick="editarConsultora(\'' + c.id + '\')">'
           + '<div class="ac-time" style="width:40px;"><div class="ger-av">' + numDia + '</div></div>'
@@ -10610,12 +10590,6 @@ function renderGerenciar() {
             + '<div class="ac-linha1"><div class="ac-nome">' + c.nome + '</div><span class="ger-st">● Ativa</span></div>'
             + '<div class="ac-end" style="display:flex;align-items:flex-start;gap:5px;">' + (endTxt ? icoPin + '<span>' + endTxt + '</span>' : '<span style="color:var(--ink-3);">Endereço não cadastrado</span>') + '</div>'
             + '<div class="ac-end">' + (c.telefone ? fmtTelefone(c.telefone) + ' · ' : '') + ultTxt + '</div>'
-            + (visita ? '<div class="ger-visita">' + visita + '</div>' : '')
-            + '<div class="ger-stats">'
-              + '<div><div class="ger-lbl">Último pedido</div><div class="ger-val">' + (ult ? brl(ult.reg.vendido || 0) + ' <small>· sem. ' + ult.sem.numero + '</small>' : '—') + '</div></div>'
-              + '<div><div class="ger-lbl">Em aberto</div><div class="ger-val" style="color:' + (deb > 0 ? 'var(--red)' : 'var(--ink)') + ';">' + brl(deb) + '</div></div>'
-            + '</div>'
-            + '<div class="ac-chips">' + chips.join('') + '</div>'
             + (c.rotaObs ? '<div class="ac-obs">' + c.rotaObs + '</div>' : '')
           + '</div>'
         + '</div>'
