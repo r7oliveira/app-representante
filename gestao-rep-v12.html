@@ -704,6 +704,7 @@ input[type="time"]{max-width:100%;}
         <div class="tile-sub" id="subTileDebitos">nenhum débito</div>
       </button>
     </div>
+    <div id="atendDiasRow" style="display:none;gap:8px;overflow-x:auto;padding:0 16px 12px;-webkit-overflow-scrolling:touch;"></div>
     <div style="padding:0 16px 80px;" id="listaConsultoras">
       <div style="text-align:center;padding:32px;color:var(--ink-3);font-size:14px;">
         Nenhuma semana ativa. <br><br>
@@ -2631,7 +2632,7 @@ input[type="time"]{max-width:100%;}
 
     <div class="cm-sec">
       <div class="cm-sec-t">Quem é a consultora</div>
-      <label class="field"><span>Nome completo *</span><input id="cNome" placeholder="Ex: Ana Leticia de Oliveira"></label>
+      <label class="field"><span>Nome completo *</span><input id="cNome" placeholder="Ex: ANA LETICIA DE OLIVEIRA" oninput="maiusculo(this)" style="text-transform:uppercase;" autocapitalize="characters"></label>
       <label class="field"><span>Telefone / WhatsApp</span><input id="cTel" inputmode="tel" placeholder="(51) 99999-9999" oninput="mascaraTelefone(this)" onblur="this.value=fmtTelefone(this.value)"></label>
       <label class="field" style="margin-bottom:0;">
         <span>Região</span>
@@ -2655,15 +2656,15 @@ input[type="time"]{max-width:100%;}
       <div class="cm-sec-t">Endereço</div>
       <label class="field"><span>CEP</span><input id="cCep" inputmode="numeric" placeholder="00000-000" maxlength="9" oninput="consMascaraCep(this)" style="max-width:170px;"></label>
       <div id="consCepStatus" style="font-size:11px;color:var(--ink-3);margin:-6px 0 12px;"></div>
-      <label class="field"><span>Rua</span><input id="cRua" placeholder="Ex: Rua das Flores" oninput="consAgendarLocalizar()"></label>
+      <label class="field"><span>Rua</span><input id="cRua" placeholder="Ex: RUA DAS FLORES" oninput="maiusculo(this);consAgendarLocalizar()" style="text-transform:uppercase;" autocapitalize="characters"></label>
       <div class="two-col">
-        <label class="field"><span>Número</span><input id="cNumero" placeholder="123" oninput="consAgendarLocalizar()"></label>
-        <label class="field"><span>Complemento</span><input id="cComplemento" placeholder="Apto, fundos..."></label>
+        <label class="field"><span>Número</span><input id="cNumero" placeholder="123" oninput="maiusculo(this);consAgendarLocalizar()" style="text-transform:uppercase;" autocapitalize="characters"></label>
+        <label class="field"><span>Complemento</span><input id="cComplemento" placeholder="APTO, FUNDOS..." oninput="maiusculo(this)" style="text-transform:uppercase;" autocapitalize="characters"></label>
       </div>
-      <label class="field"><span>Bairro</span><input id="cBairro" placeholder="Ex: Centro" oninput="consAgendarLocalizar()"></label>
+      <label class="field"><span>Bairro</span><input id="cBairro" placeholder="Ex: CENTRO" oninput="maiusculo(this);consAgendarLocalizar()" style="text-transform:uppercase;" autocapitalize="characters"></label>
       <div style="display:grid;grid-template-columns:1fr 84px;gap:10px;">
-        <label class="field"><span>Cidade</span><input id="cCidade" placeholder="Ex: Gramado" oninput="consAgendarLocalizar()"></label>
-        <label class="field"><span>UF</span><input id="cUf" maxlength="2" placeholder="RS" style="text-transform:uppercase;" oninput="consAgendarLocalizar()"></label>
+        <label class="field"><span>Cidade</span><input id="cCidade" placeholder="Ex: GRAMADO" oninput="maiusculo(this);consAgendarLocalizar()" style="text-transform:uppercase;" autocapitalize="characters"></label>
+        <label class="field"><span>UF</span><input id="cUf" maxlength="2" placeholder="RS" style="text-transform:uppercase;" oninput="maiusculo(this);consAgendarLocalizar()" autocapitalize="characters"></label>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
         <button type="button" class="btn-mini" onclick="consLocalizarNoMapa()" style="padding:10px 14px;">
@@ -2783,12 +2784,12 @@ input[type="time"]{max-width:100%;}
         <span>Como chegou até você</span>
         <div class="chip-row"><button type="button" class="chip-op" data-g="como" data-v="Indicação" onclick="consSetChip('como','Indicação')">Indicação</button><button type="button" class="chip-op" data-g="como" data-v="Instagram" onclick="consSetChip('como','Instagram')">Instagram</button><button type="button" class="chip-op" data-g="como" data-v="Facebook" onclick="consSetChip('como','Facebook')">Facebook</button><button type="button" class="chip-op" data-g="como" data-v="WhatsApp / status" onclick="consSetChip('como','WhatsApp / status')">WhatsApp / status</button><button type="button" class="chip-op" data-g="como" data-v="Porta a porta" onclick="consSetChip('como','Porta a porta')">Porta a porta</button><button type="button" class="chip-op" data-g="como" data-v="Evento / feira" onclick="consSetChip('como','Evento / feira')">Evento / feira</button><button type="button" class="chip-op" data-g="como" data-v="Anúncio" onclick="consSetChip('como','Anúncio')">Anúncio</button></div>
       </div>
-      <label class="field" style="margin-bottom:0;"><span>Observações</span><textarea id="cRotaObs" rows="3" placeholder="Ex.: indicação da Carla, prefere depois das 10h"></textarea></label>
+      <label class="field" style="margin-bottom:0;"><span>Observações</span><textarea id="cRotaObs" rows="3" placeholder="EX.: INDICAÇÃO DA CARLA, PREFERE DEPOIS DAS 10H" oninput="maiusculo(this)" style="text-transform:uppercase;" autocapitalize="characters"></textarea></label>
     </div>
 
     <div class="cm-sec">
       <div class="cm-sec-t">Cadastro na Romance</div>
-      <label class="field"><span>Nome que vai no cadastro da Romance</span><input id="cNomeRomance" placeholder="Mesmo nome da consultora"></label>
+      <label class="field"><span>Nome que vai no cadastro da Romance</span><input id="cNomeRomance" placeholder="MESMO NOME DA CONSULTORA" oninput="maiusculo(this)" style="text-transform:uppercase;" autocapitalize="characters"></label>
       <div style="font-size:11px;color:var(--ink-3);margin:-8px 0 12px;line-height:1.4;">Deixe em branco se o cadastro é no nome dela.</div>
       <div class="two-col">
         <label class="field"><span>CPF</span><input id="cCpf" inputmode="numeric" placeholder="000.000.000-00"></label>
@@ -5685,6 +5686,23 @@ function adminEditarAviso(diaKey, avisoId) {
    UTILS
 ════════════════════════════════════════════ */
 const brl = v => 'R$ ' + (v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+// Cadastro sempre em MAIÚSCULAS (nome, endereço, observações...)
+const toUp = t => String(t == null ? '' : t).toLocaleUpperCase('pt-BR');
+function maiusculo(el) { // converte enquanto digita sem pular o cursor
+  const a = el.selectionStart, b = el.selectionEnd, up = toUp(el.value);
+  if (up !== el.value) { el.value = up; try { el.setSelectionRange(a, b); } catch (e) {} }
+}
+const CAMPOS_MAIUSCULOS = ['nome', 'endereco', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'uf', 'nomeRomance', 'rotaObs'];
+// Uma vez só: passa pra MAIÚSCULAS o que já estava cadastrado (cadastro e semanas)
+function migrarMaiusculas() {
+  DB.config = DB.config || {};
+  if (DB.config.migradoMaiusculasV1) return;
+  const conv = o => { CAMPOS_MAIUSCULOS.forEach(k => { if (typeof o[k] === 'string' && o[k]) o[k] = toUp(o[k]); }); };
+  (DB.consultoras || []).forEach(conv);
+  (DB.semanas || []).forEach(sm => (sm.consultoras || []).forEach(conv));
+  DB.config.migradoMaiusculasV1 = true;
+  save();
+}
 // Máscara enquanto digita: (DD) 99999-9999 — mantém o formato certo mesmo ao editar um número já salvo
 function mascaraTelefone(el) {
   let d = el.value.replace(/\D/g, '');
@@ -6100,6 +6118,12 @@ function irListaConsultoras() {
   }
 })();
 
+function filtrarDiaAtendimentos(dia) {
+  window._filtroDiaAtend = dia || '';
+  renderSemana();
+  const sb = document.querySelector('#view-atendimentos-lista .scroll-body');
+  if (sb) sb.scrollTo({ top: 0, behavior: 'smooth' });
+}
 function filtrarAtendimentos(tipo) {
   if (tipo) {
     window._filtroAtendimentos = tipo;
@@ -6587,7 +6611,10 @@ function rotaDiaPadrao(dias) {
 function atualizarCtaRota(sem, lista) {
   const btn = document.getElementById('btnVerRotaMapa');
   if (!btn || !sem) return;
-  const def = rotaDiaPadrao(rotaDiasDisponiveis(sem));
+  const dias = rotaDiasDisponiveis(sem);
+  let def = rotaDiaPadrao(dias);
+  const fd = window._filtroDiaAtend;
+  if (fd) { const d = dias.find(x => x.dia === fd); if (d) def = d.pend > 0 ? d : null; } // dia filtrado manda no botão
   if (!def) { btn.style.display = 'none'; return; }
   const hoje = nomeDiaHoje();
   const rotulo = def.dia === hoje ? 'de hoje' : (def.dia === 'Sem dia definido' ? 'sem dia' : 'de ' + def.dia.replace('-feira', ''));
@@ -6599,7 +6626,8 @@ function abrirRota(dia) {
   if (!sem) return;
   const dias = rotaDiasDisponiveis(sem);
   if (!dias.length) { alert('Nenhuma consultora nesta semana.'); return; }
-  ROTA.dia = dia || (rotaDiaPadrao(dias) || dias[0]).dia;
+  const doFiltro = window._filtroDiaAtend && dias.find(x => x.dia === window._filtroDiaAtend);
+  ROTA.dia = dia || (doFiltro ? doFiltro.dia : (rotaDiaPadrao(dias) || dias[0]).dia);
   goTo('rota');
 }
 function rotaMontarParadas(sem, dia) {
@@ -7184,6 +7212,7 @@ function ehConsultoraNova(c, sem) {
 }
 
 function renderSemana() {
+  migrarMaiusculas();
   const sem = getSemanaAtiva();
 
   // Limpeza leve: se ninguém ainda foi atendida nesta semana, qualquer "débito antigo
@@ -7400,8 +7429,36 @@ function renderSemana() {
   if (tA) tA.classList.toggle('on', tileOn === 'atendidas');
   if (typeof atualizarCtaRota === 'function') atualizarCtaRota(sem, listaCompleta);
 
+  // Filtro por dia: só aparecem os dias que têm consultora; o número acompanha a aba escolhida
+  const casaAba = c => filtroAtend === 'atendidas' ? c.status === 'concluida' : (filtroAtend === 'pendentes' ? c.status !== 'concluida' : true);
+  const diasChips = [...DIAS_ORDEM_ROTA, 'Sem dia definido'].map(d => {
+    const doDia = listaCompleta.filter(c => (c.diaMelhor || 'Sem dia definido') === d);
+    return { dia: d, total: doDia.length, qtd: doDia.filter(casaAba).length };
+  }).filter(x => x.total > 0);
+  let diaSel = window._filtroDiaAtend || '';
+  if (diaSel && !diasChips.some(x => x.dia === diaSel)) { diaSel = ''; window._filtroDiaAtend = ''; }
+  const rowDias = document.getElementById('atendDiasRow');
+  if (rowDias) {
+    const hojeNome = nomeDiaHoje();
+    const chipDia = (rotulo, qtd, ativo, dia, ehHoje) =>
+      '<button type="button" onclick="filtrarDiaAtendimentos(\'' + dia + '\')" style="flex-shrink:0;border-radius:14px;padding:8px 13px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;border:1.5px solid ' + (ativo ? 'var(--ink)' : 'var(--border)') + ';background:' + (ativo ? 'var(--ink)' : 'white') + ';color:' + (ativo ? 'white' : 'var(--ink-2)') + ';">'
+      + rotulo + ' <span style="opacity:.65;">· ' + qtd + '</span>'
+      + (ehHoje ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + (ativo ? 'white' : 'var(--rose)') + ';margin-left:6px;vertical-align:middle;"></span>' : '')
+      + '</button>';
+    if (diasChips.length > 1) {
+      rowDias.innerHTML = chipDia('Todos', diasChips.reduce((a, x) => a + x.qtd, 0), !diaSel, '', false)
+        + diasChips.map(x => {
+            const dt = dataDoDiaDaSemana(sem, x.dia);
+            const abrev = x.dia === 'Sem dia definido' ? 'Sem dia' : x.dia.replace('-feira', '').slice(0, 3);
+            return chipDia(abrev + (dt ? ' ' + dt.getDate() : ''), x.qtd, x.dia === diaSel, x.dia, x.dia === hojeNome);
+          }).join('');
+      rowDias.style.display = 'flex';
+    } else { rowDias.innerHTML = ''; rowDias.style.display = 'none'; }
+  }
+
   if (filtroAtend === 'pendentes') visiveis = visiveis.filter(c => c.status !== 'concluida');
   else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(c => c.status === 'concluida');
+  if (diaSel) visiveis = visiveis.filter(c => (c.diaMelhor || 'Sem dia definido') === diaSel);
 
   // Busca por nome (não mexe nos contadores das abas, só filtra o que aparece)
   const buscaEl = document.getElementById('buscaAtendimentos');
@@ -7436,6 +7493,8 @@ function renderSemana() {
 
   if (!visiveis.length) {
     const msg = termoBusca ? 'Nenhuma consultora encontrada para "' + buscaEl.value.trim() + '".'
+      : diaSel && filtroAtend === 'pendentes' ? 'Ninguém falta atender neste dia. 🎉'
+      : diaSel && filtroAtend === 'atendidas' ? 'Nenhuma atendida neste dia ainda.'
       : filtroAtend === 'pendentes' ? 'Nenhuma consultora falta atender. 🎉'
       : filtroAtend === 'atendidas' ? 'Nenhuma consultora atendida ainda.'
       : 'Nenhuma consultora nesta semana.';
@@ -8789,8 +8848,8 @@ function consSepararEndereco(end) {
 function consLerEndereco() {
   const v = id => (document.getElementById(id).value || '').trim();
   const rua = v('cRua'), numero = v('cNumero');
-  return { cep: v('cCep'), rua, numero, complemento: v('cComplemento'), endereco: [rua, numero].filter(Boolean).join(', '),
-           bairro: v('cBairro'), cidade: v('cCidade'), uf: v('cUf').toUpperCase() };
+  return { cep: v('cCep'), rua: toUp(rua), numero: toUp(numero), complemento: toUp(v('cComplemento')), endereco: toUp([rua, numero].filter(Boolean).join(', ')),
+           bairro: toUp(v('cBairro')), cidade: toUp(v('cCidade')), uf: v('cUf').toUpperCase() };
 }
 function consResetForm() {
   ['cNome','cTel','cCpf','cAniv','cCep','cRua','cNumero','cComplemento','cBairro','cCidade','cUf','cRotaObs','cNomeRomance','cCodigoLib'].forEach(id => {
@@ -8818,7 +8877,7 @@ async function consBuscarCep(d) {
     const r = await fetch('https://viacep.com.br/ws/' + d + '/json/');
     const j = await r.json();
     if (j.erro) { st.textContent = 'CEP não encontrado.'; return; }
-    const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = v; };
+    const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = toUp(v); };
     set('cRua', j.logradouro); set('cBairro', j.bairro); set('cCidade', j.localidade); set('cUf', j.uf);
     st.textContent = 'Endereço preenchido ✓ — confira e complete o número.';
     const n = document.getElementById('cNumero'); if (n && !n.value) n.focus();
@@ -8953,7 +9012,7 @@ function abrirModalConsultora() {
 }
 
 function salvarConsultora() {
-  const nome = document.getElementById('cNome').value.trim();
+  const nome = toUp(document.getElementById('cNome').value.trim());
   if (!nome) { alert('Nome obrigatório.'); return; }
   const val = id => document.getElementById(id).value.trim();
   const f = consLerEndereco();
@@ -8963,8 +9022,8 @@ function salvarConsultora() {
     bairro: f.bairro, cidade: f.cidade, uf: f.uf,
     regiao: document.getElementById('cRegiao').value,
     diaMelhor: document.getElementById('cDia').value, horarioMelhor: document.getElementById('cHorario').value,
-    rotaObs: val('cRotaObs'),
-    nomeRomance: val('cNomeRomance'), cpfStatus: window._consChip.cpf || '', codigoLiberacao: val('cCodigoLib'),
+    rotaObs: toUp(val('cRotaObs')),
+    nomeRomance: toUp(val('cNomeRomance')), cpfStatus: window._consChip.cpf || '', codigoLiberacao: val('cCodigoLib'),
     comoChegou: window._consChip.como || ''
   };
 
@@ -9058,12 +9117,12 @@ async function extrairFotoConsultora(input) {
     }
 
     const json = resultado.data;
-    if (json.nome) document.getElementById('cNome').value = json.nome;
+    if (json.nome) document.getElementById('cNome').value = toUp(json.nome);
     if (json.telefone) document.getElementById('cTel').value = fmtTelefone(json.telefone);
     if (json.cpf) document.getElementById('cCpf').value = json.cpf;
-    if (json.endereco) { const se = consSepararEndereco(json.endereco); document.getElementById('cRua').value = se.rua; document.getElementById('cNumero').value = se.numero; }
-    if (json.bairro) document.getElementById('cBairro').value = json.bairro;
-    if (json.cidade) document.getElementById('cCidade').value = json.cidade;
+    if (json.endereco) { const se = consSepararEndereco(json.endereco); document.getElementById('cRua').value = toUp(se.rua); document.getElementById('cNumero').value = toUp(se.numero); }
+    if (json.bairro) document.getElementById('cBairro').value = toUp(json.bairro);
+    if (json.cidade) document.getElementById('cCidade').value = toUp(json.cidade);
     if (json.dataNascimento) {
       // Converte DD-MM-AAAA para AAAA-MM-DD (formato do input date)
       const partes = json.dataNascimento.replace(/\//g,'-').split('-');
@@ -9127,11 +9186,11 @@ function salvarImportacao() {
   if (!d) return;
   const c = {
     id: uid(),
-    nome: d.nome || '',
+    nome: toUp(d.nome || ''),
     telefone: d.telefone || '',
     cpf: d.cpf || '',
-    cidade: d.cidade || '',
-    endereco: d.endereco || '',
+    cidade: toUp(d.cidade || ''),
+    endereco: toUp(d.endereco || ''),
     regiao: document.getElementById('impRegiao').value,
     status: 'ativa',
     criadoEm: new Date().toISOString()
@@ -10832,6 +10891,7 @@ function editarConsultora(id) {
     window._consGeoSalvo = { lat: c.lat, lng: c.lng, nivel: c.geoNivel, sig: c.geoQ };
     document.getElementById('consGeoTxt').textContent = 'Local salvo no mapa ✓ — toque em "Localizar no mapa" pra rever ou ajustar.';
   }
+  ['cNome','cRua','cNumero','cComplemento','cBairro','cCidade','cUf','cNomeRomance','cRotaObs'].forEach(i => { const el = document.getElementById(i); el.value = toUp(el.value); });
   popularSelectRegiao('cRegiao', c.regiao);
   document.getElementById('modalConsTitulo').textContent = 'Editar Consultora';
   document.getElementById('cStatusBox').style.display = '';
