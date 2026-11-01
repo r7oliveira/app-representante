@@ -2679,6 +2679,14 @@ input[type="time"]{max-width:100%;}
 
     <div class="cm-sec">
       <div class="cm-sec-t">Endereço</div>
+      <div class="field" style="margin-bottom:12px;">
+        <span>Link da localização (WhatsApp)</span>
+        <div style="display:flex;gap:8px;align-items:stretch;">
+          <input id="cLinkLoc" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="Cole o link que a consultora enviou" oninput="consAgendarLink()" onpaste="setTimeout(consProcessarLink, 80)" style="flex:1;min-width:0;">
+          <button type="button" class="btn-mini" onclick="consColarLink()" style="padding:0 14px;">Colar</button>
+        </div>
+        <div id="consLinkStatus" style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.45;">Com o link, o pino vai no lugar exato e o endereço é preenchido sozinho. Sem link, vale o endereço digitado.</div>
+      </div>
       <label class="field"><span>CEP</span><input id="cCep" inputmode="numeric" placeholder="00000-000" maxlength="9" oninput="consMascaraCep(this)" style="max-width:170px;"></label>
       <div id="consCepStatus" style="font-size:11px;color:var(--ink-3);margin:-6px 0 12px;"></div>
       <label class="field"><span>Rua</span><input id="cRua" placeholder="Ex: RUA DAS FLORES" oninput="maiusculo(this);consAgendarLocalizar()" style="text-transform:uppercase;" autocapitalize="characters"></label>
@@ -6664,8 +6672,9 @@ function rotaMontarParadas(sem, dia) {
     const feito = c.status === 'concluida';
     const especial = c.parouDeVender ? 'inativa' : c.remarcarMes ? 'mes' : c.remarcarSemana ? 'semana' : null;
     const assin = rotaAssinatura(m);
-    const geoOk = m.geoQ === assin && (m.geoNivel === 'manual' || (m.geoV || 0) >= ROTA_GEO_V); // já tentamos (com o localizador atual)
-    const temPonto = geoOk && typeof m.lat === 'number' && typeof m.lng === 'number';
+    const doLink = m.geoNivel === 'link' && typeof m.lat === 'number' && typeof m.lng === 'number'; // veio do link da consultora: sempre vale
+    const geoOk = doLink || (m.geoQ === assin && (m.geoNivel === 'manual' || (m.geoV || 0) >= ROTA_GEO_V)); // já tentamos (com o localizador atual)
+    const temPonto = doLink || (geoOk && typeof m.lat === 'number' && typeof m.lng === 'number');
     const endTxt = enderecoLinha(m);
     return {
       id: c.id, c, m, nome: c.nome, hora: c.horarioMelhor || '', feito, especial, naRota: !feito,
@@ -7089,7 +7098,7 @@ function rotaRenderCard() {
   const gpsErro = (ROTA.gpsErro && !ROTA.pos && !p.feito) ? '<div style="font-size:10.5px;color:var(--red);font-weight:700;margin-top:3px;line-height:1.35;">' + rotaEsc(ROTA.gpsErro) + '</div>' : '';
 
   const svg = (path) => '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>';
-  const btnNav = p.endTxt ? '<button type="button" onclick="abrirGPS(\'' + p.id + '\')" class="btn-mini pri" style="flex:1;justify-content:center;padding:10px 8px;white-space:nowrap;">' + svg('<polygon points="3 11 22 2 13 21 11 13 3 11"/>') + ' Navegar</button>' : '';
+  const btnNav = (p.endTxt || p.nivel === 'link') ? '<button type="button" onclick="abrirGPS(\'' + p.id + '\')" class="btn-mini pri" style="flex:1;justify-content:center;padding:10px 8px;white-space:nowrap;">' + svg('<polygon points="3 11 22 2 13 21 11 13 3 11"/>') + ' Navegar</button>' : '';
   const btnZap = p.c.telefone ? '<button type="button" onclick="rotaWhats(\'' + p.id + '\')" class="btn-mini" style="flex:1;justify-content:center;padding:10px 8px;background:#25D366;color:white;white-space:nowrap;">' + svg('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>') + ' WhatsApp</button>' : '';
   const btnAtender = !p.feito ? '<button type="button" onclick="rotaAtender(\'' + p.id + '\')" class="btn-mini" style="flex:1;justify-content:center;padding:10px 8px;background:var(--rose);color:white;">Atender</button>' : '';
   const ajustar = (!p.feito && p.endTxt) ? '<button type="button" onclick="rotaIniciarAjuste(\'' + p.id + '\')" style="margin-top:8px;font-size:11.5px;font-weight:800;color:var(--rose);text-decoration:underline;">Ajustar local no mapa</button>' : '';
@@ -7166,7 +7175,7 @@ function rotaAtender(consId) {
 function gpsLinks(m) {
   // Ponto exato (endereço localizado ou ajustado à mão) → vai por coordenada.
   // Local aproximado (só bairro/cidade) → manda o endereço escrito, que o app de GPS resolve melhor.
-  const exato = typeof m.lat === 'number' && typeof m.lng === 'number' && m.geoQ === rotaAssinatura(m) && (m.geoNivel === 'endereco' || m.geoNivel === 'manual');
+  const exato = typeof m.lat === 'number' && typeof m.lng === 'number' && (m.geoNivel === 'link' || (m.geoQ === rotaAssinatura(m) && (m.geoNivel === 'endereco' || m.geoNivel === 'manual')));
   const ll = exato ? m.lat + ',' + m.lng : null;
   const q = encodeURIComponent([m.endereco, m.bairro, rotaCidadeTxt(cidadeUfTxt(m))].filter(Boolean).join(', '));
   return {
@@ -7644,7 +7653,7 @@ function renderSemana() {
     }
 
     const acoes = '<div class="ac-acoes" style="border-top:1px solid var(--border);padding-top:10px;">'
-      + (endTxt ? '<button type="button" class="btn-mini pri fx" onclick="event.stopPropagation();abrirGPS(\'' + c.id + '\')">' + icoNav + ' Ir (GPS)</button>' : '')
+      + ((endTxt || (mestre.geoNivel === 'link' && typeof mestre.lat === 'number')) ? '<button type="button" class="btn-mini pri fx" onclick="event.stopPropagation();abrirGPS(\'' + c.id + '\')">' + icoNav + ' Ir (GPS)</button>' : '')
       + (c.telefone ? '<button type="button" class="btn-mini fx" style="background:#25D366;color:white;" onclick="event.stopPropagation();rotaWhats(\'' + c.id + '\')">' + icoZap + ' WhatsApp</button>' : '')
       + '<button type="button" class="btn-mini fx" onclick="event.stopPropagation();editarConsultora(\'' + c.id + '\')">Editar</button>'
       + '<button type="button" class="btn-ico" aria-label="Remover da semana" onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')">✕</button>'
@@ -8887,6 +8896,8 @@ function consResetForm() {
   document.getElementById('consCepStatus').textContent = '';
   document.getElementById('consGeoTxt').textContent = 'Preencha o endereço — o pino aparece sozinho no mapa.';
   const mp = document.getElementById('consMapa'); if (mp) { mp.dataset.ampliado = ''; mp.style.height = '320px'; const t = document.getElementById('consMapaAmpliarTxt'); if (t) t.textContent = 'Ampliar'; }
+  const lk = document.getElementById('cLinkLoc'); if (lk) lk.value = ''; window._consLinkAtual = '';
+  const lks = document.getElementById('consLinkStatus'); if (lks) lks.textContent = LINK_TXT_PADRAO;
   window._consTravado = false; window._consSigAuto = null; clearTimeout(window._consTimer); window._consReq = (window._consReq || 0) + 1;
   if (CONSMAP.map && CONSMAP.marker) { CONSMAP.map.removeLayer(CONSMAP.marker); CONSMAP.marker = null; }
 }
@@ -8923,7 +8934,7 @@ async function consAbrirMapa(lat, lng, zoom) {
   return true;
 }
 // zoom mais aberto: dá pra ver as ruas em volta e conferir se o pino caiu no lugar certo
-const consZoomDoNivel = n => (n === 'endereco' || n === 'rua') ? 16 : n === 'bairro' ? 15 : 13;
+const consZoomDoNivel = n => n === 'link' ? 18 : (n === 'endereco' || n === 'rua') ? 16 : n === 'bairro' ? 15 : 13;
 function consAlternarMapa() {
   const el = document.getElementById('consMapa'), aberto = el.dataset.ampliado === '1';
   el.dataset.ampliado = aberto ? '' : '1';
@@ -8936,7 +8947,7 @@ function consAlternarMapa() {
 }
 function consSetPino(lat, lng, nivel) {
   window._consGeo = { lat, lng, nivel };
-  if (nivel === 'manual') window._consTravado = true; // você mexeu no pino: não troca mais sozinho
+  if (nivel === 'manual' || nivel === 'link') window._consTravado = true; // pino manual/do link: não troca mais sozinho
   if (CONSMAP.map) {
     if (!CONSMAP.marker) {
       CONSMAP.marker = L.marker([lat, lng], { draggable: true, icon: L.divIcon({ className: 'rota-pin-wrap', html: '<div class="rota-pin prox"></div>', iconSize: [40, 40], iconAnchor: [20, 20] }) }).addTo(CONSMAP.map);
@@ -8944,6 +8955,7 @@ function consSetPino(lat, lng, nivel) {
     } else CONSMAP.marker.setLatLng([lat, lng]);
   }
   document.getElementById('consGeoTxt').textContent = nivel === 'manual' ? 'Local marcado no mapa ✓ (mudou o endereço? toque em Localizar no mapa)'
+    : nivel === 'link' ? 'Localização do link ✓ — arraste o pino se precisar ajustar'
     : nivel === 'endereco' ? 'Endereço localizado ✓ — ajuste o pino se precisar'
     : nivel === 'rua' ? 'Rua encontrada ✓ — o número é aproximado, arraste o pino pro local exato'
     : 'Local aproximado (' + nivel + ') — arraste o pino pro local exato';
@@ -8975,6 +8987,103 @@ function consUsarPosicao() {
     gt.textContent = err && err.code === 1 ? 'Localização bloqueada. Ative a localização para este site nas configurações do navegador.' : 'Não consegui pegar sua localização agora.';
   }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 });
 }
+/* ── Link de localização enviado pela consultora (WhatsApp / Google Maps / Apple Maps / Waze / OSM) ── */
+const LINK_TXT_PADRAO = 'Com o link, o pino vai no lugar exato e o endereço é preenchido sozinho. Sem link, vale o endereço digitado.';
+function consExtrairLink(texto) {
+  const m = String(texto || '').match(/https?:\/\/[^\s<>"']+/i);
+  return m ? m[0].replace(/[).,;]+$/, '') : '';
+}
+// Links encurtados não dá pra abrir de dentro do app (o navegador bloqueia) — só o link completo traz as coordenadas
+function consLinkEncurtado(url) {
+  let host = ''; try { host = new URL(url).hostname.toLowerCase(); } catch (e) { return false; }
+  return /(^|\.)(maps\.app\.goo\.gl|goo\.gl|g\.co|share\.google|bit\.ly|tinyurl\.com)$/.test(host)
+    || (/(^|\.)maps\.apple\.com$/.test(host) && /\/p\//.test(url));
+}
+function consCoordsDoLink(url) {
+  let u = String(url || ''); try { u = decodeURIComponent(u); } catch (e) {}
+  const ok = (la, ln) => { la = parseFloat(la); ln = parseFloat(ln); return (la >= -34.5 && la <= 6 && ln >= -74.5 && ln <= -32) ? { lat: la, lng: ln } : null; };
+  const N = '(-?\\d{1,2}\\.\\d+)', E = '(-?\\d{1,3}\\.\\d+)';
+  const pats = [
+    new RegExp('[?&](?:q|query|ll|sll|center|daddr|saddr|destination)=\\+?' + N + '\\s*[,+ ]\\s*\\+?' + E),
+    new RegExp('@' + N + ',' + E),
+    new RegExp('!3d' + N + '!4d' + E),
+    new RegExp('/maps/(?:place|search|dir)/[^@?]*?' + N + ',\\s*\\+?' + E),
+    new RegExp('geo:' + N + ',' + E),
+    new RegExp('mlat=' + N + '&(?:amp;)?mlon=' + E),
+    new RegExp('#map=\\d+/' + N + '/' + E),
+    new RegExp(N + '\\s*[,;]\\s*\\+?' + E),                 // último recurso: qualquer par de decimais
+  ];
+  for (const re of pats) { const m = u.match(re); if (m) { const r = ok(m[1], m[2]); if (r) return r; } }
+  return null;
+}
+async function consEnderecoDoPonto(lat, lng) {
+  const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&zoom=18&accept-language=pt-BR&lat=' + lat + '&lon=' + lng;
+  const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  if (!r.ok) throw new Error('reverse ' + r.status);
+  const j = await r.json();
+  return (j && j.address) || null;
+}
+function consPreencherEndereco(a) {
+  const rua = a.road || a.pedestrian || a.footway || a.path || a.residential || '';
+  const bairro = a.suburb || a.neighbourhood || a.quarter || a.city_district || a.borough || '';
+  const cidade = a.city || a.town || a.village || a.municipality || '';
+  let uf = ''; const iso = String(a['ISO3166-2-lvl4'] || '');
+  if (/^BR-([A-Z]{2})$/.test(iso)) uf = iso.slice(3);
+  else { const nome = rotaSemAcento(a.state || ''); uf = Object.keys(UF_NOME).find(k => rotaSemAcento(UF_NOME[k]) === nome) || ''; }
+  const cep = String(a.postcode || '').replace(/\D/g, '');
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = toUp(v); };
+  const ruaAntes = toUp(document.getElementById('cRua').value.trim());
+  set('cRua', rua); set('cBairro', bairro); set('cCidade', cidade); set('cUf', uf);
+  if (cep.length === 8) document.getElementById('cCep').value = cep.slice(0, 5) + '-' + cep.slice(5);
+  const n = document.getElementById('cNumero');
+  if (a.house_number) n.value = toUp(a.house_number);
+  else if (rua && toUp(rua) !== ruaAntes) n.value = '';          // rua mudou: o número antigo não vale mais
+}
+function consAgendarLink() { clearTimeout(window._consTimerLink); window._consTimerLink = setTimeout(consProcessarLink, 700); }
+async function consColarLink() {
+  const el = document.getElementById('cLinkLoc');
+  try { el.value = await navigator.clipboard.readText(); }
+  catch (e) { el.focus(); document.getElementById('consLinkStatus').textContent = 'Toque e segure no campo e escolha "Colar".'; return; }
+  consProcessarLink();
+}
+async function consProcessarLink() {
+  clearTimeout(window._consTimerLink);
+  const el = document.getElementById('cLinkLoc'), st = document.getElementById('consLinkStatus');
+  const bruto = el.value.trim();
+  if (!bruto) { // sem link: volta a valer o endereço digitado
+    if (window._consLinkAtual) {
+      window._consLinkAtual = '';
+      window._consTravado = false; window._consSigAuto = null;
+      if (window._consGeo && window._consGeo.nivel === 'link') window._consGeo = null;
+      if (window._consGeoSalvo && window._consGeoSalvo.nivel === 'link') window._consGeoSalvo = null;
+      consAgendarLocalizar();
+    }
+    st.textContent = LINK_TXT_PADRAO;
+    return;
+  }
+  const url = consExtrairLink(bruto);
+  if (!url) { st.textContent = 'Cole o link completo (começa com https://).'; return; }
+  if (url === window._consLinkAtual) return;
+  if (consLinkEncurtado(url)) {
+    st.innerHTML = 'Esse link é encurtado e o app não consegue abrir ele sozinho. <a href="' + url.replace(/"/g, '') + '" target="_blank" rel="noopener" style="color:var(--rose);font-weight:800;">Abra o link</a>, copie o endereço completo da barra do navegador e cole aqui — ou peça pra consultora mandar a <b>localização atual</b> pelo WhatsApp.';
+    return;
+  }
+  const pt = consCoordsDoLink(url);
+  if (!pt) { st.textContent = 'Não achei a localização nesse link. Peça pra consultora enviar a "localização atual" pelo WhatsApp.'; return; }
+  window._consLinkAtual = url;
+  clearTimeout(window._consTimer); window._consReq = (window._consReq || 0) + 1; // cancela a busca pelo endereço digitado
+  st.textContent = 'Buscando o endereço do link…';
+  if (await consAbrirMapa(pt.lat, pt.lng, 18)) consSetPino(pt.lat, pt.lng, 'link');
+  try {
+    const a = await consEnderecoDoPonto(pt.lat, pt.lng);
+    if (window._consLinkAtual !== url) return;
+    if (a) { consPreencherEndereco(a); st.textContent = 'Endereço preenchido a partir do link ✓ — confira o número.'; }
+    else st.textContent = 'Pino marcado pelo link ✓ — não consegui ler o endereço, preencha na mão.';
+  } catch (e) {
+    if (window._consLinkAtual === url) st.textContent = 'Pino marcado pelo link ✓ — sem internet pra ler o endereço, preencha na mão.';
+  }
+}
+
 function consAgendarLocalizar() {
   clearTimeout(window._consTimer);
   window._consTimer = setTimeout(consAutoLocalizar, 1000);
@@ -9049,7 +9158,8 @@ function salvarConsultora() {
     diaMelhor: document.getElementById('cDia').value, horarioMelhor: document.getElementById('cHorario').value,
     rotaObs: toUp(val('cRotaObs')),
     nomeRomance: toUp(val('cNomeRomance')), cpfStatus: window._consChip.cpf || '', codigoLiberacao: val('cCodigoLib'),
-    comoChegou: window._consChip.como || ''
+    comoChegou: window._consChip.como || '',
+    linkLocalizacao: consExtrairLink(val('cLinkLoc')) || (/^https?:/i.test(val('cLinkLoc')) ? val('cLinkLoc') : '')
   };
 
   // Edição
@@ -9064,6 +9174,7 @@ function salvarConsultora() {
       Object.assign(c, campos);
       if (window._editConsStatus) c.status = window._editConsStatus;
       consAplicarGeo(c);
+      if (!c.linkLocalizacao && c.geoNivel === 'link' && !window._consGeo) { c.lat = null; c.lng = null; c.geoNivel = null; c.geoQ = ''; c.geoV = 0; } // link removido: volta a localizar pelo endereço
 
       // Sincroniza com a semana ativa se a consultora estiver lá
       const sem = getSemanaAtiva();
@@ -10636,7 +10747,7 @@ function renderGerenciar() {
           + '</div>'
         + '</div>'
         + '<div class="ac-acoes" style="padding-top:10px;">'
-          + (endTxt ? '<button type="button" class="btn-mini pri fx" onclick="abrirGPS(\'' + c.id + '\')">' + icoNav + ' Ir (GPS)</button>' : '')
+          + ((endTxt || (c.geoNivel === 'link' && typeof c.lat === 'number')) ? '<button type="button" class="btn-mini pri fx" onclick="abrirGPS(\'' + c.id + '\')">' + icoNav + ' Ir (GPS)</button>' : '')
           + (c.telefone ? '<button type="button" class="btn-mini fx" style="background:#25D366;color:white;" onclick="rotaWhats(\'' + c.id + '\')">' + icoZap + ' WhatsApp</button>' : '')
           + '<button type="button" class="btn-mini fx" onclick="editarConsultora(\'' + c.id + '\')">Editar</button>'
           + '<button type="button" class="btn-ico" aria-label="Inativar" onclick="inativarConsultora(\'' + c.id + '\')">✕</button>'
@@ -11023,8 +11134,9 @@ function editarConsultora(id) {
   set('cRotaObs', c.rotaObs);
   set('cNomeRomance', c.nomeRomance); set('cCodigoLib', c.codigoLiberacao);
   window._consChip = { como: c.comoChegou || '', cpf: c.cpfStatus || '' }; consRenderChips();
-  if (typeof c.lat === 'number' && typeof c.lng === 'number' && c.geoQ === rotaAssinatura(c) && (c.geoNivel === 'manual' || (c.geoV || 0) >= ROTA_GEO_V)) {
-    window._consGeoSalvo = { lat: c.lat, lng: c.lng, nivel: c.geoNivel, sig: c.geoQ };
+  document.getElementById('cLinkLoc').value = c.linkLocalizacao || ''; window._consLinkAtual = c.linkLocalizacao || '';
+  if (typeof c.lat === 'number' && typeof c.lng === 'number' && (c.geoNivel === 'link' || (c.geoQ === rotaAssinatura(c) && (c.geoNivel === 'manual' || (c.geoV || 0) >= ROTA_GEO_V)))) {
+    window._consGeoSalvo = { lat: c.lat, lng: c.lng, nivel: c.geoNivel, sig: c.geoNivel === 'link' ? rotaAssinatura(c) : c.geoQ };
     document.getElementById('consGeoTxt').textContent = 'Local salvo no mapa ✓ — toque em "Localizar no mapa" pra rever ou ajustar.';
   }
   ['cNome','cRua','cNumero','cComplemento','cBairro','cCidade','cUf','cNomeRomance','cRotaObs'].forEach(i => { const el = document.getElementById(i); el.value = toUp(el.value); });
