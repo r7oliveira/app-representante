@@ -10356,12 +10356,20 @@ async function enviarInicChat() {
 let gerenciarRegiao = null;
 
 function abrirGerenciar() {
-  const sem = getSemanaAtiva();
-  gerenciarRegiao = sem ? sem.regiao : (regioesAtuais()[0]);
-  renderGerenciar();
+  gerenciarRegiao = setorEmDestaque();
   goTo('gerenciar');
+  renderGerenciar();
 }
 
+// Setor que está sendo (ou vai ser) atendido: o da semana em andamento; se nenhuma estiver, o da próxima
+function setorEmDestaque() {
+  const regs = regioesAtuais();
+  let melhor = null;
+  regs.forEach(r => { const i = infoSemanaSetor(r); if (i && (!melhor || i.numero < melhor.i.numero)) melhor = { r, i }; });
+  if (melhor) return melhor.r;
+  const sem = getSemanaAtiva();
+  return sem && regs.includes(sem.regiao) ? sem.regiao : regs[0];
+}
 const fmtDM = d => String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0');
 
 // Semana de atendimento de um setor (as 6 regiões se revezam, uma por semana):
@@ -10395,6 +10403,12 @@ function gerAtualizarResumo(regiao) {
   doSetor.forEach(c => { const d = debitoTotalDe(c.id); if (d > 0) { tot += d; ids.add(c.id); } });
   set('gerDebVal', brlInteiro(tot));
   set('gerDebSub', ids.size ? ids.size + (ids.size > 1 ? ' consultoras' : ' consultora') : 'nenhum débito');
+}
+// deixa o setor escolhido no meio da fileira (que rola de lado)
+function gerCentralizarSetor() {
+  const row = document.getElementById('gerRegioesRow');
+  const b = row && row.querySelector('[data-ativo="1"]');
+  if (b && row.clientWidth) row.scrollLeft = Math.max(0, b.offsetLeft - (row.clientWidth - b.offsetWidth) / 2);
 }
 function gerFiltrar(f) { window._gerFiltro = f; renderGerenciar(); }
 function trocarRegiaoGerenciar(regiao) {
@@ -10513,26 +10527,29 @@ function renderGerenciar() {
 
   // Setores (as 6 regiões do ciclo): quantidade + semana de atendimento de cada um
   const regs = regioesAtuais();
+  const destaque = setorEmDestaque();
   document.getElementById('gerRegioesRow').innerHTML = regs.map(r => {
     const qtd = DB.consultoras.filter(c => c.regiao === r && c.status !== 'inativa').length;
     const ativo = r === regiao;
     const inf = infoSemanaSetor(r);
-    const linha2 = inf ? (inf.atual ? 'Semana atual · sem. ' + inf.numero : 'Sem. ' + inf.numero + ' · ' + fmtDM(inf.segunda) + ' a ' + fmtDM(inf.domingo)) : 'Sem visitas ainda';
-    return `<button type="button" data-ativo="${ativo ? 1 : 0}" onclick="trocarRegiaoGerenciar('${r}')" style="flex-shrink:0;text-align:left;background:${ativo?'var(--ink)':'var(--surface)'};color:${ativo?'white':'var(--ink)'};border:1.5px solid ${ativo?'var(--ink)':'var(--border)'};border-radius:16px;padding:9px 14px;cursor:pointer;white-space:nowrap;">
-      <div style="font-size:13px;font-weight:800;">${r} <span style="opacity:.65;">· ${qtd}</span></div>
-      <div style="font-size:11px;font-weight:700;margin-top:2px;color:${ativo?'rgba(255,255,255,.75)':(inf && inf.atual ? 'var(--rose)' : 'var(--ink-3)')};">${linha2}</div>
+    const linhaSemana = inf ? 'Semana ' + inf.numero + ' · ' + fmtDM(inf.segunda) + ' a ' + fmtDM(inf.domingo) : 'Sem visitas ainda';
+    const selo = r === destaque && inf
+      ? `<div style="display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.5px;padding:2px 8px;border-radius:99px;margin-bottom:5px;background:${ativo?'rgba(255,255,255,.18)':'var(--rose)'};color:white;">${inf.atual ? 'SEMANA ATUAL' : 'PRÓXIMA SEMANA'}</div>`
+      : '<div style="height:18px;margin-bottom:5px;"></div>';
+    return `<button type="button" data-ativo="${ativo ? 1 : 0}" onclick="trocarRegiaoGerenciar('${r}')" style="flex-shrink:0;text-align:left;background:${ativo?'var(--ink)':'var(--surface)'};color:${ativo?'white':'var(--ink)'};border:1.5px solid ${ativo?'var(--ink)':(r===destaque?'var(--rose)':'var(--border)')};border-radius:16px;padding:10px 14px;cursor:pointer;white-space:nowrap;">
+      ${selo}
+      <div style="font-size:14px;font-weight:800;">${r}</div>
+      <div style="font-size:12px;font-weight:700;margin-top:1px;opacity:.85;">${qtd} ${qtd === 1 ? 'consultora' : 'consultoras'}</div>
+      <div style="font-size:11px;font-weight:700;margin-top:3px;color:${ativo?'rgba(255,255,255,.75)':'var(--ink-3)'};">${linhaSemana}</div>
     </button>`;
   }).join('');
-
-  // deixa o setor escolhido visível na fileira (que rola de lado)
-  const rowReg = document.getElementById('gerRegioesRow');
-  const btnAtivo = rowReg.querySelector('[data-ativo="1"]');
-  if (btnAtivo) rowReg.scrollLeft = Math.max(0, btnAtivo.offsetLeft - 24);
+  gerCentralizarSetor();
+  requestAnimationFrame(gerCentralizarSetor);
 
   // Subtítulo do cabeçalho: quando é a próxima visita do setor
   const infoSetor = infoSemanaSetor(regiao);
   document.getElementById('gerenciarSub').textContent = ativas.length + (ativas.length === 1 ? ' consultora ativa' : ' consultoras ativas')
-    + (infoSetor ? ' · ' + (infoSetor.atual ? 'atendimento nesta semana (sem. ' + infoSetor.numero + ')' : 'próxima visita: sem. ' + infoSetor.numero + ' · ' + fmtDM(infoSetor.segunda) + ' a ' + fmtDM(infoSetor.domingo)) : '');
+    + (infoSetor ? ' · ' + (infoSetor.atual ? 'atendimento nesta semana (semana ' + infoSetor.numero + ' · ' : 'próxima visita: semana ' + infoSetor.numero + ' · ') + fmtDM(infoSetor.segunda) + ' a ' + fmtDM(infoSetor.domingo) + (infoSetor.atual ? ')' : '') : '');
 
   const scoreAtualDe = (c) => {
     // Olha a semana mais recente (de qualquer região) onde essa consultora foi
