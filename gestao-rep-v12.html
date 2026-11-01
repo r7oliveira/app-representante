@@ -236,7 +236,7 @@ input[type="time"]{max-width:100%;}
 /* ── Rota do dia ── */
 .rota-pin-wrap{display:flex;align-items:center;justify-content:center;background:none!important;border:none!important;}
 .rota-pin{width:30px;height:30px;border-radius:50%;background:var(--rose);color:white;border:3px solid white;box-shadow:0 3px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:var(--font);}
-.rota-pin.prox{background:var(--ink);width:38px;height:38px;font-size:15px;}
+.rota-pin.prox{background:white;color:var(--rose);border:3px solid var(--rose);width:46px;height:46px;font-size:18px;box-shadow:0 4px 12px rgba(0,0,0,.35);}
 .rota-pin.feito{background:var(--green);width:24px;height:24px;font-size:12px;}
 .rota-pin.sel{box-shadow:0 0 0 5px rgba(166,124,82,.5),0 3px 8px rgba(0,0,0,.35);}
 .rota-eu{width:18px;height:18px;border-radius:50%;background:#2563eb;border:3px solid white;animation:rotaPulso 2s infinite;}
@@ -6665,9 +6665,6 @@ function abrirRota(dia) {
   ROTA.dia = dia || (doFiltro ? doFiltro.dia : (rotaDiaPadrao(dias) || dias[0]).dia);
   goTo('rota');
 }
-// Cada trecho do trajeto (de uma parada até a próxima) tem a cor da parada onde ele chega
-const ROTA_CORES = ['#E53935', '#1E88E5', '#43A047', '#FB8C00', '#8E24AA', '#00ACC1', '#D81B60', '#6D4C41', '#689F38', '#3949AB'];
-const rotaCorDaParada = n => ROTA_CORES[((n || 1) - 1) % ROTA_CORES.length];
 function rotaMontarParadas(sem, dia) {
   const validas = consultorasValidasDe(sem).filter(c => (c.diaMelhor || 'Sem dia definido') === dia);
   validas.sort((a, b) => minutosDoHorario(a.horarioMelhor) - minutosDoHorario(b.horarioMelhor) || (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
@@ -6683,11 +6680,11 @@ function rotaMontarParadas(sem, dia) {
     const endTxt = enderecoLinha(m);
     return {
       id: c.id, c, m, nome: c.nome, hora: c.horarioMelhor || '', feito, especial, naRota: !feito,
-      num: feito ? null : ++num, cor: '', endTxt,
+      num: feito ? null : ++num, endTxt,
       lat: temPonto ? m.lat : null, lng: temPonto ? m.lng : null, nivel: temPonto ? (m.geoNivel || null) : null,
       tentou: geoOk && !temPonto, leg: null,
     };
-  }).map(p => { p.cor = p.num ? rotaCorDaParada(p.num) : '#43A047'; return p; });
+  });
 }
 
 /* ── Leaflet (carrega só quando abre a tela) ── */
@@ -6869,7 +6866,7 @@ async function rotaGarantirCoordenadas(token) {
 /* ── Desenho do mapa ── */
 function rotaIcone(p, proxId) {
   const cls = 'rota-pin' + (p.feito ? ' feito' : (p.id === proxId ? ' prox' : '')) + (p.id === ROTA.selId ? ' sel' : '');
-  return L.divIcon({ className: 'rota-pin-wrap', html: '<div class="' + cls + '"' + (p.feito ? '' : ' style="background:' + p.cor + ';"') + '>' + (p.feito ? '✓' : p.num) + '</div>', iconSize: [40, 40], iconAnchor: [20, 20] });
+  return L.divIcon({ className: 'rota-pin-wrap', html: '<div class="' + cls + '">' + (p.feito ? '✓' : p.num) + '</div>', iconSize: [48, 48], iconAnchor: [24, 24] });
 }
 function rotaDesenharParadas(enquadrar) {
   if (!ROTA.map || !window.L) return;
@@ -6901,22 +6898,6 @@ function rotaCentralizarEu() {
   if (!ROTA.pos) { rotaMsg(ROTA.gpsErro || 'Ainda buscando sua localização…', !!ROTA.gpsErro); setTimeout(() => { if (!ROTA.ajustandoId) rotaMsg(''); }, 3000); return; }
   ROTA.map.setView([ROTA.pos.lat, ROTA.pos.lng], Math.max(ROTA.map.getZoom(), 15), { animate: true });
 }
-// Divide a linha inteira do OSRM nos trechos entre as paradas (pela distância de cada trecho)
-function rotaDividirPorPernas(coords, pernas) {
-  if (!coords.length) return [];
-  const cum = [0];
-  for (let j = 1; j < coords.length; j++) cum.push(cum[j - 1] + rotaDistM({ lat: coords[j - 1][0], lng: coords[j - 1][1] }, { lat: coords[j][0], lng: coords[j][1] }));
-  const L_ = cum[cum.length - 1] || 1, D = pernas.reduce((a, b) => a + b, 0) || 1;
-  const cortes = [0]; let acc = 0, ini = 0;
-  for (let i = 0; i < pernas.length - 1; i++) {
-    acc += pernas[i];
-    const alvo = acc * L_ / D;
-    let j = ini; while (j < coords.length - 1 && cum[j] < alvo) j++;
-    cortes.push(j); ini = j;
-  }
-  cortes.push(coords.length - 1);
-  return cortes.slice(0, -1).map((a, i) => coords.slice(a, Math.max(a + 2, cortes[i + 1] + 1)));
-}
 // segmentos: [{ pts: [[lat,lng],...], cor: '#...' }] — um por trecho, cada um na cor da parada onde chega
 function rotaDesenharLinha(segmentos, tracejada) {
   if (!ROTA.map || !window.L) return;
@@ -6942,7 +6923,6 @@ async function rotaCalcularRota() {
   if (ROTA.calculando) return;
   const token = ROTA.token;
   const pts = ROTA.paradas.filter(p => p.naRota && p.lat !== null);
-  const pts_ = pts;
   ROTA.paradas.forEach(p => { p.leg = null; });
   const usaEu = !!ROTA.pos;
   const waypoints = (usaEu ? [{ lat: ROTA.pos.lat, lng: ROTA.pos.lng }] : []).concat(pts.map(p => ({ lat: p.lat, lng: p.lng })));
@@ -6954,7 +6934,7 @@ async function rotaCalcularRota() {
   }
   ROTA.calculando = true;
   try {
-    let info, segmentos, tracejada = false;
+    let info, tracejada = false;
     try {
       const url = 'https://router.project-osrm.org/route/v1/driving/' + waypoints.map(w => w.lng.toFixed(6) + ',' + w.lat.toFixed(6)).join(';') + '?overview=full&geometries=geojson&steps=false';
       const ctrl = new AbortController();
@@ -6965,9 +6945,6 @@ async function rotaCalcularRota() {
       if (j.code !== 'Ok' || !j.routes || !j.routes[0]) throw new Error('sem rota');
       const r = j.routes[0];
       info = { distancia: r.distance, duracao: r.duration, legs: r.legs.map(l => ({ distancia: l.distance, duracao: l.duration })), comOrigemUsuario: usaEu, online: true };
-      const linha = r.geometry.coordinates.map(c => [c[1], c[0]]);
-      segmentos = rotaDividirPorPernas(linha, info.legs.map(l => l.distancia))
-        .map((pts, j) => ({ pts, cor: (pts && pts.length) ? (pts_[usaEu ? j : j + 1] || {}).cor || '#181818' : '#181818' }));
     } catch (e) {
       // Sem serviço de rotas: linha reta tracejada e estimativa (ruas ≈ 30% mais longas que a reta, ~30 km/h)
       const legs = [];
@@ -6976,8 +6953,6 @@ async function rotaCalcularRota() {
         legs.push({ distancia: d, duracao: d / (30000 / 3600) });
       }
       info = { distancia: legs.reduce((a, l) => a + l.distancia, 0), duracao: legs.reduce((a, l) => a + l.duracao, 0), legs, comOrigemUsuario: usaEu, online: false };
-      segmentos = [];
-      for (let j = 0; j < waypoints.length - 1; j++) segmentos.push({ pts: [[waypoints[j].lat, waypoints[j].lng], [waypoints[j + 1].lat, waypoints[j + 1].lng]], cor: (pts_[usaEu ? j : j + 1] || {}).cor || '#181818' });
       tracejada = true;
     }
     if (token !== ROTA.token) return;
@@ -6985,7 +6960,7 @@ async function rotaCalcularRota() {
     ROTA.rotaOrigem = usaEu ? { lat: ROTA.pos.lat, lng: ROTA.pos.lng } : null;
     ROTA.rotaEm = Date.now();
     pts.forEach((p, k) => { const li = usaEu ? k : k - 1; p.leg = li >= 0 ? (info.legs[li] || null) : null; });
-    rotaDesenharLinha(segmentos, tracejada);
+    rotaDesenharLinha(null); // mapa só com as bolinhas; o trajeto serve pra calcular tempo e distância
     rotaRenderTudo();
   } finally {
     ROTA.calculando = false;
@@ -7093,7 +7068,7 @@ function rotaRenderResumo() {
     + caixa(info && info.distancia ? rotaFmtDist(info.distancia) : '—', 'de distância')
     + '</div>';
   const avisos = [];
-  if (info && !info.online) avisos.push('Sem serviço de rotas agora — mostrando estimativa em linha reta.');
+  if (info && !info.online) avisos.push('Sem serviço de rotas agora — tempos e distâncias são estimativas.');
   if (aprox) avisos.push(aprox + (aprox > 1 ? ' paradas com local aproximado' : ' parada com local aproximado') + ' (cadastre rua e número pra ficar exato).');
   if (semLocal) avisos.push(semLocal + (semLocal > 1 ? ' paradas sem localização' : ' parada sem localização') + ' no mapa.');
   if (avisos.length) html += '<div style="font-size:11px;color:var(--amber);font-weight:700;line-height:1.45;margin-top:8px;">' + avisos.map(a => '• ' + a).join('<br>') + '</div>';
@@ -7106,12 +7081,12 @@ function rotaRenderLista() {
   if (!ROTA.paradas.length) { el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);font-size:13px;">Nenhuma consultora neste dia.</div>'; return; }
   el.innerHTML = ROTA.paradas.map(p => {
     const sel = p.id === ROTA.selId;
-    const circ = p.feito ? '<div class="rota-num feito">✓</div>' : '<div class="rota-num" style="background:' + p.cor + ';">' + p.num + '</div>';
+    const circ = p.feito ? '<div class="rota-num feito">✓</div>' : '<div class="rota-num">' + p.num + '</div>';
     let status = '';
     if (p.feito) status = '<span class="chip green">' + (p.especial ? 'Remarcada' : 'Atendida') + '</span>';
     else if (p.lat === null) status = p.tentou ? '<span class="chip red">Endereço não localizado</span>' : (p.endTxt ? '<span class="chip">Localizando…</span>' : '<span class="chip red">Sem endereço</span>');
     else if (rotaNivelAprox(p.nivel)) status = '<span class="chip amber">Local aproximado</span>';
-    const leg = p.leg ? '<div style="text-align:right;flex-shrink:0;border-right:4px solid ' + p.cor + ';padding-right:9px;"><div style="font-size:12.5px;font-weight:800;color:var(--ink);">' + rotaFmtTempo(p.leg.duracao) + '</div><div style="font-size:10.5px;color:var(--ink-3);font-weight:600;">' + rotaFmtDist(p.leg.distancia) + '</div></div>' : '';
+    const leg = p.leg ? '<div style="text-align:right;flex-shrink:0;"><div style="font-size:12.5px;font-weight:800;color:var(--ink);">' + rotaFmtTempo(p.leg.duracao) + '</div><div style="font-size:10.5px;color:var(--ink-3);font-weight:600;">' + rotaFmtDist(p.leg.distancia) + '</div></div>' : '';
     return '<div onclick="rotaSelecionar(\'' + p.id + '\', true)" style="display:flex;align-items:center;gap:12px;background:white;border:1.5px solid ' + (sel ? 'var(--rose)' : 'var(--border)') + ';border-radius:14px;padding:12px;margin-bottom:8px;cursor:pointer;' + (p.feito ? 'opacity:.6;' : '') + '">'
       + circ
       + '<div style="flex:1;min-width:0;">'
@@ -7136,7 +7111,7 @@ function rotaRenderCard() {
   const ehProxima = !p.feito && prox && prox.id === p.id;
   const titulo = p.feito ? (p.especial ? 'REMARCADA' : 'ATENDIDA') : (ehProxima ? 'PRÓXIMA PARADA' : 'PARADA ' + p.num);
   const base = 'background:white;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:12px 14px;';
-  const cab = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;"><span style="display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;letter-spacing:.7px;color:var(--rose);">' + (p.feito ? '' : '<span style="width:11px;height:11px;border-radius:50%;background:' + p.cor + ';flex-shrink:0;"></span>') + titulo + '</span><span style="font-size:13px;font-weight:800;color:var(--ink);">' + (p.hora || '') + '</span></div>'
+  const cab = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;"><span style="display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;letter-spacing:.7px;color:var(--rose);">' + titulo + '</span><span style="font-size:13px;font-weight:800;color:var(--ink);">' + (p.hora || '') + '</span></div>'
     + '<div style="font-size:15px;font-weight:800;color:var(--ink);line-height:1.25;">' + rotaEsc(p.nome) + '</div>'
     + '<div style="font-size:11.5px;color:var(--ink-2);margin-top:2px;">' + rotaEsc(p.endTxt || 'Endereço não cadastrado') + '</div>';
 
