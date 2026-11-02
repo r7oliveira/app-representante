@@ -2745,10 +2745,6 @@ input[type="time"]{max-width:100%;}
         <label class="field"><span>CPF</span><input id="cCpf" inputmode="numeric" placeholder="000.000.000-00"></label>
         <label class="field"><span>Nascimento</span><input id="cAniv" type="date"></label>
       </div>
-      <div class="field" style="margin-bottom:12px;">
-        <span>Consulta do CPF</span>
-        <div class="chip-row"><button type="button" class="chip-op" data-g="cpf" data-v="falta" onclick="consSetChip('cpf','falta')">Falta mandar</button><button type="button" class="chip-op" data-g="cpf" data-v="consulta" onclick="consSetChip('cpf','consulta')">Em consulta</button><button type="button" class="chip-op" data-g="cpf" data-v="aprovado" onclick="consSetChip('cpf','aprovado')">Aprovado</button><button type="button" class="chip-op" data-g="cpf" data-v="reprovado" onclick="consSetChip('cpf','reprovado')">Reprovado</button></div>
-      </div>
       <label class="field" style="margin-bottom:0;"><span>Código de liberação da Romance</span><input id="cCodigoLib" inputmode="numeric" placeholder="Ex: 440766495792"></label>
       <div style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.4;">Ao anotar o código, a consultora aparece como “Liberada” no atendimento.</div>
     </div>
@@ -7877,10 +7873,6 @@ function renderSemana() {
     if (especial === 'inativa') etq('am', 'Parou de vender');
     else if (especial === 'mes') etq('am', 'Remarcada p/ o próximo mês');
     else if (especial === 'semana') etq('am', 'Remarcada p/ a próxima semana');
-    if (mestre.cpfStatus === 'falta') etq('am', 'CPF pendente · falta mandar');
-    else if (mestre.cpfStatus === 'consulta') etq('am', 'CPF pendente · em consulta');
-    else if (mestre.cpfStatus === 'reprovado') etq('vm', 'CPF reprovado');
-    else if (mestre.cpfStatus === 'aprovado') etq('az', 'CPF aprovado');
 
     const botoes = '<div class="at-botoes">'
       + '<button type="button" class="at-btn pri" onclick="event.stopPropagation();abrirOpcoesAgendar(\'' + c.id + '\')">' + (passo1Feito ? icCalOk : icCal) + '<span>Agendar horário</span></button>'
@@ -10967,11 +10959,6 @@ function renderGerenciar() {
       chips.push('<span class="chip">Score ' + scoreAtualDe(c) + '</span>');
       if (tk) chips.push('<span class="chip">Ticket ' + brl(tk.valor) + '</span>');
       if (c.novaConsultora || c.codigoLiberacao) chips.push('<span class="chip blue">Consultora nova' + (c.codigoLiberacao ? ' · Liberada · cód. ' + String(c.codigoLiberacao).replace(/[<>&"]/g, '') : '') + '</span>');
-      if (c.codigoLiberacao) { /* já está na etiqueta azul */ }
-      else if (c.cpfStatus === 'falta') chips.push('<span class="chip amber">CPF: falta mandar</span>');
-      else if (c.cpfStatus === 'consulta') chips.push('<span class="chip amber">CPF em consulta</span>');
-      else if (c.cpfStatus === 'reprovado') chips.push('<span class="chip red">CPF reprovado</span>');
-      else if (c.cpfStatus === 'aprovado') chips.push('<span class="chip green">CPF aprovado</span>');
       if (!c.endereco) chips.push('<span class="chip amber">Sem rua e número</span>');
       return header + '<div class="cons-card ac-card" style="flex-direction:column;align-items:stretch;padding:0;overflow:hidden;">'
         + '<div class="ac-top" style="border-bottom:1px solid var(--border);" onclick="editarConsultora(\'' + c.id + '\')">'
