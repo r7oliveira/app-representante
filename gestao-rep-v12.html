@@ -2731,14 +2731,32 @@ input[type="time"]{max-width:100%;}
     </div>
 
     <button class="ai-photo-btn" onclick="document.getElementById('consPhotoInput').click()">
-       Preencher com foto do tablet (IA)
+       Preencher o cadastro da Romance com foto do tablet (IA)
     </button>
     <input type="file" id="consPhotoInput" accept="image/*" style="display:none" onchange="extrairFotoConsultora(this)">
     <div class="ai-loading" id="consAiLoading"><span class="spinner"></span><span id="consAiLoadingTxt">Analisando ficha...</span></div>
 
     <div class="cm-sec">
+      <div class="cm-sec-t">Cadastro na Romance</div>
+      <div style="font-size:12px;color:var(--ink-3);margin:-4px 0 12px;line-height:1.45;">Dados do cadastro dela na Romance. Dá pra preencher com a foto do tablet (botão acima).</div>
+      <label class="field"><span>Nome no cadastro da Romance</span><input id="cNomeRomance" placeholder="NOME COMO ESTÁ NO CADASTRO" oninput="maiusculo(this);consSincronizarNome()" style="text-transform:uppercase;" autocapitalize="characters"></label>
+      <div style="font-size:11px;color:var(--ink-3);margin:-8px 0 12px;line-height:1.4;">Se quem vende for outra pessoa, coloque o nome dela em “Quem é a consultora”, logo abaixo.</div>
+      <div class="two-col">
+        <label class="field"><span>CPF</span><input id="cCpf" inputmode="numeric" placeholder="000.000.000-00"></label>
+        <label class="field"><span>Nascimento</span><input id="cAniv" type="date"></label>
+      </div>
+      <div class="field" style="margin-bottom:12px;">
+        <span>Consulta do CPF</span>
+        <div class="chip-row"><button type="button" class="chip-op" data-g="cpf" data-v="falta" onclick="consSetChip('cpf','falta')">Falta mandar</button><button type="button" class="chip-op" data-g="cpf" data-v="consulta" onclick="consSetChip('cpf','consulta')">Em consulta</button><button type="button" class="chip-op" data-g="cpf" data-v="aprovado" onclick="consSetChip('cpf','aprovado')">Aprovado</button><button type="button" class="chip-op" data-g="cpf" data-v="reprovado" onclick="consSetChip('cpf','reprovado')">Reprovado</button></div>
+      </div>
+      <label class="field" style="margin-bottom:0;"><span>Código de liberação da Romance</span><input id="cCodigoLib" inputmode="numeric" placeholder="Ex: 440766495792"></label>
+      <div style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.4;">Ao anotar o código, a consultora aparece como “Liberada” no atendimento.</div>
+    </div>
+
+    <div class="cm-sec">
       <div class="cm-sec-t">Quem é a consultora</div>
-      <label class="field"><span>Nome completo *</span><input id="cNome" placeholder="Ex: ANA LETICIA DE OLIVEIRA" oninput="maiusculo(this)" style="text-transform:uppercase;" autocapitalize="characters"></label>
+      <label class="field"><span>Nome de quem vai vender *</span><input id="cNome" placeholder="Ex: ANA LETICIA DE OLIVEIRA" oninput="maiusculo(this);window._nomeAuto=false;" onfocus="if(window._nomeAuto)this.select();" style="text-transform:uppercase;" autocapitalize="characters"></label>
+      <div style="font-size:11px;color:var(--ink-3);margin:-8px 0 12px;line-height:1.4;">Quem atende e vende. Pode ser outra pessoa, diferente do nome no cadastro da Romance.</div>
       <label class="field"><span>Telefone / WhatsApp</span><input id="cTel" inputmode="tel" placeholder="(51) 99999-9999" oninput="mascaraTelefone(this)" onblur="this.value=fmtTelefone(this.value)"></label>
       <label class="field" style="margin-bottom:0;">
         <span>Região</span>
@@ -2899,22 +2917,6 @@ input[type="time"]{max-width:100%;}
         <div class="chip-row"><button type="button" class="chip-op" data-g="como" data-v="Indicação" onclick="consSetChip('como','Indicação')">Indicação</button><button type="button" class="chip-op" data-g="como" data-v="Instagram" onclick="consSetChip('como','Instagram')">Instagram</button><button type="button" class="chip-op" data-g="como" data-v="Facebook" onclick="consSetChip('como','Facebook')">Facebook</button><button type="button" class="chip-op" data-g="como" data-v="WhatsApp / status" onclick="consSetChip('como','WhatsApp / status')">WhatsApp / status</button><button type="button" class="chip-op" data-g="como" data-v="Porta a porta" onclick="consSetChip('como','Porta a porta')">Porta a porta</button><button type="button" class="chip-op" data-g="como" data-v="Evento / feira" onclick="consSetChip('como','Evento / feira')">Evento / feira</button><button type="button" class="chip-op" data-g="como" data-v="Anúncio" onclick="consSetChip('como','Anúncio')">Anúncio</button></div>
       </div>
       <label class="field" style="margin-bottom:0;"><span>Observações</span><textarea id="cRotaObs" rows="3" placeholder="EX.: INDICAÇÃO DA CARLA, PREFERE DEPOIS DAS 10H" oninput="maiusculo(this)" style="text-transform:uppercase;" autocapitalize="characters"></textarea></label>
-    </div>
-
-    <div class="cm-sec">
-      <div class="cm-sec-t">Cadastro na Romance</div>
-      <label class="field"><span>Nome que vai no cadastro da Romance</span><input id="cNomeRomance" placeholder="MESMO NOME DA CONSULTORA" oninput="maiusculo(this)" style="text-transform:uppercase;" autocapitalize="characters"></label>
-      <div style="font-size:11px;color:var(--ink-3);margin:-8px 0 12px;line-height:1.4;">Deixe em branco se o cadastro é no nome dela.</div>
-      <div class="two-col">
-        <label class="field"><span>CPF</span><input id="cCpf" inputmode="numeric" placeholder="000.000.000-00"></label>
-        <label class="field"><span>Nascimento</span><input id="cAniv" type="date"></label>
-      </div>
-      <div class="field" style="margin-bottom:12px;">
-        <span>Consulta do CPF</span>
-        <div class="chip-row"><button type="button" class="chip-op" data-g="cpf" data-v="falta" onclick="consSetChip('cpf','falta')">Falta mandar</button><button type="button" class="chip-op" data-g="cpf" data-v="consulta" onclick="consSetChip('cpf','consulta')">Em consulta</button><button type="button" class="chip-op" data-g="cpf" data-v="aprovado" onclick="consSetChip('cpf','aprovado')">Aprovado</button><button type="button" class="chip-op" data-g="cpf" data-v="reprovado" onclick="consSetChip('cpf','reprovado')">Reprovado</button></div>
-      </div>
-      <label class="field" style="margin-bottom:0;"><span>Código de liberação da Romance</span><input id="cCodigoLib" inputmode="numeric" placeholder="Ex: 440766495792"></label>
-      <div style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.4;">Ao anotar o código, a consultora aparece como “Liberada” no atendimento.</div>
     </div>
 
     <div class="cm-sec">
@@ -9124,6 +9126,7 @@ function consResetForm() {
   document.getElementById('consCepStatus').textContent = '';
   document.getElementById('consGeoTxt').textContent = 'Preencha o endereço — o pino aparece sozinho no mapa.';
   const mp = document.getElementById('consMapa'); if (mp) { mp.dataset.ampliado = ''; mp.style.height = '320px'; const t = document.getElementById('consMapaAmpliarTxt'); if (t) t.textContent = 'Ampliar'; }
+  window._nomeAuto = false;
   const lk = document.getElementById('cLinkLoc'); if (lk) lk.value = ''; window._consLinkAtual = '';
   const lks = document.getElementById('consLinkStatus'); if (lks) lks.textContent = LINK_TXT_PADRAO;
   window._consTravado = false; window._consSigAuto = null; clearTimeout(window._consTimer); window._consReq = (window._consReq || 0) + 1;
@@ -9459,6 +9462,13 @@ function salvarConsultora() {
   }
 }
 
+// Enquanto o campo "quem vai vender" estiver vazio (ou ainda com o nome copiado), ele acompanha o nome do cadastro da Romance.
+// Assim que você digitar outro nome ali, ele para de acompanhar.
+function consSincronizarNome() {
+  const rom = document.getElementById('cNomeRomance'), nm = document.getElementById('cNome');
+  if (!rom || !nm) return;
+  if (!nm.value.trim() || window._nomeAuto) { nm.value = rom.value; window._nomeAuto = !!rom.value.trim(); }
+}
 async function extrairFotoConsultora(input) {
   const file = input.files[0];
   if (!file) return;
@@ -9482,7 +9492,7 @@ async function extrairFotoConsultora(input) {
     }
 
     const json = resultado.data;
-    if (json.nome) document.getElementById('cNome').value = toUp(json.nome);
+    if (json.nome) { document.getElementById('cNomeRomance').value = toUp(json.nome); consSincronizarNome(); }
     if (json.telefone) document.getElementById('cTel').value = fmtTelefone(json.telefone);
     if (json.cpf) document.getElementById('cCpf').value = json.cpf;
     if (json.endereco) { const se = consSepararEndereco(json.endereco); document.getElementById('cRua').value = toUp(se.rua); document.getElementById('cNumero').value = toUp(se.numero); }
