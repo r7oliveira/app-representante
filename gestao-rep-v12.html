@@ -2739,8 +2739,8 @@ input[type="time"]{max-width:100%;}
     <div class="cm-sec">
       <div class="cm-sec-t">Cadastro na Romance</div>
       <div style="font-size:12px;color:var(--ink-3);margin:-4px 0 12px;line-height:1.45;">Dados do cadastro dela na Romance. Dá pra preencher com a foto do tablet (botão acima).</div>
-      <label class="field"><span>Nome no cadastro da Romance</span><input id="cNomeRomance" placeholder="NOME COMO ESTÁ NO CADASTRO" oninput="maiusculo(this);consSincronizarNome()" style="text-transform:uppercase;" autocapitalize="characters"></label>
-      <div style="font-size:11px;color:var(--ink-3);margin:-8px 0 12px;line-height:1.4;">Se quem vende for outra pessoa, coloque o nome dela em “Quem é a consultora”, logo abaixo.</div>
+      <label class="field"><span>Nome no cadastro da Romance *</span><input id="cNomeRomance" placeholder="NOME COMO ESTÁ NO CADASTRO" oninput="maiusculo(this)" style="text-transform:uppercase;" autocapitalize="characters"></label>
+      <div style="font-size:11px;color:var(--ink-3);margin:-8px 0 12px;line-height:1.4;">Preencha sempre este primeiro. Se quem vende for outra pessoa, coloque o nome dela em “Quem é a consultora”, logo abaixo.</div>
       <div class="two-col">
         <label class="field"><span>CPF</span><input id="cCpf" inputmode="numeric" placeholder="000.000.000-00"></label>
         <label class="field"><span>Nascimento</span><input id="cAniv" type="date"></label>
@@ -2755,8 +2755,8 @@ input[type="time"]{max-width:100%;}
 
     <div class="cm-sec">
       <div class="cm-sec-t">Quem é a consultora</div>
-      <label class="field"><span>Nome de quem vai vender *</span><input id="cNome" placeholder="Ex: ANA LETICIA DE OLIVEIRA" oninput="maiusculo(this);window._nomeAuto=false;" onfocus="if(window._nomeAuto)this.select();" style="text-transform:uppercase;" autocapitalize="characters"></label>
-      <div style="font-size:11px;color:var(--ink-3);margin:-8px 0 12px;line-height:1.4;">Quem atende e vende. Pode ser outra pessoa, diferente do nome no cadastro da Romance.</div>
+      <label class="field"><span>Nome de quem vai vender (se for outra pessoa)</span><input id="cNome" placeholder="DEIXE EM BRANCO SE FOR A MESMA PESSOA" oninput="maiusculo(this)" style="text-transform:uppercase;" autocapitalize="characters"></label>
+      <div style="font-size:11px;color:var(--ink-3);margin:-8px 0 12px;line-height:1.4;">Em branco = quem vende é a própria pessoa do cadastro (o app usa o nome do cadastro). Se for outra pessoa, coloque o nome dela aqui.</div>
       <label class="field"><span>Telefone / WhatsApp</span><input id="cTel" inputmode="tel" placeholder="(51) 99999-9999" oninput="mascaraTelefone(this)" onblur="this.value=fmtTelefone(this.value)"></label>
       <label class="field" style="margin-bottom:0;">
         <span>Região</span>
@@ -9126,7 +9126,6 @@ function consResetForm() {
   document.getElementById('consCepStatus').textContent = '';
   document.getElementById('consGeoTxt').textContent = 'Preencha o endereço — o pino aparece sozinho no mapa.';
   const mp = document.getElementById('consMapa'); if (mp) { mp.dataset.ampliado = ''; mp.style.height = '320px'; const t = document.getElementById('consMapaAmpliarTxt'); if (t) t.textContent = 'Ampliar'; }
-  window._nomeAuto = false;
   const lk = document.getElementById('cLinkLoc'); if (lk) lk.value = ''; window._consLinkAtual = '';
   const lks = document.getElementById('consLinkStatus'); if (lks) lks.textContent = LINK_TXT_PADRAO;
   window._consTravado = false; window._consSigAuto = null; clearTimeout(window._consTimer); window._consReq = (window._consReq || 0) + 1;
@@ -9377,8 +9376,9 @@ function abrirModalConsultora() {
 }
 
 function salvarConsultora() {
-  const nome = toUp(document.getElementById('cNome').value.trim());
-  if (!nome) { alert('Nome obrigatório.'); return; }
+  // quem vende em branco = a própria pessoa do cadastro da Romance
+  const nome = toUp(document.getElementById('cNome').value.trim()) || toUp(document.getElementById('cNomeRomance').value.trim());
+  if (!nome) { alert('Preencha o nome no cadastro da Romance (ou o nome de quem vai vender).'); return; }
   const val = id => document.getElementById(id).value.trim();
   const f = consLerEndereco();
   const campos = {
@@ -9462,13 +9462,6 @@ function salvarConsultora() {
   }
 }
 
-// Enquanto o campo "quem vai vender" estiver vazio (ou ainda com o nome copiado), ele acompanha o nome do cadastro da Romance.
-// Assim que você digitar outro nome ali, ele para de acompanhar.
-function consSincronizarNome() {
-  const rom = document.getElementById('cNomeRomance'), nm = document.getElementById('cNome');
-  if (!rom || !nm) return;
-  if (!nm.value.trim() || window._nomeAuto) { nm.value = rom.value; window._nomeAuto = !!rom.value.trim(); }
-}
 async function extrairFotoConsultora(input) {
   const file = input.files[0];
   if (!file) return;
@@ -9492,7 +9485,7 @@ async function extrairFotoConsultora(input) {
     }
 
     const json = resultado.data;
-    if (json.nome) { document.getElementById('cNomeRomance').value = toUp(json.nome); consSincronizarNome(); }
+    if (json.nome) document.getElementById('cNomeRomance').value = toUp(json.nome);   // a foto preenche só o cadastro da Romance
     if (json.telefone) document.getElementById('cTel').value = fmtTelefone(json.telefone);
     if (json.cpf) document.getElementById('cCpf').value = json.cpf;
     if (json.endereco) { const se = consSepararEndereco(json.endereco); document.getElementById('cRua').value = toUp(se.rua); document.getElementById('cNumero').value = toUp(se.numero); }
