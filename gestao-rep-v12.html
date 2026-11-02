@@ -735,7 +735,7 @@ input[type="time"]{max-width:100%;}
       <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink-3);">🔍</span>
       <button type="button" id="buscaAtendimentosLimpar" onclick="limparBuscaAtendimentos()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:var(--border);color:var(--ink-3);font-size:13px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;">✕</button>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 16px 12px;">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:0 16px 12px;">
       <button type="button" id="filtroAtendPendentes" class="tile-resumo on" onclick="filtrarAtendimentos('pendentes')">
         <div class="tile-num" id="cntFiltroPendentes">0</div>
         <div class="tile-lbl">Falta atender</div>
@@ -745,11 +745,6 @@ input[type="time"]{max-width:100%;}
         <div class="tile-num" id="cntFiltroAtendidas">0</div>
         <div class="tile-lbl">Já atendidas</div>
         <div class="tile-sub" id="subFiltroAtendidas">R$ 0 vendidos</div>
-      </button>
-      <button type="button" id="tileDebitosAtend" class="tile-resumo tile-red" onclick="abrirPagarDebitos()">
-        <div class="tile-num" id="valTileDebitos">R$ 0</div>
-        <div class="tile-lbl">Em aberto</div>
-        <div class="tile-sub" id="subTileDebitos">nenhum débito</div>
       </button>
     </div>
     <div id="atendDiasRow" style="display:none;gap:8px;overflow-x:auto;padding:0 16px 12px;-webkit-overflow-scrolling:touch;"></div>
@@ -6055,6 +6050,8 @@ function nomeDiaHoje() { return DIAS_ORDEM_ROTA[(new Date().getDay() + 6) % 7] |
 
 function brlCurto(v) { v = v || 0; return v >= 1000 ? 'R$ ' + (v/1000).toLocaleString('pt-BR', {maximumFractionDigits:1}) + ' mil' : 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
 function brlInteiro(v) { return 'R$ ' + Math.round(v || 0).toLocaleString('pt-BR'); }
+// Rótulo do botão de dia: "Dia 04 · Qua" (a quantidade vai à parte, entre parênteses)
+function rotuloDiaChip(dt, abrev) { return dt ? 'Dia ' + String(dt.getDate()).padStart(2, '0') + ' · ' + abrev : abrev; }
 function periodoDoHorario(h) {
   if (!h) return 'sem horário';
   const hh = parseInt(String(h).split(':')[0], 10);
@@ -7099,7 +7096,7 @@ function rotaRenderChips(sem, dias) {
     const data = dataDoDiaDaSemana(sem, d.dia);
     const abrev = d.dia === 'Sem dia definido' ? 'Sem dia' : d.dia.replace('-feira', '').slice(0, 3);
     return '<button type="button" onclick="rotaTrocarDia(\'' + d.dia + '\')" style="flex-shrink:0;border-radius:14px;padding:8px 13px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;border:1.5px solid ' + (ativo ? 'var(--ink)' : 'var(--border)') + ';background:' + (ativo ? 'var(--ink)' : 'white') + ';color:' + (ativo ? 'white' : 'var(--ink-2)') + ';">'
-      + abrev + (data ? ' ' + data.getDate() : '') + ' <span style="opacity:.65;">· ' + d.pend + '</span>'
+      + rotuloDiaChip(data, abrev) + ' <span style="opacity:.7;font-weight:700;">(' + d.pend + ')</span>'
       + (d.dia === hoje ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + (ativo ? 'white' : 'var(--rose)') + ';margin-left:6px;vertical-align:middle;"></span>' : '')
       + '</button>';
   }).join('');
@@ -7550,14 +7547,6 @@ function renderSemana() {
   setTxt('subFiltroPendentes', 'de ' + listaCompleta.length + ' previstas');
   setTxt('cntFiltroAtendidas', listaAtend.length);
   setTxt('subFiltroAtendidas', brlCurto(listaAtend.reduce((a, c) => a + (c.vendido || 0), 0)));
-  // Débitos em aberto: mesma conta da tela Pagar Débitos (todas as semanas)
-  let totalDebAberto = 0; const idsComDeb = new Set();
-  (DB.semanas || []).forEach(sm => (sm.consultoras || []).forEach(cc => {
-    const d = debitoDe(cc);
-    if (d > 0) { totalDebAberto += d; idsComDeb.add(cc.id); }
-  }));
-  setTxt('valTileDebitos', brlInteiro(totalDebAberto));
-  setTxt('subTileDebitos', idsComDeb.size ? idsComDeb.size + (idsComDeb.size > 1 ? ' consultoras' : ' consultora') : 'nenhum débito');
   const tileOn = filtroAtend === 'atendidas' ? 'atendidas' : 'pendentes';
   const tP = document.getElementById('filtroAtendPendentes'), tA = document.getElementById('filtroAtendAtendidas');
   if (tP) tP.classList.toggle('on', tileOn === 'pendentes');
@@ -7577,7 +7566,7 @@ function renderSemana() {
     const hojeNome = nomeDiaHoje();
     const chipDia = (rotulo, qtd, ativo, dia, ehHoje) =>
       '<button type="button" onclick="filtrarDiaAtendimentos(\'' + dia + '\')" style="flex-shrink:0;border-radius:14px;padding:8px 13px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;border:1.5px solid ' + (ativo ? 'var(--ink)' : 'var(--border)') + ';background:' + (ativo ? 'var(--ink)' : 'white') + ';color:' + (ativo ? 'white' : 'var(--ink-2)') + ';">'
-      + rotulo + ' <span style="opacity:.65;">· ' + qtd + '</span>'
+      + rotulo + ' <span style="opacity:.7;font-weight:700;">(' + qtd + ')</span>'
       + (ehHoje ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + (ativo ? 'white' : 'var(--rose)') + ';margin-left:6px;vertical-align:middle;"></span>' : '')
       + '</button>';
     if (diasChips.length > 1) {
@@ -7585,7 +7574,7 @@ function renderSemana() {
         + diasChips.map(x => {
             const dt = dataDoDiaDaSemana(sem, x.dia);
             const abrev = x.dia === 'Sem dia definido' ? 'Sem dia' : x.dia.replace('-feira', '').slice(0, 3);
-            return chipDia(abrev + (dt ? ' ' + dt.getDate() : ''), x.qtd, x.dia === diaSel, x.dia, x.dia === hojeNome);
+            return chipDia(rotuloDiaChip(dt, abrev), x.qtd, x.dia === diaSel, x.dia, x.dia === hojeNome);
           }).join('');
       rowDias.style.display = 'flex';
     } else { rowDias.innerHTML = ''; rowDias.style.display = 'none'; }
