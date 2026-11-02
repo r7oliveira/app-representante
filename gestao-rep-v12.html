@@ -769,11 +769,6 @@ input[type="time"]{max-width:100%;}
     <div class="ph-sub" style="color:rgba(255,255,255,.7);">Consultoras da semana</div>
   </div>
   <div class="scroll-body" style="padding:14px 0 80px;">
-    <div style="margin:14px 16px 10px;position:relative;">
-      <input type="text" id="buscaAtendimentos" oninput="filtrarAtendimentos()" placeholder="Buscar consultora pelo nome..." style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px 36px 10px 36px;font-size:13px;font-family:var(--font);color:var(--ink);background:white;outline:none;box-sizing:border-box;">
-      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink-3);">🔍</span>
-      <button type="button" id="buscaAtendimentosLimpar" onclick="limparBuscaAtendimentos()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:var(--border);color:var(--ink-3);font-size:13px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;">✕</button>
-    </div>
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:0 16px 12px;">
       <button type="button" id="filtroAtendPendentes" class="tile-resumo on" onclick="filtrarAtendimentos('pendentes')">
         <div class="tile-num" id="cntFiltroPendentes">0</div>
@@ -787,6 +782,14 @@ input[type="time"]{max-width:100%;}
       </button>
     </div>
     <div id="atendDiasRow" style="display:none;gap:8px;overflow-x:auto;padding:0 16px 12px;-webkit-overflow-scrolling:touch;"></div>
+    <div id="atendIncluirWrap" style="display:none;padding:0 16px;">
+      <button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-bottom:12px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>
+    </div>
+    <div style="margin:0 16px 12px;position:relative;">
+      <input type="text" id="buscaAtendimentos" oninput="filtrarAtendimentos()" placeholder="Buscar consultora pelo nome..." style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px 36px 10px 36px;font-size:13px;font-family:var(--font);color:var(--ink);background:white;outline:none;box-sizing:border-box;">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink-3);">🔍</span>
+      <button type="button" id="buscaAtendimentosLimpar" onclick="limparBuscaAtendimentos()" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:var(--border);color:var(--ink-3);font-size:13px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;">✕</button>
+    </div>
     <div style="padding:0 16px 80px;" id="listaConsultoras">
       <div style="text-align:center;padding:32px;color:var(--ink-3);font-size:14px;">
         Nenhuma semana ativa. <br><br>
@@ -7487,6 +7490,7 @@ function renderSemana() {
   atualizarObsBanner();
 
   if (!sem) {
+    const wInc0 = document.getElementById('atendIncluirWrap'); if (wInc0) wInc0.style.display = 'none';
     const ctaWrapEl0 = document.querySelector('.cta-wrap');
     if (ctaWrapEl0) ctaWrapEl0.style.display = '';
     document.getElementById('semanaNumero').textContent = 'Semana —';
@@ -7725,7 +7729,8 @@ function renderSemana() {
       || (a.nome || '').localeCompare(b.nome || '', 'pt-BR');
   });
 
-  const btnIncluirMais = '<button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-bottom:14px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>';
+  const btnIncluirMais = '';   // o botão agora fica fixo acima da busca
+  { const wInc = document.getElementById('atendIncluirWrap'); if (wInc) wInc.style.display = 'block'; }
 
   if (!visiveis.length) {
     const msg = termoBusca ? 'Nenhuma consultora encontrada para "' + buscaEl.value.trim() + '".'
