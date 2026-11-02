@@ -5855,6 +5855,15 @@ function migrarMaiusculas() {
   DB.config.migradoMaiusculasV1 = true;
   save();
 }
+// Uma vez só: quem já estava cadastrada e ficou com o "nome no cadastro da Romance" em branco passa a ter o próprio nome ali
+// (em branco antes significava "no nome dela"). Quem já tem um nome diferente não é tocada.
+function migrarNomeRomance() {
+  DB.config = DB.config || {};
+  if (DB.config.migradoNomeRomanceV1) return;
+  (DB.consultoras || []).forEach(c => { if (!String(c.nomeRomance || '').trim() && c.nome) c.nomeRomance = toUp(c.nome); });
+  DB.config.migradoNomeRomanceV1 = true;
+  save();
+}
 // Máscara enquanto digita: (DD) 99999-9999 — mantém o formato certo mesmo ao editar um número já salvo
 function mascaraTelefone(el) {
   let d = el.value.replace(/\D/g, '');
@@ -7462,6 +7471,7 @@ function ehConsultoraNova(c, sem) {
 
 function renderSemana() {
   migrarMaiusculas();
+  migrarNomeRomance();
   const sem = getSemanaAtiva();
 
   // Limpeza leve: se ninguém ainda foi atendida nesta semana, qualquer "débito antigo
@@ -9388,7 +9398,7 @@ function salvarConsultora() {
     regiao: document.getElementById('cRegiao').value,
     diaMelhor: document.getElementById('cDia').value, horarioMelhor: document.getElementById('cHorario').value,
     rotaObs: toUp(val('cRotaObs')),
-    nomeRomance: toUp(val('cNomeRomance')), cpfStatus: window._consChip.cpf || '', codigoLiberacao: val('cCodigoLib'),
+    nomeRomance: toUp(val('cNomeRomance')) || nome, cpfStatus: window._consChip.cpf || '', codigoLiberacao: val('cCodigoLib'),
     comoChegou: window._consChip.como || '',
     debitoFavorita: document.getElementById('cDebFavorita').value.trim() === '' ? null : (parseNum(document.getElementById('cDebFavorita').value) || 0),
     linkLocalizacao: consExtrairLink(val('cLinkLoc')) || (/^https?:/i.test(val('cLinkLoc')) ? val('cLinkLoc') : '')
@@ -11365,7 +11375,7 @@ function editarConsultora(id) {
   set('cBairro', c.bairro); set('cCidade', c.cidade); set('cUf', c.uf);
   set('cDia', c.diaMelhor); set('cHorario', c.horarioMelhor);
   set('cRotaObs', c.rotaObs);
-  set('cNomeRomance', c.nomeRomance); set('cCodigoLib', c.codigoLiberacao);
+  set('cNomeRomance', c.nomeRomance || c.nome); set('cCodigoLib', c.codigoLiberacao);
   document.getElementById('cDebFavorita').value = typeof c.debitoFavorita === 'number' ? 'R$ ' + c.debitoFavorita.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
   window._consChip = { como: c.comoChegou || '', cpf: c.cpfStatus || '' }; consRenderChips();
   document.getElementById('cLinkLoc').value = c.linkLocalizacao || ''; window._consLinkAtual = c.linkLocalizacao || '';
