@@ -226,6 +226,10 @@ input[type="time"]{max-width:100%;}
 .chip.green{background:var(--green-bg);color:var(--green);}
 .chip.amber{background:var(--amber-bg);color:var(--amber);}
 .chip.blue{background:#E4EEFA;color:#2563A8;}
+.seg-op{flex:1;height:44px;border-radius:14px;border:1.5px solid var(--border);background:white;color:var(--ink);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;}
+.seg-op.on{background:var(--rose);border-color:var(--rose);color:white;}
+.seg-op:disabled{opacity:.45;cursor:not-allowed;background:var(--surface-2);}
+.at-loc{display:inline-block;margin-left:6px;font-size:11px;font-weight:800;background:#EEEDE9;color:#555;padding:2px 8px;border-radius:99px;white-space:nowrap;vertical-align:1px;}
 /* ── Card de atendimento · Premium Clean (layout em seções) ── */
 .cons-card.at-card{--ch:#A67C52;--tx:#181818;--tx2:#777777;--vd:#3C8064;--vd-bg:#E7F1EB;--am:#B78A3B;--am-bg:#F5EDDD;--vm:#B85A55;--vm-bg:#F7E9E7;--az:#3269A5;--az-bg:#EAF1FA;--neutro:#F3F2EE;
   flex-direction:column;align-items:stretch;gap:0;padding:16px 16px 14px;overflow:hidden;background:#fff;border:1.5px solid var(--ch);border-radius:22px;box-shadow:0 1px 3px rgba(24,24,24,.05);cursor:default;}
@@ -2775,12 +2779,28 @@ input[type="time"]{max-width:100%;}
     <div class="cm-sec">
       <div class="cm-sec-t">Endereço</div>
       <div class="field" style="margin-bottom:12px;">
-        <span>Link da localização (WhatsApp)</span>
+        <span>Link da localização (WhatsApp) - CASA</span>
         <div style="display:flex;gap:8px;align-items:stretch;">
-          <input id="cLinkLoc" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="Cole o link que a consultora enviou" oninput="consAgendarLink()" onpaste="setTimeout(consProcessarLink, 80)" style="flex:1;min-width:0;">
-          <button type="button" class="btn-mini" onclick="consColarLink()" style="padding:0 14px;">Colar</button>
+          <input id="cLinkCasa" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="Cole o link da casa que a consultora enviou" oninput="consAgendarLink('casa')" onpaste="setTimeout(() => consProcessarLink('casa'), 80)" style="flex:1;min-width:0;">
+          <button type="button" class="btn-mini" onclick="consColarLink('casa')" style="padding:0 14px;">Colar</button>
         </div>
-        <div id="consLinkStatus" style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.45;">Com o link, o pino vai no lugar exato e o endereço é preenchido sozinho. Sem link, vale o endereço digitado.</div>
+        <div id="consLinkStatus_casa" style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.45;"></div>
+      </div>
+      <div class="field" style="margin-bottom:12px;">
+        <span>Link da localização (WhatsApp) - TRABALHO</span>
+        <div style="display:flex;gap:8px;align-items:stretch;">
+          <input id="cLinkTrab" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="Cole o link do trabalho que a consultora enviou" oninput="consAgendarLink('trabalho')" onpaste="setTimeout(() => consProcessarLink('trabalho'), 80)" style="flex:1;min-width:0;">
+          <button type="button" class="btn-mini" onclick="consColarLink('trabalho')" style="padding:0 14px;">Colar</button>
+        </div>
+        <div id="consLinkStatus_trabalho" style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.45;"></div>
+      </div>
+      <div class="field" style="margin-bottom:14px;">
+        <span>Usar localização</span>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="seg-op" id="consUsar_casa" onclick="consUsar('casa')" disabled>Casa</button>
+          <button type="button" class="seg-op" id="consUsar_trabalho" onclick="consUsar('trabalho')" disabled>Trabalho</button>
+        </div>
+        <div id="consUsarHint" style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.45;"></div>
       </div>
       <label class="field"><span>CEP</span><input id="cCep" inputmode="numeric" placeholder="00000-000" maxlength="9" oninput="consMascaraCep(this)" style="max-width:170px;"></label>
       <div id="consCepStatus" style="font-size:11px;color:var(--ink-3);margin:-6px 0 12px;"></div>
@@ -6179,7 +6199,10 @@ function cidadeUfTxt(m, sep) {
   if (cid && uf && !/[\/,]/.test(cid)) return cid + (sep || '/') + uf;
   return cid;
 }
-function enderecoLinha(m) { return [m.endereco, m.bairro, cidadeUfTxt(m)].filter(Boolean).join(' · '); }
+function enderecoLinha(m) {
+  if (m.localizacaoUsar === 'trabalho' && m.geoNivel === 'link') return m.enderecoTrabalho || 'Localização do trabalho (link)';
+  return [m.endereco, m.bairro, cidadeUfTxt(m)].filter(Boolean).join(' · ');
+}
 function enderecoCompleto(c) {
   const m = DB.consultoras.find(x => x.id === c.id) || c;
   return [m.endereco || c.endereco, m.bairro || c.bairro, m.cidade || c.cidade].filter(Boolean).join(' · ');
@@ -7892,7 +7915,7 @@ function renderSemana() {
         + '<span class="at-status ' + stCls + '">' + stTxt + '</span>'
       + '</div>'
       + '<div class="at-nome" onclick="abrirAtendimento(\'' + c.id + '\')">' + c.nome + '</div>'
-      + '<div class="at-end" onclick="abrirAtendimento(\'' + c.id + '\')">' + (endTxt ? icPin + '<span>' + tituloCase(endTxt) + '</span>' : '<span>Endereço não cadastrado</span>') + '</div>'
+      + '<div class="at-end" onclick="abrirAtendimento(\'' + c.id + '\')">' + (endTxt ? icPin + '<span>' + tituloCase(endTxt) + (mestre.localizacaoUsar === 'trabalho' && mestre.geoNivel === 'link' ? '<span class="at-loc">Trabalho</span>' : '') + '</span>' : '<span>Endereço não cadastrado</span>') + '</div>'
       + '<div class="at-sep"></div>'
       + '<div class="at-sec">Situação financeira</div>'
       + '<div class="at-fin">' + marca('Romance', fin.romance) + marca('Favorita', fin.favorita) + '</div>'
@@ -9128,8 +9151,9 @@ function consResetForm() {
   document.getElementById('consCepStatus').textContent = '';
   document.getElementById('consGeoTxt').textContent = 'Preencha o endereço — o pino aparece sozinho no mapa.';
   const mp = document.getElementById('consMapa'); if (mp) { mp.dataset.ampliado = ''; mp.style.height = '320px'; const t = document.getElementById('consMapaAmpliarTxt'); if (t) t.textContent = 'Ampliar'; }
-  const lk = document.getElementById('cLinkLoc'); if (lk) lk.value = ''; window._consLinkAtual = '';
-  const lks = document.getElementById('consLinkStatus'); if (lks) lks.textContent = LINK_TXT_PADRAO;
+  consResetLinks();
+  ['casa', 'trabalho'].forEach(t => { consLinkEl(t).value = ''; consLinkSt(t).textContent = LINK_TXT_PADRAO[t]; });
+  consAtualizarUsar(true);
   window._consTravado = false; window._consSigAuto = null; clearTimeout(window._consTimer); window._consReq = (window._consReq || 0) + 1;
   if (CONSMAP.map && CONSMAP.marker) { CONSMAP.map.removeLayer(CONSMAP.marker); CONSMAP.marker = null; }
 }
@@ -9220,7 +9244,7 @@ function consUsarPosicao() {
   }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 });
 }
 /* ── Link de localização enviado pela consultora (WhatsApp / Google Maps / Apple Maps / Waze / OSM) ── */
-const LINK_TXT_PADRAO = 'Com o link, o pino vai no lugar exato e o endereço é preenchido sozinho. Sem link, vale o endereço digitado.';
+const LINK_TXT_PADRAO = { casa: 'Com o link, o pino vai no lugar exato e o endereço (abaixo) é preenchido sozinho.', trabalho: 'Com o link, o pino vai no lugar exato e o endereço do trabalho aparece aqui.' };
 function consExtrairLink(texto) {
   const m = String(texto || '').match(/https?:\/\/[^\s<>"']+/i);
   return m ? m[0].replace(/[).,;]+$/, '') : '';
@@ -9271,48 +9295,95 @@ function consPreencherEndereco(a) {
   if (a.house_number) n.value = toUp(a.house_number);
   else if (rua && toUp(rua) !== ruaAntes) n.value = '';          // rua mudou: o número antigo não vale mais
 }
-function consAgendarLink() { clearTimeout(window._consTimerLink); window._consTimerLink = setTimeout(consProcessarLink, 700); }
-async function consColarLink() {
-  const el = document.getElementById('cLinkLoc');
-  try { el.value = await navigator.clipboard.readText(); }
-  catch (e) { el.focus(); document.getElementById('consLinkStatus').textContent = 'Toque e segure no campo e escolha "Colar".'; return; }
-  consProcessarLink();
+// Texto "RUA, NUM · BAIRRO · CIDADE/UF" de um endereço lido do mapa (usado pro trabalho)
+function consEnderecoTexto(a) {
+  const rua = a.road || a.pedestrian || a.footway || a.path || a.residential || '';
+  const bairro = a.suburb || a.neighbourhood || a.quarter || a.city_district || a.borough || '';
+  const cidade = a.city || a.town || a.village || a.municipality || '';
+  let uf = ''; const iso = String(a['ISO3166-2-lvl4'] || '');
+  if (/^BR-([A-Z]{2})$/.test(iso)) uf = iso.slice(3);
+  else { const nome = rotaSemAcento(a.state || ''); uf = Object.keys(UF_NOME).find(k => rotaSemAcento(UF_NOME[k]) === nome) || ''; }
+  const ruaNum = [rua, a.house_number].filter(Boolean).join(', ');
+  return toUp([ruaNum, bairro, cidade ? cidade + (uf ? '/' + uf : '') : ''].filter(Boolean).join(' · '));
 }
-async function consProcessarLink() {
-  clearTimeout(window._consTimerLink);
-  const el = document.getElementById('cLinkLoc'), st = document.getElementById('consLinkStatus');
+// ── dois links de localização: Casa e Trabalho. O botão marcado em "Usar localização" é o que vale; sem link, vale o endereço escrito ──
+function consResetLinks() { window._consLinks = { casa: { url: '', pt: null, end: '' }, trabalho: { url: '', pt: null, end: '' } }; window._consUsar = ''; window._consTimerLink = {}; }
+const consLinkEl = t => document.getElementById(t === 'casa' ? 'cLinkCasa' : 'cLinkTrab');
+const consLinkSt = t => document.getElementById('consLinkStatus_' + t);
+function consAgendarLink(t) { window._consTimerLink = window._consTimerLink || {}; clearTimeout(window._consTimerLink[t]); window._consTimerLink[t] = setTimeout(() => consProcessarLink(t), 700); }
+async function consColarLink(t) {
+  const el = consLinkEl(t);
+  try { el.value = await navigator.clipboard.readText(); }
+  catch (e) { el.focus(); consLinkSt(t).textContent = 'Toque e segure no campo e escolha "Colar".'; return; }
+  consProcessarLink(t);
+}
+// habilita/desabilita os botões, marca o escolhido e leva o mapa pro lugar certo
+function consAtualizarUsar(semMapa) {
+  const L = window._consLinks;
+  if (window._consUsar && !L[window._consUsar].pt) window._consUsar = L.casa.pt ? 'casa' : L.trabalho.pt ? 'trabalho' : '';
+  ['casa', 'trabalho'].forEach(t => {
+    const b = document.getElementById('consUsar_' + t);
+    b.disabled = !L[t].pt;
+    b.classList.toggle('on', window._consUsar === t);
+  });
+  document.getElementById('consUsarHint').textContent = !L.casa.pt && !L.trabalho.pt
+    ? 'Cole um link de Casa ou de Trabalho para poder escolher. Sem link, vale o endereço escrito abaixo.'
+    : window._consUsar ? 'A localização marcada é a usada no GPS e na Rota. Toque de novo para desmarcar e usar o endereço escrito.'
+    : 'Nenhuma marcada: vale o endereço escrito abaixo. Toque em Casa ou Trabalho para usar um dos links.';
+  if (!semMapa) consAplicarUsarNoMapa();
+}
+async function consAplicarUsarNoMapa() {
+  const t = window._consUsar;
+  if (t) {
+    const pt = window._consLinks[t].pt;
+    clearTimeout(window._consTimer); window._consReq = (window._consReq || 0) + 1;   // cancela a busca pelo endereço escrito
+    if (await consAbrirMapa(pt.lat, pt.lng, 18)) consSetPino(pt.lat, pt.lng, 'link');
+    else { window._consGeo = { lat: pt.lat, lng: pt.lng, nivel: 'link' }; window._consTravado = true; }
+  } else if ((window._consGeo && window._consGeo.nivel === 'link') || (window._consGeoSalvo && window._consGeoSalvo.nivel === 'link')) {
+    // nenhum link escolhido: volta a valer o endereço escrito
+    window._consTravado = false; window._consSigAuto = null;
+    if (window._consGeo && window._consGeo.nivel === 'link') window._consGeo = null;
+    if (window._consGeoSalvo && window._consGeoSalvo.nivel === 'link') window._consGeoSalvo = null;
+    consAgendarLocalizar();
+  }
+}
+function consUsar(t) {
+  if (!window._consLinks[t].pt) return;
+  window._consUsar = window._consUsar === t ? '' : t;     // tocar de novo desmarca
+  consAtualizarUsar();
+}
+async function consProcessarLink(t) {
+  window._consTimerLink = window._consTimerLink || {}; clearTimeout(window._consTimerLink[t]);
+  const el = consLinkEl(t), st = consLinkSt(t), L = window._consLinks[t];
   const bruto = el.value.trim();
-  if (!bruto) { // sem link: volta a valer o endereço digitado
-    if (window._consLinkAtual) {
-      window._consLinkAtual = '';
-      window._consTravado = false; window._consSigAuto = null;
-      if (window._consGeo && window._consGeo.nivel === 'link') window._consGeo = null;
-      if (window._consGeoSalvo && window._consGeoSalvo.nivel === 'link') window._consGeoSalvo = null;
-      consAgendarLocalizar();
-    }
-    st.textContent = LINK_TXT_PADRAO;
+  const invalido = msg => { st.innerHTML = msg; if (L.pt) { L.url = ''; L.pt = null; L.end = ''; consAtualizarUsar(); } };
+  if (!bruto) { // link apagado
+    const tinha = !!L.pt; L.url = ''; L.pt = null; L.end = '';
+    st.textContent = LINK_TXT_PADRAO[t];
+    if (tinha) consAtualizarUsar();
     return;
   }
   const url = consExtrairLink(bruto);
-  if (!url) { st.textContent = 'Cole o link completo (começa com https://).'; return; }
-  if (url === window._consLinkAtual) return;
+  if (!url) { invalido('Cole o link completo (começa com https://).'); return; }
+  if (url === L.url && L.pt) return;
   if (consLinkEncurtado(url)) {
-    st.innerHTML = 'Esse link é encurtado e o app não consegue abrir ele sozinho. <a href="' + url.replace(/"/g, '') + '" target="_blank" rel="noopener" style="color:var(--rose);font-weight:800;">Abra o link</a>, copie o endereço completo da barra do navegador e cole aqui — ou peça pra consultora mandar a <b>localização atual</b> pelo WhatsApp.';
+    invalido('Esse link é encurtado e o app não consegue abrir ele sozinho. <a href="' + url.replace(/"/g, '') + '" target="_blank" rel="noopener" style="color:var(--rose);font-weight:800;">Abra o link</a>, copie o endereço completo da barra do navegador e cole aqui — ou peça pra consultora mandar a <b>localização atual</b> pelo WhatsApp.');
     return;
   }
   const pt = consCoordsDoLink(url);
-  if (!pt) { st.textContent = 'Não achei a localização nesse link. Peça pra consultora enviar a "localização atual" pelo WhatsApp.'; return; }
-  window._consLinkAtual = url;
-  clearTimeout(window._consTimer); window._consReq = (window._consReq || 0) + 1; // cancela a busca pelo endereço digitado
+  if (!pt) { invalido('Não achei a localização nesse link. Peça pra consultora enviar a "localização atual" pelo WhatsApp.'); return; }
+  L.url = url; L.pt = pt; L.end = '';
+  if (!window._consUsar) window._consUsar = t;            // ainda sem escolha: usa este link
+  consAtualizarUsar();
   st.textContent = 'Buscando o endereço do link…';
-  if (await consAbrirMapa(pt.lat, pt.lng, 18)) consSetPino(pt.lat, pt.lng, 'link');
   try {
     const a = await consEnderecoDoPonto(pt.lat, pt.lng);
-    if (window._consLinkAtual !== url) return;
-    if (a) { consPreencherEndereco(a); st.textContent = 'Endereço preenchido a partir do link ✓ — confira o número.'; }
-    else st.textContent = 'Pino marcado pelo link ✓ — não consegui ler o endereço, preencha na mão.';
+    if (L.url !== url) return;
+    if (a && t === 'casa') { consPreencherEndereco(a); st.textContent = 'Endereço preenchido a partir do link ✓ — confira o número.'; }
+    else if (a) { L.end = consEnderecoTexto(a); st.textContent = L.end ? 'Endereço do trabalho: ' + L.end : 'Localização do trabalho marcada ✓'; }
+    else st.textContent = 'Localização marcada pelo link ✓ — não consegui ler o endereço.';
   } catch (e) {
-    if (window._consLinkAtual === url) st.textContent = 'Pino marcado pelo link ✓ — sem internet pra ler o endereço, preencha na mão.';
+    if (L.url === url) st.textContent = 'Localização marcada pelo link ✓ — sem internet pra ler o endereço' + (t === 'casa' ? ', preencha na mão.' : '.');
   }
 }
 
@@ -9393,7 +9464,9 @@ function salvarConsultora() {
     nomeRomance: toUp(val('cNomeRomance')) || nome, cpfStatus: window._consChip.cpf || '', codigoLiberacao: val('cCodigoLib'),
     comoChegou: window._consChip.como || '',
     debitoFavorita: document.getElementById('cDebFavorita').value.trim() === '' ? null : (parseNum(document.getElementById('cDebFavorita').value) || 0),
-    linkLocalizacao: consExtrairLink(val('cLinkLoc')) || (/^https?:/i.test(val('cLinkLoc')) ? val('cLinkLoc') : '')
+    linkCasa: window._consLinks.casa.url || '', linkTrabalho: window._consLinks.trabalho.url || '', enderecoTrabalho: window._consLinks.trabalho.end || '',
+    localizacaoUsar: window._consUsar || '',
+    linkLocalizacao: window._consUsar ? window._consLinks[window._consUsar].url : ''     // o link que está valendo
   };
 
   // Edição
@@ -11365,7 +11438,18 @@ function editarConsultora(id) {
   set('cNomeRomance', c.nomeRomance || c.nome); set('cCodigoLib', c.codigoLiberacao);
   document.getElementById('cDebFavorita').value = typeof c.debitoFavorita === 'number' ? 'R$ ' + c.debitoFavorita.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
   window._consChip = { como: c.comoChegou || '', cpf: c.cpfStatus || '' }; consRenderChips();
-  document.getElementById('cLinkLoc').value = c.linkLocalizacao || ''; window._consLinkAtual = c.linkLocalizacao || '';
+  // links de Casa e Trabalho (quem só tinha o link antigo único: ele vira o link da Casa)
+  consResetLinks();
+  consLinkEl('casa').value = c.linkCasa !== undefined ? (c.linkCasa || '') : (c.linkLocalizacao || '');
+  consLinkEl('trabalho').value = c.linkTrabalho || '';
+  ['casa', 'trabalho'].forEach(t => {
+    const url = consExtrairLink(consLinkEl(t).value), pt = url ? consCoordsDoLink(url) : null;
+    if (pt) window._consLinks[t] = { url, pt, end: t === 'trabalho' ? (c.enderecoTrabalho || '') : '' };
+    consLinkSt(t).textContent = t === 'trabalho' && window._consLinks.trabalho.end ? 'Endereço do trabalho: ' + window._consLinks.trabalho.end : LINK_TXT_PADRAO[t];
+  });
+  window._consUsar = c.localizacaoUsar !== undefined ? c.localizacaoUsar : ((c.geoNivel === 'link' && window._consLinks.casa.pt) ? 'casa' : '');
+  if (window._consUsar && !window._consLinks[window._consUsar].pt) window._consUsar = '';
+  consAtualizarUsar(true);
   if (typeof c.lat === 'number' && typeof c.lng === 'number' && (c.geoNivel === 'link' || (c.geoQ === rotaAssinatura(c) && (c.geoNivel === 'manual' || (c.geoV || 0) >= ROTA_GEO_V)))) {
     window._consGeoSalvo = { lat: c.lat, lng: c.lng, nivel: c.geoNivel, sig: c.geoNivel === 'link' ? rotaAssinatura(c) : c.geoQ };
     document.getElementById('consGeoTxt').textContent = 'Local salvo no mapa ✓ — toque em "Localizar no mapa" pra rever ou ajustar.';
