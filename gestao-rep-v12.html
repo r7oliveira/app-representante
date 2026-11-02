@@ -190,30 +190,6 @@ input[type="time"]{max-width:100%;}
 .cons-card.alert{border-color:var(--amber);}
 .cons-card.ac-card,.cons-card.ac-card.alert{border:1.5px solid var(--rose);}
 .btn-mini.fx{flex:1;justify-content:center;padding:8px 6px;white-space:nowrap;font-size:11.5px;}
-/* botões principais do card: Agendar horário / Fechar atendimento */
-.ac-passos{display:flex;gap:8px;padding:8px 12px 6px;}
-.btn-passo{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;height:44px;border-radius:14px;font-size:13px;font-weight:800;cursor:pointer;border:none;white-space:nowrap;transition:transform .08s;}
-.btn-passo:active{transform:scale(.97);}
-.btn-passo.pri{background:var(--rose);color:white;box-shadow:0 6px 14px rgba(166,124,82,.32);}
-.btn-passo.dark{background:var(--ink);color:white;box-shadow:0 6px 14px rgba(0,0,0,.22);}
-.btn-passo.ok{background:var(--green-bg);color:var(--green);box-shadow:inset 0 0 0 1.5px rgba(61,122,95,.35);}
-.btn-passo.off{background:var(--surface-2);color:var(--ink-3);}
-/* informações organizadas em 3 colunas */
-.ac-info{padding:0 12px 4px;}
-.ac-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.ac-cel{background:var(--surface);border-radius:10px;padding:6px 8px;min-width:0;}
-.ac-cel-l{font-size:9.5px;font-weight:800;color:var(--ink-3);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;}
-.ac-cel-v{font-size:12.5px;font-weight:800;color:var(--ink);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ac-cel-v small{font-size:10px;font-weight:700;color:var(--ink-3);}
-.ac-cel.red{background:var(--red-bg);}
-.ac-cel.red .ac-cel-l,.ac-cel.red .ac-cel-v{color:var(--red);}
-.ac-cel.ok .ac-cel-v{color:var(--green);}
-.ac-cel.deb{border-left:4px solid var(--border);}
-.ac-cel.deb.em-dia{background:var(--green-bg);border-left-color:var(--green);}
-.ac-cel.deb.em-dia .ac-cel-l,.ac-cel.deb.em-dia .ac-cel-v{color:var(--green);}
-.ac-cel.deb.red{border-left-color:var(--red);}
-.ac-cel-l svg{vertical-align:-2px;margin-right:4px;}
-.ac-ord{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:20px;padding:0 7px;border-radius:10px;background:var(--rose);color:white;font-size:11px;font-weight:800;margin-top:4px;}
 .cons-card.inativa{border-color:var(--red);}
 .c-av{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;box-shadow:0 0 0 3px white,0 0 0 4px rgba(0,0,0,.04);}
 .av-default{background:var(--rose-light);color:var(--rose);}
@@ -249,6 +225,58 @@ input[type="time"]{max-width:100%;}
 .chip.green{background:var(--green-bg);color:var(--green);}
 .chip.amber{background:var(--amber-bg);color:var(--amber);}
 .chip.blue{background:#E4EEFA;color:#2563A8;}
+/* ── Card de atendimento · Premium Clean ── */
+.cons-card.at-card{--ch:#A67C52;--tx:#181818;--tx2:#777777;--vd:#3C8064;--vd-bg:#E7F1EB;--am:#B78A3B;--am-bg:#F5EDDD;--vm:#B85A55;--vm-bg:#F7E9E7;--az:#3269A5;--az-bg:#EAF1FA;--neutro:#F3F2EE;
+  flex-direction:column;align-items:stretch;gap:0;padding:0;overflow:hidden;background:#fff;border:1.5px solid var(--ch);border-radius:20px;box-shadow:0 1px 3px rgba(24,24,24,.05);cursor:default;}
+.cons-card.at-card.done{opacity:.8;}
+.at-cab{display:flex;gap:12px;padding:14px 14px 12px;cursor:pointer;}
+.at-hora{width:54px;flex-shrink:0;text-align:center;}
+.at-hora b{display:block;font-size:20px;font-weight:800;letter-spacing:-.5px;line-height:1.1;color:var(--tx);}
+.at-hora small{display:block;font-size:11.5px;color:var(--tx2);margin-top:2px;font-weight:600;}
+.at-ord{display:inline-block;margin-top:6px;min-width:28px;padding:2px 8px;border-radius:99px;background:var(--am-bg);color:var(--ch);font-size:11.5px;font-weight:800;}
+.at-id{flex:1;min-width:0;}
+.at-linha1{display:flex;align-items:flex-start;gap:8px;}
+.at-nome{flex:1;min-width:0;font-size:15.5px;font-weight:800;line-height:1.25;color:var(--tx);}
+.at-sts{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.at-status{font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:99px;white-space:nowrap;}
+.at-status.pend{background:var(--am-bg);color:var(--am);}
+.at-status.agend{background:var(--az-bg);color:var(--az);}
+.at-status.conc{background:var(--vd-bg);color:var(--vd);}
+.at-status.neut{background:var(--neutro);color:var(--tx2);}
+.at-prox{font-size:11px;font-weight:800;color:var(--ch);}
+.at-end{display:flex;align-items:flex-start;gap:6px;margin-top:5px;font-size:12.5px;color:var(--tx2);line-height:1.4;font-weight:500;}
+.at-end svg{margin-top:2px;flex-shrink:0;}
+.at-fin{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px;}
+.at-marca{border-radius:14px;padding:10px 12px;min-height:72px;background:var(--neutro);color:var(--tx2);}
+.at-marca.ok{background:var(--vd-bg);color:var(--vd);}
+.at-marca.deb{background:var(--vm-bg);color:var(--vm);}
+.at-marca-t{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;}
+.at-marca-s{font-size:15px;font-weight:800;margin-top:4px;line-height:1.2;}
+.at-marca-v{font-size:14px;font-weight:800;margin-top:2px;}
+.at-ind{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 14px 0;}
+.at-i{background:var(--neutro);border-radius:14px;padding:9px 12px;min-width:0;}
+.at-i-l{font-size:12px;color:var(--tx2);font-weight:600;}
+.at-i-v{font-size:16px;font-weight:800;color:var(--tx);margin-top:2px;white-space:nowrap;}
+.at-i-r{font-size:11.5px;color:var(--tx2);font-weight:600;margin-top:1px;}
+.at-tags{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 0;}
+.at-tag{font-size:12px;font-weight:700;padding:4px 11px;border-radius:99px;}
+.at-tag.az{background:var(--az-bg);color:var(--az);}
+.at-tag.am{background:var(--am-bg);color:var(--am);}
+.at-tag.vm{background:var(--vm-bg);color:var(--vm);}
+.at-obs{padding:9px 14px 0;font-size:12px;color:var(--tx2);font-style:italic;line-height:1.4;}
+.at-botoes{display:flex;gap:8px;padding:12px 14px 0;}
+.at-btn{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:14px;font-size:13.5px;font-weight:800;border:none;cursor:pointer;white-space:nowrap;}
+.at-btn:active{opacity:.85;}
+.at-btn.pri{background:var(--ch);color:#fff;}
+.at-btn.sec{background:var(--neutro);color:var(--tx);}
+.at-btn.sec.off{color:#A9A8A2;}
+.at-btn.sec.ok{color:var(--vd);}
+.at-aux{display:flex;gap:8px;align-items:center;padding:10px 14px 14px;}
+.at-a{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;min-height:42px;border-radius:12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;white-space:nowrap;}
+.at-a.gps{background:var(--tx);color:#fff;}
+.at-a.zap{background:#25D366;color:#fff;}
+.at-a.edit{background:var(--neutro);color:var(--tx);}
+.at-x{width:42px;height:42px;flex-shrink:0;border-radius:50%;background:transparent;color:#A9A8A2;font-size:16px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;}
 .ac-obs{font-size:11.5px;color:var(--ink-3);font-style:italic;margin-top:7px;line-height:1.35;}
 .ac-acoes{display:flex;gap:8px;align-items:center;padding:0 14px 12px;}
 .btn-mini{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:800;color:var(--ink);text-decoration:none;}
@@ -2883,8 +2911,8 @@ input[type="time"]{max-width:100%;}
 
     <div class="cm-sec">
       <div class="cm-sec-t">Débitos</div>
-      <label class="field" style="margin-bottom:0;"><span>Débito Favorita (R$)</span><input id="cDebFavorita" type="text" inputmode="decimal" placeholder="R$ 0,00" oninput="maskMoeda(this)"></label>
-      <div style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.4;">Valor que a consultora deve à Favorita. O débito da Romance vem das notas de venda, sozinho.</div>
+      <label class="field" style="margin-bottom:0;"><span>Débito Favorita (R$)</span><input id="cDebFavorita" type="text" inputmode="decimal" placeholder="Vazio = sem informação" oninput="maskMoeda(this)"></label>
+      <div style="font-size:11px;color:var(--ink-3);margin-top:6px;line-height:1.4;">Valor que a consultora deve à Favorita. Digite R$ 0,00 se ela está em dia; deixe vazio se não souber (o card mostra “Sem informação”). O débito da Romance vem das notas de venda, sozinho.</div>
     </div>
 
     <div class="btn-row" style="margin-top:6px;">
@@ -6041,6 +6069,21 @@ function debitoTotalDe(consultoraId) {
   return Math.round(total * 100) / 100;
 }
 
+// Situação financeira de uma consultora, separada por marca. Não cria cálculo novo:
+//  • Romance  → debitoTotalDe(): soma do débito (debitoDe) das notas de TODAS as semanas — a mesma conta da tela "Pagar Débitos".
+//               Só diz "em dia" se existe histórico atendido; sem nenhum atendimento não há informação pra afirmar isso.
+//  • Favorita → campo "Débito Favorita" do cadastro. Vazio = sem informação (nunca presume "em dia"); 0 = em dia.
+function situacaoFinanceira(c) {
+  const id = c.id;
+  const debRomance = debitoTotalDe(id);
+  const temHistorico = (DB.semanas || []).some(sm => (sm.consultoras || []).some(x => x.id === id && foiAtendida(x)));
+  const romance = debRomance > 0 ? { est: 'deb', valor: debRomance } : temHistorico ? { est: 'ok' } : { est: 'sem' };
+  const bruto = c.debitoFavorita;
+  const fav = (bruto === null || bruto === undefined || bruto === '' || !isFinite(Number(bruto))) ? null : Number(bruto);
+  const favorita = fav === null ? { est: 'sem' } : fav > 0 ? { est: 'deb', valor: fav } : { est: 'ok' };
+  return { romance, favorita };
+}
+
 // Data (Date) de um dia da semana ("Terça-feira") dentro de uma semana de trabalho.
 // A semana começa na segunda; se foi criada no sábado/domingo, vale a segunda seguinte.
 function dataDoDiaDaSemana(sem, diaLabel) {
@@ -7704,90 +7747,89 @@ function renderSemana() {
       sub = partes.join(' · ');
     }
 
-    const passo1Feito = !!c.horarioEnviado;
-    const passo3Feito = st === 'concluida';
-    // "Fechar atendimento" só funciona depois de "Agendar horário" (ou se já foi atendida/remarcada)
-    const podeFechar = passo1Feito || passo3Feito || c.remarcarSemana || c.remarcarMes;
-    const icoP = (path, w) => '<svg width="' + (w || 17) + '" height="' + (w || 17) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">' + path + '</svg>';
-    const pCheck = icoP('<polyline points="20 6 9 17 4 12"/>');
-    const pCal = icoP('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>');
-    const pFlag = icoP('<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>');
-    const estAg = passo1Feito ? 'ok' : 'pri';
-    const estFe = passo3Feito ? 'ok' : (podeFechar ? 'dark' : 'off');
-    const trilha = '<div class="ac-passos">'
-      + '<button type="button" class="btn-passo ' + estAg + '" onclick="event.stopPropagation();agendarHorarioDaConsultora(\'' + c.id + '\')">' + (passo1Feito ? pCheck : pCal) + '<span>Agendar horário</span></button>'
-      + '<button type="button" class="btn-passo ' + estFe + '" onclick="event.stopPropagation();' + (podeFechar ? 'abrirAtendimento(\'' + c.id + '\')' : 'alert(\'Clique em Agendar horário antes de fechar o atendimento.\')') + '">' + (passo3Feito ? pCheck : pFlag) + '<span>Fechar atendimento</span></button>'
-    + '</div>';
-
-    // Informações do card
     const mestre = DB.consultoras.find(m => m.id === c.id) || c;
     const hora = c.horarioMelhor || '';
     const endTxt = enderecoLinha(mestre);
-    const svgIco = (path, w) => '<svg width="' + (w||14) + '" height="' + (w||14) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">' + path + '</svg>';
-    const icoPin = svgIco('<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>', 12);
-    const icoNav = svgIco('<polygon points="3 11 22 2 13 21 11 13 3 11"/>', 14);
-    const icoZap = svgIco('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>', 14);
+    const passo1Feito = !!c.horarioEnviado;     // horário agendado
+    const passo3Feito = st === 'concluida';
+    // "Fechar atendimento" só funciona depois de "Agendar horário" (ou se já foi atendida/remarcada)
+    const podeFechar = passo1Feito || passo3Feito || c.remarcarSemana || c.remarcarMes;
+    const icn = (path, w) => '<svg width="' + (w || 16) + '" height="' + (w || 16) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">' + path + '</svg>';
+    const icPin = icn('<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>', 13);
+    const icCheck = icn('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>', 15);
+    const icAlerta = icn('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>', 15);
+    const icInfo = icn('<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4"/><line x1="12" y1="17.5" x2="12.01" y2="17.5"/>', 15);
+    const icCal = icn('<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>', 17);
+    const icFlag = icn('<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>', 17);
+    const icNav = icn('<polygon points="3 11 22 2 13 21 11 13 3 11"/>', 14);
+    const icZap = icn('<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>', 14);
 
-    const debTot = debitoTotalDe(c.id);
-    const debFav = Number(mestre.debitoFavorita) || 0;
-    const ic = (path) => '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">' + path + '</svg>';
-    const icOk = ic('<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>');
-    const icAlerta = ic('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>');
-    const icMoeda = ic('<circle cx="12" cy="12" r="10"/><path d="M15 9.5a3 3 0 0 0-3-1.5c-1.7 0-3 1-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2a3 3 0 0 1-3-1.5"/><path d="M12 6v2m0 8v2"/>');
-    const icGrafico = ic('<line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>');
-    const cel = (rot, val, cl, icone) => '<div class="ac-cel ' + (cl || '') + '"><div class="ac-cel-l">' + (icone || '') + rot + '</div><div class="ac-cel-v">' + val + '</div></div>';
-    // débito: verde "Em dia" quando não deve, vermelho com o valor quando deve
-    const celDeb = (rot, v) => v > 0 ? cel(rot, brl(v), 'deb red', icAlerta) : cel(rot, 'Em dia', 'deb em-dia', icOk);
-    let stats = '';
+    // Situação do atendimento
+    let stTxt = 'Pendente', stCls = 'pend';
+    if (especial === 'inativa') { stTxt = 'Inativa'; stCls = 'neut'; }
+    else if (especial === 'mes') { stTxt = 'Remarcada · mês'; stCls = 'neut'; }
+    else if (especial === 'semana') { stTxt = 'Remarcada · semana'; stCls = 'neut'; }
+    else if (passo3Feito) { stTxt = 'Concluído'; stCls = 'conc'; }
+    else if (passo1Feito) { stTxt = 'Agendado'; stCls = 'agend'; }
+    const ehProxima = isNext && !passo3Feito && !especial;
+
+    // Situação financeira: Romance e Favorita, cada uma por si
+    const fin = situacaoFinanceira(mestre);
+    const marca = (nome, f) => f.est === 'deb'
+      ? '<div class="at-marca deb"><div class="at-marca-t">' + icAlerta + nome + '</div><div class="at-marca-s">Em débito</div><div class="at-marca-v">' + brl(f.valor) + '</div></div>'
+      : f.est === 'ok'
+      ? '<div class="at-marca ok"><div class="at-marca-t">' + icCheck + nome + '</div><div class="at-marca-s">Em dia</div></div>'
+      : '<div class="at-marca sem"><div class="at-marca-t">' + icInfo + nome + '</div><div class="at-marca-s">Sem informação</div></div>';
+
+    // Indicadores (fórmulas de sempre)
+    const ult = _ultimoRegistroDe(mestre);
+    const tk = _ticketMedioDe(mestre);
+    const ind = (rot, val, ref) => '<div class="at-i"><div class="at-i-l">' + rot + '</div><div class="at-i-v">' + val + '</div><div class="at-i-r">' + ref + '</div></div>';
+    let indicadores = '<div class="at-ind">'
+      + ind('Último valor a pagar', ult && ult.reg ? brl(aPagarDe(ult.reg)) : '—', ult && ult.reg ? 'Semana ' + ult.sem.numero : 'Sem histórico')
+      + ind('Ticket médio', tk ? brl(tk.valor) : '—', tk ? (tk.qtdSemanas === 1 ? 'Última semana' : 'Últimas ' + tk.qtdSemanas + ' semanas') : 'Sem histórico')
+    + '</div>';
+    if (passo3Feito) indicadores += '<div class="at-ind">' + ind('Vendido', brl(c.vendido || 0), 'Nesta semana') + ind('Recebido', brl(c.recebido || 0), 'Nesta semana') + '</div>';
+
+    // Etiquetas: azul = cadastro · amarelo = pendência · vermelho = negativo
     const tags = [];
-    if (especial) {
-      tags.push('<span class="chip amber">' + (especial === 'inativa' ? 'Parou de vender' : especial === 'mes' ? 'Remarcada p/ o próximo mês' : 'Remarcada p/ a próxima semana') + '</span>');
-      if (debTot > 0) tags.push('<span class="chip red">Débito Romance ' + brl(debTot) + '</span>');
-      if (debFav > 0) tags.push('<span class="chip red">Débito Favorita ' + brl(debFav) + '</span>');
-    } else if (st === 'concluida') {
-      stats = '<div class="ac-stats">' + celDeb('Débito Romance', debTot) + celDeb('Débito Favorita', debFav)
-        + cel('Vendido', brl(c.vendido || 0), 'ok', icMoeda) + cel('Recebido', brl(c.recebido || 0), 'ok', icMoeda) + '</div>';
-    } else {
-      const ult = _ultimoRegistroDe(mestre);
-      const tk = _ticketMedioDe(mestre);
-      stats = '<div class="ac-stats">'
-        + celDeb('Débito Romance', debTot)
-        + celDeb('Débito Favorita', debFav)
-        + cel('Último valor a pagar', ult && ult.reg ? brl(aPagarDe(ult.reg)) + ' <small>· sem. ' + ult.sem.numero + '</small>' : '—', '', icMoeda)
-        + cel('Ticket médio a pagar', tk ? brl(tk.valor) + ' <small>· últ. ' + tk.qtdSemanas + (tk.qtdSemanas === 1 ? ' sem.' : ' sem.') + '</small>' : '—', '', icGrafico)
-      + '</div>';
-      // Consultora nova / liberada pela Romance: tudo em azul clarinho
-      if (mestre.novaConsultora || mestre.codigoLiberacao) tags.push('<span class="chip blue">Consultora nova' + (mestre.codigoLiberacao ? ' · Liberada · cód. ' + String(mestre.codigoLiberacao).replace(/[<>&"]/g, '') : '') + '</span>');
-      if (mestre.codigoLiberacao) { /* já está na etiqueta azul */ }
-      else if (mestre.cpfStatus === 'falta') tags.push('<span class="chip amber">CPF: falta mandar</span>');
-      else if (mestre.cpfStatus === 'consulta') tags.push('<span class="chip amber">CPF em consulta</span>');
-      else if (mestre.cpfStatus === 'reprovado') tags.push('<span class="chip red">CPF reprovado</span>');
-      else if (mestre.cpfStatus === 'aprovado') tags.push('<span class="chip green">CPF aprovado</span>');
-    }
+    const etq = (cl, txt) => tags.push('<span class="at-tag ' + cl + '">' + txt + '</span>');
+    if (especial === 'inativa') etq('am', 'Parou de vender');
+    else if (especial === 'mes') etq('am', 'Remarcada p/ o próximo mês');
+    else if (especial === 'semana') etq('am', 'Remarcada p/ a próxima semana');
+    if (mestre.novaConsultora || mestre.codigoLiberacao) etq('az', 'Consultora nova');
+    if (mestre.codigoLiberacao) etq('az', 'Liberada · cód. ' + String(mestre.codigoLiberacao).replace(/[<>&"]/g, ''));
+    if (mestre.cpfStatus === 'falta') etq('am', 'CPF pendente · falta mandar');
+    else if (mestre.cpfStatus === 'consulta') etq('am', 'CPF pendente · em consulta');
+    else if (mestre.cpfStatus === 'reprovado') etq('vm', 'CPF reprovado');
+    else if (mestre.cpfStatus === 'aprovado') etq('az', 'CPF aprovado');
 
-    const acoes = '<div class="ac-acoes" style="border-top:1px solid var(--border);padding:8px 12px 10px;">'
-      + ((endTxt || (mestre.geoNivel === 'link' && typeof mestre.lat === 'number')) ? '<button type="button" class="btn-mini pri fx" onclick="event.stopPropagation();abrirGPS(\'' + c.id + '\')">' + icoNav + ' Ir (GPS)</button>' : '')
-      + (c.telefone ? '<button type="button" class="btn-mini fx" style="background:#25D366;color:white;" onclick="event.stopPropagation();rotaWhats(\'' + c.id + '\')">' + icoZap + ' WhatsApp</button>' : '')
-      + '<button type="button" class="btn-mini fx" onclick="event.stopPropagation();editarConsultora(\'' + c.id + '\')">Editar</button>'
-      + '<button type="button" class="btn-ico" aria-label="Remover da semana" onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')">✕</button>'
+    const botoes = '<div class="at-botoes">'
+      + '<button type="button" class="at-btn pri" onclick="event.stopPropagation();agendarHorarioDaConsultora(\'' + c.id + '\')">' + (passo1Feito ? icCheck : icCal) + '<span>Agendar horário</span></button>'
+      + '<button type="button" class="at-btn sec ' + (passo3Feito ? 'ok' : podeFechar ? '' : 'off') + '" onclick="event.stopPropagation();' + (podeFechar ? 'abrirAtendimento(\'' + c.id + '\')' : 'alert(\'Clique em Agendar horário antes de fechar o atendimento.\')') + '">' + (passo3Feito ? icCheck : icFlag) + '<span>Fechar atendimento</span></button>'
+    + '</div>';
+    const aux = '<div class="at-aux">'
+      + ((endTxt || (mestre.geoNivel === 'link' && typeof mestre.lat === 'number')) ? '<button type="button" class="at-a gps" onclick="event.stopPropagation();abrirGPS(\'' + c.id + '\')">' + icNav + '<span>Ir (GPS)</span></button>' : '')
+      + (c.telefone ? '<button type="button" class="at-a zap" onclick="event.stopPropagation();rotaWhats(\'' + c.id + '\')">' + icZap + '<span>WhatsApp</span></button>' : '')
+      + '<button type="button" class="at-a edit" onclick="event.stopPropagation();editarConsultora(\'' + c.id + '\')">Editar</button>'
+      + '<button type="button" class="at-x" aria-label="Remover da semana" onclick="event.stopPropagation();removerConsultoraDaSemana(\'' + c.id + '\')">✕</button>'
     + '</div>';
 
-    return tituloGrupo + tituloDia + '<div class="cons-card ac-card ' + cls + '" style="flex-direction:column;align-items:stretch;padding:0;overflow:hidden;">'
-      + '<div class="ac-top" onclick="abrirAtendimento(\'' + c.id + '\')">'
-        + '<div class="ac-time"><div class="ac-hora' + (hora ? '' : ' sem') + '">' + (hora || '--:--') + '</div><div class="ac-per">' + periodoDoHorario(hora) + '</div>'
-          + (posDia[c.id] ? '<div class="ac-ord" title="Ordem de atendimento no dia">' + posDia[c.id] + 'ª</div>' : '') + '</div>'
-        + '<div class="ac-main">'
-          + '<div class="ac-linha1"><div class="ac-nome">' + c.nome + '</div>' + badge + '</div>'
-          + '<div class="ac-end" style="display:flex;align-items:flex-start;gap:5px;">' + (endTxt ? icoPin + '<span>' + endTxt + '</span>' : '<span style="color:var(--ink-3);">Endereço não cadastrado</span>') + '</div>'
+    return tituloGrupo + tituloDia + '<div class="cons-card at-card ' + cls + '">'
+      + '<div class="at-cab" onclick="abrirAtendimento(\'' + c.id + '\')">'
+        + '<div class="at-hora"><b>' + (hora || '--:--') + '</b><small>' + periodoDoHorario(hora) + '</small>'
+          + (posDia[c.id] ? '<span class="at-ord" title="Ordem de atendimento no dia">' + posDia[c.id] + 'ª</span>' : '') + '</div>'
+        + '<div class="at-id">'
+          + '<div class="at-linha1"><div class="at-nome">' + c.nome + '</div><div class="at-sts"><span class="at-status ' + stCls + '">' + stTxt + '</span>' + (ehProxima ? '<span class="at-prox">Próxima</span>' : '') + '</div></div>'
+          + '<div class="at-end">' + (endTxt ? icPin + '<span>' + endTxt + '</span>' : '<span>Endereço não cadastrado</span>') + '</div>'
         + '</div>'
       + '</div>'
-      + ((stats || tags.length || mestre.rotaObs) ? '<div class="ac-info" onclick="abrirAtendimento(\'' + c.id + '\')">'
-          + stats
-          + (tags.length ? '<div class="ac-chips" style="margin-top:7px;">' + tags.join('') + '</div>' : '')
-          + (mestre.rotaObs ? '<div class="ac-obs" style="margin-top:6px;">' + mestre.rotaObs + '</div>' : '')
-        + '</div>' : '')
-      + trilha
-      + acoes
+      + '<div class="at-fin">' + marca('Romance', fin.romance) + marca('Favorita', fin.favorita) + '</div>'
+      + indicadores
+      + (tags.length ? '<div class="at-tags">' + tags.join('') + '</div>' : '')
+      + (mestre.rotaObs ? '<div class="at-obs">' + mestre.rotaObs + '</div>' : '')
+      + botoes
+      + aux
     + '</div>';
   }).join('')
   + '<div style="height:16px;"></div>';
@@ -9276,7 +9318,7 @@ function salvarConsultora() {
     rotaObs: toUp(val('cRotaObs')),
     nomeRomance: toUp(val('cNomeRomance')), cpfStatus: window._consChip.cpf || '', codigoLiberacao: val('cCodigoLib'),
     comoChegou: window._consChip.como || '',
-    debitoFavorita: parseNum(document.getElementById('cDebFavorita').value) || 0,
+    debitoFavorita: document.getElementById('cDebFavorita').value.trim() === '' ? null : (parseNum(document.getElementById('cDebFavorita').value) || 0),
     linkLocalizacao: consExtrairLink(val('cLinkLoc')) || (/^https?:/i.test(val('cLinkLoc')) ? val('cLinkLoc') : '')
   };
 
@@ -11252,7 +11294,7 @@ function editarConsultora(id) {
   set('cDia', c.diaMelhor); set('cHorario', c.horarioMelhor);
   set('cRotaObs', c.rotaObs);
   set('cNomeRomance', c.nomeRomance); set('cCodigoLib', c.codigoLiberacao);
-  document.getElementById('cDebFavorita').value = brlInput(c.debitoFavorita);
+  document.getElementById('cDebFavorita').value = typeof c.debitoFavorita === 'number' ? 'R$ ' + c.debitoFavorita.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
   window._consChip = { como: c.comoChegou || '', cpf: c.cpfStatus || '' }; consRenderChips();
   document.getElementById('cLinkLoc').value = c.linkLocalizacao || ''; window._consLinkAtual = c.linkLocalizacao || '';
   if (typeof c.lat === 'number' && typeof c.lng === 'number' && (c.geoNivel === 'link' || (c.geoQ === rotaAssinatura(c) && (c.geoNivel === 'manual' || (c.geoV || 0) >= ROTA_GEO_V)))) {
