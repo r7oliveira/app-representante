@@ -2239,7 +2239,7 @@ input[type="time"]{max-width:100%;}
   </div>
 
   <div class="scroll-body" style="padding:0 16px 80px;">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 14px;">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:16px 0 14px;">
       <div class="tile-resumo" style="cursor:default;">
         <div class="tile-num" id="gerAtivas">0</div>
         <div class="tile-lbl">Ativas</div>
@@ -2250,18 +2250,6 @@ input[type="time"]{max-width:100%;}
         <div class="tile-lbl">Inativas</div>
         <div class="tile-sub">Ver inativas →</div>
       </button>
-      <button type="button" class="tile-resumo tile-red" onclick="abrirPagarDebitos()">
-        <div class="tile-num" id="gerDebVal">R$ 0</div>
-        <div class="tile-lbl">Em aberto</div>
-        <div class="tile-sub" id="gerDebSub">nenhum débito</div>
-      </button>
-    </div>
-
-    <!-- Busca por nome, em todos os setores -->
-    <div style="margin:0 0 16px;position:relative;">
-      <input type="text" id="buscaConsultorasGlobal" oninput="renderGerenciar()" placeholder="Buscar consultora em todos os setores..." style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px 36px 10px 36px;font-size:13px;font-family:var(--font);color:var(--ink);background:white;outline:none;box-sizing:border-box;">
-      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink-3);">🔍</span>
-      <button type="button" id="buscaConsultorasGlobalLimpar" onclick="document.getElementById('buscaConsultorasGlobal').value='';renderGerenciar();" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:var(--border);color:var(--ink-3);font-size:13px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;">✕</button>
     </div>
 
     <!-- Setores + semana de atendimento de cada um -->
@@ -2273,8 +2261,18 @@ input[type="time"]{max-width:100%;}
       <div id="gerRegioesRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;"></div>
     </div>
 
+    <!-- Dias de atendimento (só aparece quando as consultoras têm dia salvo) -->
+    <div id="gerDiasRow" style="display:none;gap:8px;overflow-x:auto;padding-bottom:12px;-webkit-overflow-scrolling:touch;"></div>
+
     <!-- Filtros -->
     <div id="gerFiltrosRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;"></div>
+
+    <!-- Busca por nome, em todos os setores -->
+    <div style="margin:0 0 16px;position:relative;">
+      <input type="text" id="buscaConsultorasGlobal" oninput="renderGerenciar()" placeholder="Buscar consultora em todos os setores..." style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:10px 36px 10px 36px;font-size:13px;font-family:var(--font);color:var(--ink);background:white;outline:none;box-sizing:border-box;">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--ink-3);">🔍</span>
+      <button type="button" id="buscaConsultorasGlobalLimpar" onclick="document.getElementById('buscaConsultorasGlobal').value='';renderGerenciar();" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:var(--border);color:var(--ink-3);font-size:13px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;">✕</button>
+    </div>
 
     <!-- Ativas -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;">
@@ -10873,6 +10871,7 @@ let gerenciarRegiao = null;
 
 function abrirGerenciar() {
   gerenciarRegiao = setorEmDestaque();
+  window._gerDia = undefined;
   goTo('gerenciar');
   renderGerenciar();
 }
@@ -10915,10 +10914,6 @@ function gerAtualizarResumo(regiao) {
   set('gerAtivas', doSetor.length);
   set('gerAtivasSub', 'de ' + ativasTodas.length + ' no total');
   set('gerInativas', DB.consultoras.filter(c => c.status === 'inativa').length);
-  let tot = 0; const ids = new Set();
-  doSetor.forEach(c => { const d = debitoTotalDe(c.id); if (d > 0) { tot += d; ids.add(c.id); } });
-  set('gerDebVal', brlInteiro(tot));
-  set('gerDebSub', ids.size ? ids.size + (ids.size > 1 ? ' consultoras' : ' consultora') : 'nenhum débito');
 }
 // deixa o setor escolhido no meio da fileira (que rola de lado)
 function gerCentralizarSetor() {
@@ -10926,9 +10921,11 @@ function gerCentralizarSetor() {
   const b = row && row.querySelector('[data-ativo="1"]');
   if (b && row.clientWidth) row.scrollLeft = Math.max(0, b.offsetLeft - (row.clientWidth - b.offsetWidth) / 2);
 }
-function gerFiltrar(f) { window._gerFiltro = f; renderGerenciar(); }
+function gerFiltrar(f) { window._gerFiltro = window._gerFiltro === f ? '' : f; renderGerenciar(); }   // tocar de novo desmarca
+function gerDia(dia) { window._gerDia = window._gerDia === dia ? '' : dia; renderGerenciar(); }   // tocar de novo no dia marcado mostra todos os dias
 function trocarRegiaoGerenciar(regiao) {
   gerenciarRegiao = regiao;
+  window._gerDia = undefined;
   renderGerenciar();
 }
 
@@ -10987,6 +10984,7 @@ function renderGerenciar() {
   if (termoGer) {
     document.getElementById('gerSecaoRegioes').style.display = 'none';
     const fr = document.getElementById('gerFiltrosRow'); if (fr) fr.style.display = 'none';
+    const frd = document.getElementById('gerDiasRow'); if (frd) frd.style.display = 'none';
     document.getElementById('gerenciarSub').textContent = 'Busca em todos os setores';
     const acoesTopoEl = document.getElementById('gerAcoesTopo');
     if (acoesTopoEl) acoesTopoEl.style.display = 'none';
@@ -11074,18 +11072,48 @@ function renderGerenciar() {
     return ult ? calcScore(ult.reg) : calcScore(c);
   };
 
-  // Filtros (chips) — contam só as ativas deste setor
+  // Dias de atendimento salvos nas consultoras deste setor (igual aos botões de dia dos Atendimentos)
+  const diasGer = [...DIAS_ORDEM_ROTA, 'Sem dia definido'].map(d => ({ dia: d, qtd: ativas.filter(c => (c.diaMelhor || 'Sem dia definido') === d).length })).filter(x => x.qtd > 0);
+  let diaGer = window._gerDia;                                   // undefined = ainda não escolheu · '' = mostrando todos os dias
+  if (diaGer && !diasGer.some(x => x.dia === diaGer)) diaGer = undefined;
+  if (diasGer.length <= 1) diaGer = '';
+  else if (diaGer === undefined) {
+    const hojeNome = nomeDiaHoje();
+    diaGer = (infoSetor && infoSetor.atual && diasGer.some(x => x.dia === hojeNome)) ? hojeNome : diasGer[0].dia;
+  }
+  window._gerDia = diaGer;
+  const rowDiasGer = document.getElementById('gerDiasRow');
+  if (rowDiasGer) {
+    if (diasGer.length > 1) {
+      const hojeNome2 = nomeDiaHoje();
+      rowDiasGer.innerHTML = diasGer.map(x => {
+        const idx = DIAS_ORDEM_ROTA.indexOf(x.dia);
+        const dt = (infoSetor && idx >= 0) ? new Date(infoSetor.segunda.getTime() + idx * 86400000) : null;
+        const abrev = x.dia === 'Sem dia definido' ? 'Sem dia' : x.dia.replace('-feira', '').slice(0, 3);
+        const ativo = x.dia === diaGer;
+        const ehHoje = infoSetor && infoSetor.atual && x.dia === hojeNome2;
+        return '<button type="button" onclick="gerDia(\'' + x.dia + '\')" data-ativo="' + (ativo ? 1 : 0) + '" style="flex-shrink:0;border-radius:14px;padding:8px 13px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;font-family:var(--font);border:1.5px solid ' + (ativo ? 'var(--ink)' : 'var(--border)') + ';background:' + (ativo ? 'var(--ink)' : 'white') + ';color:' + (ativo ? 'white' : 'var(--ink-2)') + ';">'
+          + rotuloDiaChip(dt, abrev) + ' <span style="opacity:.7;font-weight:700;">(' + x.qtd + ')</span>'
+          + (ehHoje ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + (ativo ? 'white' : 'var(--rose)') + ';margin-left:6px;vertical-align:middle;"></span>' : '')
+          + '</button>';
+      }).join('');
+      rowDiasGer.style.display = 'flex';
+      const bAtG = rowDiasGer.querySelector('[data-ativo="1"]');
+      if (bAtG) rowDiasGer.scrollLeft = Math.max(0, bAtG.offsetLeft - (rowDiasGer.clientWidth - bAtG.offsetWidth) / 2);
+    } else { rowDiasGer.innerHTML = ''; rowDiasGer.style.display = 'none'; }
+  }
+  const ativasDoDia = diaGer ? ativas.filter(c => (c.diaMelhor || 'Sem dia definido') === diaGer) : ativas;
+
+  // Filtros (chips) — contam só as ativas do dia marcado neste setor
   const debDe = {}; ativas.forEach(c => { debDe[c.id] = debitoTotalDe(c.id); });
   const FILTROS = [
-    ['todas', 'Todas', () => true],
     ['debito', 'Com débito', c => debDe[c.id] > 0],
     ['novas', 'Novas', c => !!c.novaConsultora],
-    ['semend', 'Sem endereço', c => !c.endereco],
   ];
-  const filtroAtivo = FILTROS.some(f => f[0] === window._gerFiltro) ? window._gerFiltro : 'todas';
+  const filtroAtivo = FILTROS.some(f => f[0] === window._gerFiltro) ? window._gerFiltro : '';   // '' = sem filtro (tocar de novo no marcado desmarca)
   document.getElementById('gerFiltrosRow').innerHTML = FILTROS.map(f =>
-    `<button type="button" class="chip-filtro${f[0] === filtroAtivo ? ' on' : ''}" onclick="gerFiltrar('${f[0]}')">${f[1]} <span>${ativas.filter(f[2]).length}</span></button>`).join('');
-  const ativasFiltradas = ativas.filter(FILTROS.find(f => f[0] === filtroAtivo)[2]);
+    `<button type="button" class="chip-filtro${f[0] === filtroAtivo ? ' on' : ''}" onclick="gerFiltrar('${f[0]}')">${f[1]} <span>${ativasDoDia.filter(f[2]).length}</span></button>`).join('');
+  const ativasFiltradas = filtroAtivo ? ativasDoDia.filter(FILTROS.find(f => f[0] === filtroAtivo)[2]) : ativasDoDia;
 
   // Lista ativas (um cartão por consultora, agrupados por dia)
   const listaAt = document.getElementById('gerListaAtivas');
