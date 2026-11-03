@@ -7838,7 +7838,6 @@ function renderSemana() {
         + '<div><span class="dh-nome">' + diaDaConsultora + (dataDia ? ' · ' + fmtDiaMes(dataDia) : '') + '</span>' + (ehHoje ? '<span class="dh-hoje">HOJE</span>' : '') + '</div>'
         + '<div style="display:flex;gap:6px;align-items:center;">'
           + (mostrarPdf ? '<button type="button" class="dh-rota dh-pdf" onclick="gerarPDFDiaAtendimento(\'' + diaDaConsultora + '\')">PDF</button>' : '')
-          + (grupoAtual === 0 ? '<button type="button" class="dh-rota" onclick="abrirRota(\'' + diaDaConsultora + '\')">Rota · ' + qtdDia + '</button>' : '')
         + '</div>'
       + '</div>';
     }
