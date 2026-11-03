@@ -230,6 +230,12 @@ input[type="time"]{max-width:100%;}
 .seg-op.on{background:var(--rose);border-color:var(--rose);color:white;}
 .seg-op:disabled{opacity:.45;cursor:not-allowed;background:var(--surface-2);}
 .dh-pdf{background:#EEEDE9 !important;color:#555 !important;}
+.tile-status{background:white;border:1.5px solid var(--border);border-radius:14px;padding:9px 10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0;font-family:var(--font);}
+.tile-status .ts-n{font-size:21px;font-weight:800;line-height:1.1;}
+.tile-status .ts-l{font-size:11px;font-weight:700;color:var(--ink-3);line-height:1.25;}
+.tile-status.st-pend .ts-n{color:#B78A3B;} .tile-status.st-pend.on{background:#F5EDDD;border-color:#B78A3B;}
+.tile-status.st-wpp .ts-n{color:#1F8A4C;} .tile-status.st-wpp.on{background:#E3F6EA;border-color:#1F8A4C;}
+.tile-status.st-agend .ts-n{color:#3269A5;} .tile-status.st-agend.on{background:#EAF1FA;border-color:#3269A5;}
 .at-loc{display:inline-block;margin-left:6px;font-size:11px;font-weight:800;background:#EEEDE9;color:#555;padding:2px 8px;border-radius:99px;white-space:nowrap;vertical-align:1px;}
 /* ── Card de atendimento · Premium Clean (layout em seções) ── */
 .cons-card.at-card{--ch:#A67C52;--tx:#181818;--tx2:#777777;--vd:#3C8064;--vd-bg:#E7F1EB;--am:#B78A3B;--am-bg:#F5EDDD;--vm:#B85A55;--vm-bg:#F7E9E7;--az:#3269A5;--az-bg:#EAF1FA;--neutro:#F3F2EE;
@@ -790,6 +796,7 @@ input[type="time"]{max-width:100%;}
       </button>
     </div>
     <div id="atendDiasRow" style="display:none;gap:8px;overflow-x:auto;padding:0 16px 12px;-webkit-overflow-scrolling:touch;"></div>
+    <div id="atendStatusRow" style="display:none;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 16px 12px;"></div>
     <div id="atendIncluirWrap" style="display:none;padding:0 16px;">
       <button onclick="abrirModalAdicionarConsultora()" style="width:100%;margin-bottom:12px;padding:13px;border:2px dashed var(--rose-mid);border-radius:16px;background:var(--rose-light);color:var(--rose);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">+ Incluir mais consultoras</button>
     </div>
@@ -6351,13 +6358,21 @@ function irListaConsultoras() {
 
 function filtrarDiaAtendimentos(dia) {
   window._filtroDiaAtend = dia || '';
+  window._filtroStatusAtend = '';
   renderSemana();
   const sb = document.querySelector('#view-atendimentos-lista .scroll-body');
   if (sb) sb.scrollTo({ top: 0, behavior: 'smooth' });
 }
+// Toca num contador (pendente de agendamento / WhatsApp enviado / agendado): mostra só essas; toca de novo pra voltar
+function filtrarStatusAtendimento(st) {
+  window._filtroStatusAtend = window._filtroStatusAtend === st ? '' : st;
+  window._filtroAtendimentos = 'pendentes';
+  renderSemana();
+}
 function filtrarAtendimentos(tipo) {
   if (tipo) {
     window._filtroAtendimentos = tipo;
+    window._filtroStatusAtend = '';
     const btns = {
       pendentes: document.getElementById('filtroAtendPendentes'),
       atendidas: document.getElementById('filtroAtendAtendidas'),
@@ -7758,12 +7773,25 @@ function renderSemana() {
     } else { rowDias.innerHTML = ''; rowDias.style.display = 'none'; }
   }
 
+  // Contadores de situação do agendamento — de quem ainda falta atender, no dia marcado
+  const filtroStatus = window._filtroStatusAtend || '';
+  const rowSt = document.getElementById('atendStatusRow');
+  if (rowSt) {
+    const base = listaCompleta.filter(c => c.status !== 'concluida' && (!diaSel || (c.diaMelhor || 'Sem dia definido') === diaSel));
+    const cont = { pendente: 0, whatsapp: 0, agendado: 0 };
+    base.forEach(c => { cont[statusHorarioDe(c) || 'pendente']++; });
+    const tile = (chave, cls, rotulo) => '<button type="button" class="tile-status ' + cls + (filtroStatus === chave && filtroAtend === 'pendentes' ? ' on' : '') + '" onclick="filtrarStatusAtendimento(\'' + chave + '\')"><span class="ts-n">' + cont[chave] + '</span><span class="ts-l">' + rotulo + '</span></button>';
+    rowSt.innerHTML = tile('pendente', 'st-pend', 'Pendente de agendamento') + tile('whatsapp', 'st-wpp', 'WhatsApp enviado') + tile('agendado', 'st-agend', 'Atendimento agendado');
+    rowSt.style.display = 'grid';
+  }
+
   if (filtroAtend === 'pendentes') visiveis = visiveis.filter(c => c.status !== 'concluida');
   else if (filtroAtend === 'atendidas') visiveis = visiveis.filter(c => c.status === 'concluida');
   // Busca por nome (não mexe nos contadores das abas, só filtra o que aparece) — procura em todos os dias
   const buscaEl = document.getElementById('buscaAtendimentos');
   const termoBusca = buscaEl ? buscaEl.value.trim().toLowerCase() : '';
   if (diaSel && !termoBusca) visiveis = visiveis.filter(c => (c.diaMelhor || 'Sem dia definido') === diaSel);
+  if (filtroStatus && !termoBusca && filtroAtend === 'pendentes') visiveis = visiveis.filter(c => (statusHorarioDe(c) || 'pendente') === filtroStatus);
   if (termoBusca) visiveis = visiveis.filter(c => (c.nome || '').toLowerCase().includes(termoBusca));
   const limparBtn = document.getElementById('buscaAtendimentosLimpar');
   if (limparBtn) limparBtn.style.display = termoBusca ? 'flex' : 'none';
@@ -7795,6 +7823,7 @@ function renderSemana() {
 
   if (!visiveis.length) {
     const msg = termoBusca ? 'Nenhuma consultora encontrada para "' + buscaEl.value.trim() + '".'
+      : filtroStatus && filtroAtend === 'pendentes' ? 'Nenhuma consultora nessa situação' + (diaSel ? ' neste dia.' : '.')
       : diaSel && filtroAtend === 'pendentes' ? 'Ninguém falta atender neste dia. 🎉'
       : diaSel && filtroAtend === 'atendidas' ? 'Nenhuma atendida neste dia ainda.'
       : filtroAtend === 'pendentes' ? 'Nenhuma consultora falta atender. 🎉'
