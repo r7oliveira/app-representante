@@ -11061,19 +11061,32 @@ function renderGerenciar() {
   // Setores (as 6 regiões do ciclo): quantidade + semana de atendimento de cada um
   const regs = regioesAtuais();
   const destaque = setorEmDestaque();
-  document.getElementById('gerRegioesRow').innerHTML = regs.map(r => {
+  // Ordem de atendimento: o setor da semana atual primeiro, depois o da próxima semana, e assim por diante (ciclo de 6 semanas)
+  const infoDe = {}; regs.forEach(r => { infoDe[r] = infoSemanaSetor(r); });
+  const regsOrd = [...regs].sort((a, b) => (infoDe[a] ? infoDe[a].numero : 1e9) - (infoDe[b] ? infoDe[b].numero : 1e9));
+  document.getElementById('gerRegioesRow').innerHTML = regsOrd.map((r, iOrd) => {
     const qtd = DB.consultoras.filter(c => c.regiao === r && c.status !== 'inativa').length;
     const ativo = r === regiao;
-    const inf = infoSemanaSetor(r);
+    const inf = infoDe[r];
     const linhaSemana = inf ? 'Semana ' + inf.numero + ' · ' + fmtDM(inf.segunda) + ' a ' + fmtDM(inf.domingo) : 'Sem visitas ainda';
+    // setor em atendimento: mostra também a próxima vez que ele será atendido (daqui a um ciclo = 6 semanas) — pra você já poder marcar
+    let linhaProx = '';
+    if (inf && inf.atual) {
+      const nCiclo = regs.length;
+      const segProx = new Date(inf.segunda.getTime() + nCiclo * 7 * 86400000), domProx = new Date(segProx.getTime() + 6 * 86400000);
+      linhaProx = `<div style="font-size:11px;font-weight:800;margin-top:2px;color:var(--rose);">Próximo: semana ${inf.numero + nCiclo} · ${fmtDM(segProx)} a ${fmtDM(domProx)}</div>`;
+    }
     const selo = r === destaque && inf
       ? `<div style="display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.5px;padding:2px 8px;border-radius:99px;margin-bottom:5px;background:var(--rose);color:white;">${inf.atual ? 'SEMANA ATUAL' : 'PRÓXIMA SEMANA'}</div>`
-      : '<div style="height:18px;margin-bottom:5px;"></div>';
-    return `<button type="button" data-ativo="${ativo ? 1 : 0}" onclick="trocarRegiaoGerenciar('${r}')" style="flex-shrink:0;text-align:left;background:${ativo?'var(--rose-light)':'var(--surface)'};color:var(--ink);border:1.5px solid ${ativo?'var(--rose)':(r===destaque?'var(--rose)':'var(--border)')};border-radius:16px;padding:10px 14px;cursor:pointer;white-space:nowrap;">
+      : (iOrd === 1 && inf && infoDe[regsOrd[0]] && infoDe[regsOrd[0]].atual
+        ? `<div style="display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.5px;padding:2px 8px;border-radius:99px;margin-bottom:5px;background:#EEEDE9;color:var(--rose);">PRÓXIMA SEMANA</div>`   // o setor que vem logo depois do atual
+        : '<div style="height:18px;margin-bottom:5px;"></div>');
+    return `<button type="button" data-ativo="${ativo ? 1 : 0}" onclick="trocarRegiaoGerenciar('${r}')" style="flex-shrink:0;text-align:left;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;background:${ativo?'var(--rose-light)':'var(--surface)'};color:var(--ink);border:1.5px solid ${ativo?'var(--rose)':(r===destaque?'var(--rose)':'var(--border)')};border-radius:16px;padding:10px 14px;cursor:pointer;white-space:nowrap;">
       ${selo}
       <div style="font-size:14px;font-weight:800;">${r}</div>
       <div style="font-size:12px;font-weight:700;margin-top:1px;opacity:.85;">${qtd} ${qtd === 1 ? 'consultora' : 'consultoras'}</div>
       <div style="font-size:11px;font-weight:700;margin-top:3px;color:var(--ink-3);">${linhaSemana}</div>
+      ${linhaProx}
     </button>`;
   }).join('');
   gerCentralizarSetor();
