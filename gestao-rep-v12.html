@@ -229,6 +229,7 @@ input[type="time"]{max-width:100%;}
 .seg-op{flex:1;height:44px;border-radius:14px;border:1.5px solid var(--border);background:white;color:var(--ink);font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;}
 .seg-op.on{background:var(--rose);border-color:var(--rose);color:white;}
 .seg-op:disabled{opacity:.45;cursor:not-allowed;background:var(--surface-2);}
+.dh-pdf{background:#EEEDE9 !important;color:#555 !important;}
 .at-loc{display:inline-block;margin-left:6px;font-size:11px;font-weight:800;background:#EEEDE9;color:#555;padding:2px 8px;border-radius:99px;white-space:nowrap;vertical-align:1px;}
 /* ── Card de atendimento · Premium Clean (layout em seções) ── */
 .cons-card.at-card{--ch:#A67C52;--tx:#181818;--tx2:#777777;--vd:#3C8064;--vd-bg:#E7F1EB;--am:#B78A3B;--am-bg:#F5EDDD;--vm:#B85A55;--vm-bg:#F7E9E7;--az:#3269A5;--az-bg:#EAF1FA;--neutro:#F3F2EE;
@@ -7814,9 +7815,13 @@ function renderSemana() {
       const dataDia = dataDoDiaDaSemana(sem, c.diaMelhor);
       const ehHoje = ehMesmoDia(dataDia, new Date());
       const qtdDia = visiveis.filter(x => grupoStatus(x) === grupoAtual && (x.diaMelhor || 'Sem dia definido') === diaDaConsultora).length;
+      const mostrarPdf = grupoAtual === 0 || (filtroAtend === 'atendidas' && grupoAtual === 3);
       tituloDia = '<div class="dia-head" style="margin-top:' + (tituloGrupo ? '0' : '18px') + ';">'
         + '<div><span class="dh-nome">' + diaDaConsultora + (dataDia ? ' · ' + fmtDiaMes(dataDia) : '') + '</span>' + (ehHoje ? '<span class="dh-hoje">HOJE</span>' : '') + '</div>'
-        + (grupoAtual === 0 ? '<button type="button" class="dh-rota" onclick="abrirRota(\'' + diaDaConsultora + '\')">Rota · ' + qtdDia + '</button>' : '')
+        + '<div style="display:flex;gap:6px;align-items:center;">'
+          + (mostrarPdf ? '<button type="button" class="dh-rota dh-pdf" onclick="gerarPDFDiaAtendimento(\'' + diaDaConsultora + '\')">PDF</button>' : '')
+          + (grupoAtual === 0 ? '<button type="button" class="dh-rota" onclick="abrirRota(\'' + diaDaConsultora + '\')">Rota · ' + qtdDia + '</button>' : '')
+        + '</div>'
       + '</div>';
     }
 
@@ -11324,6 +11329,167 @@ async function gerarPDFFinanceiroRegiao() {
 // região: meta, vendido, recebido, cobertura, remarcações, novas, ativas/
 // inativas e a análise da IA, se já tiver sido gerada pra essa semana.
 // ──────────────────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────
+// 🗓️ RELATÓRIO DO DIA DE ATENDIMENTO — uma ficha por consultora, na ordem do dia, com o que aparece
+// na tela (horário, endereço, situação Romance/Favorita, último a pagar, ticket médio) e os campos
+// Valor a pagar · Débito · Forma de pagamento. O que já está lançado no app sai preenchido; o que
+// ainda não tem nada fica em branco, pra completar à caneta depois de imprimir.
+// ──────────────────────────────────────────────────────────────────────────
+async function gerarPDFDiaAtendimento(diaLabel) {
+  const sem = getSemanaAtiva();
+  if (!sem) { alert('Nenhuma semana ativa.'); return; }
+  const semDia = !diaLabel || diaLabel === 'Sem dia definido';
+  const lista = consultorasValidasDe(sem).filter(c => semDia ? !c.diaMelhor : c.diaMelhor === diaLabel)
+    .sort((a, b) => minutosDoHorario(a.horarioMelhor) - minutosDoHorario(b.horarioMelhor) || (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+  if (!lista.length) { alert('Nenhuma consultora nesse dia.'); return; }
+  let jsPDFClass;
+  try { jsPDFClass = await _garantirJsPDF(); }
+  catch (e) { alert('Não consegui carregar o gerador de PDF. Confira a internet e tente de novo.'); return; }
+
+  const brlP = v => 'R$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const doc = new jsPDFClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 12, LIM = 279;
+  const CH = [166, 124, 82], TX = [24, 24, 24], TX2 = [119, 119, 119], VD = [60, 128, 100], VM = [184, 90, 85], AM = [183, 138, 59], AZ = [50, 105, 165], NEU = [243, 242, 238];
+  const dataDia = dataDoDiaDaSemana(sem, diaLabel);
+  let dataTxt = dataDia ? dataDia.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : (semDia ? 'Sem dia definido' : diaLabel);
+  dataTxt = dataTxt.charAt(0).toUpperCase() + dataTxt.slice(1);
+
+  // cabeçalho
+  doc.setFillColor(...CH); doc.rect(0, 0, W, 29, 'F');
+  doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+  doc.text('TIME ESTRELAS', M, 10);
+  doc.setFontSize(16); doc.text('Atendimentos do dia', M, 18.5);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+  doc.text(dataTxt + '  ·  Semana ' + sem.numero + '  ·  ' + sem.regiao, M, 25);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+  doc.text(lista.length + (lista.length === 1 ? ' consultora' : ' consultoras'), W - M, 18.5, { align: 'right' });
+  let y = 37;
+
+  const novaPagina = () => {
+    doc.addPage(); y = 14;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...TX2);
+    doc.text('Atendimentos do dia  ·  ' + dataTxt, M, y); y += 5;
+  };
+  const cortar = (txt, maxW) => { let t = String(txt || ''); if (doc.getTextWidth(t) <= maxW) return t; while (t.length > 3 && doc.getTextWidth(t + '...') > maxW) t = t.slice(0, -1); return t.trim() + '...'; };
+  // campo de valor: rótulo + linha; se já tem valor no app, sai preenchido; senão fica a linha em branco pra escrever
+  const campoValor = (rotulo, x, yy, w, valor) => {
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...TX2);
+    doc.text(rotulo, x, yy);
+    const x0 = x + doc.getTextWidth(rotulo) + 2;
+    doc.setDrawColor(150, 150, 150); doc.setLineWidth(0.25); doc.line(x0, yy + 0.9, x + w, yy + 0.9);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(valor === null ? 8.5 : 10);
+    doc.setTextColor(...(valor === null ? TX2 : TX));
+    doc.text(valor === null ? 'R$' : brlP(valor), x0 + 1, yy);
+  };
+  const caixa = (x, yy, rotulo, marcado, valorTxt) => {
+    doc.setDrawColor(80, 80, 80); doc.setLineWidth(0.3); doc.rect(x, yy - 3.1, 3.5, 3.5);
+    if (marcado) { doc.setLineWidth(0.45); doc.line(x + 0.6, yy - 2.5, x + 2.9, yy - 0.2); doc.line(x + 2.9, yy - 2.5, x + 0.6, yy - 0.2); }
+    doc.setFont('helvetica', marcado ? 'bold' : 'normal'); doc.setFontSize(8.5); doc.setTextColor(...(marcado ? TX : TX2));
+    doc.text(rotulo, x + 5.2, yy);
+    let fim = x + 5.2 + doc.getTextWidth(rotulo);
+    if (valorTxt) { doc.setFont('helvetica', 'bold'); doc.setTextColor(...TX); doc.text(valorTxt, fim + 1.5, yy); fim += 1.5 + doc.getTextWidth(valorTxt); }
+    return fim;
+  };
+
+  const H = 52;
+  lista.forEach((c, i) => {
+    if (y + H > LIM) novaPagina();
+    const m = DB.consultoras.find(x => x.id === c.id) || c;
+    const especial = c.parouDeVender ? 'inativa' : c.remarcarMes ? 'mes' : c.remarcarSemana ? 'semana' : null;
+    const stH = statusHorarioDe(c);
+    let stTxt = 'Pendente', stCor = AM;
+    if (especial === 'inativa') { stTxt = 'Inativa'; stCor = TX2; }
+    else if (especial) { stTxt = 'Remarcada'; stCor = TX2; }
+    else if (c.status === 'concluida') { stTxt = 'Concluido'; stCor = VD; }
+    else if (stH === 'agendado') { stTxt = 'Agendado'; stCor = AZ; }
+    else if (stH === 'whatsapp') { stTxt = 'WhatsApp enviado'; stCor = VD; }
+    if (stTxt === 'Concluido') stTxt = 'Concluído';
+
+    // moldura
+    doc.setDrawColor(210, 205, 198); doc.setLineWidth(0.3); doc.roundedRect(M, y, W - M * 2, H, 2.5, 2.5, 'S');
+
+    // linha 1: ordem + horário + nome + situação
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(14); doc.setTextColor(...CH);
+    doc.text(c.horarioMelhor || '--:--', M + 4, y + 8.5);
+    doc.setFillColor(...NEU); doc.roundedRect(M + 4, y + 11, 13, 5, 2.5, 2.5, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5); doc.setTextColor(85, 85, 85);
+    doc.text((i + 1) + 'ª visita', M + 10.5, y + 14.5, { align: 'center' });
+    const xN = M + 26;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...TX);
+    // situação do atendimento (pílula)
+    doc.setFontSize(8); const wSt = doc.getTextWidth(stTxt) + 6;
+    doc.setFillColor(...NEU); doc.roundedRect(W - M - 4 - wSt, y + 3.5, wSt, 5.6, 2.8, 2.8, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(...stCor); doc.text(stTxt, W - M - 4 - wSt / 2, y + 7.3, { align: 'center' });
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.setTextColor(...TX);
+    doc.text(cortar(c.nome, W - M - 4 - wSt - xN - 3), xN, y + 8.3);
+
+    // linha 2: endereço + telefone
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...TX2);
+    const tel = fmtTelefone(c.telefone || m.telefone);
+    const wTel = tel ? doc.getTextWidth(tel) + 4 : 0;
+    const endTxt = tituloCase(enderecoLinha(m)) + (m.localizacaoUsar === 'trabalho' && m.geoNivel === 'link' ? ' (trabalho)' : '');
+    doc.text(cortar(endTxt || 'Endereço não cadastrado', W - M - 4 - xN - wTel), xN, y + 14.5);
+    if (tel) doc.text(tel, W - M - 4, y + 14.5, { align: 'right' });
+
+    // linha 3: situação financeira
+    const fin = situacaoFinanceira(m);
+    const marca = (nome, f, x) => {
+      const txt = f.est === 'deb' ? 'Em débito ' + brlP(f.valor) : f.est === 'ok' ? 'Em dia' : 'Sem informação';
+      const cor = f.est === 'deb' ? VM : f.est === 'ok' ? VD : TX2;
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...TX); doc.text(nome + ':', x, y + 21.5);
+      doc.setFont('helvetica', 'bold'); doc.setTextColor(...cor); doc.text(txt, x + doc.getTextWidth(nome + ': ') + 0.5, y + 21.5);
+    };
+    marca('Romance', fin.romance, M + 4);
+    marca('Favorita', fin.favorita, M + 4 + 70);
+
+    // linha 4: último a pagar + ticket médio
+    const ult = _ultimoRegistroDe(m), tk = _ticketMedioDe(m);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...TX2);
+    doc.text('Último a pagar: ' + (ult && ult.reg ? brlP(aPagarDe(ult.reg)) + ' (sem. ' + ult.sem.numero + ')' : '—'), M + 4, y + 27);
+    doc.text('Ticket médio: ' + (tk ? brlP(tk.valor) + ' (' + (tk.qtdSemanas === 1 ? 'última semana' : 'últimas ' + tk.qtdSemanas + ' semanas') + ')' : '—'), M + 4 + 70, y + 27);
+
+    // divisor + campos pra preencher
+    doc.setDrawColor(225, 222, 216); doc.setLineWidth(0.25); doc.line(M + 4, y + 30.5, W - M - 4, y + 30.5);
+    const temVenda = (c.vendido || 0) > 0;
+    campoValor('Valor a pagar', M + 4, y + 38.5, 82, temVenda ? aPagarDe(c) : null);
+    campoValor('Débito', M + 4 + 92, y + 38.5, 82 - 10, temVenda ? debitoDe(c) : null);
+    // forma de pagamento
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...TX2);
+    doc.text('Forma de pagamento', M + 4, y + 46.5);
+    const sp = (c.recebido || 0) > 0 ? splitRecebido(c) : { pix: 0, din: 0 };
+    const outros = Math.min(c.recebidoOutros || 0, sp.din), dinh = Math.max(0, sp.din - outros);
+    let xx = M + 4 + doc.getTextWidth('Forma de pagamento') + 5;
+    xx = caixa(xx, y + 46.5, 'Pix', sp.pix > 0, sp.pix > 0 ? brlP(sp.pix) : '') + 6;
+    xx = caixa(xx, y + 46.5, 'Dinheiro', dinh > 0, dinh > 0 ? brlP(dinh) : '') + 6;
+    xx = caixa(xx, y + 46.5, 'Outros', outros > 0, outros > 0 ? brlP(outros) : '') + 2;
+    if (outros === 0) { doc.setDrawColor(150, 150, 150); doc.setLineWidth(0.25); doc.line(xx, y + 47.4, W - M - 4, y + 47.4); }
+
+    y += H + 4;
+  });
+
+  // totais do dia (preenchidos se já houver lançamentos; senão ficam em branco) + observações
+  const comVenda = lista.filter(c => (c.vendido || 0) > 0);
+  const totPagar = comVenda.reduce((a, c) => a + aPagarDe(c), 0);
+  const totDeb = comVenda.reduce((a, c) => a + debitoDe(c), 0);
+  const totPix = lista.reduce((a, c) => a + ((c.recebido || 0) > 0 ? splitRecebido(c).pix : 0), 0);
+  const totDin = lista.reduce((a, c) => a + ((c.recebido || 0) > 0 ? splitRecebido(c).din : 0), 0);
+  if (y + 56 > LIM) novaPagina();
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...TX);
+  doc.text('TOTAIS DO DIA', M, y + 4); y += 12;
+  campoValor('Total a pagar', M, y, 88, comVenda.length ? totPagar : null);
+  campoValor('Total em débito', M + 98, y, 88, comVenda.length ? totDeb : null); y += 9;
+  campoValor('Total em Pix', M, y, 88, totPix > 0 ? totPix : null);
+  campoValor('Total em dinheiro', M + 98, y, 88, totDin > 0 ? totDin : null); y += 12;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...TX);
+  doc.text('OBSERVAÇÕES', M, y); y += 7;
+  doc.setDrawColor(190, 186, 180); doc.setLineWidth(0.25);
+  for (let k = 0; k < 4; k++) { doc.line(M, y, W - M, y); y += 8; }
+
+  _rodapePDFConsultoras(doc, W, M, sem.regiao);
+  const dd = dataDia ? String(dataDia.getDate()).padStart(2, '0') + '-' + String(dataDia.getMonth() + 1).padStart(2, '0') : 'sem-dia';
+  doc.save('atendimentos-' + (semDia ? 'sem-dia' : rotaSemAcento(diaLabel).toLowerCase().replace(/-feira/, '').replace(/[^a-z]/g, '')) + '-' + dd + '.pdf');
+}
+
 async function gerarPDFFechamentoRegiao() {
   const regiao = gerenciarRegiao;
   if (!regiao) return;
