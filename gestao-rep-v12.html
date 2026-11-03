@@ -877,6 +877,8 @@ input[type="time"]{max-width:100%;}
     <div class="ph-sub" style="color:rgba(255,255,255,.7);">Cobranças pendentes de todas as semanas</div>
   </div>
   <div class="scroll-body" style="padding:14px 16px 80px;">
+    <div id="debTotalBox"></div>
+
     <button onclick="toggleBuscaConsultoraDebito()" style="width:100%;background:white;border:1.5px dashed var(--rose);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;font-family:var(--font);margin-bottom:14px;">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rose-deep)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
       <span style="font-size:13px;font-weight:800;color:var(--rose-deep);">Buscar consultora (qualquer região)</span>
@@ -6429,16 +6431,20 @@ function renderPagarDebitos() {
   itens.sort((a, b) => debitoDe(b.cons) - debitoDe(a.cons));
 
   if (!itens.length) {
+    const cx0 = document.getElementById('debTotalBox'); if (cx0) cx0.innerHTML = '';
     lista.innerHTML = '<div style="text-align:center;padding:40px 20px;color:var(--ink-3);font-size:14px;">Nenhum débito pendente. 🎉</div>';
     return;
   }
 
   const totalGeral = itens.reduce((a, it) => a + debitoDe(it.cons), 0);
 
-  lista.innerHTML = '<div style="background:var(--red-bg);border-radius:14px;padding:14px 16px;margin-bottom:14px;text-align:center;">'
+  const htmlTotal = '<div style="background:var(--red-bg);border-radius:14px;padding:14px 16px;margin-bottom:14px;text-align:center;">'
       + '<div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">Total pendente · ' + itens.length + (itens.length > 1 ? ' consultoras' : ' consultora') + '</div>'
       + '<div style="font-size:22px;font-weight:800;color:var(--red);">' + brl(totalGeral) + '</div>'
-    + '</div>'
+    + '</div>';
+  const caixaTotal = document.getElementById('debTotalBox');          // o total fica acima da busca
+  if (caixaTotal) caixaTotal.innerHTML = htmlTotal;
+  lista.innerHTML = (caixaTotal ? '' : htmlTotal)
     + itens.map(it => {
       const c = it.cons;
       const partes = [c.cidade, 'Semana ' + it.semNumero + (it.semRegiao ? ' · ' + it.semRegiao : '')].filter(Boolean);
