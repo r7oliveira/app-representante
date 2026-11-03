@@ -230,6 +230,16 @@ input[type="time"]{max-width:100%;}
 .seg-op.on{background:var(--rose);border-color:var(--rose);color:white;}
 .seg-op:disabled{opacity:.45;cursor:not-allowed;background:var(--surface-2);}
 .dh-pdf{background:#EEEDE9 !important;color:#555 !important;}
+.gf-lbl{align-self:center;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:var(--ink-3);margin-right:2px;flex-shrink:0;}
+.gf-chip{display:flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:10px;border:1.5px solid transparent;font-size:12.5px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.gf-chip b{font-weight:800;}
+.gf-debito{background:#F7E9E7;color:#B85A55;border-color:#F0D5D2;}
+.gf-debito.on{background:#B85A55;color:#fff;border-color:#B85A55;}
+.gf-novas{background:#EAF1FA;color:#3269A5;border-color:#D3E1F2;}
+.gf-novas.on{background:#3269A5;color:#fff;border-color:#3269A5;}
+.ger-btn{height:44px;padding:0 16px;border-radius:14px;border:none;background:#EEEDE9;color:var(--ink);font-size:14.5px;font-weight:800;font-family:var(--font);display:flex;align-items:center;gap:7px;cursor:pointer;}
+.ger-btn.pri{background:var(--rose);color:white;box-shadow:0 4px 12px rgba(166,124,82,.28);}
+.ger-btn:active{opacity:.85;}
 .tile-status{background:white;border:1.5px solid var(--border);border-radius:14px;padding:9px 10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0;font-family:var(--font);}
 .tile-status .ts-n{font-size:21px;font-weight:800;line-height:1.1;}
 .tile-status .ts-l{font-size:11px;font-weight:700;color:var(--ink-3);line-height:1.25;}
@@ -2274,12 +2284,20 @@ input[type="time"]{max-width:100%;}
       <button type="button" id="buscaConsultorasGlobalLimpar" onclick="document.getElementById('buscaConsultorasGlobal').value='';renderGerenciar();" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:24px;height:24px;border-radius:50%;border:none;background:var(--border);color:var(--ink-3);font-size:13px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;">✕</button>
     </div>
 
-    <!-- Ativas -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;">
-      <span style="font-size:13px;font-weight:700;color:var(--ink-2);" id="gerListaTitulo">Consultoras ativas</span>
-      <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;" id="gerAcoesTopo">
-        <button onclick="document.getElementById('modalEscolhaPDF').classList.add('open')" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">PDF</button>
-        <button onclick="abrirModalConsultora()" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;">+ Nova</button>
+    <!-- Ativas: dia que vai ser atendido + PDF / Nova -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 16px;">
+      <div style="min-width:0;">
+        <div id="gerListaTitulo" style="font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.4px;line-height:1.15;">Consultoras ativas</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:3px;">
+          <span id="gerListaSub" style="font-size:13px;font-weight:700;color:var(--ink-3);"></span>
+          <span id="gerListaHoje" style="display:none;font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 8px;border-radius:99px;background:var(--rose);color:white;">HOJE</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;" id="gerAcoesTopo">
+        <button type="button" class="ger-btn" onclick="document.getElementById('modalEscolhaPDF').classList.add('open')">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>PDF</button>
+        <button type="button" class="ger-btn pri" onclick="abrirModalConsultora()">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova</button>
       </div>
     </div>
     <div id="gerListaAtivas"></div>
@@ -11016,8 +11034,9 @@ function renderGerenciar() {
   document.getElementById('gerSecaoRegioes').style.display = '';
   const fr2 = document.getElementById('gerFiltrosRow'); if (fr2) fr2.style.display = 'flex';
   const acoesTopoEl2 = document.getElementById('gerAcoesTopo');
-  if (acoesTopoEl2) acoesTopoEl2.style.display = '';
-  document.getElementById('gerListaTitulo').textContent = 'Consultoras ativas';
+  if (acoesTopoEl2) acoesTopoEl2.style.display = 'flex';
+  document.getElementById('gerListaTitulo').textContent = 'Consultoras ativas';   // (ajustado mais abaixo pelo dia marcado)
+  { const h0 = document.getElementById('gerListaHoje'); if (h0) h0.style.display = 'none'; const sb0 = document.getElementById('gerListaSub'); if (sb0) sb0.textContent = ''; }
 
   const ORDEM_DIAS = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
   const ordemDia = (c) => {
@@ -11048,13 +11067,13 @@ function renderGerenciar() {
     const inf = infoSemanaSetor(r);
     const linhaSemana = inf ? 'Semana ' + inf.numero + ' · ' + fmtDM(inf.segunda) + ' a ' + fmtDM(inf.domingo) : 'Sem visitas ainda';
     const selo = r === destaque && inf
-      ? `<div style="display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.5px;padding:2px 8px;border-radius:99px;margin-bottom:5px;background:${ativo?'rgba(255,255,255,.18)':'var(--rose)'};color:white;">${inf.atual ? 'SEMANA ATUAL' : 'PRÓXIMA SEMANA'}</div>`
+      ? `<div style="display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.5px;padding:2px 8px;border-radius:99px;margin-bottom:5px;background:var(--rose);color:white;">${inf.atual ? 'SEMANA ATUAL' : 'PRÓXIMA SEMANA'}</div>`
       : '<div style="height:18px;margin-bottom:5px;"></div>';
-    return `<button type="button" data-ativo="${ativo ? 1 : 0}" onclick="trocarRegiaoGerenciar('${r}')" style="flex-shrink:0;text-align:left;background:${ativo?'var(--ink)':'var(--surface)'};color:${ativo?'white':'var(--ink)'};border:1.5px solid ${ativo?'var(--ink)':(r===destaque?'var(--rose)':'var(--border)')};border-radius:16px;padding:10px 14px;cursor:pointer;white-space:nowrap;">
+    return `<button type="button" data-ativo="${ativo ? 1 : 0}" onclick="trocarRegiaoGerenciar('${r}')" style="flex-shrink:0;text-align:left;background:${ativo?'var(--rose-light)':'var(--surface)'};color:var(--ink);border:1.5px solid ${ativo?'var(--rose)':(r===destaque?'var(--rose)':'var(--border)')};border-radius:16px;padding:10px 14px;cursor:pointer;white-space:nowrap;">
       ${selo}
       <div style="font-size:14px;font-weight:800;">${r}</div>
       <div style="font-size:12px;font-weight:700;margin-top:1px;opacity:.85;">${qtd} ${qtd === 1 ? 'consultora' : 'consultoras'}</div>
-      <div style="font-size:11px;font-weight:700;margin-top:3px;color:${ativo?'rgba(255,255,255,.75)':'var(--ink-3)'};">${linhaSemana}</div>
+      <div style="font-size:11px;font-weight:700;margin-top:3px;color:var(--ink-3);">${linhaSemana}</div>
     </button>`;
   }).join('');
   gerCentralizarSetor();
@@ -11103,6 +11122,14 @@ function renderGerenciar() {
     } else { rowDiasGer.innerHTML = ''; rowDiasGer.style.display = 'none'; }
   }
   const ativasDoDia = diaGer ? ativas.filter(c => (c.diaMelhor || 'Sem dia definido') === diaGer) : ativas;
+  {   // título da lista: o dia que vai ser atendido (com a data) — ou "Todos os dias"
+    const idxT = DIAS_ORDEM_ROTA.indexOf(diaGer);
+    const dtT = (infoSetor && idxT >= 0) ? new Date(infoSetor.segunda.getTime() + idxT * 86400000) : null;
+    document.getElementById('gerListaTitulo').textContent = diaGer || 'Todos os dias';
+    document.getElementById('gerListaSub').textContent = dtT ? dtT.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) : '';
+    const hojeEl = document.getElementById('gerListaHoje');
+    if (hojeEl) hojeEl.style.display = (diaGer && infoSetor && infoSetor.atual && diaGer === nomeDiaHoje()) ? '' : 'none';
+  }
 
   // Filtros (chips) — contam só as ativas do dia marcado neste setor
   const debDe = {}; ativas.forEach(c => { debDe[c.id] = debitoTotalDe(c.id); });
@@ -11111,8 +11138,12 @@ function renderGerenciar() {
     ['novas', 'Novas', c => !!c.novaConsultora],
   ];
   const filtroAtivo = FILTROS.some(f => f[0] === window._gerFiltro) ? window._gerFiltro : '';   // '' = sem filtro (tocar de novo no marcado desmarca)
-  document.getElementById('gerFiltrosRow').innerHTML = FILTROS.map(f =>
-    `<button type="button" class="chip-filtro${f[0] === filtroAtivo ? ' on' : ''}" onclick="gerFiltrar('${f[0]}')">${f[1]} <span>${ativasDoDia.filter(f[2]).length}</span></button>`).join('');
+  const icF = {
+    debito: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+    novas: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>',
+  };
+  document.getElementById('gerFiltrosRow').innerHTML = '<span class="gf-lbl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Filtrar</span>'
+    + FILTROS.map(f => `<button type="button" class="gf-chip gf-${f[0]}${f[0] === filtroAtivo ? ' on' : ''}" onclick="gerFiltrar('${f[0]}')">${icF[f[0]]}${f[1]} <b>${ativasDoDia.filter(f[2]).length}</b></button>`).join('');
   const ativasFiltradas = filtroAtivo ? ativasDoDia.filter(FILTROS.find(f => f[0] === filtroAtivo)[2]) : ativasDoDia;
 
   // Lista ativas (um cartão por consultora, agrupados por dia)
@@ -11139,6 +11170,7 @@ function renderGerenciar() {
           + (diaDaConsultora === diaHojeLabel ? '<span class="dh-hoje">HOJE</span>' : '') + '</div>'
           + '<span style="font-size:11.5px;font-weight:700;color:var(--ink-3);">' + qtdDia + (qtdDia === 1 ? ' consultora' : ' consultoras') + '</span></div>';
       }
+      if (diaGer) header = '';   // com um dia marcado, o dia já aparece no topo
       numDia++;
       const endTxt = enderecoLinha(c);
       const ult = _ultimoRegistroDe(c);
