@@ -2322,6 +2322,7 @@ input[type="time"]{max-width:100%;}
     <div style="color:rgba(255,255,255,.75);font-size:12.5px;margin-top:2px;" id="inativasTodasSub">Todas as regiões</div>
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;">
+    <div id="inativasCidadesRow" style="display:none;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;"></div>
     <div id="listaInativasTodas"></div>
   </div>
 </div>
@@ -10948,31 +10949,53 @@ function trocarRegiaoGerenciar(regiao) {
 }
 
 function abrirInativasTodas() {
+  window._inativaCidade = '';
   renderInativasTodas();
   goTo('inativas-todas');
 }
 
+// Cidade da consultora sem o "/UF" (GRAMADO/RS e GRAMADO viram a mesma cidade)
+function cidadeBaseDe(c) {
+  const t = String(c.cidade || '').split('/')[0].trim().toUpperCase();
+  return t || 'SEM CIDADE';
+}
+function filtrarInativasCidade(cidade) { window._inativaCidade = window._inativaCidade === cidade ? '' : cidade; renderInativasTodas(); }   // tocar de novo desmarca
 function renderInativasTodas() {
   const inativas = DB.consultoras.filter(c => c.status === 'inativa');
-  document.getElementById('inativasTodasSub').textContent = inativas.length + (inativas.length === 1 ? ' consultora inativa' : ' consultoras inativas') + ' · todas as regiões';
+  document.getElementById('inativasTodasSub').textContent = inativas.length + (inativas.length === 1 ? ' consultora inativa' : ' consultoras inativas') + ' · por cidade';
   const el = document.getElementById('listaInativasTodas');
+  const rowC = document.getElementById('inativasCidadesRow');
   if (!inativas.length) {
+    if (rowC) { rowC.innerHTML = ''; rowC.style.display = 'none'; }
     el.innerHTML = '<div style="text-align:center;padding:30px 16px;color:var(--ink-3);font-size:13px;">Nenhuma consultora inativa no momento.</div>';
     return;
   }
-  const porRegiao = {};
-  inativas.forEach(c => {
-    const r = c.regiao || 'Sem região';
-    (porRegiao[r] = porRegiao[r] || []).push(c);
-  });
-  el.innerHTML = Object.keys(porRegiao).sort().map(r => `
-    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin:16px 2px 8px;">${r} (${porRegiao[r].length})</div>
+  const porCidade = {};
+  inativas.forEach(c => { const k = cidadeBaseDe(c); (porCidade[k] = porCidade[k] || []).push(c); });
+  const cidades = Object.keys(porCidade).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const nomeCidade = k => k === 'SEM CIDADE' ? 'Sem cidade' : tituloCase(k);
+  let sel = window._inativaCidade || '';
+  if (sel && !porCidade[sel]) sel = window._inativaCidade = '';
+  // filtro por cidade (só aparece quando tem mais de uma)
+  if (rowC) {
+    if (cidades.length > 1) {
+      rowC.innerHTML = cidades.map(k => {
+        const ativo = k === sel;
+        return '<button type="button" onclick="filtrarInativasCidade(\'' + k.replace(/'/g, "\\'") + '\')" style="flex-shrink:0;border-radius:12px;padding:8px 13px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;font-family:var(--font);border:1.5px solid ' + (ativo ? 'var(--rose)' : 'var(--border)') + ';background:' + (ativo ? 'var(--rose-light)' : 'white') + ';color:var(--ink);">'
+          + nomeCidade(k) + ' <span style="opacity:.6;font-weight:700;">(' + porCidade[k].length + ')</span></button>';
+      }).join('');
+      rowC.style.display = 'flex';
+    } else { rowC.innerHTML = ''; rowC.style.display = 'none'; sel = ''; }
+  }
+  const mostrar = sel ? [sel] : cidades;
+  el.innerHTML = mostrar.map(k => `
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin:16px 2px 8px;">${nomeCidade(k)} (${porCidade[k].length})</div>
     <div class="card" style="margin-bottom:4px;">
-      ${porRegiao[r].map(c => `
+      ${porCidade[k].sort((x, y) => (x.nome || '').localeCompare(y.nome || '', 'pt-BR')).map(c => `
         <div class="card-row" style="opacity:.65;cursor:pointer;" onclick="editarConsultora('${c.id}')">
           <div style="flex:1;min-width:0;">
             <div style="font-size:14px;font-weight:700;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.nome}</div>
-            <div style="font-size:11px;color:var(--ink-3);">${c.cidade||''}</div>
+            <div style="font-size:11px;color:var(--ink-3);">${c.regiao || 'Sem setor'}</div>
           </div>
           <button onclick="event.stopPropagation();reativarConsultora('${c.id}');renderInativasTodas();" style="font-size:12px;font-weight:700;color:var(--green);background:none;border:none;cursor:pointer;flex-shrink:0;">Reativar</button>
         </div>`).join('')}
@@ -11209,7 +11232,7 @@ function renderGerenciar() {
             + '<div class="ac-end">' + (c.telefone ? fmtTelefone(c.telefone) + ' · ' : '') + ultTxt + '</div>'
             + (visita ? '<div class="ger-visita">' + visita + '</div>' : '')
             + '<div class="ger-stats">'
-              + '<div><div class="ger-lbl">Último pedido</div><div class="ger-val">' + (ult ? brl(ult.reg.vendido || 0) + ' <small>· sem. ' + ult.sem.numero + '</small>' : '—') + '</div></div>'
+              + '<div><div class="ger-lbl">Último valor a pagar</div><div class="ger-val">' + (ult ? brl(aPagarDe(ult.reg)) + ' <small>· sem. ' + ult.sem.numero + '</small>' : '—') + '</div></div>'
               + '<div><div class="ger-lbl">Em aberto</div><div class="ger-val" style="color:' + (deb > 0 ? 'var(--red)' : 'var(--ink)') + ';">' + brl(deb) + '</div></div>'
             + '</div>'
             + '<div class="ac-chips">' + chips.join('') + '</div>'
