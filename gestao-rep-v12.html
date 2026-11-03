@@ -309,12 +309,14 @@ input[type="time"]{max-width:100%;}
 .rota-pin-wrap{display:flex;align-items:center;justify-content:center;background:none!important;border:none!important;}
 .rota-pin{width:30px;height:30px;border-radius:50%;background:var(--rose);color:white;border:3px solid white;box-shadow:0 3px 8px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:var(--font);}
 .rota-pin.prox{background:white;color:var(--rose);border:3px solid var(--rose);width:46px;height:46px;font-size:18px;box-shadow:0 4px 12px rgba(0,0,0,.35);}
-.rota-pin.feito{background:var(--green);width:24px;height:24px;font-size:12px;}
+.rota-pin.feito{background:#3269A5;}   /* atendida: continua com o número dela, em azul */
+.rota-pin.feito.esp{background:#9A9A94;}   /* remarcada/inativa: cinza */
 .rota-pin.sel{box-shadow:0 0 0 5px rgba(166,124,82,.5),0 3px 8px rgba(0,0,0,.35);}
 .rota-eu{width:18px;height:18px;border-radius:50%;background:#2563eb;border:3px solid white;animation:rotaPulso 2s infinite;}
 @keyframes rotaPulso{0%{box-shadow:0 0 0 0 rgba(37,99,235,.5);}70%{box-shadow:0 0 0 14px rgba(37,99,235,0);}100%{box-shadow:0 0 0 0 rgba(37,99,235,0);}}
 .rota-num{width:30px;height:30px;border-radius:50%;background:var(--rose);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.rota-num.feito{background:var(--green-bg);color:var(--green);}
+.rota-num.feito{background:#3269A5;color:white;}
+.rota-num.feito.esp{background:#9A9A94;}
 .rota-wrap{position:relative;margin:8px 16px 0;border-radius:18px;overflow:hidden;border:1px solid var(--border);height:450px;background:#e9e6e0;}
 .rota-fabs{position:absolute;top:10px;right:10px;z-index:1000;display:flex;flex-direction:column;gap:8px;}
 #rotaTopoCheia{display:none;position:absolute;z-index:1100;left:10px;right:10px;top:calc(10px + env(safe-area-inset-top));align-items:center;gap:8px;}
@@ -6901,7 +6903,7 @@ function rotaMontarParadas(sem, dia) {
     const endTxt = enderecoLinha(m);
     return {
       id: c.id, c, m, nome: c.nome, hora: c.horarioMelhor || '', feito, especial, naRota: !feito,
-      num: feito ? null : i + 1, endTxt,
+      num: i + 1, endTxt,   // o número da parada é fixo: continua o mesmo depois de atendida
       lat: temPonto ? m.lat : null, lng: temPonto ? m.lng : null, nivel: temPonto ? (m.geoNivel || null) : null,
       tentou: geoOk && !temPonto, leg: null,
     };
@@ -7104,8 +7106,8 @@ async function rotaGarantirCoordenadas(token) {
 
 /* ── Desenho do mapa ── */
 function rotaIcone(p, proxId) {
-  const cls = 'rota-pin' + (p.feito ? ' feito' : (p.id === proxId ? ' prox' : '')) + (p.id === ROTA.selId ? ' sel' : '');
-  return L.divIcon({ className: 'rota-pin-wrap', html: '<div class="' + cls + '">' + (p.feito ? '✓' : p.num) + '</div>', iconSize: [48, 48], iconAnchor: [24, 24] });
+  const cls = 'rota-pin' + (p.feito ? ' feito' + (p.especial ? ' esp' : '') : (p.id === proxId ? ' prox' : '')) + (p.id === ROTA.selId ? ' sel' : '');
+  return L.divIcon({ className: 'rota-pin-wrap', html: '<div class="' + cls + '">' + p.num + '</div>', iconSize: [48, 48], iconAnchor: [24, 24] });
 }
 function rotaDesenharParadas(enquadrar) {
   if (!ROTA.map || !window.L) return;
@@ -7321,7 +7323,7 @@ function rotaRenderLista() {
   if (!ROTA.paradas.length) { el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--ink-3);font-size:13px;">Nenhuma consultora neste dia.</div>'; return; }
   el.innerHTML = ROTA.paradas.map(p => {
     const sel = p.id === ROTA.selId;
-    const circ = p.feito ? '<div class="rota-num feito">✓</div>' : '<div class="rota-num">' + p.num + '</div>';
+    const circ = '<div class="rota-num' + (p.feito ? ' feito' + (p.especial ? ' esp' : '') : '') + '">' + p.num + '</div>';
     let status = '';
     if (p.feito) status = '<span class="chip green">' + (p.especial ? 'Remarcada' : 'Atendida') + '</span>';
     else if (p.lat === null) status = p.tentou ? '<span class="chip red">Endereço não localizado</span>' : (p.endTxt ? '<span class="chip">Localizando…</span>' : '<span class="chip red">Sem endereço</span>');
