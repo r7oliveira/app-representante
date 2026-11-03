@@ -266,6 +266,7 @@ input[type="time"]{max-width:100%;}
 .at-nome{margin-top:12px;font-size:15.5px;font-weight:800;line-height:1.25;color:var(--tx);cursor:pointer;}
 .at-end{display:flex;gap:7px;align-items:flex-start;margin-top:6px;font-size:13px;color:var(--tx2);line-height:1.4;cursor:pointer;}
 .at-end svg{margin-top:2px;flex-shrink:0;}
+.at-via{margin-top:3px;padding-left:22px;font-size:11.5px;font-weight:600;color:#A5A39C;}   /* discreto: só pra bater o olho */
 .at-sep{height:1px;background:#ECEBE7;margin-top:12px;}
 .at-sec{margin:11px 0 6px;font-size:12px;font-weight:800;letter-spacing:.4px;color:var(--tx);text-transform:uppercase;}
 .at-fin,.at-perf{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
@@ -8057,6 +8058,7 @@ function renderSemana() {
       + '</div>'
       + '<div class="at-nome" onclick="abrirAtendimento(\'' + c.id + '\')">' + c.nome + '</div>'
       + '<div class="at-end" onclick="abrirAtendimento(\'' + c.id + '\')">' + (endTxt ? icPin + '<span>' + tituloCase(endTxt) + (mestre.localizacaoUsar === 'trabalho' && mestre.geoNivel === 'link' ? '<span class="at-loc">Trabalho</span>' : '') + '</span>' : '<span>Endereço não cadastrado</span>') + '</div>'
+      + (mestre.comoChegou ? '<div class="at-via">Veio por: ' + String(mestre.comoChegou).replace(/[<>&"]/g, '') + '</div>' : '')
       + '<div class="at-sep"></div>'
       + '<div class="at-sec">Situação financeira</div>'
       + '<div class="at-fin">' + marca('Romance', fin.romance) + marca('Favorita', fin.favorita) + '</div>'
@@ -9462,12 +9464,11 @@ function consPreencherEndereco(a) {
   else { const nome = rotaSemAcento(a.state || ''); uf = Object.keys(UF_NOME).find(k => rotaSemAcento(UF_NOME[k]) === nome) || ''; }
   const cep = String(a.postcode || '').replace(/\D/g, '');
   const set = (id, v) => { const el = document.getElementById(id); if (el && v) el.value = toUp(v); };
-  const ruaAntes = toUp(document.getElementById('cRua').value.trim());
   set('cRua', rua); set('cBairro', bairro); set('cCidade', cidade); set('cUf', uf);
   if (cep.length === 8) document.getElementById('cCep').value = cep.slice(0, 5) + '-' + cep.slice(5);
+  // O número que você já digitou nunca é apagado nem trocado; o do mapa só entra se o campo estiver vazio
   const n = document.getElementById('cNumero');
-  if (a.house_number) n.value = toUp(a.house_number);
-  else if (rua && toUp(rua) !== ruaAntes) n.value = '';          // rua mudou: o número antigo não vale mais
+  if (n && !n.value.trim() && a.house_number) n.value = toUp(a.house_number);
 }
 // Texto "RUA, NUM · BAIRRO · CIDADE/UF" de um endereço lido do mapa (usado pro trabalho)
 function consEnderecoTexto(a) {
