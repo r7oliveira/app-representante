@@ -2245,7 +2245,7 @@ input[type="time"]{max-width:100%;}
   <div style="background:var(--ink);padding:calc(16px + env(safe-area-inset-top)) 20px 20px;flex-shrink:0;">
     <button onclick="goBack()" style="color:var(--rose);font-size:13px;font-weight:700;background:none;border:none;cursor:pointer;margin-bottom:10px;display:block;">← Voltar</button>
     <div style="color:white;font-size:26px;font-weight:800;font-family:var(--font-serif);" id="gerenciarTitulo">Gramado 3</div>
-    <div style="color:rgba(255,255,255,.7);font-size:12.5px;margin-top:3px;line-height:1.4;" id="gerenciarSub"></div>
+    <div style="display:none;" id="gerenciarSub"></div>
   </div>
 
   <div class="scroll-body" style="padding:0 16px 80px;">
@@ -11003,7 +11003,6 @@ function renderGerenciar() {
     document.getElementById('gerSecaoRegioes').style.display = 'none';
     const fr = document.getElementById('gerFiltrosRow'); if (fr) fr.style.display = 'none';
     const frd = document.getElementById('gerDiasRow'); if (frd) frd.style.display = 'none';
-    document.getElementById('gerenciarSub').textContent = 'Busca em todos os setores';
     const acoesTopoEl = document.getElementById('gerAcoesTopo');
     if (acoesTopoEl) acoesTopoEl.style.display = 'none';
     const resultados = DB.consultoras
@@ -11094,8 +11093,6 @@ function renderGerenciar() {
 
   // Subtítulo do cabeçalho: quando é a próxima visita do setor
   const infoSetor = infoSemanaSetor(regiao);
-  document.getElementById('gerenciarSub').textContent = ativas.length + (ativas.length === 1 ? ' consultora ativa' : ' consultoras ativas')
-    + (infoSetor ? ' · ' + (infoSetor.atual ? 'atendimento nesta semana (semana ' + infoSetor.numero + ' · ' : 'próxima visita: semana ' + infoSetor.numero + ' · ') + fmtDM(infoSetor.segunda) + ' a ' + fmtDM(infoSetor.domingo) + (infoSetor.atual ? ')' : '') : '');
 
   const scoreAtualDe = (c) => {
     // Olha a semana mais recente (de qualquer região) onde essa consultora foi
