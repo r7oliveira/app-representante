@@ -7921,7 +7921,7 @@ function renderSemana() {
     else if (especial === 'semana') etq('am', 'Remarcada p/ a próxima semana');
 
     const botoes = '<div class="at-botoes">'
-      + '<button type="button" class="at-btn pri" onclick="event.stopPropagation();abrirOpcoesAgendar(\'' + c.id + '\')">' + (stHorario === 'agendado' ? icCalOk : icCal) + '<span>Agendar horário</span></button>'
+      + '<button type="button" class="at-btn pri" onclick="event.stopPropagation();abrirOpcoesAgendar(\'' + c.id + '\')">' + (stHorario === 'agendado' ? icCalOk : icCal) + '<span>' + (stHorario === 'agendado' ? 'Agendamento OK' : 'Agendar horário') + '</span></button>'
       + '<button type="button" class="at-btn sec ' + (passo3Feito ? 'ok' : podeFechar ? '' : 'off') + '" onclick="event.stopPropagation();' + (podeFechar ? 'abrirAtendimento(\'' + c.id + '\')' : 'alert(\'Clique em Agendar horário antes de fechar o atendimento.\')') + '">' + (passo3Feito ? icCheck : icFlag) + '<span>Fechar atendimento</span></button>'
     + '</div>';
     const aux = '<div class="at-aux">'
