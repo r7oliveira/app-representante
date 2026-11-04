@@ -266,6 +266,7 @@ input[type="time"]{max-width:100%;}
 .at-nome{margin-top:12px;font-size:15.5px;font-weight:800;line-height:1.25;color:var(--tx);cursor:pointer;}
 .at-end{display:flex;gap:7px;align-items:flex-start;margin-top:6px;font-size:13px;color:var(--tx2);line-height:1.4;cursor:pointer;}
 .at-end svg{margin-top:2px;flex-shrink:0;}
+.at-via.sem-end{padding-left:0;margin-top:5px;}
 .at-via{margin-top:3px;padding-left:22px;font-size:11.5px;font-weight:600;color:#A5A39C;}   /* discreto: só pra bater o olho */
 .at-sep{height:1px;background:#ECEBE7;margin-top:12px;}
 .at-sec{margin:11px 0 6px;font-size:12px;font-weight:800;letter-spacing:.4px;color:var(--tx);text-transform:uppercase;}
@@ -6227,6 +6228,8 @@ function nomeDiaHoje() { return DIAS_ORDEM_ROTA[(new Date().getDay() + 6) % 7] |
 function brlCurto(v) { v = v || 0; return v >= 1000 ? 'R$ ' + (v/1000).toLocaleString('pt-BR', {maximumFractionDigits:1}) + ' mil' : 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
 function brlInteiro(v) { return 'R$ ' + Math.round(v || 0).toLocaleString('pt-BR'); }
 // Exibição amigável do endereço: "RUA PINHEIRO DE JANEIRO · SAO JOSE · CANELA/RS" → "Rua Pinheiro de Janeiro · Sao Jose · Canela/RS"
+// Teste: o endereço não aparece no card de Atendimentos (troque para true pra voltar a mostrar)
+const MOSTRAR_ENDERECO_CARD = false;
 function tituloCase(txt) {
   const mini = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'em', 'na', 'no', 'nas', 'nos']);
   return String(txt || '').toLowerCase().split(' ').map((w, i) => {
@@ -8059,8 +8062,8 @@ function renderSemana() {
         + '<span class="at-status ' + stCls + '">' + stTxt + '</span>'
       + '</div>'
       + '<div class="at-nome" onclick="abrirAtendimento(\'' + c.id + '\')">' + c.nome + '</div>'
-      + '<div class="at-end" onclick="abrirAtendimento(\'' + c.id + '\')">' + (endTxt ? icPin + '<span>' + tituloCase(endTxt) + (mestre.localizacaoUsar === 'trabalho' && mestre.geoNivel === 'link' ? '<span class="at-loc">Trabalho</span>' : '') + '</span>' : '<span>Endereço não cadastrado</span>') + '</div>'
-      + (mestre.comoChegou ? '<div class="at-via">Veio por: ' + String(mestre.comoChegou).replace(/[<>&"]/g, '') + '</div>' : '')
+      + (MOSTRAR_ENDERECO_CARD ? '<div class="at-end" onclick="abrirAtendimento(\'' + c.id + '\')">' + (endTxt ? icPin + '<span>' + tituloCase(endTxt) + (mestre.localizacaoUsar === 'trabalho' && mestre.geoNivel === 'link' ? '<span class="at-loc">Trabalho</span>' : '') + '</span>' : '<span>Endereço não cadastrado</span>') + '</div>' : '')
+      + ((mestre.comoChegou || (!MOSTRAR_ENDERECO_CARD && mestre.localizacaoUsar === 'trabalho' && mestre.geoNivel === 'link')) ? '<div class="at-via' + (MOSTRAR_ENDERECO_CARD ? '' : ' sem-end') + '">' + (mestre.comoChegou ? 'Veio por: ' + String(mestre.comoChegou).replace(/[<>&"]/g, '') : '') + (!MOSTRAR_ENDERECO_CARD && mestre.localizacaoUsar === 'trabalho' && mestre.geoNivel === 'link' ? '<span class="at-loc">Local: trabalho</span>' : '') + '</div>' : '')
       + '<div class="at-sep"></div>'
       + '<div class="at-sec">Situação financeira</div>'
       + '<div class="at-fin">' + marca('Romance', fin.romance) + marca('Favorita', fin.favorita) + '</div>'
