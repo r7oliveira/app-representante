@@ -4286,7 +4286,7 @@ function copiarMensagemLive() {
 
 function abrirWhatsappLive() {
   const texto = document.getElementById('liveMensagemWpp').value;
-  window.open('https://wa.me/?text=' + encodeURIComponent(texto), '_blank');
+  abrirWhatsApp('', texto);
 }
 
 function gerarImagemLive() {
@@ -6001,6 +6001,27 @@ function statusHorarioDe(c) {
   // dado de antes da separação: se tem compromisso na Agenda foi agendada, senão foi pelo WhatsApp
   return acBuscarTarefaDe(c.id) ? 'agendado' : 'whatsapp';
 }
+// ── Abrir outros apps (WhatsApp, GPS) ──
+// Chama o app direto pelo endereço próprio dele (whatsapp://, waze://…), como um atalho do celular. Assim não abre a tela em
+// branco do navegador e o nosso app continua na mesma tela. Se o app não abrir (não instalado), usa o endereço da web como reserva.
+function navegarPara(url) { window.location.href = url; }
+function ehIOSApp() { return /iPad|iPhone|iPod/.test(navigator.userAgent || '') || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+function abrirAppExterno(esquema, reservaWeb) {
+  let saiu = false;
+  const marca = () => { saiu = true; };
+  document.addEventListener('visibilitychange', marca, { once: true });
+  window.addEventListener('pagehide', marca, { once: true });
+  window.addEventListener('blur', marca, { once: true });
+  try { navegarPara(esquema); } catch (e) {}
+  setTimeout(() => {
+    document.removeEventListener('visibilitychange', marca); window.removeEventListener('pagehide', marca); window.removeEventListener('blur', marca);
+    if (!saiu && reservaWeb) window.open(reservaWeb, '_blank');
+  }, 1800);
+}
+function abrirWhatsApp(numero, texto) {
+  const t = texto ? '&text=' + encodeURIComponent(texto) : '';
+  abrirAppExterno('whatsapp://send?' + (numero ? 'phone=' + numero : '') + t, 'https://wa.me/' + (numero || '') + (texto ? '?text=' + encodeURIComponent(texto) : ''));
+}
 function enviarWhatsappHorario(consultoraId) {
   const sem = getSemanaAtiva();
   const c = sem ? sem.consultoras.find(x => x.id === consultoraId) : null;
@@ -6009,7 +6030,7 @@ function enviarWhatsappHorario(consultoraId) {
   c.horarioEnviado = true; c.whatsappEnviado = true;
   save();
   if (typeof renderSemana === 'function') renderSemana();
-  window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(mensagemAgendarHorario(c.horarioMelhor, c.diaMelhor)), '_blank');
+  abrirWhatsApp(numero, mensagemAgendarHorario(c.horarioMelhor, c.diaMelhor));
 }
 function toggleHorarioEnviado(consultoraId) {
   const sem = getSemanaAtiva();
@@ -6033,7 +6054,7 @@ function enviarWhatsappConfirmacao(consultoraId, horario) {
   if (!c) c = DB.consultoras.find(x => x.id === consultoraId);
   if (!c || !c.telefone) { alert('Essa consultora não tem telefone cadastrado.'); return; }
   const numero = telefoneWa(c.telefone);
-  window.open('https://wa.me/' + numero + '?text=' + encodeURIComponent(mensagemConfirmarHorario(horario)), '_blank');
+  abrirWhatsApp(numero, mensagemConfirmarHorario(horario));
 }
 function parseNum(s) {
   if (typeof s === 'number') return s;
@@ -7573,7 +7594,7 @@ function rotaAoSoltarPino(p, ll) {
 function rotaWhats(consId) {
   const m = DB.consultoras.find(x => x.id === consId);
   if (!m || !m.telefone) { alert('Essa consultora não tem telefone cadastrado.'); return; }
-  window.open('https://wa.me/' + telefoneWa(m.telefone), '_blank');
+  abrirWhatsApp(telefoneWa(m.telefone));
 }
 function rotaAtender(consId) {
   const sem = getSemanaAtiva();
@@ -7598,6 +7619,17 @@ function gpsLinks(m) {
     waze: ll ? 'https://waze.com/ul?ll=' + ll + '&navigate=yes' : 'https://waze.com/ul?q=' + q + '&navigate=yes',
     apple: 'https://maps.apple.com/?daddr=' + (ll || q) + '&dirflg=d',
     geo: ll ? 'geo:' + ll + '?q=' + ll + '(' + encodeURIComponent(m.nome || '') + ')' : 'geo:0,0?q=' + q,
+  };
+}
+// Endereços próprios de cada app de mapa (iPhone). No Android continuam valendo os links da web, que já abrem o app.
+function gpsEsquemas(m) {
+  const exato = typeof m.lat === 'number' && typeof m.lng === 'number' && (m.geoNivel === 'link' || (m.geoQ === rotaAssinatura(m) && (m.geoNivel === 'endereco' || m.geoNivel === 'manual')));
+  const ll = exato ? m.lat + ',' + m.lng : null;
+  const q = encodeURIComponent([m.endereco, m.bairro, rotaCidadeTxt(cidadeUfTxt(m))].filter(Boolean).join(', '));
+  return {
+    google: 'comgooglemaps://?daddr=' + (ll || q) + '&directionsmode=driving',
+    waze: ll ? 'waze://?ll=' + ll + '&navigate=yes' : 'waze://?q=' + q + '&navigate=yes',
+    apple: 'maps://?daddr=' + (ll || q) + '&dirflg=d',
   };
 }
 function abrirGPS(consId) {
@@ -7631,7 +7663,10 @@ function gpsAbrirCom(tipo) {
   if (modal.classList.contains('open') && lembrar && lembrar.checked) localStorage.setItem('gps_preferido', tipo);
   fecharModal('modalGPS');
   const url = gpsLinks(m)[tipo];
-  if (tipo === 'geo') window.location.href = url; else window.open(url, '_blank');
+  const esq = gpsEsquemas(m)[tipo];
+  if (tipo === 'geo') navegarPara(url);
+  else if (esq && ehIOSApp()) abrirAppExterno(esq, url);      // iPhone: abre o app direto, sem tela em branco
+  else window.open(url, '_blank');
   rotaRenderGpsPref();
 }
 function rotaRenderGpsPref() {
