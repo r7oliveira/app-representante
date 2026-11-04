@@ -167,7 +167,10 @@ input[type="time"]{max-width:100%;}
 .prog-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
 .prog-label{color:rgba(255,255,255,.7);font-size:12px;font-weight:500;flex-shrink:0;width:82px;}
 .prog-track{flex:1;height:5px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden;}
-.prog-fill{height:100%;background:white;border-radius:99px;transition:width .6s ease;}
+.prog-fill{height:100%;background:rgba(255,255,255,.78);border-radius:99px;transition:width 1.3s cubic-bezier(.22,1,.36,1);position:relative;overflow:hidden;}
+.prog-fill::after{content:"";position:absolute;top:0;bottom:0;left:0;width:60%;background:linear-gradient(90deg,transparent,#fff,transparent);transform:translateX(-120%);animation:progBrilho 2.8s ease-in-out infinite;}
+@keyframes progBrilho{0%{transform:translateX(-120%);}55%,100%{transform:translateX(240%);}}
+@media (prefers-reduced-motion:reduce){.prog-fill::after{animation:none;display:none;}}
 .prog-val{color:white;font-size:12px;font-weight:700;flex-shrink:0;width:110px;text-align:right;}
 .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
 .hero-box{background:white;border-radius:16px;padding:14px 16px;border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,.04);}
@@ -6812,6 +6815,15 @@ function ajustarAlturaNav() {
 window.addEventListener('resize', ajustarAlturaNav);
 window.addEventListener('orientationchange', () => setTimeout(ajustarAlturaNav, 200));
 window.addEventListener('load', () => { ajustarAlturaNav(); setTimeout(ajustarAlturaNav, 400); });
+// Barras Atendidas / Meta: sempre que a tela Início aparece, elas enchem de novo, do zero até o valor
+function reanimarBarrasInicio() {
+  const alvo = window._barrasAlvo; if (!alvo) return;
+  [['progConsultoras', alvo.c], ['progMeta', alvo.m]].forEach(([id, pct]) => {
+    const el = document.getElementById(id); if (!el) return;
+    el.style.transition = 'none'; el.style.width = '0%'; void el.offsetWidth; el.style.transition = '';
+    requestAnimationFrame(() => requestAnimationFrame(() => { el.style.width = pct + '%'; }));
+  });
+}
 function goTo(v) {
   // Remove active de TODAS as views
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
@@ -6839,6 +6851,7 @@ function goTo(v) {
 
   // Renderizar
   if (v === 'rota')         { rotaAlternarCheia(true); renderRota(); }
+  if (v === 'semana')       reanimarBarrasInicio();
   if (v === 'semana')       renderSemana();
   if (v === 'atendimentos-lista') { window._filtroAtendimentos = 'pendentes'; renderSemana(); }
   if (v === 'pagar-debitos') renderPagarDebitos();
@@ -7621,7 +7634,7 @@ function renderSemana() {
     document.getElementById('progMeta').style.width = '0%';
     document.getElementById('progConsultorasFracao').textContent = '0/0';
     document.getElementById('progConsultorasFalta').textContent = '0 faltam atender';
-    document.getElementById('progMetaFracao').textContent = 'R$ 0 / R$ 0';
+    document.getElementById('progMetaFracao').innerHTML = '<span style="white-space:nowrap;">R$ 0,00</span><br><span style="white-space:nowrap;">de R$ 0,00</span>';
     document.getElementById('progMetaPct').textContent = '0% da meta';
     document.getElementById('heroVendido').textContent = 'R$ 0';
     document.getElementById('heroMetaSub').textContent = 'Meta: —';
@@ -7680,11 +7693,12 @@ function renderSemana() {
 
   document.getElementById('semanaNumero').textContent = 'Semana ' + sem.numero;
   document.getElementById('semanaRegiao').textContent = sem.regiao;
+  window._barrasAlvo = { c: pctC, m: pctM };
   document.getElementById('progConsultoras').style.width = pctC + '%';
   document.getElementById('progMeta').style.width = pctM + '%';
   document.getElementById('progConsultorasFracao').textContent = atendidas + '/' + total;
   document.getElementById('progConsultorasFalta').textContent = Math.max(0, total - atendidas) + ' faltam atender';
-  document.getElementById('progMetaFracao').textContent = brl(recebido) + ' / ' + brl(meta);
+  document.getElementById('progMetaFracao').innerHTML = '<span style="white-space:nowrap;">' + brl(recebido) + '</span><br><span style="white-space:nowrap;">de ' + brl(meta) + '</span>';
   document.getElementById('progMetaPct').textContent = pctM + '% da meta';
 
   document.getElementById('heroVendido').textContent = brl(vendido);
