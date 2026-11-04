@@ -6362,12 +6362,11 @@ function primeiroAtendimentoDela(c, semAtual) {
     (s.consultoras || []).some(o => o.id === c.id && o.status === 'concluida')
   );
 }
-// Conta como "Nova" quem foi atendida e (a) foi marcada manualmente como nova
-// (ex.: cliente pegou material pela primeira vez) OU (b) este é o primeiro
-// atendimento concluído dela em toda a história — e não foi marcada como inativa.
+// Conta como "Nova" quem foi atendida e (a) foi marcada como "Consultora nova - 1ª sacola" ou "Consultora nova - já vende"
+// OU (b) este é o primeiro atendimento concluído dela em toda a história — e não foi marcada como inativa.
 function contaComoNova(c, semAtual) {
   if (!foiAtendida(c) || c.parouDeVender) return false;
-  return !!c.consultoraNova || primeiroAtendimentoDela(c, semAtual);
+  return !!c.consultoraNova || !!c.consultoraNovaJaVende || primeiroAtendimentoDela(c, semAtual);
 }
 function iniciais(nome) {
   const p = String(nome||'').trim().split(' ');
