@@ -6163,6 +6163,20 @@ function totalPixDinheiroSemana(sem) {
 // Uma consultora só conta como "atendida" de fato quando o atendimento foi concluído
 // SEM remarcação. Se ela foi remarcada (semana ou mês), o atendimento ainda está em
 // aberto — ela só volta a contar como atendida quando for visitada de novo.
+// Lista de uma semana como ela APARECE (Atendimentos, Rota, PDF): igual à "de verdade" + quem parou de vender nesta
+// mesma semana (ficou inativa no fechamento). Assim ela continua com o número dela e as outras não mudam de posição.
+// (Pra criar a semana seguinte continua valendo só a lista "de verdade", sem ela.)
+function consultorasVisiveisDe(sem) {
+  const base = consultorasValidasDe(sem);
+  const ids = new Set(base.map(c => c.id));
+  const extras = [];
+  (sem.consultoras || []).forEach(c => {
+    if (c.avulso || !c.parouDeVender || ids.has(c.id)) return;
+    const mestre = DB.consultoras.find(m => m.id === c.id);
+    if (mestre && mestre.status === 'inativa') { ids.add(c.id); extras.push(c); }
+  });
+  return base.concat(extras);
+}
 // Lista "de verdade" de uma semana: confere com o cadastro mestre e tira quem
 // ficou inativa ou mudou de região depois de ter sido incluída. Usada em todo
 // lugar que CONTA consultoras da semana (não só na tela de Atendimentos), pra
@@ -6943,7 +6957,7 @@ function rotaFmtTempo(seg) {
 
 /* ── dias e paradas ── */
 function rotaDiasDisponiveis(sem) {
-  const validas = consultorasValidasDe(sem);
+  const validas = consultorasVisiveisDe(sem);
   const res = [];
   [...DIAS_ORDEM_ROTA, 'Sem dia definido'].forEach(d => {
     const grupo = validas.filter(c => (c.diaMelhor || 'Sem dia definido') === d);
@@ -6987,7 +7001,7 @@ function abrirRota(dia) {
   goTo('rota');
 }
 function rotaMontarParadas(sem, dia) {
-  const validas = consultorasValidasDe(sem).filter(c => (c.diaMelhor || 'Sem dia definido') === dia);
+  const validas = consultorasVisiveisDe(sem).filter(c => (c.diaMelhor || 'Sem dia definido') === dia);
   validas.sort((a, b) => minutosDoHorario(a.horarioMelhor) - minutosDoHorario(b.horarioMelhor) || (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
   return validas.map((c, i) => {
     const m = DB.consultoras.find(x => x.id === c.id) || c;
@@ -7720,7 +7734,7 @@ function renderSemana() {
     return;
   }
 
-  const consultorasValidas = consultorasValidasDe(sem);
+  const consultorasValidas = consultorasVisiveisDe(sem);
   const atendidas = consultorasValidas.filter(c => c.status === 'concluida').length;
   const total = consultorasValidas.length;
   const pctC = total > 0 ? Math.round(atendidas/total*100) : 0;
@@ -7812,19 +7826,9 @@ function renderSemana() {
   // Lista
   const lista = document.getElementById('listaConsultoras');
   const filtroAtend = window._filtroAtendimentos || 'pendentes';
-  // Confere com o cadastro mestre: se ela ficou inativa ou mudou de região depois
-  // de ter sido incluída nesta semana, não deve mais aparecer em Atendimentos.
-  const regiaoSemNorm = (sem.regiao || '').trim().toLowerCase();
-  let visiveis = sem.consultoras.filter(c => {
-    if (c.avulso) return false;
-    const mestre = DB.consultoras.find(m => m.id === c.id);
-    if (!mestre) return true; // sem cadastro mestre (ex: avulsa antiga) — mantém como estava
-    if (mestre.status === 'inativa') return false;
-    // Compara região ignorando maiúsculas/espaços, pra não esconder por uma diferença
-    // boba de formatação — só exclui quando é claramente outro setor.
-    const regiaoMestreNorm = (mestre.regiao || '').trim().toLowerCase();
-    return !regiaoMestreNorm || regiaoMestreNorm === regiaoSemNorm;
-  });
+  // Confere com o cadastro mestre: quem ficou inativa ou mudou de região depois de ser incluída sai da lista —
+  // exceto quem parou de vender NESTA semana (fica com o número dela, como atendida/inativa).
+  let visiveis = consultorasVisiveisDe(sem).slice();
 
   // Resumo do topo (sempre com base na lista completa, independente do filtro ativo)
   const listaCompleta = visiveis;
@@ -11628,7 +11632,7 @@ async function gerarPDFDiaAtendimento(diaLabel) {
   const sem = getSemanaAtiva();
   if (!sem) { alert('Nenhuma semana ativa.'); return; }
   const semDia = !diaLabel || diaLabel === 'Sem dia definido';
-  const lista = consultorasValidasDe(sem).filter(c => semDia ? !c.diaMelhor : c.diaMelhor === diaLabel)
+  const lista = consultorasVisiveisDe(sem).filter(c => semDia ? !c.diaMelhor : c.diaMelhor === diaLabel)
     .sort((a, b) => minutosDoHorario(a.horarioMelhor) - minutosDoHorario(b.horarioMelhor) || (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
   if (!lista.length) { alert('Nenhuma consultora nesse dia.'); return; }
   let jsPDFClass;
