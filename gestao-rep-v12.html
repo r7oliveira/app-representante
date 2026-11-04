@@ -4758,13 +4758,18 @@ function fraseMotivacional() {
 /* ════════════════════════════════════════════
    OBSERVAÇÕES DA ADMINISTRAÇÃO
 ════════════════════════════════════════════ */
+// O aviso fica na tela até o administrador EXCLUIR a observação (ler não faz ele sair).
 function atualizarObsBanner() {
   const banner = document.getElementById('obsBanner');
   if (!banner) return;
-  const naoLidas = (DB.observacoes || []).filter(o => !o.lida);
-  if (!naoLidas.length) { banner.style.display = 'none'; return; }
-  const ultima = naoLidas[naoLidas.length - 1];
-  document.getElementById('obsBannerTitulo').textContent = naoLidas.length > 1 ? naoLidas.length + ' novas observações da administração' : 'Nova observação da administração';
+  const todas = DB.observacoes || [];
+  if (!todas.length) { banner.style.display = 'none'; return; }
+  const naoLidas = todas.filter(o => !o.lida);
+  const ultima = todas[todas.length - 1];
+  const titulo = todas.length > 1
+    ? todas.length + (naoLidas.length ? ' novas observações' : ' observações') + ' da administração'
+    : (naoLidas.length ? 'Nova observação da administração' : 'Observação da administração');
+  document.getElementById('obsBannerTitulo').textContent = titulo;
   document.getElementById('obsBannerTexto').textContent = ultima.texto;
   banner.style.display = '';
 }
