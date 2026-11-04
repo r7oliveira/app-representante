@@ -6888,6 +6888,7 @@ function goTo(v) {
    Mapa: Leaflet + OpenStreetMap · Endereço → ponto: Nominatim · Trajeto: OSRM
    Posição ao vivo: GPS do aparelho. Tudo gratuito, sem chave de API.
 ════════════════════════════════════════════ */
+const ROTA_RAIO_NO_CAMINHO = 250;   // metros do trajeto pra considerar que a parada está "no caminho"
 const ROTA = {
   dia: null, map: null, grupo: null, linha: null, marcadores: {},
   euMarker: null, euCirculo: null, watchId: null, pos: null, gpsErro: null,
@@ -6901,6 +6902,31 @@ const rotaEsc = s => String(s == null ? '' : s).replace(/[&<>"]/g, ch => ({ '&':
 // Assinatura do endereço: se mudar, o ponto guardado deixa de valer e é localizado de novo
 function rotaAssinatura(m) { return [m.endereco, m.bairro, m.cidade].concat(m.uf ? [m.uf] : []).map(x => String(x || '').trim().toLowerCase()).join('|'); }
 function rotaCidadeTxt(c) { return String(c || '').replace(/\s*\/\s*/g, ', ').trim(); }
+// Corta a linha inteira do trajeto no fim do 1º trecho (você → próxima parada), pela distância que o serviço de rotas informou
+function rotaPrimeiroTrecho(coords, distTrecho) {
+  if (!coords.length) return [];
+  const cum = [0];
+  for (let j = 1; j < coords.length; j++) cum.push(cum[j - 1] + rotaDistM({ lat: coords[j - 1][0], lng: coords[j - 1][1] }, { lat: coords[j][0], lng: coords[j][1] }));
+  const total = cum[cum.length - 1] || 1;
+  const alvo = Math.min(total, distTrecho * (total / (ROTA._distTotalOSRM || total)));
+  let j = 0; while (j < coords.length - 1 && cum[j] < alvo) j++;
+  return coords.slice(0, Math.max(2, j + 1));
+}
+// Menor distância (m) de um ponto até uma linha, e em que ponto do caminho (0 = saída, 1 = chegada) ele fica mais perto
+function rotaDistPontoLinha(pt, linha) {
+  const mx = 111320 * Math.cos(pt.lat * Math.PI / 180), my = 110540;
+  let melhor = Infinity, melhorAcum = 0, acum = 0, total = 0;
+  const seg = [];
+  for (let i = 0; i < linha.length - 1; i++) {
+    const ax = (linha[i][1] - pt.lng) * mx, ay = (linha[i][0] - pt.lat) * my, bx = (linha[i + 1][1] - pt.lng) * mx, by = (linha[i + 1][0] - pt.lat) * my;
+    const dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy, len = Math.sqrt(len2);
+    const t = len2 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / len2)) : 0;
+    const d = Math.hypot(ax + t * dx, ay + t * dy);
+    if (d < melhor) { melhor = d; melhorAcum = acum + t * len; }
+    acum += len; total = acum;
+  }
+  return { d: melhor, frac: total ? melhorAcum / total : 0 };
+}
 function rotaDistM(a, b) { // distância em linha reta (haversine), em metros
   const R = 6371000, rad = x => x * Math.PI / 180;
   const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
@@ -7246,7 +7272,7 @@ async function rotaCalcularRota() {
   }
   ROTA.calculando = true;
   try {
-    let info, tracejada = false;
+    let info, tracejada = false, coordsRota = null;
     try {
       const url = 'https://router.project-osrm.org/route/v1/driving/' + waypoints.map(w => w.lng.toFixed(6) + ',' + w.lat.toFixed(6)).join(';') + '?overview=full&geometries=geojson&steps=false';
       const ctrl = new AbortController();
@@ -7256,6 +7282,8 @@ async function rotaCalcularRota() {
       const j = await resp.json();
       if (j.code !== 'Ok' || !j.routes || !j.routes[0]) throw new Error('sem rota');
       const r = j.routes[0];
+      coordsRota = r.geometry.coordinates.map(c => [c[1], c[0]]);
+      ROTA._distTotalOSRM = r.distance;
       info = { distancia: r.distance, duracao: r.duration, legs: r.legs.map(l => ({ distancia: l.distance, duracao: l.duration })), comOrigemUsuario: usaEu, online: true };
     } catch (e) {
       // Sem serviço de rotas: linha reta tracejada e estimativa (ruas ≈ 30% mais longas que a reta, ~30 km/h)
@@ -7272,6 +7300,18 @@ async function rotaCalcularRota() {
     ROTA.rotaOrigem = usaEu ? { lat: ROTA.pos.lat, lng: ROTA.pos.lng } : null;
     ROTA.rotaEm = Date.now();
     pts.forEach((p, k) => { const li = usaEu ? k : k - 1; p.leg = li >= 0 ? (info.legs[li] || null) : null; });
+    // Paradas que ficam NO CAMINHO até a próxima (a menos de ROTA_RAIO_NO_CAMINHO m do trajeto, e com local exato)
+    ROTA.noCaminho = [];
+    if (usaEu && pts.length >= 2 && info.legs[0]) {
+      const destino = pts[0];
+      const linha1 = coordsRota ? rotaPrimeiroTrecho(coordsRota, info.legs[0].distancia) : [[ROTA.pos.lat, ROTA.pos.lng], [destino.lat, destino.lng]];
+      pts.slice(1).forEach(q => {
+        if (rotaNivelAprox(q.nivel)) return;                               // local só aproximado: não dá pra afirmar
+        const r = rotaDistPontoLinha(q, linha1);
+        if (r.d <= ROTA_RAIO_NO_CAMINHO && rotaDistM(q, destino) > 500 && r.frac < 0.96) ROTA.noCaminho.push({ id: q.id, num: q.num, nome: q.nome, dist: Math.round(r.d), frac: r.frac });
+      });
+      ROTA.noCaminho.sort((a, b) => a.frac - b.frac);
+    }
     rotaDesenharLinha(null); // mapa só com as bolinhas; o trajeto serve pra calcular tempo e distância
     rotaRenderTudo();
   } finally {
@@ -7461,6 +7501,12 @@ function rotaRenderCard() {
   el.innerHTML = '<div style="' + base + '">' + cab
     + ((info || aprox || ajustar) ? '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;"><div style="font-size:12px;font-weight:800;color:var(--ink);min-width:0;">' + info + aprox + '</div>' + ajustar + '</div>' : '')
     + gpsErro
+    + ((ehProxima && ROTA.noCaminho && ROTA.noCaminho.length) ? (() => {
+        const q = ROTA.noCaminho[0], mais = ROTA.noCaminho.length - 1;
+        return '<div style="margin-top:7px;padding:7px 10px;border-radius:10px;background:var(--amber-bg);display:flex;align-items:center;gap:8px;">'
+          + '<div style="flex:1;min-width:0;font-size:11.5px;font-weight:700;color:var(--amber);line-height:1.35;">Vai passar perto da <b>parada ' + q.num + '</b> · ' + rotaEsc(q.nome) + ' (a ' + q.dist + ' m do caminho)' + (mais > 0 ? ' e mais ' + mais : '') + '</div>'
+          + '<button type="button" onclick="rotaSelecionar(\'' + q.id + '\', true)" style="flex-shrink:0;font-size:11.5px;font-weight:800;color:var(--amber);text-decoration:underline;">Ver</button></div>';
+      })() : '')
     + ((btnNav || btnZap || btnAtender) ? '<div style="display:flex;gap:8px;margin-top:8px;">' + btnNav + btnZap + btnAtender + '</div>' : '')
   + '</div>';
 }
