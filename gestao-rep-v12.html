@@ -715,10 +715,6 @@ input[type="time"]{max-width:100%;}
         </div>
       </div>
     </div>
-    <div class="ia-strip">
-      <div class="ia-orb">✦</div>
-      <div class="ia-txt" id="iaStrip">Carregando análise do dia...</div>
-    </div>
 
     <!-- Observações do admin -->
     <div id="obsBanner" style="display:none;margin:0 16px 12px;background:var(--amber-bg);border:1px solid rgba(201,168,76,.25);border-radius:14px;padding:12px 14px;cursor:pointer;" onclick="abrirObservacoes()">
@@ -7616,7 +7612,6 @@ function renderSemana() {
     if (ctaWrapEl0) ctaWrapEl0.style.display = '';
     document.getElementById('semanaNumero').textContent = 'Semana —';
     document.getElementById('semanaRegiao').textContent = 'Nenhuma semana ativa';
-    document.getElementById('iaStrip').innerHTML = 'É hora de criar a próxima semana.';
     const ctaBtnEl0 = document.getElementById('ctaBtn');
     ctaBtnEl0.className = 'cta-btn';
     ctaBtnEl0.innerHTML = 'Criar Nova Semana →';
@@ -7721,24 +7716,6 @@ function renderSemana() {
   document.getElementById('cntSemFavorita').textContent = nSemFavorita;
   document.getElementById('cntInativas').textContent    = nInativas;
 
-  // Sugestão do assistente: quem atender primeiro (e depois), como antes no Radar
-  const segunda = pendentesAgora[1];
-  let sugestaoTxt = '';
-  if (proxima) {
-    const partes1 = ['Comece por <strong>' + proxima.nome + '</strong>'];
-    if (proxima.diaMelhor)     partes1.push(proxima.diaMelhor.replace('-feira',''));
-    if (proxima.horarioMelhor) partes1.push(proxima.horarioMelhor);
-    if (proxima.cidade)        partes1.push(proxima.cidade);
-    sugestaoTxt = partes1.join(' · ') + '.';
-    if (segunda) {
-      const partes2 = [segunda.nome, segunda.diaMelhor?.replace('-feira',''), segunda.horarioMelhor, segunda.cidade].filter(Boolean);
-      sugestaoTxt += ' Depois: ' + partes2.join(' · ') + '.';
-    }
-  }
-
-  document.getElementById('iaStrip').innerHTML = proxima
-    ? sugestaoTxt
-    : '<strong>Dica de hoje:</strong> ' + fraseMotivacional();
   const ctaBtnEl = document.getElementById('ctaBtn');
   const ctaWrapEl = document.querySelector('.cta-wrap');
   if (proxima) {
