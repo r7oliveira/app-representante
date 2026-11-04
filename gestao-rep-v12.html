@@ -721,13 +721,13 @@ input[type="time"]{max-width:100%;}
 
     <!-- Observações do admin -->
     <div id="obsBanner" style="display:none;margin:0 16px 12px;background:var(--amber-bg);border:1px solid rgba(201,168,76,.25);border-radius:14px;padding:12px 14px;cursor:pointer;" onclick="abrirObservacoes()">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:16px;">📋</span>
-        <div style="flex:1;">
-          <div style="font-size:12px;font-weight:800;color:var(--amber);" id="obsBannerTitulo">Nova observação</div>
-          <div style="font-size:11.5px;color:var(--ink-2);" id="obsBannerTexto">—</div>
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <span style="font-size:18px;line-height:1.2;">📋</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;color:var(--amber);" id="obsBannerTitulo">Nova observação</div>
+          <div id="obsBannerTexto" style="margin-top:4px;">—</div>
         </div>
-        <span style="color:var(--ink-3);">›</span>
+        <span style="color:var(--ink-3);align-self:center;">›</span>
       </div>
     </div>
 
@@ -4770,7 +4770,15 @@ function atualizarObsBanner() {
     ? todas.length + (naoLidas.length ? ' novas observações' : ' observações') + ' da administração'
     : (naoLidas.length ? 'Nova observação da administração' : 'Observação da administração');
   document.getElementById('obsBannerTitulo').textContent = titulo;
-  document.getElementById('obsBannerTexto').textContent = ultima.texto;
+  // Todas as observações, por inteiro, na ordem em que chegaram (numeradas quando são várias)
+  const varias = todas.length > 1;
+  document.getElementById('obsBannerTexto').innerHTML = todas.map((o, i) =>
+    '<div style="display:flex;gap:9px;align-items:flex-start;padding:' + (i ? '9px' : '2px') + ' 0 ' + (i < todas.length - 1 ? '9px' : '2px') + ';' + (i ? 'border-top:1px solid rgba(201,168,76,.3);' : '') + '">'
+    + (varias ? '<span style="flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--amber);color:white;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;">' + (i + 1) + '</span>' : '')
+    + '<div style="min-width:0;">'
+      + '<div style="font-size:13.5px;line-height:1.45;color:var(--ink);font-weight:600;white-space:pre-line;overflow-wrap:anywhere;">' + rotaEsc(o.texto) + '</div>'
+      + '<div style="font-size:10.5px;color:var(--ink-3);margin-top:3px;font-weight:600;">' + dataHoraCurta(o.criadoEm) + (o.lida ? '' : ' · <span style="color:var(--amber);font-weight:800;">nova</span>') + '</div>'
+    + '</div></div>').join('');
   banner.style.display = '';
 }
 
