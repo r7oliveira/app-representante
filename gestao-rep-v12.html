@@ -3404,7 +3404,7 @@ function renderAgendaHoje() {
   const el = document.getElementById('agendaHojeLista');
   if (!el) return;
   const diaKey = hojeAgendaKey();
-  const tarefas = (DB.agenda && DB.agenda[diaKey]) || [];
+  const tarefas = ((DB.agenda && DB.agenda[diaKey]) || []).filter(t => !t.consultoraId);   // atendimentos ficam só na tela de Atendimentos
 
   if (!tarefas.length) {
     el.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:12.5px;padding:16px 0;">Nenhuma tarefa para hoje.</div>';
@@ -3452,7 +3452,7 @@ function renderAgendaCompleta() {
 
   // Pills dos 7 dias, com contagem de tarefas em cada um
   document.getElementById('agendaDiasRow').innerHTML = DIAS_AGENDA.map(d => {
-    const qtd = (agenda[d.key] || []).length;
+    const qtd = (agenda[d.key] || []).filter(t => !t.consultoraId).length;   // só tarefas
     const ativo = d.key === diaAtual;
     const isHoje = d.key === hoje;
     const rotulo = d.label.replace('-feira', '');
@@ -3479,7 +3479,7 @@ function renderAgendaCompleta() {
       </div>` : '';
   }
 
-  const tarefas = [...(agenda[diaAtual] || [])].sort((a,b) => (a.feito?1:0) - (b.feito?1:0) || horarioParaMinutos(a) - horarioParaMinutos(b));
+  const tarefas = [...(agenda[diaAtual] || [])].filter(t => !t.consultoraId).sort((a,b) => (a.feito?1:0) - (b.feito?1:0) || horarioParaMinutos(a) - horarioParaMinutos(b));
   const avisos = DB.avisos || blankAvisos();
   const avisosDoDia = avisos[diaAtual] || [];
 
@@ -4466,14 +4466,25 @@ function abrirOpcoesAgendar(consId) {
   const icZap = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
   document.getElementById('agOpNome').textContent = c.nome || '';
   document.getElementById('agOpOpcoes').innerHTML =
-      opcao('agendarOpcaoAgenda()', icCal, 'var(--rose)', 'var(--rose-light)', 'Agendar na agenda', 'Marca o horário na Agenda do app', true)
-    + opcao('agendarOpcaoWhats()', icZap, '#1FA855', '#E3F6EA', 'Enviar mensagem pelo WhatsApp', temTel ? 'Abre a conversa com a consultora, com a mensagem pronta' : 'Essa consultora não tem telefone cadastrado', temTel);
+      opcao('agendarOpcaoAgenda()', icCal, 'var(--rose)', 'var(--rose-light)', 'Marcar dia e horário', 'Deixa o atendimento marcado aqui nos Atendimentos', true)
+    + opcao('agendarOpcaoWhats()', icZap, '#1FA855', '#E3F6EA', 'Enviar mensagem pelo WhatsApp', temTel ? 'Abre a conversa com a consultora, com a mensagem pronta' : 'Essa consultora não tem telefone cadastrado', temTel)
+    + (statusHorarioDe(c) === 'agendado' && c.horarioMelhor
+        ? opcao('agendarOpcaoConfirmar()', icZap, '#1FA855', '#E3F6EA', 'Confirmar horário pelo WhatsApp', temTel ? 'Avisa a consultora do dia e do horário marcados (' + c.horarioMelhor + ')' : 'Essa consultora não tem telefone cadastrado', temTel)
+        : '');
   document.getElementById('modalAgendarOpcoes').classList.add('open');
 }
 function agendarOpcaoAgenda() {
   const id = window._agOpId;
   fecharModal('modalAgendarOpcoes');
   if (id) agendarHorarioDaConsultora(id);          // o mesmo agendamento de sempre
+}
+function agendarOpcaoConfirmar() {
+  const id = window._agOpId;
+  if (!id) return;
+  const sem = getSemanaAtiva();
+  const c = sem && sem.consultoras.find(x => x.id === id);
+  fecharModal('modalAgendarOpcoes');
+  if (c) enviarWhatsappConfirmacao(id, c.horarioMelhor || '');
 }
 function agendarOpcaoWhats() {
   const id = window._agOpId;
