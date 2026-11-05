@@ -1567,7 +1567,10 @@ input[type="time"]{max-width:100%;}
       <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Painel do Administrador</div>
       <div style="color:white;font-size:20px;font-weight:800;">Equipe · tempo real</div>
     </div>
-    <button onclick="fazerLogout()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:white;border-radius:14px;padding:8px 14px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Sair</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button id="adminMeuAppBtn" onclick="voltarParaMeuApp()" style="display:none;white-space:nowrap;background:var(--rose);border:none;color:white;border-radius:14px;padding:8px 14px;font-size:12px;font-weight:800;font-family:var(--font);cursor:pointer;">← Meu app</button>
+      <button onclick="fazerLogout()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:white;border-radius:14px;padding:8px 14px;font-size:12px;font-weight:700;font-family:var(--font);cursor:pointer;">Sair</button>
+    </div>
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;background:var(--surface);">
     <button onclick="abrirFechamentoAdmin()" style="width:100%;background:var(--ink);color:white;border:none;border-radius:16px;padding:14px;font-size:14px;font-weight:800;font-family:var(--font);cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;">📊 Fechamento Consolidado da Semana</button>
@@ -1842,6 +1845,14 @@ input[type="time"]{max-width:100%;}
   <div class="modal-box">
     <button class="modal-close" onclick="fecharModal('modalMenuRapido')">✕</button>
     <div class="modal-title" style="font-size:28px;margin-bottom:18px;">Menu</div>
+
+    <button id="menuGestaoGeral" onclick="fecharModal('modalMenuRapido');entrarGestaoGeral()" style="display:none;width:100%;text-align:left;background:var(--ink);border:1px solid var(--ink);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;align-items:center;gap:12px;min-height:64px;box-sizing:border-box;">
+      <div style="width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:800;color:white;">Gestão Geral</div><div style="font-size:11.5px;font-weight:600;color:rgba(255,255,255,.6);">Ver e alterar tudo da equipe</div></div>
+      <span style="color:rgba(255,255,255,.6);font-size:18px;">›</span>
+    </button>
 
     <button onclick="fecharModal('modalMenuRapido');goTo('criar-semana')" style="width:100%;text-align:left;background:white;border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:12px;min-height:64px;box-sizing:border-box;">
       <div style="width:40px;height:40px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -3045,9 +3056,9 @@ const firebaseConfig = {
 // O admin consegue ler os 4 tablets porque os IDs são sempre os mesmos, em qualquer aparelho.
 const PESSOAS = [
   { id: 'isabel',  nome: 'Isabel',  pin: '1111', role: 'op', cargo: 'Loja Igrejinha' },
-  { id: 'rogerio', nome: 'Rogério', pin: '2222', role: 'op', cargo: 'Atendimento externo' },
-  { id: 'alceu',   nome: 'Alceu',   pin: '3333', role: 'op', cargo: 'Atendimento externo' },
   { id: 'lucia',   nome: 'Lúcia',   pin: '4444', role: 'op', cargo: 'Atendimento externo' },
+  { id: 'alceu',   nome: 'Alceu',   pin: '3333', role: 'op', cargo: 'Atendimento externo' },
+  { id: 'rogerio', nome: 'Rogério', pin: '2222', role: 'op', gestor: true, cargo: 'Atendimento externo · Administrador' },
   { id: 'admin',   nome: 'Gestão Geral', pin: '9999', role: 'admin', cargo: 'Visão completa da operação' },
 ];
 const OPERADORES = PESSOAS.filter(p => p.role === 'op');
@@ -3093,7 +3104,8 @@ let _loginPessoaSelecionada = null;
 function renderLoginPessoas() {
   const el = document.getElementById('loginPessoas');
   if (!el) return;
-  el.innerHTML = PESSOAS.map(p => `
+  // A Gestão Geral não aparece mais aqui: o Rogério entra nela pelo Menu do app dele
+  el.innerHTML = PESSOAS.filter(p => p.role !== 'admin').map(p => `
     <button class="login-pessoa-card" onclick="selecionarPessoaLogin('${p.id}')">
       <div class="login-pessoa-av" style="background:var(--ink);">${p.nome.charAt(0)}</div>
       <div>
@@ -3148,6 +3160,7 @@ function apagarPin() {
 function validarPin() {
   if (_loginPinAtual === _loginPessoaSelecionada.pin) {
     const perfil = { id: _loginPessoaSelecionada.id, nome: _loginPessoaSelecionada.nome, role: _loginPessoaSelecionada.role };
+    localStorage.removeItem('rep_perfil_gestor_origem');
     localStorage.setItem('rep_active_profile', JSON.stringify(perfil));
     location.reload();
   } else {
@@ -3157,13 +3170,37 @@ function validarPin() {
   }
 }
 
+// Quem tem acesso de administrador geral (hoje: Rogério) entra na Gestão Geral sem digitar outro PIN e volta pro app dele.
+function souGestor() {
+  if (!ACTIVE_PROFILE) return false;
+  if (ACTIVE_PROFILE.via) return true;                       // já está dentro da Gestão Geral (veio do app dele)
+  const pes = PESSOAS.find(x => x.id === ACTIVE_PROFILE.id);
+  return !!(pes && pes.gestor);
+}
+function entrarGestaoGeral() {
+  if (!souGestor() || ACTIVE_PROFILE.role === 'admin') return;
+  localStorage.setItem('rep_perfil_gestor_origem', JSON.stringify(ACTIVE_PROFILE));
+  localStorage.setItem('rep_active_profile', JSON.stringify({ id: 'admin', nome: 'Gestão Geral', role: 'admin', via: ACTIVE_PROFILE.id }));
+  location.reload();
+}
+function voltarParaMeuApp() {
+  let origem = null;
+  try { origem = JSON.parse(localStorage.getItem('rep_perfil_gestor_origem') || 'null'); } catch (e) {}
+  if (!origem) { const pes = PESSOAS.find(x => x.id === (ACTIVE_PROFILE && ACTIVE_PROFILE.via)); if (pes) origem = { id: pes.id, nome: pes.nome, role: pes.role }; }
+  if (!origem) return;
+  localStorage.setItem('rep_active_profile', JSON.stringify(origem));
+  localStorage.removeItem('rep_perfil_gestor_origem');
+  location.reload();
+}
 function abrirMenuRapido() {
+  const g = document.getElementById('menuGestaoGeral'); if (g) g.style.display = souGestor() && ACTIVE_PROFILE.role !== 'admin' ? 'flex' : 'none';
   document.getElementById('modalMenuRapido').classList.add('open');
 }
 
 function fazerLogout() {
   if (!confirm('Sair e voltar para a tela de login?')) return;
   localStorage.removeItem('rep_active_profile');
+  localStorage.removeItem('rep_perfil_gestor_origem');
   location.reload();
 }
 
@@ -13249,6 +13286,7 @@ if (!ACTIVE_PROFILE) {
   goTo('login');
 } else if (ACTIVE_PROFILE.role === 'admin') {
   goTo('admin-home');
+  { const bMeu = document.getElementById('adminMeuAppBtn'); if (bMeu && ACTIVE_PROFILE.via) { const pv = PESSOAS.find(x => x.id === ACTIVE_PROFILE.via); bMeu.textContent = '← Meu app'; bMeu.title = pv ? 'Voltar para o app de ' + pv.nome : ''; bMeu.style.display = ''; } }
   initFirebaseAdmin();
 } else {
   goTo('semana');
