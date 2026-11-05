@@ -1573,7 +1573,8 @@ input[type="time"]{max-width:100%;}
     </div>
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;background:var(--surface);">
-    <button onclick="abrirFechamentoAdmin()" style="width:100%;background:var(--ink);color:white;border:none;border-radius:16px;padding:14px;font-size:14px;font-weight:800;font-family:var(--font);cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;">📊 Fechamento Consolidado da Semana</button>
+    <button onclick="abrirFechamentoAdmin()" style="width:100%;background:var(--ink);color:white;border:none;border-radius:16px;padding:14px;font-size:14px;font-weight:800;font-family:var(--font);cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">📊 Fechamento Consolidado da Semana</button>
+    <button onclick="adminAbrirMensagemGeral()" style="width:100%;background:var(--rose);color:white;border:none;border-radius:16px;padding:14px;font-size:14px;font-weight:800;font-family:var(--font);cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;">📣 Enviar mensagem para a equipe</button>
     <div id="adminHomeLista"></div>
   </div>
 </div>
@@ -1841,6 +1842,18 @@ input[type="time"]{max-width:100%;}
 <!-- ══════════════════════════════════════════
      MODAL: MENU RÁPIDO (gestão + conta)
 ══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalMensagemGeral">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalMensagemGeral')">✕</button>
+    <div class="modal-title" style="font-size:24px;margin-bottom:4px;">Mensagem para a equipe</div>
+    <div style="font-size:12.5px;color:var(--ink-3);margin-bottom:14px;">Chega como observação no app de cada pessoa e fica lá até você excluir.</div>
+    <label class="field"><span>Mensagem</span><textarea id="mgTexto" rows="4" placeholder="Ex: Reunião amanhã às 9h na loja" style="width:100%;border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;font-family:var(--font);resize:vertical;box-sizing:border-box;"></textarea></label>
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin:6px 0 8px;">Quem recebe</div>
+    <div id="mgDestinos" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
+    <button class="btn-primary" id="mgEnviarBtn" onclick="adminEnviarMensagemGeral()">Enviar</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalMenuRapido">
   <div class="modal-box">
     <button class="modal-close" onclick="fecharModal('modalMenuRapido')">✕</button>
@@ -5538,6 +5551,48 @@ function renderAdminPessoa() {
       </div>
       <span style="font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:8px;background:${foiAtendida(c)?'var(--green-bg)':(c.remarcarSemana||c.remarcarMes)?'var(--red-bg)':'var(--surface-2)'};color:${foiAtendida(c)?'var(--green)':(c.remarcarSemana||c.remarcarMes)?'var(--red)':'var(--ink-3)'};">${foiAtendida(c)?'Atendida':(c.remarcarSemana||c.remarcarMes)?'Remarcada':'Pendente'}</span>
     </div>`).join('') : '<div style="font-size:12px;color:var(--ink-3);">Nenhuma consultora nesta semana.</div>';
+}
+
+// ── Mensagem para toda a equipe (inclusive quem está mandando) ──
+let _mgSelecionados = {};
+function adminAbrirMensagemGeral() {
+  _mgSelecionados = {}; OPERADORES.forEach(op => { _mgSelecionados[op.id] = true; });
+  document.getElementById('mgTexto').value = '';
+  adminRenderDestinosMensagem();
+  document.getElementById('modalMensagemGeral').classList.add('open');
+}
+function adminRenderDestinosMensagem() {
+  document.getElementById('mgDestinos').innerHTML = OPERADORES.map(op => {
+    const on = !!_mgSelecionados[op.id];
+    return '<button type="button" onclick="adminAlternarDestino(\'' + op.id + '\')" style="border-radius:12px;padding:9px 14px;font-size:13px;font-weight:800;cursor:pointer;font-family:var(--font);border:1.5px solid ' + (on ? 'var(--rose)' : 'var(--border)') + ';background:' + (on ? 'var(--rose-light)' : 'white') + ';color:var(--ink);">' + (on ? '✓ ' : '') + op.nome + '</button>';
+  }).join('');
+  const n = Object.values(_mgSelecionados).filter(Boolean).length;
+  const b = document.getElementById('mgEnviarBtn'); if (b) { b.textContent = n ? 'Enviar para ' + n + (n === 1 ? ' pessoa' : ' pessoas') : 'Escolha quem recebe'; b.disabled = !n; }
+}
+function adminAlternarDestino(id) { _mgSelecionados[id] = !_mgSelecionados[id]; adminRenderDestinosMensagem(); }
+function adminEnviarMensagemGeral() {
+  const texto = document.getElementById('mgTexto').value.trim();
+  if (!texto) { alert('Escreva a mensagem.'); return; }
+  const ids = OPERADORES.map(o => o.id).filter(id => _mgSelecionados[id]);
+  if (!ids.length) return;
+  const agora = new Date().toISOString();
+  const semDados = [], envios = [];
+  ids.forEach(id => {
+    const data = _adminDB[id];
+    if (!data || !_adminRefs[id]) { semDados.push(OPERADORES.find(o => o.id === id).nome); return; }
+    data.observacoes = data.observacoes || [];
+    data.observacoes.push({ id: adminUid(), texto, criadoEm: agora, lida: false, geral: true });
+    data.seq = (data.seq || 1) + 1;
+    data.ultimaNotificacao = { tipo: 'observacao', texto, criadoEm: agora };
+    envios.push(_adminRefs[id].set(data).then(() => id));
+  });
+  if (!envios.length) { alert('Nenhuma dessas pessoas abriu o app ainda, então não dá para enviar.'); return; }
+  const btn = document.getElementById('mgEnviarBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+  Promise.all(envios).then(feitos => {
+    fecharModal('modalMensagemGeral');
+    mostrarMensagemSucesso('Enviada para ' + feitos.length + (feitos.length === 1 ? ' pessoa' : ' pessoas'));
+    if (semDados.length) alert('Não enviei para ' + semDados.join(', ') + ' porque ainda não abriu o app.');
+  }).catch(e => { alert('Erro ao enviar: ' + e.message); adminRenderDestinosMensagem(); });
 }
 
 function adminEnviarObservacao() {
