@@ -5141,8 +5141,13 @@ function versaoDados(d) {
   }));
   return max;
 }
+function rotuloQuemLogado() { return ACTIVE_PROFILE && ACTIVE_PROFILE.nome ? ' · ' + ACTIVE_PROFILE.nome : ''; }
+// Tem semana/consultoras de verdade? (um aparelho "em branco" nunca pode apagar o que está no servidor)
+function temDadosDeTrabalho(d) { return !!(d && ((d.semanas && d.semanas.length) || (d.consultoras && d.consultoras.length))); }
 function deveAdotarRemoto(remoto) {
   if (!remoto) return false;
+  if (temDadosDeTrabalho(remoto) && !temDadosDeTrabalho(DB)) return true;   // aparelho vazio: sempre puxa o que está no servidor
+  if (!temDadosDeTrabalho(remoto) && temDadosDeTrabalho(DB)) return false;  // servidor vazio nunca apaga um aparelho com dados (o aparelho é que reenvia)
   const rv = versaoDados(remoto), lv = versaoDados(DB);
   if (rv !== lv) return rv > lv;
   return (remoto.seq || 0) > (DB.seq || 0);
@@ -7925,7 +7930,7 @@ function renderSemana() {
     const cab0 = document.getElementById('atendCabDia'); if (cab0) cab0.style.display = 'none';
     const ctaWrapEl0 = document.querySelector('.cta-wrap');
     if (ctaWrapEl0) ctaWrapEl0.style.display = '';
-    document.getElementById('semanaNumero').textContent = 'Semana —';
+    document.getElementById('semanaNumero').textContent = 'Semana —' + rotuloQuemLogado();
     document.getElementById('semanaRegiao').textContent = 'Nenhuma semana ativa';
     const ctaBtnEl0 = document.getElementById('ctaBtn');
     ctaBtnEl0.className = 'cta-btn';
@@ -7993,7 +7998,7 @@ function renderSemana() {
 
   const proxima = sem.consultoras.find(c => c.status !== 'concluida');
 
-  document.getElementById('semanaNumero').textContent = 'Semana ' + sem.numero;
+  document.getElementById('semanaNumero').textContent = 'Semana ' + sem.numero + rotuloQuemLogado();
   document.getElementById('semanaRegiao').textContent = sem.regiao;
   window._barrasAlvo = { c: pctC, m: pctM };
   document.getElementById('progConsultoras').style.width = pctC + '%';
