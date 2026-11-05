@@ -1228,15 +1228,18 @@ input[type="time"]{max-width:100%;}
   </div>
   <div class="scroll-body" style="padding:16px 16px 80px;">
     <div id="agendaFocoDoDia"></div>
-    <div class="sec-title" style="padding-left:0;">Dias</div>
-    <div id="agendaDiasRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;"></div>
+    <div id="agendaDiasRow" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;-webkit-overflow-scrolling:touch;"></div>
 
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span id="agendaDiaSelecionadoTitulo" style="font-size:19px;font-weight:800;color:var(--ink);font-family:var(--font-serif);">Tarefas</span>
-        <span id="agendaDiaSelecionadoHoje" style="display:none;background:var(--rose);color:white;font-size:10px;font-weight:800;padding:3px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:.4px;">Hoje</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 16px;">
+      <div style="min-width:0;">
+        <div id="agendaDiaSelecionadoTitulo" style="font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.4px;line-height:1.15;">Tarefas</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:3px;">
+          <span id="agendaDiaSelecionadoData" style="font-size:13px;font-weight:700;color:var(--ink-3);"></span>
+          <span id="agendaDiaSelecionadoHoje" style="display:none;font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 8px;border-radius:99px;background:var(--rose);color:white;">HOJE</span>
+        </div>
       </div>
-      <button onclick="abrirEscolhaTarefa(_agendaDiaSelecionado)" style="background:none;border:none;color:var(--rose-deep);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;">+ Nova tarefa</button>
+      <button type="button" class="ger-btn pri" onclick="abrirEscolhaTarefa(_agendaDiaSelecionado)" style="flex-shrink:0;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nova tarefa</button>
     </div>
     <div id="agendaCompletaLista"></div>
   </div>
@@ -3450,18 +3453,28 @@ function renderAgendaCompleta() {
   if (!_agendaDiaSelecionado) _agendaDiaSelecionado = hoje;
   const diaAtual = _agendaDiaSelecionado;
 
-  // Pills dos 7 dias, com contagem de tarefas em cada um
-  document.getElementById('agendaDiasRow').innerHTML = DIAS_AGENDA.map(d => {
+  // Chips dos 7 dias no mesmo estilo dos Atendimentos: "Dia 04 · Qua (n)", com bolinha no dia de hoje
+  const agora0 = new Date();
+  const segundaSem = new Date(agora0.getFullYear(), agora0.getMonth(), agora0.getDate() - ((agora0.getDay() + 6) % 7));
+  const dataDoDia = i => new Date(segundaSem.getFullYear(), segundaSem.getMonth(), segundaSem.getDate() + i);
+  document.getElementById('agendaDiasRow').innerHTML = DIAS_AGENDA.map((d, i) => {
     const qtd = (agenda[d.key] || []).filter(t => !t.consultoraId).length;   // só tarefas
     const ativo = d.key === diaAtual;
     const isHoje = d.key === hoje;
-    const rotulo = d.label.replace('-feira', '');
-    return `<button onclick="selecionarDiaAgenda('${d.key}')" style="flex-shrink:0;position:relative;background:${ativo?'var(--rose)':'white'};color:${ativo?'white':'var(--ink-2)'};border:1.5px solid ${ativo?'var(--rose)':'var(--border)'};border-radius:14px;padding:8px 14px;font-size:12.5px;font-weight:700;font-family:var(--font);cursor:pointer;white-space:nowrap;">${rotulo}${qtd?` <span style="opacity:.75;">(${qtd})</span>`:''}${isHoje?`<span style="position:absolute;top:-4px;right:-4px;width:8px;height:8px;border-radius:50%;background:${ativo?'white':'var(--rose)'};"></span>`:''}</button>`;
+    const abrev = d.label.replace('-feira', '').slice(0, 3);
+    return '<button type="button" data-ativo="' + (ativo ? 1 : 0) + '" onclick="selecionarDiaAgenda(\'' + d.key + '\')" style="flex-shrink:0;border-radius:14px;padding:8px 13px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;font-family:var(--font);border:1.5px solid ' + (ativo ? 'var(--ink)' : 'var(--border)') + ';background:' + (ativo ? 'var(--ink)' : 'white') + ';color:' + (ativo ? 'white' : 'var(--ink-2)') + ';">'
+      + rotuloDiaChip(dataDoDia(i), abrev) + ' <span style="opacity:.7;font-weight:700;">(' + qtd + ')</span>'
+      + (isHoje ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + (ativo ? 'white' : 'var(--rose)') + ';margin-left:6px;vertical-align:middle;"></span>' : '')
+      + '</button>';
   }).join('');
+  { const rowA = document.getElementById('agendaDiasRow'); const selA = rowA.querySelector('[data-ativo="1"]');   // deixa o dia marcado à vista
+    if (selA) rowA.scrollLeft = Math.max(0, selA.offsetLeft - (rowA.clientWidth - selA.offsetWidth) / 2); }
 
   const diaInfo = DIAS_AGENDA.find(d => d.key === diaAtual);
   const isHojeSel = diaAtual === hoje;
   document.getElementById('agendaDiaSelecionadoTitulo').textContent = diaInfo ? diaInfo.label : '';
+  { const iSel = DIAS_AGENDA.findIndex(d => d.key === diaAtual); const elData = document.getElementById('agendaDiaSelecionadoData');
+    if (elData) elData.textContent = iSel >= 0 ? dataDoDia(iSel).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) : ''; }
   document.getElementById('agendaDiaSelecionadoHoje').style.display = isHojeSel ? '' : 'none';
 
   // Foco do dia: recado único e bem chamativo, fixado acima até dos dias da semana.
@@ -4395,9 +4408,10 @@ let _tarefaDiaTodo = false;
 let _tarefaRecorrente = false;
 
 let _escolhaTarefaDia = null;
+// A Agenda é só de tarefas: o "+ Nova tarefa" abre direto o formulário (sem a janela de escolha).
 function abrirEscolhaTarefa(diaKey) {
   _escolhaTarefaDia = diaKey || hojeAgendaKey();
-  document.getElementById('modalEscolhaTarefa').classList.add('open');
+  abrirNovaTarefa(null, _escolhaTarefaDia);
 }
 
 // Tarefa de atendimento (pendente) que essa consultora já tem na Agenda, em qualquer dia
