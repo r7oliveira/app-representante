@@ -222,6 +222,8 @@ input[type="time"]{max-width:100%;}
 .ac-main{flex:1;min-width:0;}
 .ac-linha1{display:flex;align-items:flex-start;gap:8px;}
 .ac-nome{flex:1;min-width:0;font-size:14.5px;font-weight:800;line-height:1.25;color:var(--ink);}
+.ac-cidade{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--ink-3);margin-top:3px;}
+.ac-cidade svg{flex-shrink:0;}
 .ac-end{font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.35;font-weight:500;}
 .ac-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
 .chip{font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:99px;background:var(--surface-2);color:var(--ink-2);white-space:nowrap;}
@@ -11478,15 +11480,19 @@ function renderGerenciar() {
       if (tk) chips.push('<span class="chip">Ticket ' + brl(tk.valor) + '</span>');
       if (c.novaConsultora || c.codigoLiberacao) chips.push('<span class="chip blue">Consultora nova' + (c.codigoLiberacao ? ' · Liberada · cód. ' + String(c.codigoLiberacao).replace(/[<>&"]/g, '') : '') + '</span>');
       if (!c.endereco) chips.push('<span class="chip amber">Sem rua e número</span>');
+      // só a cidade (sem rua): "Gramado/RS"
+      const cidParts = String(c.cidade || '').split('/'); const cidNome = cidParts[0].trim(); const cidUf = (cidParts[1] || c.uf || '').trim().toUpperCase();
+      const cidadeCard = cidNome ? tituloCase(cidNome.toLowerCase()) + (cidUf ? '/' + cidUf : '') : '';
       return header + '<div class="cons-card ac-card" style="flex-direction:column;align-items:stretch;padding:0;overflow:hidden;">'
         + '<div class="ac-top" style="border-bottom:1px solid var(--border);" onclick="editarConsultora(\'' + c.id + '\')">'
           + '<div class="ac-time" style="width:40px;"><div class="ger-av">' + numDia + '</div></div>'
           + '<div class="ac-main">'
             + '<div class="ac-linha1"><div class="ac-nome">' + c.nome + '</div><span class="ger-st">● Ativa</span></div>'
+            + (cidadeCard ? '<div class="ac-cidade"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' + cidadeCard + '</div>' : '')
             + '<div class="ac-end">' + ultTxt.charAt(0).toUpperCase() + ultTxt.slice(1) + '</div>'
             + (visita ? '<div class="ger-visita">' + visita + '</div>' : '')
             + '<div class="ger-stats">'
-              + '<div><div class="ger-lbl">Último valor a pagar</div><div class="ger-val">' + (ult ? brl(aPagarDe(ult.reg)) + ' <small>· sem. ' + ult.sem.numero + '</small>' : '—') + '</div></div>'
+              + '<div><div class="ger-lbl">Último valor pago</div><div class="ger-val">' + (ult ? brl(aPagarDe(ult.reg)) + ' <small>· sem. ' + ult.sem.numero + '</small>' : '—') + '</div></div>'
               + '<div><div class="ger-lbl">Em aberto</div><div class="ger-val" style="color:' + (deb > 0 ? 'var(--red)' : 'var(--ink)') + ';">' + brl(deb) + '</div></div>'
             + '</div>'
             + '<div class="ac-chips">' + chips.join('') + '</div>'
