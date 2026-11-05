@@ -976,7 +976,7 @@ input[type="time"]{max-width:100%;}
       <!-- Critério: Assinatura digital -->
       <div class="crit-row-atend" onclick="toggleCrit('assinaturaDigital')" style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--border);cursor:pointer;">
         <div class="crit-chk" id="chk-assinaturaDigital" style="width:22px;height:22px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;"></div>
-        <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-assinaturaDigital">Assinatura digital feito em loja</div>
+        <div style="flex:1;font-size:13px;font-weight:600;color:var(--ink-3);" id="lbl-assinaturaDigital">Assinatura feito na hora</div>
         <div style="font-size:11px;font-weight:700;color:var(--ink-3);">+15</div>
       </div>
 
@@ -2067,7 +2067,7 @@ input[type="time"]{max-width:100%;}
       </div>
       <div class="crit-row">
         <div class="crit-check" id="critAssin">✓</div>
-        <div class="crit-text" id="critAssinText">Assinatura digital feito em loja</div>
+        <div class="crit-text" id="critAssinText">Assinatura feito na hora</div>
         <div class="crit-pts" id="critAssinPts">+15</div>
       </div>
       <div class="crit-row">
@@ -5608,14 +5608,14 @@ function confirmarAdminCriarSemana() {
       const mestre = (data.consultoras || []).find(m => m.id === c.id);
       const favoritaJaPendente = !!(mestre && mestre.favoritaProximaPendente);
       if (mestre) mestre.favoritaProximaPendente = false;
-      return { ...c, status: 'pendente', vendido: 0, recebido: 0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario: false, aPagar: 0, ultimoPgto: 0, recebidoPix: 0, recebidoDinheiro: 0, recebidoOutros: 0, debito: 0, formaPgto: '' };
+      return { ...c, status: 'pendente', vendido: 0, recebido: 0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, standby:false, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario: false, aPagar: 0, ultimoPgto: 0, recebidoPix: 0, recebidoDinheiro: 0, recebidoOutros: 0, debito: 0, formaPgto: '' };
     });
     // Inclui também quem é ativa na região agora mas não estava na semana anterior
     // (nova ou reativada depois) — senão a semana nova nunca cresce além do ciclo passado.
     const idsJaIncluidosAdmin = new Set(consultoras.map(c => c.id));
     const extrasAdmin = (data.consultoras || [])
       .filter(c => c.regiao === regiao && c.status !== 'inativa' && !idsJaIncluidosAdmin.has(c.id))
-      .map(c => ({ ...c, status: 'pendente', vendido: 0, recebido: 0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, pedidoFavoritaFeito: false, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario: false, aPagar: 0, ultimoPgto: 0, recebidoPix: 0, recebidoDinheiro: 0, recebidoOutros: 0, debito: 0, formaPgto: '' }));
+      .map(c => ({ ...c, status: 'pendente', vendido: 0, recebido: 0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, standby:false, pedidoFavoritaFeito: false, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario: false, aPagar: 0, ultimoPgto: 0, recebidoPix: 0, recebidoDinheiro: 0, recebidoOutros: 0, debito: 0, formaPgto: '' }));
     consultoras = consultoras.concat(extrasAdmin);
   } else {
     consultoras = (data.consultoras || [])
@@ -5623,7 +5623,7 @@ function confirmarAdminCriarSemana() {
       .map(c => {
         const favoritaJaPendente = !!c.favoritaProximaPendente;
         c.favoritaProximaPendente = false;
-        return { ...c, status: 'pendente', vendido: 0, recebido: 0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario: false, aPagar: 0, ultimoPgto: 0, recebidoPix: 0, recebidoDinheiro: 0, recebidoOutros: 0, debito: 0, formaPgto: '' };
+        return { ...c, status: 'pendente', vendido: 0, recebido: 0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, standby:false, pedidoFavoritaFeito: favoritaJaPendente, pedidoFavoritaProxima: false, remarcarSemana: false, remarcarMes: false, debitoOutrasNotasPago: 0, debitoOutrasNotasPix: 0, debitoOutrasNotasDinheiro: 0, debitoPagoAntigo: 0, horarioEnviado: false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario: false, aPagar: 0, ultimoPgto: 0, recebidoPix: 0, recebidoDinheiro: 0, recebidoOutros: 0, debito: 0, formaPgto: '' };
       });
   }
 
@@ -6217,8 +6217,8 @@ function totalPixDinheiroSemana(sem) {
 // Lista de uma semana como ela APARECE (Atendimentos, Rota, PDF): igual à "de verdade" + quem parou de vender nesta
 // mesma semana (ficou inativa no fechamento). Assim ela continua com o número dela e as outras não mudam de posição.
 // (Pra criar a semana seguinte continua valendo só a lista "de verdade", sem ela.)
-// Próxima consultora de um dia: a que você marcou à mão (se ainda falta atender) ou, senão, a primeira pelo horário.
-// "Stand-by" = a que seria a próxima pelo horário enquanto você escolheu outra.
+// Próxima consultora de um dia: a que você marcou à mão (se ainda falta atender) ou, senão, a primeira pelo horário
+// que NÃO esteja em stand-by. Quem está em stand-by só volta a ser candidata quando você tirar o stand-by (ela não "volta sozinha").
 function proximasPorDia(lista) {
   const out = {};
   const pend = c => c.status !== 'concluida' && !c.parouDeVender && !c.remarcarSemana && !c.remarcarMes;
@@ -6226,22 +6226,36 @@ function proximasPorDia(lista) {
   lista.filter(pend).forEach(c => { (dias[c.diaMelhor || 'Sem dia definido'] = dias[c.diaMelhor || 'Sem dia definido'] || []).push(c); });
   Object.keys(dias).forEach(d => {
     const ord = dias[d].slice().sort((a, b) => minutosDoHorario(a.horarioMelhor) - minutosDoHorario(b.horarioMelhor) || (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
-    const manual = ord.find(c => c.proximaManual);
-    out[d] = { auto: ord[0].id, manual: manual ? manual.id : null, prox: manual ? manual.id : ord[0].id };
+    const ativos = ord.filter(c => !c.standby);
+    const manual = ativos.find(c => c.proximaManual);
+    const auto = ativos.length ? ativos[0].id : null;
+    out[d] = { auto, manual: manual ? manual.id : null, prox: manual ? manual.id : auto };
   });
   return out;
 }
+// Marca (ou troca) quem é a próxima. Quem seria a próxima pelo horário vai pra stand-by e fica lá até você tirar.
 function definirProximaManual(consId) {
   const sem = getSemanaAtiva(); if (!sem) return;
   const c = sem.consultoras.find(x => x.id === consId); if (!c) return;
-  sem.consultoras.forEach(x => { if ((x.diaMelhor || '') === (c.diaMelhor || '')) x.proximaManual = false; });
-  c.proximaManual = true;
+  const dia = c.diaMelhor || 'Sem dia definido';
+  const antes = proximasPorDia(sem.consultoras)[dia];
+  if (antes && antes.auto && antes.auto !== c.id) { const r = sem.consultoras.find(x => x.id === antes.auto); if (r) { r.standby = true; r.proximaManual = false; } }
+  sem.consultoras.forEach(x => { if ((x.diaMelhor || 'Sem dia definido') === dia) x.proximaManual = false; });
+  c.proximaManual = true; c.standby = false;
   save(); renderSemana(); rotaAposMudarProxima();
 }
 function limparProximaManual(consId) {
   const sem = getSemanaAtiva(); if (!sem) return;
   const c = sem.consultoras.find(x => x.id === consId); if (!c) return;
   c.proximaManual = false;
+  save(); renderSemana(); rotaAposMudarProxima();
+}
+// Coloca em stand-by (ou tira). Em stand-by ela não é a próxima, mesmo quando as outras já foram atendidas.
+function alternarStandby(consId) {
+  const sem = getSemanaAtiva(); if (!sem) return;
+  const c = sem.consultoras.find(x => x.id === consId); if (!c) return;
+  c.standby = !c.standby;
+  if (c.standby) c.proximaManual = false;
   save(); renderSemana(); rotaAposMudarProxima();
 }
 function rotaAposMudarProxima() {
@@ -7094,7 +7108,7 @@ function rotaMontarParadas(sem, dia) {
     const temPonto = doLink || (geoOk && typeof m.lat === 'number' && typeof m.lng === 'number');
     const endTxt = enderecoLinha(m);
     return {
-      id: c.id, c, m, nome: c.nome, hora: c.horarioMelhor || '', feito, especial, naRota: !feito, manual: !!c.proximaManual && !feito,
+      id: c.id, c, m, nome: c.nome, hora: c.horarioMelhor || '', feito, especial, naRota: !feito, manual: !!c.proximaManual && !feito && !c.standby, standby: !!c.standby && !feito,
       num: i + 1, endTxt,   // o número da parada é fixo: continua o mesmo depois de atendida
       lat: temPonto ? m.lat : null, lng: temPonto ? m.lng : null, nivel: temPonto ? (m.geoNivel || null) : null,
       tentou: geoOk && !temPonto, leg: null,
@@ -7304,7 +7318,7 @@ function rotaIcone(p, proxId) {
 // Próxima parada da Rota: a que você marcou à mão (se ainda falta atender) ou a primeira pendente
 function rotaProximaParada() {
   const pend = ROTA.paradas.filter(p => p.naRota);
-  return pend.find(p => p.manual) || pend[0] || null;
+  return pend.find(p => p.manual) || pend.find(p => !p.standby) || pend[0] || null;
 }
 function rotaDesenharParadas(enquadrar) {
   if (!ROTA.map || !window.L) return;
@@ -7361,8 +7375,8 @@ async function rotaCalcularRota() {
   if (ROTA.calculando) return;
   const token = ROTA.token;
   const pts = ROTA.paradas.filter(p => p.naRota && p.lat !== null);
-  const iManual = pts.findIndex(p => p.manual);           // a que você escolheu como próxima vai primeiro; o resto segue na ordem
-  if (iManual > 0) pts.unshift(pts.splice(iManual, 1)[0]);
+  // trajeto: a que você escolheu vai primeiro; depois as outras na ordem; as em stand-by ficam por último
+  { const ord = pts.filter(p => p.manual).concat(pts.filter(p => !p.manual && !p.standby), pts.filter(p => !p.manual && p.standby)); pts.splice(0, pts.length, ...ord); }
   ROTA.paradas.forEach(p => { p.leg = null; });
   const usaEu = !!ROTA.pos;
   const waypoints = (usaEu ? [{ lat: ROTA.pos.lat, lng: ROTA.pos.lng }] : []).concat(pts.map(p => ({ lat: p.lat, lng: p.lng })));
@@ -7604,7 +7618,10 @@ function rotaRenderCard() {
   const proxLnk = (!p.feito && p.c)
     ? (ehProxima && p.manual
         ? '<button type="button" onclick="limparProximaManual(\'' + p.id + '\')" style="flex-shrink:0;font-size:11px;font-weight:800;color:var(--ink-3);text-decoration:underline;">Desmarcar próxima</button>'
-        : (!ehProxima ? '<button type="button" onclick="definirProximaManual(\'' + p.id + '\')" style="flex-shrink:0;font-size:11px;font-weight:800;color:var(--rose);text-decoration:underline;">Marcar como próxima</button>' : ''))
+        : (p.standby
+            ? '<button type="button" onclick="alternarStandby(\'' + p.id + '\')" style="flex-shrink:0;font-size:11px;font-weight:800;color:var(--rose);text-decoration:underline;">Tirar do stand-by</button>'
+            : (!ehProxima ? '<button type="button" onclick="definirProximaManual(\'' + p.id + '\')" style="flex-shrink:0;font-size:11px;font-weight:800;color:var(--rose);text-decoration:underline;">Marcar como próxima</button>' : '')))
+      + ((!p.standby) ? '<button type="button" onclick="alternarStandby(\'' + p.id + '\')" style="flex-shrink:0;font-size:11px;font-weight:800;color:var(--ink-3);text-decoration:underline;">Stand-by</button>' : '')
     : '';
   el.innerHTML = '<div style="' + base + '">' + cab
     + ((info || aprox || ajustar || proxLnk) ? '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;"><div style="font-size:12px;font-weight:800;color:var(--ink);min-width:0;">' + info + aprox + '</div><div style="display:flex;gap:10px;align-items:center;">' + proxLnk + ajustar + '</div></div>' : '')
@@ -8084,7 +8101,7 @@ function renderSemana() {
     const st = c.status || 'pendente';
     const infoProx = proxPorDia[c.diaMelhor || 'Sem dia definido'] || null;
     const isNext = !!(infoProx && infoProx.prox === c.id);
-    const emStandby = !!(infoProx && infoProx.manual && infoProx.auto === c.id && infoProx.manual !== c.id);
+    const emStandby = !!c.standby && c.status !== 'concluida';
     const especial = c.parouDeVender ? 'inativa' : c.remarcarMes ? 'mes' : c.remarcarSemana ? 'semana' : null;
 
     // Cabeçalho de grupo quando muda de pendente → remarcada → concluída
@@ -8222,8 +8239,10 @@ function renderSemana() {
     return tituloGrupo + tituloDia + '<div class="cons-card at-card ' + cls + '">'
       + (!passo3Feito && !especial
           ? (ehProxima
-              ? '<div class="at-prox-tag">Próxima' + (c.proximaManual ? ' · escolhida por você <button type="button" class="lnk" onclick="limparProximaManual(\'' + c.id + '\')">Desmarcar</button>' : '') + '</div>'
-              : '<div class="at-prox-tag ' + (emStandby ? 'stand' : 'off') + '">' + (emStandby ? 'Stand-by · ' : '') + '<button type="button" class="lnk" onclick="definirProximaManual(\'' + c.id + '\')">Marcar como próxima</button></div>')
+              ? '<div class="at-prox-tag">Próxima' + (c.proximaManual ? ' · escolhida' : '') + ' <button type="button" class="lnk" onclick="alternarStandby(\'' + c.id + '\')">Stand-by</button>' + (c.proximaManual ? ' <button type="button" class="lnk" onclick="limparProximaManual(\'' + c.id + '\')">Desmarcar</button>' : '') + '</div>'
+              : (emStandby
+                  ? '<div class="at-prox-tag stand">Stand-by · <button type="button" class="lnk" onclick="alternarStandby(\'' + c.id + '\')">Tirar do stand-by</button></div>'
+                  : '<div class="at-prox-tag off"><button type="button" class="lnk" onclick="definirProximaManual(\'' + c.id + '\')">Marcar como próxima</button> · <button type="button" class="lnk" onclick="alternarStandby(\'' + c.id + '\')">Stand-by</button></div>'))
           : '')
       + '<div class="at-top" onclick="abrirAtendimento(\'' + c.id + '\')">'
         + '<span class="at-hora">' + (hora || '--:--') + '</span>'
@@ -8310,7 +8329,7 @@ function adicionarUmaConsultora(id) {
   if (!sem || !cons) return;
   const favoritaJaPendente = !!cons.favoritaProximaPendente;
   cons.favoritaProximaPendente = false;
-  sem.consultoras.push({...cons, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, pedidoFavoritaFeito:favoritaJaPendente, pedidoFavoritaProxima:false, consultoraNova: !!cons.novaConsultora});
+  sem.consultoras.push({...cons, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, standby:false, pedidoFavoritaFeito:favoritaJaPendente, pedidoFavoritaProxima:false, consultoraNova: !!cons.novaConsultora});
   save();
   renderSemana();
   // Mantém o modal aberto pra dar pra adicionar várias seguidas — só fecha no X.
@@ -8337,7 +8356,7 @@ function adicionarConsultorasSemana() {
   novas.forEach(c => {
     const favoritaJaPendente = !!c.favoritaProximaPendente;
     c.favoritaProximaPendente = false;
-    sem.consultoras.push({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, pedidoFavoritaFeito:favoritaJaPendente, pedidoFavoritaProxima:false, consultoraNova: !!c.novaConsultora});
+    sem.consultoras.push({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, standby:false, pedidoFavoritaFeito:favoritaJaPendente, pedidoFavoritaProxima:false, consultoraNova: !!c.novaConsultora});
   });
   save();
   renderSemana();
@@ -9278,9 +9297,9 @@ function avancarStep2() {
 
   // Busca consultoras: primeiro da região, depois todas ativas como fallback
   let consBase = ultima
-    ? consultorasValidasDe(ultima).map(c => ({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}))
+    ? consultorasValidasDe(ultima).map(c => ({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, standby:false, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}))
     : DB.consultoras.filter(c => c.regiao === criarRegiao && c.status !== 'inativa')
-        .map(c => ({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+        .map(c => ({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, standby:false, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
 
   // Se veio da semana anterior, inclui também quem é ativa na região AGORA mas não
   // estava na lista da semana passada (nova consultora, ou reativada depois) —
@@ -9289,7 +9308,7 @@ function avancarStep2() {
     const idsJaIncluidos = new Set(consBase.map(c => c.id));
     const extras = DB.consultoras
       .filter(c => c.regiao === criarRegiao && c.status !== 'inativa' && !idsJaIncluidos.has(c.id))
-      .map(c => ({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!c.novaConsultora}));
+      .map(c => ({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, standby:false, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!c.novaConsultora}));
     consBase = consBase.concat(extras);
   }
 
@@ -9356,7 +9375,7 @@ function toggleConsStep2(id) {
   // Atualiza _criarConsultoras com as selecionadas
   window._criarConsultoras = (window._step2Todas||[])
     .filter(c => sel.has(c.id))
-    .map(c => ({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+    .map(c => ({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, standby:false, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
   document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
 }
 
@@ -9371,7 +9390,7 @@ function selecionarTodasStep2() {
       chk.innerHTML = '<span style="color:white;font-size:11px;font-weight:800;">✓</span>';
     }
   });
-  window._criarConsultoras = todas.map(c => ({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
+  window._criarConsultoras = todas.map(c => ({...c, status:'pendente', vendido:0, recebido:0, atendimentoEmDia:false, pagamentoNaSemana:false, assinaturaDigital:false, pedidoFavoritaProxima:false, criteriosPreparados:false, consultoraNovaJaVende:false, novaMarcadaManual:false, debitoExcluido:0, debitoExcluidoEm:'', proximaManual:false, standby:false, pedidoFavoritaFeito:false, remarcarSemana:false, remarcarMes:false, debitoOutrasNotasPago:0, debitoOutrasNotasPix:0, debitoOutrasNotasDinheiro:0, debitoPagoAntigo:0, horarioEnviado:false, whatsappEnviado:false, horarioAgendado:false, confirmouHorario:false, aPagar:0, ultimoPgto:0, recebidoPix:0, recebidoDinheiro:0, recebidoOutros:0, debito:0, formaPgto:'', consultoraNova: !!(DB.consultoras.find(m => m.id === c.id) || {}).novaConsultora}));
   document.getElementById('step2Count').textContent = window._criarConsultoras.length + ' selecionadas';
 }
 
