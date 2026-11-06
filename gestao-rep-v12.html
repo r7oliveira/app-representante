@@ -1575,6 +1575,7 @@ input[type="time"]{max-width:100%;}
   <div class="scroll-body" style="padding:16px 16px 80px;background:var(--surface);">
     <button onclick="abrirFechamentoAdmin()" style="width:100%;background:var(--ink);color:white;border:none;border-radius:16px;padding:14px;font-size:14px;font-weight:800;font-family:var(--font);cursor:pointer;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;">📊 Fechamento Consolidado da Semana</button>
     <button onclick="adminAbrirMensagemGeral()" style="width:100%;background:var(--rose);color:white;border:none;border-radius:16px;padding:14px;font-size:14px;font-weight:800;font-family:var(--font);cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;">📣 Enviar mensagem para a equipe</button>
+    <button onclick="adminDiagnosticoNuvem()" style="width:100%;background:white;color:var(--ink);border:1.5px solid var(--border);border-radius:16px;padding:12px;font-size:13px;font-weight:800;font-family:var(--font);cursor:pointer;margin:-6px 0 16px;display:flex;align-items:center;justify-content:center;gap:8px;">🔍 Diagnóstico da nuvem</button>
     <div id="adminHomeLista"></div>
   </div>
 </div>
@@ -1842,6 +1843,15 @@ input[type="time"]{max-width:100%;}
 <!-- ══════════════════════════════════════════
      MODAL: MENU RÁPIDO (gestão + conta)
 ══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalDiagNuvem">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalDiagNuvem')">✕</button>
+    <div class="modal-title" style="font-size:24px;margin-bottom:4px;">Diagnóstico da nuvem</div>
+    <div style="font-size:12.5px;color:var(--ink-3);margin-bottom:14px;">O que está guardado no servidor de cada pessoa agora.</div>
+    <div id="diagNuvemLista" style="max-height:60vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalMensagemGeral">
   <div class="modal-box">
     <button class="modal-close" onclick="fecharModal('modalMensagemGeral')">✕</button>
@@ -5572,6 +5582,46 @@ function renderAdminPessoa() {
       </div>
       <span style="font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:8px;background:${foiAtendida(c)?'var(--green-bg)':(c.remarcarSemana||c.remarcarMes)?'var(--red-bg)':'var(--surface-2)'};color:${foiAtendida(c)?'var(--green)':(c.remarcarSemana||c.remarcarMes)?'var(--red)':'var(--ink-3)'};">${foiAtendida(c)?'Atendida':(c.remarcarSemana||c.remarcarMes)?'Remarcada':'Pendente'}</span>
     </div>`).join('') : '<div style="font-size:12px;color:var(--ink-3);">Nenhuma consultora nesta semana.</div>';
+}
+
+// ── Diagnóstico da nuvem: mostra o que o servidor guarda de cada pessoa (sem precisar do console do Firebase) ──
+async function adminDiagnosticoNuvem() {
+  const el = document.getElementById('diagNuvemLista');
+  el.innerHTML = '<div style="text-align:center;color:var(--ink-3);padding:20px;">Consultando o servidor...</div>';
+  document.getElementById('modalDiagNuvem').classList.add('open');
+  try {
+    const snap = await _db.collection('representantes').get({ source: 'server' });
+    if (snap.empty) { el.innerHTML = '<div style="text-align:center;color:var(--ink-3);padding:20px;">A coleção "representantes" está vazia.</div>'; return; }
+    const quando = d => { const v = typeof versaoDados === 'function' ? versaoDados(d) : 0; return v ? new Date(v).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + (d.updatedAt ? '' : ' (estimada)') : 'sem data'; };
+    el.innerHTML = snap.docs.map(doc => {
+      const d = doc.data() || {};
+      const sems = d.semanas || [], cons = d.consultoras || [];
+      const ult = sems.slice().sort((a, b) => (b.numero || 0) - (a.numero || 0))[0];
+      const vazio = !sems.length && !cons.length;
+      const kb = Math.round(JSON.stringify(d).length / 1024);
+      return '<div style="border:1.5px solid ' + (vazio ? '#E3B5B1' : 'var(--border)') + ';background:' + (vazio ? '#FBEFED' : 'white') + ';border-radius:14px;padding:12px 14px;margin-bottom:10px;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:15px;font-weight:800;color:var(--ink);">' + doc.id + '</div>'
+        + '<div style="font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:99px;color:white;background:' + (vazio ? '#B85A55' : '#3E8A66') + ';">' + (vazio ? 'VAZIO' : 'COM DADOS') + '</div></div>'
+        + '<div style="font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.6;">'
+        + 'Semanas: <b>' + sems.length + '</b>' + (ult ? ' (a mais nova: ' + ult.numero + ')' : '') + ' · Consultoras: <b>' + cons.length + '</b><br>'
+        + 'Última gravação: ' + quando(d) + ' · ' + kb + ' KB<br>'
+        + 'Aparelhos com notificação: ' + ((d.fcmTokens || []).length) + '</div>'
+        + (vazio ? '<button onclick="adminProtegerDocVazio(\'' + doc.id + '\')" style="margin-top:10px;width:100%;background:white;border:1.5px solid #B85A55;color:#B85A55;border-radius:10px;padding:9px;font-size:12.5px;font-weight:800;font-family:var(--font);cursor:pointer;">Proteger para recuperar de outro aparelho</button>' : '')
+        + '</div>';
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<div style="color:#B85A55;padding:14px;">Não consegui consultar: ' + (e.message || e) + '</div>';
+  }
+}
+// Documento vazio: zera só o carimbo de data. Assim, um aparelho (tablet, ícone antigo) que ainda tenha os dados
+// passa a ser tratado como "mais novo" e REENVIA os dele, em vez de baixar o vazio e perder tudo.
+async function adminProtegerDocVazio(id) {
+  if (!confirm('Marcar o documento de "' + id + '" para que um aparelho com dados antigos consiga reenviá-los?\n\nNão apaga nada e só mexe no carimbo de data de um documento que já está vazio.')) return;
+  try {
+    await _db.collection('representantes').doc(id).update({ updatedAt: 0 });
+    mostrarMensagemSucesso('Pronto. Agora abra o app no aparelho que ainda tem os dados.');
+    adminDiagnosticoNuvem();
+  } catch (e) { alert('Não consegui: ' + (e.message || e)); }
 }
 
 // ── Mensagem para toda a equipe (inclusive quem está mandando) ──
