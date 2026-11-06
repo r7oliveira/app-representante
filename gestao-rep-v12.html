@@ -5266,6 +5266,12 @@ function initFirebaseAdmin() {
 
     OPERADORES.forEach(op => {
       const ref = _db.collection('representantes').doc(op.id);
+      // Trava de segurança: o painel nunca grava no documento de uma pessoa algo SEM semanas/consultoras
+      // por cima de um documento que tem (isso apagaria o trabalho dela).
+      { const setOriginal = ref.set.bind(ref);
+        ref.set = (d, o) => (!temDadosDeTrabalho(d) && temDadosDeTrabalho(_adminDB[op.id]))
+          ? Promise.reject(new Error('Bloqueado: isso apagaria os dados de ' + op.nome + '.'))
+          : setOriginal(d, o); }
       _adminRefs[op.id] = ref;
       ref.onSnapshot(snap => {
         _adminDB[op.id] = snap.exists ? snap.data() : null;
@@ -5595,11 +5601,14 @@ function adminEnviarMensagemGeral() {
   ids.forEach(id => {
     const data = _adminDB[id];
     if (!data || !_adminRefs[id]) { semDados.push(OPERADORES.find(o => o.id === id).nome); return; }
-    data.observacoes = data.observacoes || [];
-    data.observacoes.push({ id: adminUid(), texto, criadoEm: agora, lida: false, geral: true });
-    data.seq = (data.seq || 1) + 1;
-    data.ultimaNotificacao = { tipo: 'observacao', texto, criadoEm: agora };
-    envios.push(_adminRefs[id].set(data).then(() => id));
+    // Só acrescenta a observação (arrayUnion) e sobe o contador: NÃO regrava o documento inteiro da pessoa,
+    // então uma cópia desatualizada aqui no painel nunca consegue apagar ou desfazer o trabalho dela.
+    const FV = firebase.firestore.FieldValue;
+    envios.push(_adminRefs[id].update({
+      observacoes: FV.arrayUnion({ id: adminUid(), texto, criadoEm: agora, lida: false, geral: true }),
+      seq: FV.increment(1),
+      ultimaNotificacao: { tipo: 'observacao', texto, criadoEm: agora },
+    }).then(() => id));
   });
   if (!envios.length) { alert('Nenhuma dessas pessoas abriu o app ainda, então não dá para enviar.'); return; }
   const btn = document.getElementById('mgEnviarBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
