@@ -5761,14 +5761,18 @@ async function adminDiagnosticoNuvem() {
     if (snap.empty) { el.innerHTML = '<div style="text-align:center;color:var(--ink-3);padding:20px;">A coleção "representantes" está vazia.</div>'; return; }
     _diagDocs = {};
     snap.docs.forEach(doc => { _diagDocs[doc.id] = doc.data() || {}; });
-    el.innerHTML = Object.keys(_diagDocs).sort().map(id => {
+    // só a equipe (em ordem alfabética): Alceu, Isabel, Lúcia, Rogério — os outros documentos do banco não aparecem
+    const equipe = OPERADORES.slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    el.innerHTML = equipe.map(op => {
+      const id = op.id;
+      if (!_diagDocs[id]) return '<div style="border:1.5px dashed var(--border);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:white;"><div style="font-size:15px;font-weight:800;color:var(--ink);">' + op.nome + '</div><div style="font-size:12.5px;color:var(--ink-3);margin-top:4px;">Ainda não existe documento (a pessoa nunca abriu o app).</div></div>';
       const d = _diagDocs[id];
       const sems = d.semanas || [], cons = d.consultoras || [];
       const ult = sems.slice().sort((a, b) => (b.numero || 0) - (a.numero || 0))[0];
       const vazio = !sems.length && !cons.length;
       const kb = Math.round(JSON.stringify(d).length / 1024);
       return '<div style="border:1.5px solid ' + (vazio ? '#E3B5B1' : 'var(--border)') + ';background:' + (vazio ? '#FBEFED' : 'white') + ';border-radius:14px;padding:12px 14px;margin-bottom:10px;">'
-        + '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="font-size:15px;font-weight:800;color:var(--ink);word-break:break-all;">' + id + '</div>'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="font-size:15px;font-weight:800;color:var(--ink);">' + op.nome + '</div>'
         + '<div style="flex-shrink:0;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:99px;color:white;background:' + (vazio ? '#B85A55' : '#3E8A66') + ';">' + (vazio ? 'VAZIO' : 'COM DADOS') + '</div></div>'
         + '<div style="font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.6;">'
         + 'Semanas: <b>' + sems.length + '</b>' + (ult ? ' (a mais nova: ' + ult.numero + ')' : '') + ' · Consultoras: <b>' + cons.length + '</b><br>'
