@@ -169,6 +169,7 @@ input[type="time"]{max-width:100%;}
 .prog-track{flex:1;height:5px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden;}
 .prog-fill{height:100%;background:rgba(255,255,255,.78);border-radius:99px;transition:width 1.3s cubic-bezier(.22,1,.36,1);position:relative;overflow:hidden;}
 .prog-fill::after{content:"";position:absolute;top:0;bottom:0;left:0;width:60%;background:linear-gradient(90deg,transparent,#fff,transparent);transform:translateX(-120%);animation:progBrilho 2.8s ease-in-out infinite;}
+@media (max-width:340px){#semanaNumero{letter-spacing:.06em !important;font-size:11px !important;}}   /* celulares bem estreitos: ainda cabe tudo */
 @keyframes progBrilho{0%{transform:translateX(-120%);}55%,100%{transform:translateX(240%);}}
 @media (prefers-reduced-motion:reduce){.prog-fill::after{animation:none;display:none;}}
 .prog-val{color:white;font-size:12px;font-weight:700;flex-shrink:0;width:110px;text-align:right;}
@@ -273,27 +274,28 @@ input[type="time"]{max-width:100%;}
 .at-prox-tag.off::before{background:transparent;border:1.5px solid #C9C7C0;width:6px;height:6px;}
 .at-prox-tag.stand{color:#8A8A85;}
 .at-prox-tag.stand::before{background:#C9C7C0;}
-.at-nome{margin-top:12px;font-size:15.5px;font-weight:800;line-height:1.25;color:var(--tx);cursor:pointer;}
+.at-nome{margin-top:8px;font-size:15.5px;font-weight:800;line-height:1.25;color:var(--tx);cursor:pointer;}
 .at-end{display:flex;gap:7px;align-items:flex-start;margin-top:6px;font-size:13px;color:var(--tx2);line-height:1.4;cursor:pointer;}
 .at-end svg{margin-top:2px;flex-shrink:0;}
 .at-via.sem-end{padding-left:0;margin-top:5px;}
 .at-via{margin-top:3px;padding-left:22px;font-size:11.5px;font-weight:600;color:#A5A39C;}   /* discreto: só pra bater o olho */
-.at-sep{height:1px;background:#ECEBE7;margin-top:12px;}
-.at-sec{margin:11px 0 6px;font-size:12px;font-weight:800;letter-spacing:.4px;color:var(--tx);text-transform:uppercase;}
-.at-fin,.at-perf{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.at-perf + .at-perf{margin-top:8px;}
-.at-marca{border-radius:16px;padding:9px 12px 10px;min-height:62px;background:var(--neutro);}
-.at-marca-t{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--tx);}
+.at-sep{height:1px;background:#ECEBE7;margin-top:9px;}
+.at-sec{display:none;}   /* os títulos "Situação/Desempenho financeiro" sumiram: cada quadradinho já tem o seu nome */
+.at-fin,.at-perf{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.at-sep + .at-fin, .at-sep + .at-sec + .at-fin{margin-top:9px;}
+.at-fin + .at-sec + .at-perf, .at-fin + .at-perf{margin-top:6px;}
+.at-marca{border-radius:14px;padding:7px 11px 8px;min-height:0;background:var(--neutro);}
+.at-marca-t{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--tx);}
 .at-marca-t svg{width:18px;height:18px;}
-.at-marca-s{margin-top:3px;font-size:16px;font-weight:800;line-height:1.15;color:var(--tx2);}
+.at-marca-s{margin-top:1px;font-size:14.5px;font-weight:800;line-height:1.15;color:var(--tx2);}
 .at-marca.ok{background:var(--vd-bg);} .at-marca.ok .at-marca-s,.at-marca.ok svg{color:var(--vd);}
 .at-marca.deb{background:var(--vm-bg);} .at-marca.deb .at-marca-s,.at-marca.deb svg{color:var(--vm);}
 .at-marca-v{font-size:13.5px;font-weight:800;margin-top:1px;color:var(--vm);}
-.at-marca.sem .at-marca-s{font-size:14.5px;}
-.at-i{background:var(--neutro);border-radius:16px;padding:9px 12px;min-width:0;}
-.at-i-l{font-size:11px;font-weight:700;letter-spacing:.3px;color:var(--tx2);text-transform:uppercase;}
-.at-i-v{font-size:19px;font-weight:800;color:var(--tx);margin-top:2px;letter-spacing:-.4px;white-space:nowrap;line-height:1.2;}
-.at-i-r{font-size:12px;color:var(--tx2);margin-top:1px;}
+.at-marca.sem .at-marca-s{font-size:13.5px;}
+.at-i{background:var(--neutro);border-radius:14px;padding:7px 11px 8px;min-width:0;}
+.at-i-l{font-size:10.5px;font-weight:700;letter-spacing:.3px;color:var(--tx2);text-transform:uppercase;}
+.at-i-v{font-size:16.5px;font-weight:800;color:var(--tx);margin-top:1px;letter-spacing:-.4px;white-space:nowrap;line-height:1.2;}
+.at-i-r{font-size:11px;color:var(--tx2);margin-top:0;}
 .at-nova{display:flex;gap:12px;align-items:center;background:var(--az-bg);border-radius:16px;padding:10px 14px;margin-top:10px;color:var(--az);}
 .at-nova b{display:block;font-size:15.5px;font-weight:800;color:var(--tx);}
 .at-nova span{display:block;font-size:13px;font-weight:600;margin-top:1px;}
@@ -303,14 +305,16 @@ input[type="time"]{max-width:100%;}
 .at-tag.am{background:var(--am-bg);color:var(--am);}
 .at-tag.vm{background:var(--vm-bg);color:var(--vm);}
 .at-obs{margin-top:10px;font-size:12px;color:var(--tx2);font-style:italic;line-height:1.4;}
-.at-botoes{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
-.at-btn{display:flex;align-items:center;justify-content:center;gap:10px;border:none;border-radius:18px;cursor:pointer;font-weight:700;white-space:nowrap;}
+.at-botoes{display:flex;flex-direction:row;gap:8px;margin-top:10px;}
+.at-btn{display:flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:16px;cursor:pointer;font-weight:700;white-space:nowrap;}
 .at-btn:active{opacity:.85;}
-.at-btn.pri{min-height:54px;background:var(--ch);color:#fff;font-size:16.5px;}
-.at-btn.sec{min-height:48px;background:var(--neutro);color:var(--tx);font-size:15.5px;}
+.at-btn.pri{flex:1;min-width:0;min-height:48px;padding:0 6px;background:var(--ch);color:#fff;font-size:13.5px;}
+.at-btn.sec{flex:1;min-width:0;min-height:48px;padding:0 6px;background:var(--neutro);color:var(--tx);font-size:13.5px;}
+.at-btn svg{flex-shrink:0;width:16px;height:16px;}
+@media (max-width:380px){.at-btn svg{display:none;}.at-btn.pri,.at-btn.sec{font-size:13px;}}   /* celulares mais estreitos: sem o ícone, pra caber o texto */
 .at-btn.sec.off{color:#A9A8A2;}
 .at-btn.sec.ok{color:var(--vd);}
-.at-aux{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #ECEBE7;align-items:center;}
+.at-aux{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #ECEBE7;align-items:center;}
 .at-a{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px;height:42px;padding:0 6px;border-radius:14px;font-size:13px;font-weight:700;border:none;cursor:pointer;white-space:nowrap;}
 .at-a:active{opacity:.85;}
 .at-a.gps{background:#181818;color:#fff;flex:.9;}
@@ -644,11 +648,14 @@ input[type="time"]{max-width:100%;}
 
     <!-- Hero -->
     <div class="hero-grad" style="padding:calc(16px + env(safe-area-inset-top)) 20px 22px;" id="semanaHero">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
-        <div class="hero-week-label" id="semanaNumero">Semana —</div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div id="syncStatus" onclick="sincronizarManual()" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;">● Carregando</div>
-          <button onclick="goTo('assist-new')" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:5px 10px;cursor:pointer;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px;">
+        <!-- esquerda: semana · nome e, embaixo, o status da sincronização (cada um numa linha só) -->
+        <div style="min-width:0;">
+          <div class="hero-week-label" id="semanaNumero" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;letter-spacing:.16em;">Semana —</div>
+          <div id="syncStatus" onclick="sincronizarManual()" style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;white-space:nowrap;margin-top:3px;">● Carregando</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+          <button onclick="goTo('assist-new')" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:5px 10px;cursor:pointer;white-space:nowrap;">
             <span style="font-size:12px;">✦</span>
             <span style="font-size:11px;font-weight:700;color:white;">Assistente</span>
           </button>
