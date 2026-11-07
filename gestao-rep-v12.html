@@ -1843,6 +1843,15 @@ input[type="time"]{max-width:100%;}
 <!-- ══════════════════════════════════════════
      MODAL: MENU RÁPIDO (gestão + conta)
 ══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalCopias">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalCopias')">✕</button>
+    <div class="modal-title" style="font-size:24px;margin-bottom:4px;">Cópias de segurança</div>
+    <div style="font-size:12.5px;color:var(--ink-3);margin-bottom:14px;">Toque em Restaurar para voltar ao estado de um dia. Antes de restaurar, o app guarda uma cópia do que está agora.</div>
+    <div id="copiasLista" style="max-height:60vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalDiagNuvem">
   <div class="modal-box">
     <button class="modal-close" onclick="fecharModal('modalDiagNuvem')">✕</button>
@@ -2423,6 +2432,20 @@ input[type="time"]{max-width:100%;}
         <button class="btn-ghost" style="width:auto;padding:9px 16px;color:var(--red);" onclick="fazerLogout()">Sair</button>
       </div>
     </div>
+    <div class="card" style="margin-bottom:16px;" id="cfgBackupCard">
+      <div style="padding:14px 16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+          <div style="font-size:15px;font-weight:800;color:var(--ink);">Cópias de segurança</div>
+          <span id="cfgBackupStatus" style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:8px;background:var(--surface);color:var(--ink-3);text-transform:uppercase;">—</span>
+        </div>
+        <div id="cfgBackupInfo" style="font-size:12px;color:var(--ink-3);margin-bottom:10px;line-height:1.5;">O app guarda uma cópia por dia dos seus dados, nos últimos 7 dias.</div>
+        <button class="btn-ghost" onclick="fazerBackupAgora()" style="margin-bottom:8px;">Fazer uma cópia agora</button>
+        <button class="btn-ghost" onclick="abrirCopiasNuvem()" style="margin-bottom:8px;">Ver cópias e restaurar</button>
+        <button class="btn-ghost" onclick="baixarBackup()" style="margin-bottom:8px;">Baixar arquivo de backup</button>
+        <button class="btn-ghost" onclick="document.getElementById('cfgArquivoBackup').click()" style="margin-bottom:0;">Restaurar de um arquivo…</button>
+        <input type="file" id="cfgArquivoBackup" accept=".json,application/json" style="display:none;" onchange="restaurarDeArquivo(this)">
+      </div>
+    </div>
     <div class="card" style="margin-bottom:16px;">
       <div style="padding:14px 16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
@@ -2493,7 +2516,6 @@ input[type="time"]{max-width:100%;}
     </div>
     <button class="btn-ghost" onclick="exportarDados()" style="margin-bottom:10px;">Exportar dados</button>
     <button class="btn-ghost" onclick="testarSync()" style="margin-bottom:10px;">Testar sincronização Firebase</button>
-    <button class="btn-ghost" style="color:var(--red);" onclick="if(confirm('Apagar todos os dados?')){limparTudo();}">Limpar todos os dados</button>
   </div>
 </div>
 
@@ -5163,6 +5185,8 @@ function deveAdotarRemoto(remoto) {
   return (remoto.seq || 0) > (DB.seq || 0);
 }
 function adotarRemoto(remoto) {
+  // Antes de trocar o que tem neste aparelho pelo que veio do servidor, guarda uma cópia (rede de segurança)
+  try { if (temDadosDeTrabalho(DB)) localStorage.setItem(KEY + '_antes_de_sincronizar', JSON.stringify(DB)); } catch (e) {}
   DB = remoto;
   DB.agenda = DB.agenda || blankAgenda();
   DB.avisos = DB.avisos || blankAvisos();
@@ -5231,6 +5255,7 @@ async function _flushSaveAgora() {
     await _docRef.set(DB);
     const el = document.getElementById('syncStatus');
     if (el) { el.textContent = '● Sincronizado'; el.style.color = '#6EF0B0'; }
+    agendarBackupNuvem();
   } catch(e) {
     const el = document.getElementById('syncStatus');
     if (el) { el.textContent = '● Erro sync'; el.style.color = '#FF9090'; }
@@ -5582,6 +5607,135 @@ function renderAdminPessoa() {
       </div>
       <span style="font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:8px;background:${foiAtendida(c)?'var(--green-bg)':(c.remarcarSemana||c.remarcarMes)?'var(--red-bg)':'var(--surface-2)'};color:${foiAtendida(c)?'var(--green)':(c.remarcarSemana||c.remarcarMes)?'var(--red)':'var(--ink-3)'};">${foiAtendida(c)?'Atendida':(c.remarcarSemana||c.remarcarMes)?'Remarcada':'Pendente'}</span>
     </div>`).join('') : '<div style="font-size:12px;color:var(--ink-3);">Nenhuma consultora nesta semana.</div>';
+}
+
+// ── Cópias de segurança ──
+// 1 cópia por dia na própria nuvem (coleção representantes_backup), guardando os últimos 7 dias.
+// Uma cópia nunca é sobrescrita por uma versão com MENOS dados (então um aparelho vazio não estraga a cópia do dia).
+const BACKUP_COLECAO = 'representantes_backup';
+const BACKUP_DIAS = 7;
+function _bkHoje() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function _bkCorte() { const d = new Date(); d.setDate(d.getDate() - BACKUP_DIAS); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function _bkResumo(d) { return { semanas: (d.semanas || []).length, consultoras: (d.consultoras || []).length }; }
+function _bkGuardarInfo(info) { try { localStorage.setItem(KEY + '_bk_info', JSON.stringify(info)); } catch (e) {} atualizarStatusBackup(); }
+async function fazerBackupNuvem(forcar) {
+  if (!_docRef || !USER_ID || !temDadosDeTrabalho(DB)) return false;
+  const colecao = _docRef.firestore.collection(BACKUP_COLECAO);
+  const dia = _bkHoje();
+  const ref = colecao.doc(USER_ID + '_' + dia);
+  const atual = _bkResumo(DB);
+  try {
+    const ex = await ref.get();
+    if (ex.exists) {
+      const r = (ex.data() || {}).resumo || {};
+      if ((r.semanas || 0) + (r.consultoras || 0) > atual.semanas + atual.consultoras) {   // a cópia do dia já tem mais: não troca por menos
+        _bkGuardarInfo({ ts: Date.now(), resumo: r, ok: true }); return true;
+      }
+    }
+    const dados = JSON.stringify(DB);
+    if (dados.length > 900000) throw new Error('os dados passaram do tamanho que cabe numa cópia (' + Math.round(dados.length / 1024) + ' KB)');
+    await ref.set({ pessoa: USER_ID, dia, criadoEm: new Date().toISOString(), resumo: atual, build: APP_BUILD, dados });
+    _bkGuardarInfo({ ts: Date.now(), resumo: atual, ok: true });
+    // apaga as cópias com mais de 7 dias
+    try { const velhas = await colecao.where('pessoa', '==', USER_ID).get(); const corte = _bkCorte(); velhas.docs.forEach(d => { if ((d.data().dia || '') < corte) d.ref.delete(); }); } catch (e) {}
+    return true;
+  } catch (e) {
+    _bkGuardarInfo({ ts: Date.now(), ok: false, erro: (e && e.code === 'permission-denied') ? 'O Firebase bloqueou a gravação. É preciso liberar a coleção representantes_backup nas Regras do Firestore (o passo a passo está no arquivo LEIA-ME-protecao).' : (e.message || String(e)) });
+    return false;
+  }
+}
+// chamado depois de cada envio ao servidor: no máximo 1 tentativa a cada 30 minutos
+function agendarBackupNuvem() {
+  let ts = 0; try { ts = (JSON.parse(localStorage.getItem(KEY + '_bk_info') || '{}')).ts || 0; } catch (e) {}
+  if (Date.now() - ts < 30 * 60000) return;
+  fazerBackupNuvem(false);
+}
+async function fazerBackupAgora() {
+  if (!temDadosDeTrabalho(DB)) { alert('Ainda não há dados para copiar.'); return; }
+  const ok = await fazerBackupNuvem(true);
+  if (ok) mostrarMensagemSucesso('Cópia feita'); else alert('Não consegui fazer a cópia agora. Veja o aviso em Cópias de segurança.');
+}
+function atualizarStatusBackup() {
+  const st = document.getElementById('cfgBackupStatus'), info = document.getElementById('cfgBackupInfo');
+  if (!st || !info) return;
+  let i = {}; try { i = JSON.parse(localStorage.getItem(KEY + '_bk_info') || '{}'); } catch (e) {}
+  if (!i.ts) { st.textContent = 'Ainda não'; st.style.background = 'var(--surface)'; st.style.color = 'var(--ink-3)'; info.textContent = 'O app guarda uma cópia por dia dos seus dados, nos últimos 7 dias. A primeira sai sozinha em instantes.'; return; }
+  const quando = new Date(i.ts).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  if (i.ok) { st.textContent = 'Ativa'; st.style.background = '#E3F6EA'; st.style.color = '#1F7A4D'; info.textContent = 'Última cópia na nuvem: ' + quando + (i.resumo ? ' · ' + i.resumo.semanas + ' semanas, ' + i.resumo.consultoras + ' consultoras' : '') + '. Guardamos os últimos 7 dias.'; }
+  else { st.textContent = 'Erro'; st.style.background = '#FBEFED'; st.style.color = '#B85A55'; info.textContent = 'A última tentativa (' + quando + ') falhou: ' + (i.erro || 'erro desconhecido'); }
+}
+async function abrirCopiasNuvem() {
+  const el = document.getElementById('copiasLista');
+  el.innerHTML = '<div style="text-align:center;color:var(--ink-3);padding:20px;">Buscando...</div>';
+  document.getElementById('modalCopias').classList.add('open');
+  const itens = [];
+  try {
+    const snap = await _docRef.firestore.collection(BACKUP_COLECAO).where('pessoa', '==', USER_ID).get();
+    snap.docs.forEach(d => itens.push({ origem: 'nuvem', id: d.id, dia: d.data().dia, criadoEm: d.data().criadoEm, resumo: d.data().resumo || {} }));
+  } catch (e) { el.innerHTML = '<div style="color:#B85A55;padding:10px;line-height:1.5;">Não consegui buscar as cópias da nuvem: ' + (e.message || e) + '</div>'; }
+  itens.sort((a, b) => (b.dia || '').localeCompare(a.dia || ''));
+  const locais = [['_antes_de_sincronizar', 'Cópia deste aparelho, de antes da última sincronização'], ['_antes_de_restaurar', 'Cópia deste aparelho, de antes da última restauração']].filter(([k]) => localStorage.getItem(KEY + k));
+  const fmt = c => c ? new Date(c).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+  const html = itens.map(c => '<div style="border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:white;">'
+      + '<div style="font-size:15px;font-weight:800;">' + (c.dia || c.id).split('-').reverse().join('/') + (c.dia === _bkHoje() ? ' · hoje' : '') + '</div>'
+      + '<div style="font-size:12px;color:var(--ink-2);margin-top:3px;">' + (c.resumo.semanas || 0) + ' semanas · ' + (c.resumo.consultoras || 0) + ' consultoras · gravada ' + fmt(c.criadoEm) + '</div>'
+      + '<button onclick="restaurarDeBackupNuvem(\'' + c.id + '\')" style="margin-top:10px;width:100%;background:var(--ink);border:none;color:white;border-radius:10px;padding:10px;font-size:12.5px;font-weight:800;font-family:var(--font);cursor:pointer;">Restaurar esta cópia</button></div>').join('')
+    + locais.map(([k, rot]) => { let r = {}; try { r = _bkResumo(JSON.parse(localStorage.getItem(KEY + k))); } catch (e) {}
+      return '<div style="border:1.5px dashed var(--border);border-radius:14px;padding:12px 14px;margin-bottom:10px;background:white;"><div style="font-size:13.5px;font-weight:800;">' + rot + '</div><div style="font-size:12px;color:var(--ink-2);margin-top:3px;">' + (r.semanas || 0) + ' semanas · ' + (r.consultoras || 0) + ' consultoras</div>'
+        + '<button onclick="restaurarDeLocal(\'' + k + '\')" style="margin-top:10px;width:100%;background:white;border:1.5px solid var(--ink);color:var(--ink);border-radius:10px;padding:10px;font-size:12.5px;font-weight:800;font-family:var(--font);cursor:pointer;">Restaurar esta cópia</button></div>'; }).join('');
+  if (html) el.innerHTML = html; else if (!el.innerHTML.includes('Não consegui')) el.innerHTML = '<div style="text-align:center;color:var(--ink-3);padding:20px;">Ainda não há cópias.</div>';
+}
+// Troca os dados do app por uma cópia (guardando antes o que está agora) e manda pro servidor.
+async function restaurarDados(obj, rotulo) {
+  if (!obj || typeof obj !== 'object' || !(Array.isArray(obj.semanas) || Array.isArray(obj.consultoras))) { alert('Esse arquivo não parece uma cópia dos dados do app.'); return; }
+  const novo = _bkResumo(obj), atual = _bkResumo(DB);
+  if (!confirm('Restaurar ' + rotulo + '?\n\nCópia: ' + novo.semanas + ' semanas, ' + novo.consultoras + ' consultoras.\nAgora no app: ' + atual.semanas + ' semanas, ' + atual.consultoras + ' consultoras.\n\nO que está no app agora fica guardado numa cópia de antes da restauração.')) return;
+  try { localStorage.setItem(KEY + '_antes_de_restaurar', JSON.stringify(DB)); } catch (e) {}
+  DB = obj;
+  DB.agenda = DB.agenda || blankAgenda(); DB.avisos = DB.avisos || blankAvisos(); DB.observacoes = DB.observacoes || [];
+  DB.fcmTokens = DB.fcmTokens || [];
+  DB.seq = (DB.seq || 1) + 1;
+  save();
+  try { await _flushSaveAgora(); } catch (e) {}
+  location.reload();
+}
+async function restaurarDeBackupNuvem(id) {
+  try {
+    const snap = await _docRef.firestore.collection(BACKUP_COLECAO).doc(id).get();
+    if (!snap.exists) { alert('Essa cópia não existe mais.'); return; }
+    const c = snap.data();
+    fecharModal('modalCopias');
+    await restaurarDados(JSON.parse(c.dados), 'a cópia de ' + (c.dia || '').split('-').reverse().join('/'));
+  } catch (e) { alert('Não consegui restaurar: ' + (e.message || e)); }
+}
+async function restaurarDeLocal(chave) {
+  try { const obj = JSON.parse(localStorage.getItem(KEY + chave)); fecharModal('modalCopias'); await restaurarDados(obj, 'a cópia guardada neste aparelho'); } catch (e) { alert('Não consegui ler essa cópia.'); }
+}
+async function baixarBackup() {
+  if (!temDadosDeTrabalho(DB)) { alert('Ainda não há dados para guardar.'); return; }
+  const nome = 'backup-' + (USER_ID || 'app') + '-' + _bkHoje() + '.json';
+  const conteudo = JSON.stringify({ _backup: { pessoa: USER_ID, em: new Date().toISOString(), build: APP_BUILD, ..._bkResumo(DB) }, dados: DB });
+  try {
+    const file = new File([conteudo], nome, { type: 'application/json' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Backup · Gestão' }); return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  } catch (e) { if (!(e && e.name === 'AbortError')) alert('Não consegui gerar o arquivo: ' + (e.message || e)); }
+}
+function restaurarDeArquivo(input) {
+  const f = input.files && input.files[0]; input.value = '';
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const j = JSON.parse(r.result);
+      const dados = j && j.dados ? j.dados : j;
+      const de = j && j._backup && j._backup.pessoa;
+      if (de && USER_ID && de !== USER_ID && !confirm('Atenção: este arquivo é de "' + de + '" e você está como "' + USER_ID + '". Restaurar mesmo assim?')) return;
+      restaurarDados(dados, 'o arquivo "' + f.name + '"');
+    } catch (e) { alert('Não consegui ler o arquivo.'); }
+  };
+  r.readAsText(f);
 }
 
 // ── Diagnóstico da nuvem: mostra o que o servidor guarda de cada pessoa (sem precisar do console do Firebase) ──
@@ -10279,6 +10433,7 @@ async function enviarAssistNew() {
 function renderConfig() {
   document.getElementById('cfgNomePessoa').textContent = ACTIVE_PROFILE ? ACTIVE_PROFILE.nome : '—';
   atualizarStatusGoogleAgenda();
+  atualizarStatusBackup();
   if (typeof Notification !== 'undefined') atualizarStatusNotificacoes();
 
   const souAdmin = ACTIVE_PROFILE && ACTIVE_PROFILE.role === 'admin';
