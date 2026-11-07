@@ -10140,6 +10140,13 @@ function consAplicarGeo(c) {
   if (window._consGeo) { c.lat = window._consGeo.lat; c.lng = window._consGeo.lng; c.geoNivel = window._consGeo.nivel; c.geoQ = rotaAssinatura(c); c.geoV = ROTA_GEO_V; }
 }
 
+// O cadastro sempre abre lá no topo (tirando o scroll que sobrou da vez anterior, e qualquer rolagem que o mapa faça ao iniciar)
+function consRolarTopo() {
+  const box = document.querySelector('#modalConsultora .modal-box');
+  const topo = () => { if (box) box.scrollTop = 0; };
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  topo(); requestAnimationFrame(topo); setTimeout(topo, 80); setTimeout(topo, 350);
+}
 function abrirModalConsultora() {
   consResetForm();
   popularSelectRegiao('cRegiao', gerenciarRegiao);
@@ -10148,6 +10155,7 @@ function abrirModalConsultora() {
   window._editConsId = null;
   document.getElementById('modalConsultora').classList.add('open');
   consIniciarMapaForm(null);
+  consRolarTopo();
 }
 
 function salvarConsultora() {
@@ -12408,6 +12416,7 @@ function editarConsultora(id) {
   window._editConsId = id;
   document.getElementById('modalConsultora').classList.add('open');
   consIniciarMapaForm(c);
+  consRolarTopo();
 }
 
 function setStatusFormConsultora(status) {
