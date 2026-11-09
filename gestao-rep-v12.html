@@ -1829,7 +1829,7 @@ input[type="time"]{max-width:100%;}
     <label class="field"><span>Chave da IA (Gemini)</span><input type="password" id="arGemini" placeholder="AIza..."></label>
     <label class="field"><span>Chave da IA (Groq · reserva)</span><input type="password" id="arGroq" placeholder="gsk_..."></label>
     <label class="field"><span>Google Client ID (para conectar a Google Agenda)</span><input type="text" id="arGoogleClientId" placeholder="xxxx.apps.googleusercontent.com"></label>
-    <label class="field"><span>VAPID Key (para notificações push)</span><input type="text" id="arVapidKey" placeholder="Cole a chave gerada no Firebase"></label>
+    <label class="field" style="display:none;"><span>VAPID Key (para notificações push)</span><input type="text" id="arVapidKey" placeholder="Cole a chave gerada no Firebase"></label>
     <label class="field"><span>Meta padrão semanal (R$)</span><input type="number" id="arMeta" placeholder="15000"></label>
     <label class="field"><span>Link do site "Indique e Ganhe"</span><input type="text" id="arLink" placeholder="https://..."></label>
     <label class="field"><span>Valor padrão do Pix por indicação</span><input type="text" id="arPixValor" inputmode="decimal" placeholder="R$ 20,00" oninput="maskMoeda(this)"></label>
@@ -2453,14 +2453,17 @@ input[type="time"]{max-width:100%;}
         <input type="file" id="cfgArquivoBackup" accept=".json,application/json" style="display:none;" onchange="restaurarDeArquivo(this)">
       </div>
     </div>
-    <div class="card" style="margin-bottom:16px;">
+    <div class="card" style="margin-bottom:16px;" id="cfgNotifCard">
       <div style="padding:14px 16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
-          <div style="font-size:15px;font-weight:800;color:var(--ink);">Notificações de atendimento</div>
+          <div style="font-size:15px;font-weight:800;color:var(--ink);">Notificações no celular</div>
           <span id="cfgNotifStatus" style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:8px;background:var(--surface);color:var(--ink-3);text-transform:uppercase;">Não ativado</span>
         </div>
-        <div style="font-size:12px;color:var(--ink-3);margin-bottom:10px;">Receba um aviso no celular 1 hora antes de cada atendimento agendado.</div>
-        <button class="btn-ghost" id="cfgNotifBtn" onclick="ativarNotificacoes()" style="margin-bottom:0;">Ativar notificações</button>
+        <div style="font-size:12px;color:var(--ink-3);margin-bottom:10px;line-height:1.5;">Avisos mesmo com o app fechado: 10 minutos antes de cada atendimento, 30 minutos antes de cada tarefa com horário, às 7h a lista das tarefas de dia todo e as mensagens da administração.</div>
+        <div id="cfgNotifInfo" style="font-size:12px;color:var(--ink-3);margin-bottom:10px;line-height:1.5;display:none;"></div>
+        <button class="btn-ghost" id="cfgNotifBtn" onclick="ativarNotificacoes()" style="margin-bottom:8px;">Ativar notificações</button>
+        <button class="btn-ghost" id="cfgNotifTesteBtn" onclick="testarNotificacaoLocal()" style="margin-bottom:8px;display:none;">Testar neste aparelho</button>
+        <button class="btn-ghost" id="cfgNotifOffBtn" onclick="desativarNotificacoes()" style="margin-bottom:0;display:none;color:var(--red);">Desativar neste aparelho</button>
       </div>
     </div>
     <div class="card" style="margin-bottom:16px;">
@@ -3436,64 +3439,142 @@ function comTimeout(promessa, ms, rotulo) {
   ]);
 }
 
-// Serviço próprio das notificações (arquivo firebase-messaging-sw.js, ao lado do app): é ele que mostra o aviso com o app fechado.
-async function registrarSwNotificacoes() {
-  const reg = await navigator.serviceWorker.register('firebase-messaging-sw.js', { scope: './firebase-cloud-messaging-push-scope' });
+// ── Notificações (Web Push) ──
+// O celular se inscreve no serviço de push do próprio sistema (Apple/Google). O app grava em "avisos/<pessoa>" a inscrição e a
+// lista do que avisar e quando; um Worker gratuito (Cloudflare, 1x por minuto) manda o aviso na hora certa, mesmo com o app fechado.
+const PUSH_VAPID_PUBLICA = 'BC1DdABONL9sgcX1Oz82nXxdLcPU-xnzqM1VdjReK-snmGm3rsHCDFJ1wqcoHZKYvL7Fx3e9CfYGjZPNCVXkxLI';
+const PUSH_ESCOPO = './push-escopo/';
+function _b64uParaBytes(b64u) {
+  const pad = '='.repeat((4 - b64u.length % 4) % 4);
+  const raw = atob((b64u + pad).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+function _chaveAparelho(endpoint) {   // identificador curto e estável de cada celular (só letras e números)
+  let h1 = 0x811c9dc5, h2 = 0x1b873593;
+  for (let i = 0; i < endpoint.length; i++) { const c = endpoint.charCodeAt(i); h1 = Math.imul(h1 ^ c, 16777619) >>> 0; h2 = Math.imul(h2 ^ c, 2246822519) >>> 0; }
+  return 'd' + h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
+}
+// Serviço que mostra o aviso quando o app está fechado (arquivo push-sw.js, ao lado do app)
+async function registrarSwPush() {
+  const reg = await navigator.serviceWorker.register('push-sw.js', { scope: PUSH_ESCOPO });
   if (reg.active) return reg;
   const sw = reg.installing || reg.waiting;
   if (!sw) return reg;
   await new Promise(res => { if (sw.state === 'activated') return res(); sw.addEventListener('statechange', () => { if (sw.state === 'activated') res(); }); });
   return reg;
 }
+function _pushLocal() { try { return JSON.parse(localStorage.getItem(KEY + '_push') || 'null'); } catch (e) { return null; } }
 
 async function ativarNotificacoes() {
-  const vapidKey = DB.config && DB.config.vapidKey;
-  if (!vapidKey) { alert('Peça ao administrador para configurar a chave VAPID primeiro (em Configurações da pessoa).'); return; }
-  if (!('Notification' in window)) { alert('Este navegador não suporta notificações.'); return; }
-  if (!('serviceWorker' in navigator)) { alert('Este navegador não suporta service worker.'); return; }
-
+  if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('Este aparelho não suporta notificações. No iPhone, o app precisa estar na Tela de Início e o iOS ser 16.4 ou mais novo.'); return;
+  }
+  if (!USER_ID || !_docRef) { alert('Entre com o seu nome e espere aparecer "Sincronizado" no topo do Início. Depois tente de novo.'); return; }
   try {
     const permissao = await Notification.requestPermission();
-    if (permissao !== 'granted') { alert('Permissão de notificação não concedida (' + permissao + ').'); return; }
-
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-
-    const suportado = await comTimeout(firebase.messaging.isSupported(), 5000, 'verificar suporte');
-    if (!suportado) { alert('Este navegador/contexto não suporta Firebase Messaging (isSupported = false).'); return; }
-
-    const messaging = firebase.messaging();
-    const reg = await comTimeout(registrarSwNotificacoes(), 15000, 'preparar o serviço de notificações (o arquivo firebase-messaging-sw.js está junto do app?)');
-    const token = await comTimeout(
-      messaging.getToken({ vapidKey, serviceWorkerRegistration: reg }),
-      15000,
-      'obter token do FCM'
-    );
-
-    if (token) {
-      DB.fcmTokens = DB.fcmTokens || [];
-      if (!DB.fcmTokens.includes(token)) {
-        DB.fcmTokens.push(token);
-        save();
-      }
-      atualizarStatusNotificacoes();
-      alert('Notificações ativadas! Você vai receber as mensagens da administração e um aviso 1 hora antes de cada atendimento.');
-    } else {
-      alert('Não foi possível obter o token (getToken retornou vazio).');
-    }
+    if (permissao !== 'granted') { alert('A permissão de notificação não foi concedida (' + permissao + '). Libere nas configurações do aparelho.'); return; }
+    const reg = await comTimeout(registrarSwPush(), 15000, 'preparar o serviço de notificações (o arquivo push-sw.js está na mesma pasta do app?)');
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await comTimeout(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: _b64uParaBytes(PUSH_VAPID_PUBLICA) }), 20000, 'criar a inscrição de notificações');
+    localStorage.setItem(KEY + '_push', JSON.stringify(sub.toJSON()));
+    await sincronizarAvisos(true);
+    atualizarStatusNotificacoes();
+    alert('Notificações ativadas neste aparelho! Toque em "Testar neste aparelho" para ver como o aviso aparece.');
   } catch (e) {
     alert('Não foi possível ativar as notificações: ' + (e && e.message ? e.message : e));
   }
 }
-
+async function desativarNotificacoes() {
+  if (!confirm('Parar de receber notificações neste aparelho?')) return;
+  try {
+    const sub = _pushLocal();
+    try { const reg = await navigator.serviceWorker.getRegistration(PUSH_ESCOPO); const s = reg && await reg.pushManager.getSubscription(); if (s) await s.unsubscribe(); } catch (e) {}
+    if (sub && USER_ID && _docRef) await _docRef.firestore.collection('avisos').doc(USER_ID).update({ ['subs.' + _chaveAparelho(sub.endpoint)]: firebase.firestore.FieldValue.delete() });
+  } catch (e) {}
+  localStorage.removeItem(KEY + '_push'); localStorage.removeItem(KEY + '_push_hash');
+  atualizarStatusNotificacoes();
+}
+// Mostra uma notificação de teste agora, direto neste aparelho (confere se o aviso aparece e como fica)
+async function testarNotificacaoLocal() {
+  try {
+    const reg = await registrarSwPush();
+    await reg.showNotification('Teste do Gestão', { body: 'Se você está vendo isto, o aparelho está pronto para receber os avisos. ✅', tag: 'teste' });
+  } catch (e) { alert('Não consegui mostrar o teste: ' + (e.message || e)); }
+}
 function atualizarStatusNotificacoes() {
-  const st = document.getElementById('cfgNotifStatus');
-  const btn = document.getElementById('cfgNotifBtn');
+  const st = document.getElementById('cfgNotifStatus'), btn = document.getElementById('cfgNotifBtn');
+  const teste = document.getElementById('cfgNotifTesteBtn'), off = document.getElementById('cfgNotifOffBtn'), info = document.getElementById('cfgNotifInfo');
   if (!st || !btn) return;
-  const ativado = DB.fcmTokens && DB.fcmTokens.length > 0 && Notification.permission === 'granted';
+  const ativado = !!_pushLocal() && typeof Notification !== 'undefined' && Notification.permission === 'granted';
   st.textContent = ativado ? 'Ativado' : 'Não ativado';
   st.style.background = ativado ? 'var(--green-bg)' : 'var(--surface)';
   st.style.color = ativado ? 'var(--green)' : 'var(--ink-3)';
   btn.textContent = ativado ? 'Reativar notificações' : 'Ativar notificações';
+  if (teste) teste.style.display = ativado ? '' : 'none';
+  if (off) off.style.display = ativado ? '' : 'none';
+  if (info) {
+    let i = {}; try { i = JSON.parse(localStorage.getItem(KEY + '_push_info') || '{}'); } catch (e) {}
+    if (ativado && i.ts) { info.style.display = ''; info.textContent = i.ok ? ('Lista de avisos enviada em ' + new Date(i.ts).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' · ' + (i.qtd || 0) + ' aviso(s) agendado(s).') : ('Não consegui enviar a lista de avisos: ' + (i.erro || 'erro')); info.style.color = i.ok ? 'var(--ink-3)' : '#B85A55'; }
+    else info.style.display = 'none';
+  }
+}
+
+// O que avisar e quando (próximas ~36 horas): atendimentos 10 min antes, tarefas com horário 30 min antes, tarefas de dia todo às 7h
+function _fmtDiaLocal(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function montarAvisos() {
+  const agora = Date.now(), limite = agora + 36 * 3600000, itens = [];
+  const add = (k, t, titulo, corpo) => { if (t > agora - 15 * 60000 && t <= limite) itens.push({ k, t, titulo, corpo: String(corpo).slice(0, 180) }); };
+  const hm = txt => { const m = /^(\d{1,2}):(\d{2})/.exec(String(txt || '')); return m ? [parseInt(m[1], 10), parseInt(m[2], 10)] : null; };
+  const sem = getSemanaAtiva();
+  if (sem) consultorasVisiveisDe(sem).forEach(c => {
+    if (c.status === 'concluida' || c.parouDeVender || c.remarcarSemana || c.remarcarMes) return;
+    const h = hm(c.horarioMelhor); const dia = c.diaMelhor ? dataDoDiaDaSemana(sem, c.diaMelhor) : null;
+    if (!h || !dia) return;
+    const quando = new Date(dia.getFullYear(), dia.getMonth(), dia.getDate(), h[0], h[1]).getTime();
+    const cid = String(c.cidade || '').split('/')[0].trim();
+    add('a_' + c.id + '_' + _fmtDiaLocal(dia), quando - 10 * 60000, 'Atendimento em 10 minutos', c.horarioMelhor + ' · ' + c.nome + (cid ? ' (' + cid + ')' : ''));
+  });
+  const chaves = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+  for (const off of [0, 1, 2]) {
+    const d = new Date(); d.setDate(d.getDate() + off); d.setHours(0, 0, 0, 0);
+    const tarefas = (DB.agenda && DB.agenda[chaves[d.getDay()]]) || [], dd = _fmtDiaLocal(d);
+    const diaTodo = tarefas.filter(t => t.diaTodo && !t.feito && !t.consultoraId && String(t.texto || '').trim());
+    if (diaTodo.length) add('dia_' + dd, new Date(d.getFullYear(), d.getMonth(), d.getDate(), 7, 0).getTime(), diaTodo.length === 1 ? 'Tarefa de hoje' : 'Tarefas de hoje (' + diaTodo.length + ')', diaTodo.map(t => t.texto).join(' · '));
+    tarefas.forEach(t => {
+      if (t.feito || t.diaTodo || t.consultoraId) return;
+      const h = hm(t.horario); if (!h) return;
+      add('t_' + t.id + '_' + dd, new Date(d.getFullYear(), d.getMonth(), d.getDate(), h[0], h[1]).getTime() - 30 * 60000, 'Tarefa em 30 minutos', t.horario + ' · ' + t.texto);
+    });
+  }
+  return itens.sort((a, b) => a.t - b.t);
+}
+// Manda para o servidor a inscrição deste celular e a lista de avisos (só quando algo mudou)
+async function sincronizarAvisos(forcar) {
+  const sub = _pushLocal();
+  if (!sub || !USER_ID || !_docRef || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  const itens = montarAvisos();
+  const assinatura = sub.endpoint + '|' + itens.map(i => i.k + ':' + i.t + ':' + i.corpo).join(';');
+  if (!forcar && assinatura === localStorage.getItem(KEY + '_push_hash')) return;
+  try {
+    await _docRef.firestore.collection('avisos').doc(USER_ID).set({ pessoa: USER_ID, subs: { [_chaveAparelho(sub.endpoint)]: { endpoint: sub.endpoint, keys: sub.keys } }, itens, atualizadoEm: new Date().toISOString() }, { merge: true });
+    localStorage.setItem(KEY + '_push_hash', assinatura);
+    localStorage.setItem(KEY + '_push_info', JSON.stringify({ ts: Date.now(), ok: true, qtd: itens.length }));
+  } catch (e) {
+    localStorage.setItem(KEY + '_push_info', JSON.stringify({ ts: Date.now(), ok: false, erro: (e && e.code === 'permission-denied') ? 'o Firebase bloqueou (falta liberar a coleção "avisos" nas Regras do Firestore)' : (e.message || String(e)) }));
+  }
+  atualizarStatusNotificacoes();
+}
+let _avisosTimer = null;
+function agendarAvisos() { clearTimeout(_avisosTimer); _avisosTimer = setTimeout(() => { sincronizarAvisos(false); }, 1500); }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') agendarAvisos(); });
+// Aviso imediato para uma pessoa (mensagens da administração): vai na lista "mensagens", que o Worker entrega em até 1 minuto
+// Nunca derruba o envio: a mensagem já vale dentro do app; se o aviso no celular falhar (ex.: regras do Firebase), só avisa depois.
+async function adminAvisoPush(pessoaId, titulo, corpo) {
+  try {
+    const FV = firebase.firestore.FieldValue, agora = Date.now();
+    await _db.collection('avisos').doc(pessoaId).set({ pessoa: pessoaId, mensagens: FV.arrayUnion({ k: 'adm_' + agora + '_' + pessoaId, t: agora, titulo, corpo: String(corpo).slice(0, 180) }) }, { merge: true });
+    return true;
+  } catch (e) { window._avisoPushFalhou = (e && e.code === 'permission-denied') ? 'o Firebase bloqueou a coleção "avisos" (falta liberar nas Regras do Firestore)' : (e && e.message) || String(e); return false; }
 }
 
 function horarioParaMinutos(t) {
@@ -5263,6 +5344,7 @@ async function _flushSaveAgora() {
     const el = document.getElementById('syncStatus');
     if (el) { el.textContent = '● Sincronizado'; el.style.color = '#6EF0B0'; }
     agendarBackupNuvem();
+    agendarAvisos();
   } catch(e) {
     const el = document.getElementById('syncStatus');
     if (el) { el.textContent = '● Erro sync'; el.style.color = '#FF9090'; }
@@ -5831,7 +5913,7 @@ function adminEnviarMensagemGeral() {
       observacoes: FV.arrayUnion({ id: adminUid(), texto, criadoEm: agora, lida: false, geral: true }),
       seq: FV.increment(1),
       ultimaNotificacao: { tipo: 'observacao', texto, criadoEm: agora },
-    }).then(() => id));
+    }).then(() => adminAvisoPush(id, 'Mensagem da administração', texto)).then(() => id));
   });
   if (!envios.length) { alert('Nenhuma dessas pessoas abriu o app ainda, então não dá para enviar.'); return; }
   const btn = document.getElementById('mgEnviarBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
@@ -5839,6 +5921,7 @@ function adminEnviarMensagemGeral() {
     fecharModal('modalMensagemGeral');
     mostrarMensagemSucesso('Enviada para ' + feitos.length + (feitos.length === 1 ? ' pessoa' : ' pessoas'));
     if (semDados.length) alert('Não enviei para ' + semDados.join(', ') + ' porque ainda não abriu o app.');
+    if (window._avisoPushFalhou) { alert('A mensagem chegou no app de cada pessoa, mas o aviso no celular pode não sair: ' + window._avisoPushFalhou); window._avisoPushFalhou = null; }
   }).catch(e => { alert('Erro ao enviar: ' + e.message); adminRenderDestinosMensagem(); });
 }
 
@@ -5854,7 +5937,7 @@ function adminEnviarObservacao() {
   data.seq = (data.seq || 1) + 1;
   data.ultimaNotificacao = { tipo: 'observacao', texto, criadoEm: new Date().toISOString() };
 
-  _adminRefs[id].set(data).then(() => {
+  _adminRefs[id].set(data).then(() => adminAvisoPush(id, 'Mensagem da administração', texto)).then(() => {
     document.getElementById('apNovaObs').value = '';
     renderAdminPessoa();
   }).catch(e => alert('Erro ao enviar: ' + e.message));
@@ -5982,7 +6065,7 @@ function confirmarAdminCriarSemana() {
   data.seq = (data.seq || 1) + 1;
   data.ultimaNotificacao = { tipo: 'semana', texto: 'Nova semana criada: ' + regiao, criadoEm: new Date().toISOString() };
 
-  _adminRefs[pessoaId].set(data).then(() => {
+  _adminRefs[pessoaId].set(data).then(() => adminAvisoPush(pessoaId, 'Nova semana criada', 'Nova semana criada: ' + regiao)).then(() => {
     fecharModal('modalAdminCriarSemana');
     renderAdminPessoa();
   }).catch(e => alert('Erro ao criar semana: ' + e.message));
@@ -6170,7 +6253,7 @@ function adminSalvarTarefa() {
   data.seq = (data.seq || 1) + 1;
   data.ultimaNotificacao = { tipo: 'tarefa', texto, criadoEm: new Date().toISOString() };
 
-  _adminRefs[pessoaId].set(data).then(() => {
+  _adminRefs[pessoaId].set(data).then(() => adminAvisoPush(pessoaId, 'Nova tarefa da administração', texto)).then(() => {
     fecharModal('modalAdminTarefa');
     renderAdminPessoa();
   }).catch(e => alert('Erro ao salvar: ' + e.message));
