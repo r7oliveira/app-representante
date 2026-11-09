@@ -4766,7 +4766,7 @@ function confirmarAgendarCliente() {
   renderAgendaCompleta();
   // Se você agendou a partir dos Atendimentos e o dia mudou, mostra o dia novo pra ela continuar à vista
   const viewAtivaEl = document.querySelector('.view.active');
-  if (viewAtivaEl && viewAtivaEl.id === 'view-atendimentos-lista' && diaInfo2) window._filtroDiaAtend = diaInfo2.label;
+  if (viewAtivaEl && viewAtivaEl.id === 'view-atendimentos-lista' && diaInfo2 && window._filtroDiaAtend !== '*') window._filtroDiaAtend = diaInfo2.label;
   if (typeof renderSemana === 'function') renderSemana();
   mostrarMensagemSucesso('✓ Horário agendado!');
 }
@@ -8399,9 +8399,10 @@ function renderSemana() {
     const doDia = listaCompleta.filter(c => (c.diaMelhor || 'Sem dia definido') === d);
     return { dia: d, total: doDia.length, qtd: doDia.filter(casaAba).length };
   }).filter(x => x.total > 0);
-  let diaSel = window._filtroDiaAtend || '';
-  if (diaSel && !diasChips.some(x => x.dia === diaSel)) { diaSel = ''; window._filtroDiaAtend = ''; }
-  if (!diaSel && diasChips.length > 1) {   // não existe mais "Todos": sempre tem um dia marcado
+  const modoTodos = window._filtroDiaAtend === '*' && diasChips.length > 1;     // chip "Todos": todas as consultoras juntas, de todos os dias
+  let diaSel = modoTodos ? '' : (window._filtroDiaAtend || '');
+  if (!modoTodos && diaSel && !diasChips.some(x => x.dia === diaSel)) { diaSel = ''; window._filtroDiaAtend = ''; }
+  if (!modoTodos && !diaSel && diasChips.length > 1) {   // sem "Todos" escolhido: sempre tem um dia marcado
     const padrao = rotaDiaPadrao(rotaDiasDisponiveis(sem));
     diaSel = (padrao && diasChips.some(x => x.dia === padrao.dia)) ? padrao.dia : diasChips[0].dia;
     window._filtroDiaAtend = diaSel;
@@ -8416,7 +8417,7 @@ function renderSemana() {
       + (ehHoje ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + (ativo ? 'white' : 'var(--rose)') + ';margin-left:6px;vertical-align:middle;"></span>' : '')
       + '</button>';
     if (diasChips.length > 1) {
-      rowDias.innerHTML = diasChips.map(x => {
+      rowDias.innerHTML = chipDia('Todos', listaCompleta.filter(casaAba).length, modoTodos, '*', false) + diasChips.map(x => {
             const dt = dataDoDiaDaSemana(sem, x.dia);
             const abrev = x.dia === 'Sem dia definido' ? 'Sem dia' : x.dia.replace('-feira', '').slice(0, 3);
             return chipDia(rotuloDiaChip(dt, abrev), x.qtd, x.dia === diaSel, x.dia, x.dia === hojeNome);
@@ -8479,17 +8480,17 @@ function renderSemana() {
     const cabEl = document.getElementById('atendCabDia');
     if (cabEl) {
       if (usaCabFixo) {
-        const diaCab = diaSel || (diasChips.length === 1 ? diasChips[0].dia : '');
+        const diaCab = modoTodos ? '' : (diaSel || (diasChips.length === 1 ? diasChips[0].dia : ''));
         const dtCab = diaCab ? dataDoDiaDaSemana(sem, diaCab) : null;
         const hojeCab = !!(dtCab && ehMesmoDia(dtCab, new Date()));
         const icPdf = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>';
         const icMais = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
         cabEl.innerHTML = '<div style="min-width:0;">'
-            + '<div style="font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.4px;line-height:1.15;">' + (diaCab || 'Atendimentos') + '</div>'
+            + '<div style="font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.4px;line-height:1.15;">' + (modoTodos ? 'Todos os dias' : (diaCab || 'Atendimentos')) + '</div>'
             + ((dtCab || hojeCab) ? '<div style="display:flex;align-items:center;gap:8px;margin-top:3px;">'
                 + (dtCab ? '<span style="font-size:13px;font-weight:700;color:var(--ink-3);">' + dtCab.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) + '</span>' : '')
                 + (hojeCab ? '<span style="font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 8px;border-radius:99px;background:var(--rose);color:white;">HOJE</span>' : '')
-              + '</div>' : '')
+              + '</div>' : (modoTodos ? '<div style="font-size:13px;font-weight:700;color:var(--ink-3);margin-top:3px;">' + visiveis.length + ' consultora' + (visiveis.length === 1 ? '' : 's') + '</div>' : ''))
           + '</div>'
           + '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">'
             + (diaCab ? '<button type="button" class="ger-btn" onclick="gerarPDFDiaAtendimento(\'' + diaCab + '\')">' + icPdf + 'PDF</button>' : '')
@@ -8540,7 +8541,7 @@ function renderSemana() {
     const diaDaConsultora = c.diaMelhor || 'Sem dia definido';
     const diaAnterior = idx > 0 ? (visiveis[idx-1].diaMelhor || 'Sem dia definido') : null;
     let tituloDia = '';
-    if (!usaCabFixo && (tituloGrupo || diaDaConsultora !== diaAnterior)) {
+    if ((!usaCabFixo || modoTodos) && (tituloGrupo || diaDaConsultora !== diaAnterior)) {   // em "Todos" cada dia ganha o seu cabeçalho na lista
       const dataDia = dataDoDiaDaSemana(sem, c.diaMelhor);
       const ehHoje = ehMesmoDia(dataDia, new Date());
       const qtdDia = visiveis.filter(x => grupoStatus(x) === grupoAtual && (x.diaMelhor || 'Sem dia definido') === diaDaConsultora).length;
@@ -11628,7 +11629,7 @@ function gerCentralizarSetor() {
   if (b && row.clientWidth) row.scrollLeft = Math.max(0, b.offsetLeft - (row.clientWidth - b.offsetWidth) / 2);
 }
 function gerFiltrar(f) { window._gerFiltro = window._gerFiltro === f ? '' : f; renderGerenciar(); }   // tocar de novo desmarca
-function gerDia(dia) { window._gerDia = window._gerDia === dia ? '' : dia; renderGerenciar(); }   // tocar de novo no dia marcado mostra todos os dias
+function gerDia(dia) { window._gerDia = dia || ''; renderGerenciar(); }   // dia = '' → chip "Todos"
 function trocarRegiaoGerenciar(regiao) {
   gerenciarRegiao = regiao;
   window._gerDia = undefined;
@@ -11825,7 +11826,8 @@ function renderGerenciar() {
   if (rowDiasGer) {
     if (diasGer.length > 1) {
       const hojeNome2 = nomeDiaHoje();
-      rowDiasGer.innerHTML = diasGer.map(x => {
+      rowDiasGer.innerHTML = '<button type="button" onclick="gerDia(\'\')" data-ativo="' + (diaGer === '' ? 1 : 0) + '" style="flex-shrink:0;border-radius:14px;padding:8px 13px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;font-family:var(--font);border:1.5px solid ' + (diaGer === '' ? 'var(--ink)' : 'var(--border)') + ';background:' + (diaGer === '' ? 'var(--ink)' : 'white') + ';color:' + (diaGer === '' ? 'white' : 'var(--ink-2)') + ';">Todos <span style="opacity:.7;font-weight:700;">(' + ativas.length + ')</span></button>'
+      + diasGer.map(x => {
         const idx = DIAS_ORDEM_ROTA.indexOf(x.dia);
         const dt = (infoSetor && idx >= 0) ? new Date(infoSetor.segunda.getTime() + idx * 86400000) : null;
         const abrev = x.dia === 'Sem dia definido' ? 'Sem dia' : x.dia.replace('-feira', '').slice(0, 3);
