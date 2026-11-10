@@ -8493,7 +8493,7 @@ function renderSemana() {
               + '</div>' : (modoTodos ? '<div style="font-size:13px;font-weight:700;color:var(--ink-3);margin-top:3px;">' + visiveis.length + ' consultora' + (visiveis.length === 1 ? '' : 's') + '</div>' : ''))
           + '</div>'
           + '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">'
-            + (diaCab ? '<button type="button" class="ger-btn" onclick="gerarPDFDiaAtendimento(\'' + diaCab + '\')">' + icPdf + 'PDF</button>' : '')
+            + (diaCab ? '<button type="button" class="ger-btn" onclick="abrirOpcoesPdfDia(\'' + diaCab + '\')">' + icPdf + 'PDF</button>' : '')
             + '<button type="button" class="ger-btn pri" onclick="abrirModalAdicionarConsultora()">' + icMais + 'Nova</button>'
           + '</div>';
         cabEl.style.display = 'flex';
@@ -8557,7 +8557,7 @@ function renderSemana() {
               + (ehHoje ? '<span style="font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 8px;border-radius:99px;background:var(--rose);color:white;">HOJE</span>' : '')
             + '</div>' : '')
         + '</div>'
-        + (mostrarPdf ? '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><button type="button" class="ger-btn" onclick="gerarPDFDiaAtendimento(\'' + diaDaConsultora + '\')">' + icPdfDia + 'PDF</button></div>' : '')
+        + (mostrarPdf ? '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;"><button type="button" class="ger-btn" onclick="abrirOpcoesPdfDia(\'' + diaDaConsultora + '\')">' + icPdfDia + 'PDF</button></div>' : '')
       + '</div>';
     }
 
@@ -12201,6 +12201,112 @@ async function gerarPDFFinanceiroRegiao() {
 // Valor a pagar · Débito · Forma de pagamento. O que já está lançado no app sai preenchido; o que
 // ainda não tem nada fica em branco, pra completar à caneta depois de imprimir.
 // ──────────────────────────────────────────────────────────────────────────
+function abrirOpcoesPdfDia(dia) {
+  window._pdfDia = dia;
+  const sem = getSemanaAtiva();
+  const dt = sem && dia ? dataDoDiaDaSemana(sem, dia) : null;
+  document.getElementById('pdfDiaNome').textContent = dia + (dt ? ' · ' + dt.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }) : '');
+  const opcao = (acao, icone, titulo, sub) =>
+    '<button type="button" onclick="' + acao + '" style="width:100%;text-align:left;background:white;border:1.5px solid var(--border);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:var(--font);">'
+    + '<div style="width:40px;height:40px;border-radius:12px;background:var(--rose-light);color:var(--rose);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;">' + icone + '</div>'
+    + '<div><div style="font-size:14.5px;font-weight:800;color:var(--ink);">' + titulo + '</div><div style="font-size:12px;color:var(--ink-3);font-weight:500;margin-top:2px;line-height:1.35;">' + sub + '</div></div></button>';
+  document.getElementById('pdfDiaOpcoes').innerHTML =
+      opcao('pdfEscolher(\'lista\')', '☰', 'Lista de uma folha', 'Só o nome e quanto pagou em Pix e em dinheiro. Cabe todo o dia numa folha.')
+    + opcao('pdfEscolher(\'fichas\')', '▤', 'Fichas completas', 'Uma ficha por consultora, com endereço, situação financeira e campos para preencher.');
+  document.getElementById('modalPdfDia').classList.add('open');
+}
+function pdfEscolher(tipo) {
+  fecharModal('modalPdfDia');
+  if (tipo === 'lista') gerarPDFListaDia(window._pdfDia); else gerarPDFDiaAtendimento(window._pdfDia);
+}
+
+// PDF "Lista de uma folha": nome + Pix + Dinheiro de todas as consultoras do dia, na mesma página (a altura da linha se ajusta ao número de consultoras)
+async function gerarPDFListaDia(diaLabel) {
+  const sem = getSemanaAtiva();
+  if (!sem) { alert('Nenhuma semana ativa.'); return; }
+  const semDia = !diaLabel || diaLabel === 'Sem dia definido';
+  const lista = consultorasVisiveisDe(sem).filter(c => semDia ? !c.diaMelhor : c.diaMelhor === diaLabel)
+    .sort((a, b) => minutosDoHorario(a.horarioMelhor) - minutosDoHorario(b.horarioMelhor) || (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+  if (!lista.length) { alert('Nenhuma consultora nesse dia.'); return; }
+  let jsPDFClass;
+  try { jsPDFClass = await _garantirJsPDF(); }
+  catch (e) { alert('Não consegui carregar o gerador de PDF. Confira a internet e tente de novo.'); return; }
+
+  const brlP = v => 'R$ ' + (v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const doc = new jsPDFClass({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, M = 12, LIM = 285;
+  const CH = [166, 124, 82], TX = [24, 24, 24], TX2 = [119, 119, 119], NEU = [243, 242, 238];
+  const dataDia = dataDoDiaDaSemana(sem, diaLabel);
+  let dataTxt = dataDia ? dataDia.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : (semDia ? 'Sem dia definido' : diaLabel);
+  dataTxt = dataTxt.charAt(0).toUpperCase() + dataTxt.slice(1);
+  const cortar = (txt, maxW) => { let t = String(txt || ''); if (doc.getTextWidth(t) <= maxW) return t; while (t.length > 3 && doc.getTextWidth(t + '...') > maxW) t = t.slice(0, -1); return t.trim() + '...'; };
+
+  // cabeçalho compacto
+  doc.setFillColor(...CH); doc.rect(0, 0, W, 22, 'F');
+  doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+  doc.text('TIME ESTRELAS', M, 8);
+  doc.setFontSize(14); doc.text('Lista do dia', M, 15);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  doc.text(dataTxt + '  ·  Semana ' + sem.numero + '  ·  ' + sem.regiao, M, 20);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(12);
+  doc.text(lista.length + (lista.length === 1 ? ' consultora' : ' consultoras'), W - M, 15, { align: 'right' });
+
+  // colunas
+  const xNum = M + 1, xHora = M + 9, xNome = M + 23, xPix = M + 108, xDin = M + 148, larg = 38;
+  const cabecalhoColunas = (yy) => {
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(...TX2);
+    doc.text('#', xNum, yy); doc.text('Hora', xHora, yy); doc.text('Nome', xNome, yy); doc.text('Pix', xPix + 2, yy); doc.text('Dinheiro', xDin + 2, yy);
+    doc.setDrawColor(150, 150, 150); doc.setLineWidth(0.3); doc.line(M, yy + 2, W - M, yy + 2);
+    return yy + 4;
+  };
+  let y = cabecalhoColunas(29);
+  const RESERVA = 16;                                              // espaço do total no fim
+  const disponivel = (LIM - RESERVA) - y;
+  const rowH = Math.max(4.9, Math.min(10.5, disponivel / lista.length));   // cabem até ~49 consultoras numa folha só
+  const fNome = rowH >= 9 ? 11 : rowH >= 7 ? 9.5 : rowH >= 5.6 ? 8 : 7;
+
+  const celulaPag = (x, yy, valor) => {
+    const cb = Math.min(4.2, rowH - 2), yc = yy + (rowH - cb) / 2, base = yy + rowH / 2 + 1.1;
+    doc.setDrawColor(70, 70, 70); doc.setLineWidth(0.3); doc.rect(x + 2, yc, cb, cb);
+    if (valor > 0) { doc.setLineWidth(0.5); doc.line(x + 2.5, yc + 0.5, x + 2 + cb - 0.5, yc + cb - 0.5); doc.line(x + 2 + cb - 0.5, yc + 0.5, x + 2.5, yc + cb - 0.5); }
+    const x0 = x + 2 + cb + 2;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...TX2); doc.text('R$', x0, base);
+    const x1 = x0 + doc.getTextWidth('R$') + 1.5;
+    doc.setDrawColor(150, 150, 150); doc.setLineWidth(0.25); doc.line(x1, base + 0.9, x + larg, base + 0.9);
+    if (valor > 0) { doc.setFont('helvetica', 'bold'); doc.setFontSize(fNome > 9.5 ? 9.5 : 8.5); doc.setTextColor(...TX); doc.text((valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), x1 + 1, base); }
+  };
+
+  let totPix = 0, totDin = 0;
+  lista.forEach((c, i) => {
+    if (y + rowH > LIM - RESERVA + 0.5) { doc.addPage(); y = cabecalhoColunas(16); }
+    if (i % 2 === 0) { doc.setFillColor(...NEU); doc.rect(M, y, W - M * 2, rowH, 'F'); }
+    const base = y + rowH / 2 + fNome * 0.12;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(Math.max(7, fNome - 2)); doc.setTextColor(...TX2); doc.text(String(i + 1), xNum, base);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(Math.max(7.5, fNome - 1)); doc.setTextColor(...CH); doc.text(c.horarioMelhor || '--:--', xHora, base);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(fNome); doc.setTextColor(...TX); doc.text(cortar(c.nome, xPix - xNome - 3), xNome, base);
+    const sp = (c.recebido || 0) > 0 ? splitRecebido(c) : { pix: 0, din: 0 };
+    totPix += sp.pix; totDin += sp.din;
+    celulaPag(xPix, y, sp.pix); celulaPag(xDin, y, sp.din);
+    y += rowH;
+  });
+  // linha final: quantidade e totais
+  doc.setDrawColor(150, 150, 150); doc.setLineWidth(0.3); doc.line(M, y + 1, W - M, y + 1);
+  const base = y + 8;
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(...TX);
+  doc.text(lista.length + (lista.length === 1 ? ' consultora' : ' consultoras'), M + 1, base);
+  const total = (x, valor) => {
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...TX); doc.text('Total', x + 2, base);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(...TX2); doc.text('R$', x + 12, base);
+    doc.setDrawColor(150, 150, 150); doc.setLineWidth(0.25); doc.line(x + 17, base + 0.9, x + larg, base + 0.9);
+    if (valor > 0) { doc.setFont('helvetica', 'bold'); doc.setTextColor(...TX); doc.text(valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), x + 18, base); }
+  };
+  total(xPix, totPix); total(xDin, totDin);
+
+  _rodapePDFConsultoras(doc, W, M, sem.regiao);
+  const dd = dataDia ? String(dataDia.getDate()).padStart(2, '0') + '-' + String(dataDia.getMonth() + 1).padStart(2, '0') : 'sem-dia';
+  doc.save('lista-' + (semDia ? 'sem-dia' : rotaSemAcento(diaLabel).toLowerCase().replace(/-feira/, '').replace(/[^a-z]/g, '')) + '-' + dd + '.pdf');
+}
+
 async function gerarPDFDiaAtendimento(diaLabel) {
   const sem = getSemanaAtiva();
   if (!sem) { alert('Nenhuma semana ativa.'); return; }
@@ -13711,6 +13817,15 @@ if (!ACTIVE_PROFILE) {
 <!-- ══════════════════════════════════════════
      MODAL: ABRIR COM QUAL GPS?
 ══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalPdfDia" onclick="if(event.target===this)fecharModal('modalPdfDia')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="fecharModal('modalPdfDia')">✕</button>
+    <div class="modal-title" style="margin-bottom:2px;">Gerar PDF do dia</div>
+    <div id="pdfDiaNome" style="font-size:13px;color:var(--ink-3);font-weight:600;margin-bottom:16px;"></div>
+    <div id="pdfDiaOpcoes" style="display:flex;flex-direction:column;gap:10px;"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalAgendarOpcoes" onclick="if(event.target===this)fecharModal('modalAgendarOpcoes')">
   <div class="modal-box">
     <button class="modal-close" onclick="fecharModal('modalAgendarOpcoes')">✕</button>
