@@ -811,6 +811,52 @@ html[data-tema="claro"] .card,html[data-tema="claro"] .hero-box,html[data-tema="
 .tema-op .tema-ico{font-size:26px;line-height:1;}
 .tema-op.sel{border-color:var(--rose);background:var(--rose-light);color:var(--ink);box-shadow:0 0 0 3px rgba(201,169,110,.18);}
 .tema-op .tema-sel-tag{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--rose);min-height:12px;}
+
+/* ══════ DASHBOARD INICIAL — refinamento visual (dois temas) ══════ */
+html[data-tema] #semanaHero{padding:calc(14px + env(safe-area-inset-top)) 18px 20px!important;border-radius:0 0 24px 24px!important;margin-bottom:6px;}
+html[data-tema] #semanaHero::before{background:radial-gradient(circle,rgba(201,169,110,.10) 0%,transparent 70%)!important;}
+html[data-tema] #semanaHero::after{display:none;}
+/* cabeçalho */
+html[data-tema] #semanaHero .hero-week-label{color:#E8C98A!important;font-size:11px!important;letter-spacing:.16em!important;margin-bottom:2px!important;}
+html[data-tema] #syncStatus{font-size:11px!important;margin-top:2px!important;}
+html[data-tema] #syncStatus[style*="rgb(110, 240, 176)"]{color:#3ECF8E!important;}
+html[data-tema] #syncStatus[style*="rgb(255, 208, 96)"]{color:#E0B25A!important;}
+html[data-tema] #semanaHero .hero-region{font-family:'Inter',sans-serif!important;font-size:30px!important;font-weight:800!important;letter-spacing:-.6px!important;color:#F5F2EC!important;margin:2px 0 14px!important;}
+html[data-tema] #semanaHero button{height:30px;display:inline-flex!important;align-items:center;justify-content:center;line-height:1;padding-top:0!important;padding-bottom:0!important;}
+html[data-tema] #semanaHero button[onclick*="abrirMenuRapido"]{width:30px;padding:0!important;}
+/* progresso */
+html[data-tema] #semanaHero .prog-row{display:grid!important;grid-template-columns:78px 1fr auto;column-gap:12px;align-items:center!important;margin-bottom:10px!important;}
+html[data-tema] #semanaHero .prog-label{width:auto!important;padding:0!important;font-size:13px!important;font-weight:600!important;color:#AAA69E!important;}
+html[data-tema] #semanaHero .prog-track{margin:0!important;height:8px!important;background:#222!important;border:1px solid #353535!important;border-radius:99px!important;}
+html[data-tema] #semanaHero .prog-fill{background:linear-gradient(90deg,#B8944F,#C9A96E)!important;box-shadow:none!important;}
+html[data-tema] #semanaHero .prog-fill::after{display:none!important;}
+html[data-tema] #semanaHero .prog-val{width:auto!important;min-width:104px;text-align:right!important;font-size:12px!important;line-height:1.35!important;font-variant-numeric:tabular-nums;color:#AAA69E!important;}
+html[data-tema] #progConsultorasFracao,html[data-tema] #progMetaPct{color:#E8C98A!important;font-size:14px!important;font-weight:800!important;}
+html[data-tema] #progConsultorasFalta,html[data-tema] #progMetaFracao{opacity:1!important;font-weight:500!important;color:#AAA69E!important;font-size:11.5px!important;}
+/* cards financeiros */
+html[data-tema] #semanaHero .hero-grid{grid-template-columns:1fr 1fr!important;gap:10px!important;margin-top:16px!important;}
+html[data-tema] #semanaHero .hero-box{min-height:96px;padding:13px 14px!important;border-radius:16px!important;display:flex;flex-direction:column;justify-content:flex-start;gap:0;box-shadow:none!important;overflow:hidden;}
+html[data-tema] #semanaHero .hero-box-label{font-size:10.5px!important;letter-spacing:.09em!important;font-weight:700!important;margin-bottom:6px!important;color:#AAA69E!important;}
+html[data-tema] #semanaHero .hero-box-val{font-family:'Inter',sans-serif!important;font-size:clamp(17px,5.2vw,20px)!important;font-weight:700!important;letter-spacing:-.3px!important;font-variant-numeric:tabular-nums;line-height:1.15;}
+html[data-tema] #semanaHero .hero-box-sub{font-size:11px!important;font-weight:500!important;line-height:1.35;margin-top:6px!important;color:#AAA69E!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+html[data-tema="claro"] #semanaHero .hero-box-label,html[data-tema="claro"] #semanaHero .hero-box-sub{color:#55514B!important;}
+html[data-tema="escuro"] #semanaHero .hero-box-val[style*="var(--ink)"]{color:#F5F2EC!important;}
+/* indicadores operacionais */
+html[data-tema] #semanaHero [style*="repeat(3,1fr)"]{gap:8px!important;margin-top:16px!important;padding-top:14px!important;border-top:1px solid #2a2a2a!important;}
+html[data-tema] #semanaHero [style*="repeat(3,1fr)"]>div{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:58px;padding:7px 4px!important;border-radius:12px!important;background:#141414!important;border:1px solid #2c2c2c!important;}
+html[data-tema] #semanaHero [style*="repeat(3,1fr)"]>div>div:first-child{font-size:9.5px!important;letter-spacing:.06em!important;margin-bottom:3px!important;line-height:1.15;text-align:center;color:#AAA69E!important;}
+html[data-tema] #semanaHero [style*="repeat(3,1fr)"]>div>div:last-child{font-size:17px!important;font-weight:700!important;color:#F5F2EC!important;line-height:1;}
+/* divisão entre blocos abaixo do cabeçalho */
+html[data-tema] #view-semana .sec-title{padding:18px 16px 8px!important;font-size:10.5px!important;letter-spacing:.14em!important;}
+html[data-tema="escuro"] #semanaHero .hero-box .hero-box-dot[style*="var(--ink)"]{background:#F5F2EC!important;background-image:none!important;}
+html[data-tema="claro"] #semanaHero .hero-box .hero-box-dot[style*="var(--ink)"]{background:#181818!important;}
+@media (max-width:380px){html[data-tema] .nav-item{font-size:8.6px!important;letter-spacing:-.2px!important;overflow:visible!important;}html[data-tema] .bottom-nav{padding-left:2px!important;padding-right:2px!important;gap:0!important;}}
+html[data-tema="claro"] button[style*="background:var(--rose)" i][style*="color:white" i]{background:#8F6538!important;color:#fff!important;}
+/* menu inferior: seis colunas iguais */
+html[data-tema] .bottom-nav{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px!important;padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))!important;}
+html[data-tema] .nav-item{flex:none;min-width:0;width:100%;padding:6px 0 5px!important;font-size:clamp(9px,2.45vw,10.5px)!important;letter-spacing:0!important;white-space:nowrap;overflow:hidden;gap:3px!important;}
+html[data-tema] .nav-item svg{width:22px!important;height:22px!important;}
+html[data-tema="escuro"] .nav-item.active{background:#C9A96E!important;color:#17130B!important;}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
